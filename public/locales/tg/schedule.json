@@ -1,0 +1,21 @@
+{
+  "title": "Ҷадвали дарсҳо",
+  "totalLessons": "Дарсҳои имрӯза",
+  "totalClassrooms": "Ҳамаи аудиторияҳо",
+  "freeNow": "Холӣ ҳоло",
+  "activeGroups": "Гурӯҳҳои фаъол",
+  "conflicts": "Зиддиятҳо",
+  "occupancy": "Банд будан",
+  "conflictBannerText": "Зиддиятҳои ҷадвал муайян шуданд",
+  "scrollHint": "ба рост кашед →",
+  "noData": "Барои санаи интихобшуда маълумот нест",
+  "seats": "ҷой",
+  "auditoriumsBtn": "аудитория",
+  "classroom": "Аудитория",
+  "noLessons": "Дарс нест",
+  "loadError": "Хатои бор кардани ҷадвал",
+  "today": "Имрӯз",
+  "conflictLabel": "Зиддияти ҷадвал",
+  "duration": "дақ",
+  "occupied": "Банд"
+}

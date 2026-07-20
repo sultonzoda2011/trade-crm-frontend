@@ -1,0 +1,14 @@
+{
+  "emailInvalid": "Invalid email",
+  "passwordMin": "Minimum {{count}} characters",
+  "required": "Required field",
+  "stringMin": "Minimum {{count}} characters",
+  "stringMax": "Maximum {{count}} characters",
+  "usernameRequired": "Username is required",
+  "passwordRequired": "Password is required",
+  "oldPassRequired": "Current password is required",
+  "passwordMinLength": "Password must be at least 8 characters",
+  "invalidEmail": "Invalid email address",
+  "invalidDate": "Invalid date",
+  "fileMustBeImage": "File must be an image"
+}

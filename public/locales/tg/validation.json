@@ -1,0 +1,14 @@
+{
+  "emailInvalid": "Email-и нодуруст",
+  "passwordMin": "Ҳадди аққал {{count}} аломат",
+  "required": "Майдони ҳатмӣ",
+  "stringMin": "Ҳадди аққал {{count}} аломат",
+  "stringMax": "Ҳадди аксар {{count}} аломат",
+  "usernameRequired": "Логинро ворид кунед",
+  "passwordRequired": "Рамзро ворид кунед",
+  "oldPassRequired": "Рамзи феълиро ворид кунед",
+  "passwordMinLength": "Рамз бояд ҳадди аққал 8 аломат бошад",
+  "invalidEmail": "Формати email нодуруст",
+  "invalidDate": "Санаи нодуруст",
+  "fileMustBeImage": "Файл бояд тасвир бошад"
+}

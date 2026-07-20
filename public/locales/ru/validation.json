@@ -1,0 +1,14 @@
+{
+  "emailInvalid": "Введите корректный email",
+  "passwordMin": "Минимум {{count}} символов",
+  "required": "Обязательное поле",
+  "stringMin": "Минимум {{count}} символов",
+  "stringMax": "Максимум {{count}} символов",
+  "usernameRequired": "Введите логин",
+  "passwordRequired": "Введите пароль",
+  "oldPassRequired": "Введите текущий пароль",
+  "passwordMinLength": "Пароль должен содержать не менее 8 символов",
+  "invalidEmail": "Неверный формат email",
+  "invalidDate": "Некорректная дата",
+  "fileMustBeImage": "Файл должен быть изображением"
+}

@@ -1,0 +1,17 @@
+{
+  "all": "All",
+  "filled": "Filled",
+  "missing": "Missing",
+  "incomplete": "Incomplete",
+  "inProgress": "In Progress",
+  "notStarted": "Not Started",
+  "total": "Total Lessons",
+  "fillRate": "Fill Rate",
+  "lessons": "lessons",
+  "mentor": "Mentor",
+  "time": "Time",
+  "classroom": "Classroom",
+  "topic": "Topic",
+  "noData": "No data for selected date",
+  "homework": "Homework"
+}

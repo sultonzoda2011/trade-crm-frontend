@@ -1,0 +1,21 @@
+{
+  "title": "Расписание занятий",
+  "totalLessons": "Уроков сегодня",
+  "totalClassrooms": "Всего аудиторий",
+  "freeNow": "Свободно сейчас",
+  "activeGroups": "Активных групп",
+  "conflicts": "Конфликты",
+  "occupancy": "Загруженность",
+  "conflictBannerText": "Обнаружены конфликты расписания",
+  "scrollHint": "прокрутите вправо →",
+  "noData": "Нет данных за выбранную дату",
+  "seats": "мест",
+  "auditoriumsBtn": "аудиторий",
+  "classroom": "Аудитория",
+  "noLessons": "Нет уроков",
+  "loadError": "Ошибка загрузки расписания",
+  "today": "Сегодня",
+  "conflictLabel": "Конфликт расписания",
+  "duration": "мин",
+  "occupied": "Занято"
+}

@@ -1,0 +1,186 @@
+import i18next from 'i18next';
+import Cookies from 'js-cookie';
+import NProgress from 'nprogress';
+import { lazy, useEffect, useRef, useState } from 'react';
+import {
+  isRouteErrorResponse,
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useLoaderData,
+  useNavigation,
+} from 'react-router';
+
+import type { Route } from '.react-router/types/app/+types/root';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { useTheme } from 'next-themes';
+import { Toaster } from 'sonner';
+import { ThemeProvider } from '~/components/theme-provider';
+import { TooltipProvider } from '~/components/ui/tooltip';
+import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
+import { getQueryClient } from '~/lib/query-client';
+import { useIsMobile } from './hooks/use-mobile';
+import './styles/global.css';
+import './styles/nprogress.css';
+
+export async function clientLoader() {
+  const fromCookie = Cookies.get('lng');
+
+  const locale =
+    fromCookie && (supportedLngs as readonly string[]).includes(fromCookie)
+      ? fromCookie
+      : navigator.language.split('-')[0] || fallbackLng;
+
+  return { locale };
+}
+
+export const handle = { i18n: i18nConfig.ns };
+
+export const links: Route.LinksFunction = () => [
+  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+  {
+    rel: 'preconnect',
+    href: 'https://fonts.gstatic.com',
+    crossOrigin: 'anonymous',
+  },
+  {
+    rel: 'stylesheet',
+    href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap',
+  },
+];
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
+  const data = useLoaderData<typeof clientLoader>();
+  const locale = data?.locale ?? 'ru';
+
+  useEffect(() => {
+    if (i18next.isInitialized) {
+      i18next.changeLanguage(locale);
+    }
+  }, [locale]);
+
+  return (
+    <html lang={locale} suppressHydrationWarning>
+      <head>
+        <title>Trade CRM</title>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+      </head>
+      <body>
+        <Splash locale={locale} />
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <NavigationProgress />
+            <TooltipProvider>{children}</TooltipProvider>
+            <ToasterProvider />
+          </ThemeProvider>
+          {import.meta.env.DEV && <DevTools />}
+        </QueryClientProvider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+const splashHints: Record<string, string> = {
+  ru: 'Подготовка рабочего стола…',
+  en: 'Preparing workspace…',
+  tg: 'Омода кардани муҳити кор…',
+};
+
+function Splash({ locale }: { locale: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [gone, setGone] = useState(false);
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (navigation.state !== 'idle') return;
+    const el = ref.current;
+    if (!el) return;
+    el.style.opacity = '0';
+    const t = setTimeout(() => setGone(true), 300);
+    return () => clearTimeout(t);
+  }, [navigation.state]);
+
+  if (gone) return null;
+
+  return (
+    <div ref={ref} id="app-splash">
+      <div className="splash-content">
+        <p className="splash-logo">
+          TRADE<span>CRM</span>
+        </p>
+        <div className="splash-loader" />
+        <p className="splash-hint">{splashHints[locale] ?? splashHints.ru}</p>
+      </div>
+    </div>
+  );
+}
+
+NProgress.configure({ showSpinner: false, trickleSpeed: 200 });
+
+function NavigationProgress() {
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (navigation.state === 'loading') {
+      NProgress.start();
+    } else {
+      NProgress.done();
+    }
+  }, [navigation.state]);
+
+  return null;
+}
+
+function ToasterProvider() {
+  const { resolvedTheme } = useTheme();
+  const isMobile = useIsMobile();
+  return (
+    <Toaster
+      theme={resolvedTheme as 'light' | 'dark'}
+      gap={8}
+      visibleToasts={5}
+      closeButton
+      position={isMobile ? 'top-center' : 'bottom-right'}
+    />
+  );
+}
+
+export default function App() {
+  return <Outlet />;
+}
+
+const DevTools = lazy(() => import('@tanstack/react-query-devtools').then((m) => ({ default: m.ReactQueryDevtools })));
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let message = 'Oops!';
+  let details = 'An unexpected error occurred.';
+  let stack: string | undefined;
+
+  if (isRouteErrorResponse(error)) {
+    message = error.status === 404 ? '404' : 'Error';
+    details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details;
+  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
+  }
+
+  return (
+    <main className="container mx-auto p-4 pt-16">
+      <h1>{message}</h1>
+      <p>{details}</p>
+      {stack && (
+        <pre className="w-full overflow-x-auto p-4">
+          <code>{stack}</code>
+        </pre>
+      )}
+    </main>
+  );
+}

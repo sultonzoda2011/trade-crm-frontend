@@ -1,0 +1,19 @@
+{
+  "title": "Задолженности",
+  "totalRecords": "Всего записей: {{count}}",
+  "totalDebtRows": "Записей долгов",
+  "uniqueDebtors": "Уникальных должников",
+  "totalBalance": "Общая задолженность",
+  "overdueCount": "Просрочено",
+  "student": "Студент",
+  "phone": "Телефон",
+  "group": "Группа",
+  "originalAmount": "Сумма",
+  "discount": "Скидка",
+  "paid": "Оплачено",
+  "balance": "Остаток",
+  "status": "Статус",
+  "overdue": "Просрочено",
+  "dueDate": "Срок оплаты",
+  "onTime": "В срок"
+}

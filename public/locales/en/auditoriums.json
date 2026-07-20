@@ -1,0 +1,10 @@
+{
+  "title": "Auditoriums",
+  "create": "Create auditorium",
+  "createSuccess": "Auditorium added successfully",
+  "createError": "Failed to create auditorium",
+  "updateSuccess": "Auditorium updated successfully",
+  "updateError": "Failed to update auditorium",
+  "edit": "Edit auditorium",
+  "capacity": "Capacity"
+}
