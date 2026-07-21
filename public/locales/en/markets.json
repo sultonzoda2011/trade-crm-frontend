@@ -1,0 +1,39 @@
+{
+  "title": "Markets",
+  "notFound": "Market not found",
+  "create": "Create market",
+  "edit": "Edit market",
+  "createSuccess": "Market created successfully",
+  "createError": "Error creating market",
+  "updateSuccess": "Market updated successfully",
+  "updateError": "Error updating market",
+  "fields": {
+    "name": "Name",
+    "address": "Address",
+    "owner": "Owner",
+    "image": "Image",
+    "ownerId": "Owner",
+    "products": "Products",
+    "debtors": "Debtors",
+    "transactions": "Transactions",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At"
+  },
+  "statistics": "Statistics",
+  "actions": {
+    "view": "View",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirmation",
+    "areYouSure": "Are you sure you want to delete this market?",
+    "deleteSuccess": "Market deleted",
+    "deleteError": "Error deleting market",
+    "cancel": "Cancel",
+    "save": "Save",
+    "create": "Create",
+    "all": "All markets"
+  },
+  "filters": {
+    "search": "Search markets"
+  }
+}
