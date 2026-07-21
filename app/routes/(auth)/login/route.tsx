@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 import { Eye, EyeOff } from 'lucide-react';
@@ -14,17 +15,32 @@ import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { canAccess } from '~/config/permissions';
 import { useForm } from '~/hooks/useForm';
-import { type DecodedToken, getAuthToken, isTokenExpired } from '~/lib/auth-utils';
+import { type DecodedToken, getAuthToken, getRefreshToken, isTokenExpired } from '~/lib/auth-utils';
 import { cn } from '~/lib/utils';
-import { Role } from '~/types/auth';
+import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
-import tradeLogo from '/tradeLogo.jpg';
+import tradeLogo from '/tradeLogo.png';
 
 export async function clientLoader() {
   const token = getAuthToken();
   if (token && !isTokenExpired(token)) {
     return redirect('/');
   }
+
+  const refreshToken = getRefreshToken();
+  if (refreshToken) {
+    try {
+      const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
+      const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken });
+      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+      Cookies.set('token', accessToken, { expires: 7 });
+      Cookies.set('refreshToken', newRefreshToken, { expires: 30 });
+      return redirect('/');
+    } catch {
+      Cookies.remove('refreshToken');
+    }
+  }
+
   return {};
 }
 
@@ -43,23 +59,24 @@ export default function LoginPage() {
     formState: { isSubmitting: isFormSubmitting },
   } = useForm<LoginForm>({
     resolver: zodResolver(schema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { email: '', password: '' },
   });
   const getRedirectPath = (role: Role, redirectTo: string): string => {
-    if (role === Role.Student) {
-      return '/profile';
+    if (role === Role.Seller) {
+      return '/';
     }
     return canAccess(role, redirectTo) ? redirectTo : '/';
   };
   const { mutate, isPending } = useMutation({
     mutationFn: authApi.login,
     onSuccess: (response) => {
-      Cookies.set('token', response.data, { expires: 7 });
+      Cookies.set('token', response.data.accessToken, { expires: 7 });
+      Cookies.set('refreshToken', response.data.refreshToken, { expires: 30 });
       toast.success(t('loginSuccess'));
       const redirectTo = searchParams.get('redirectTo') || '/';
 
       try {
-        const user = jwtDecode<DecodedToken>(response.data);
+        const user = jwtDecode<DecodedToken>(response.data.accessToken);
         const path = getRedirectPath(user.role, redirectTo);
         navigate(path);
       } catch {
@@ -112,7 +129,7 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormInput control={control} name="username" label={t('username')} placeholder="0098865885" type="text" />
+              <FormInput control={control} name="email" label={t('email')} placeholder="0098865885" type="text" />
               <FormInput
                 control={control}
                 name="password"
