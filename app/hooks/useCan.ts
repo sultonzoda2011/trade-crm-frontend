@@ -1,6 +1,6 @@
-import { getUserFromToken } from '~/lib/auth-utils';
-import { Role } from '~/types/auth';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
+import { getUserFromToken } from '~/lib/auth-utils';
+import { Role } from '~/types/common';
 
 export type Permission = Role | Role[] | Action | Action[];
 
@@ -15,8 +15,6 @@ export function useCan() {
    * Проверяет наличие доступа к действию или роли.
    */
   const can = (permission: Permission): boolean => {
-
-
     if (!userRole) return false;
 
     // 1. Если передан массив (Role[] или Action[])

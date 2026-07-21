@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
-import { ArrowDownToLine, ArrowUpFromLine, Landmark, LayoutDashboard } from 'lucide-react';
+import { LayoutDashboard, Package, Store, Users } from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
-import { Role } from '~/types/auth';
+import type { Role } from '~/types/common';
 import { Action } from './actions';
 
 export interface NavItem {
@@ -19,32 +19,26 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     title: t('navigation.dashboard'),
     url: '/',
     icon: LayoutDashboard,
-    action: Action.DASHBOARD_VIEW,
+    action: Action.DASHBOARDS_VIEW,
   },
-  // {
-  //   title: t('navigation.finances'),
-  //   icon: Landmark,
-  //   items: [
-  //     {
-  //       title: t('navigation.income'),
-  //       url: '/finance/income',
-  //       icon: ArrowUpFromLine,
-  //       action: Action.INCOME_VIEW,
-  //     },
-  //     {
-  //       title: t('navigation.expenses'),
-  //       url: '/finance/expenses',
-  //       icon: ArrowDownToLine,
-  //       action: Action.EXPENSES_VIEW,
-  //     },
-  //     {
-  //       title: t('navigation.salary'),
-  //       url: '/finance/salary',
-  //       icon: Landmark,
-  //       action: Action.SALARY_VIEW,
-  //     },
-  //   ],
-  // },
+  {
+    title: t('navigation.users'),
+    url: '/users',
+    icon: Users,
+    action: Action.USERS_VIEW,
+  },
+  {
+    title: t('navigation.markets'),
+    url: '/markets',
+    icon: Package,
+    action: Action.MARKETS_VIEW,
+  },
+   {
+    title: t('navigation.sellers'),
+    url: '/sellers',
+    icon: Store,
+    action: Action.SELLERS_VIEW,
+  },
 ];
 
 /**

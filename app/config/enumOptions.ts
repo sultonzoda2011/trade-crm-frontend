@@ -1,6 +1,5 @@
 import type { TFunction } from 'i18next';
-import { Role } from '~/types/auth';
-import { Status } from '~/types/common';
+import { Role, Status } from '~/types/common';
 
 export const STATUS_CONFIG: Record<Status, { label: (t: TFunction) => string; className: string }> = {
   [Status.Inactive]: {
@@ -40,6 +39,21 @@ export const getDayOptions = (t: TFunction) => [
   { value: 6, label: t('days.saturday') },
   { value: 7, label: t('days.sunday') },
 ];
+
+export const ROLE_CONFIG: Record<string, { label: (t: TFunction) => string; className: string }> = {
+  [Role.Admin]: {
+    label: (t) => t('role.admin'),
+    className: 'bg-violet-500/15 text-violet-600 border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30',
+  },
+  [Role.Owner]: {
+    label: (t) => t('role.owner'),
+    className: 'bg-amber-500/15 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30',
+  },
+  [Role.Seller]: {
+    label: (t) => t('role.seller'),
+    className: 'bg-sky-500/15 text-sky-600 border-sky-200 dark:bg-sky-500/20 dark:text-sky-400 dark:border-sky-500/30',
+  },
+};
 
 export const getRoleOptions = (t: TFunction) => [
   { value: 'all', label: t('filters.all') },
