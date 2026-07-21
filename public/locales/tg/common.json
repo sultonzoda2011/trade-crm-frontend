@@ -1,54 +1,33 @@
 {
   "navigation": {
     "dashboard": "Панели идоракунӣ",
-    "students": "Донишҷӯён",
-    "staff": "Кормандон",
-    "teachers": "Омӯзгорон",
-    "employees": "Ҳайат",
-    "comingSoon": "Ба наздикӣ",
-    "finances": "Молия",
-    "journal": "Журнал",
-    "lessonPlans": "Нақшаи дарсҳо",
-    "schedule": "Ҷадвал",
-    "payments": "Пардохтҳо",
-    "programs": "Барномаҳо",
-    "courses": "Курсҳо",
-    "candidates": "Номзадон",
-    "groupsAndRooms": "Гурӯҳҳо ва аудиторияҳо",
-    "groups": "Гурӯҳҳо",
-    "auditoriums": "Аудиторияҳо",
-    "income": "Даромадҳо",
-    "printers": "Принтерҳо",
-    "settings": "Танзимот",
-    "expenses": "Харҷҳо",
-    "salary": "Маош"
+    "users": "Корбарон",
+    "markets": "Бозорҳо",
+    "sellers": "Фурӯшанда"
   },
   "palette": {
     "trigger": "Ҷустуҷӯ",
     "placeholder": "Ҷустуҷӯ дар CRM…",
     "pages": "Саҳифаҳо",
-    "students": "Донишҷӯён",
-    "groups": "Гурӯҳҳо",
-    "mentors": "Омӯзгорон",
-    "empty": "Чизе ёфт нашуд",
+    "empty": "Ҳеҷ чиз ёфт нашуд",
     "searchHint": "Барои ҷустуҷӯ ҳадди ақал 2 ҳарф ворид кунед",
     "actions": "Амалҳои зуд",
-    "createStudent": "Иловаи донишҷӯ",
-    "createGroup": "Эҷоди гурӯҳ",
-    "createMentor": "Иловаи омӯзгор",
-    "createEmployee": "Иловаи корманд"
+    "createUser": "Эҷоди истифодабаранда",
+    "createMarket": "Эҷоди бозор",
+    "createProduct": "Эҷоди маҳсулот",
+    "createTransaction": "Эҷоди амалиёт"
   },
   "errors": {
-    "noConnection": "Пайвастшавӣ нест. Интернетро тафтиш кунед.",
+    "noConnection": "Пайвастшавӣ ба сервер нест. Лутфан интернетро санҷед.",
     "badRequest": "Дархости нодуруст",
     "forbidden": "Дастрасӣ манъ аст",
-    "notFound": "Захира ёфт нашуд",
-    "validation": "Хатои тасдиқи маълумот",
-    "tooManyRequests": "Дархостҳо зиёданд. Каме дертар кӯшиш кунед",
-    "serverError": "Хатои дохилии сервер",
+    "notFound": "Манбаъ ёфт нашуд",
+    "validation": "Хатогии санҷиши маълумот",
+    "tooManyRequests": "Дархостҳо аз ҳад зиёданд. Лутфан баъдтар кӯшиш кунед",
+    "serverError": "Хатогии дохилии сервер",
     "badGateway": "Сервер муваққатан дастнорас аст",
-    "serviceUnavailable": "Хизмат дастнорас аст",
-    "unknown": "Хатои номаълум ({{status}})"
+    "serviceUnavailable": "Хизматрасонӣ дастнорас аст",
+    "unknown": "Хатогии номаълум ({{status}})"
   },
   "table": {
     "columns": "Сутунҳо",
@@ -59,11 +38,11 @@
     "showAll": "Намоиши ҳама",
     "resetColumns": "Барқарор кардан",
     "noData": "Маълумот нест",
-    "error": "Хатои боркунии маълумот"
+    "error": "Боркунии маълумот ноком шуд"
   },
   "filters": {
     "title": "Филтрҳо",
-    "reset": "Тоза кардан",
+    "reset": "Барқарор кардан",
     "close": "Пӯшидан",
     "active": "фаъол",
     "from": "Аз",
@@ -71,8 +50,8 @@
     "all": "Ҳама",
     "search": "Ҷустуҷӯ",
     "apply": "Татбиқ кардан",
-    "mentor": "Ментор",
-    "employee": "Кормaнд"
+    "mentor": "Мураббӣ",
+    "employee": "Корманд"
   },
   "days": {
     "mon": "Дш",
@@ -80,8 +59,8 @@
     "wed": "Чш",
     "thu": "Пш",
     "fri": "Ҷм",
-    "sat": "Шн",
-    "sun": "Як",
+    "sat": "Шб",
+    "sun": "Яш",
     "monday": "Душанбе",
     "tuesday": "Сешанбе",
     "wednesday": "Чоршанбе",
@@ -91,253 +70,82 @@
     "sunday": "Якшанбе"
   },
   "actions": {
-    "create": "Сохтан",
+    "create": "Эҷод кардан",
     "cancel": "Бекор кардан",
     "save": "Захира кардан",
-    "delete": "Нобуд кардан",
+    "delete": "Ҳазф кардан",
     "edit": "Таҳрир кардан",
-    "approveDescription": "Оё мутмаин ҳастед, ки шумо ҳисоб кардани музди меҳнатро тасдиқ кардан мехоҳед?",
-    "view": "Намоиш",
-    "message": "Паём",
-    "export": "Содир кардан",
-    "changeMail": "Иваз кардани почта",
-    "changePassword": "Иваз кардани рамз",
+    "view": "Дидан",
+    "approveDescription": "Оё мутмаин ҳастед, ки ҳисобкунии музди меҳнатро тасдиқ мекунед?",
     "confirm": "Тасдиқ",
-    "areYouSure": "Оё шумо мутмаин ҳастед, ки мехоҳед нобуд кунед?",
-    "deleteDescription": "Ин амал ғайри қобили бозгашт аст. Донишҷӯ барои ҳамеша аз система нест карда мешавад.",
-    "deleteSuccess": "Нест карда шуд",
-    "deleteError": "Хатогӣ ҳангоми нест кардан",
+    "areYouSure": "Оё мутмаин ҳастед, ки мехоҳед ҳазф кунед?",
+    "deleteDescription": "Ин амал барқароршаванда нест. Истифодабаранда ҳамеша аз система ҳазф мешавад.",
+    "deleteSuccess": "Бо муваффақият ҳазф шуд",
+    "deleteError": "Ҳангоми ҳазф хатогӣ рӯй дод",
     "add": "Илова кардан",
-    "transfer": "Гузаронидан",
     "settings": "Танзимот",
-    "exclude": "Хориҷ кардан",
+    "exclude": "Истисно кардан",
     "back": "Бозгашт",
-    "activate": "Фаъол кардан",
-    "restore": "Барқарор кардан",
-    "copyAndClose": "Нусхабардорӣ ва бастан"
-    },
+    "activate": "Фаъол кардан"
+  },
   "fields": {
-    "fullName": "Ф.И.О.",
+    "fullName": "Ному насаб",
     "phone": "Телефон",
-    "email": "Email",
-    "age": "Синну сол",
+    "email": "Почтаи электронӣ",
+    "password": "Рамз",
+    "market": "Бозор",
+    "marketAddress": "Суроғаи бозор",
+    "product": "Маҳсулот",
+    "role": "Нақш",
+    "transaction": "Амалиёт",
+    "owner": "Соҳиб",
     "address": "Суроға",
-    "birthday": "Санаи таваллуд",
-    "gender": "Ҷинс",
-    "experience": "Таҷриба",
-    "center": "Марказ",
-    "branch": "Филиал",
     "name": "Ном",
     "description": "Тавсиф",
     "actions": "Амалҳо",
-    "status": "Статус",
-    "group": "Гурӯҳ"
+    "status": "Ҳолат"
   },
-  "updateProfilePicture": {
-    "edit": "Иваз кардани сурат",
-    "profilePicture": "Сурати нав",
-    "hint": "Форматҳои қабулшаванда: JPG, PNG, GIF. Ҳадди аксар: 5MB",
-    "updateSuccess": "Акси профил бомуваффақият навсозӣ шуд",
-    "updateError": "Навсозии акси профил ноком шуд"
-  },
-  "changeMail": {
-    "edit": "Иваз кардани почтаи электронӣ",
-    "newEmail": "Почтаи электронии нав",
-    "updateSuccess": "Почтаи электронӣ бомуваффақият навсозӣ шуд",
-    "updateError": "Навсозии почтаи электронӣ ноком шуд"
-  },
-  "changePassword": {
-    "edit": "Иваз кардани рамз",
-    "oldPassword": "Рамзи кунунӣ",
-    "newPassword": "Рамзи нав",
-    "confirmPassword": "Тасдиқи рамз",
-    "updateSuccess": "Рамз бомуваффақият навсозӣ шуд",
-    "updateError": "Навсозии рамз ноком шуд"
-  },
-  "logout": "Баромад",
-  "usernameRequired": "Логинро ворид кунед",
-  "passwordRequired": "Рамзро ворид кунед",
+  "logout": "Баромадан",
+  "usernameRequired": "Номи корбар ҳатмист",
+  "passwordRequired": "Парол ҳатмист",
   "required": "Майдони ҳатмӣ",
-  "emailInvalid": "Email-и нодуруст",
+  "emailInvalid": "Почтаи электронӣ нодуруст аст",
   "common": {
     "datePlaceholder": "рр.мм.сссс"
   },
   "status": {
     "active": "Фаъол",
     "inactive": "Ғайрифаъол",
-    "completed": "Хатм шуд"
-  },
-  "transaction": {
-    "create": "Сохтани амалиёт",
-    "createSuccess": "Амалиёт бомуваффақият сохта шуд",
-    "createError": "Сохтани амалиёт ноком шуд",
-    "category": "Категория",
-    "categoryPlaceholder": "Категорияро интихоб кунед",
-    "amount": "Маблағ",
-    "amountPlaceholder": "0.00",
-    "date": "Сана",
-    "description": "Тавсиф",
-    "descriptionPlaceholder": "Тавсифро ворид кунед",
-    "notes": "Эзоҳҳо",
-    "notesPlaceholder": "Эзоҳҳоро ворид кунед",
-    "reference": "Маълумот",
-    "referencePlaceholder": "Маълумотро ворид кунед",
-    "income": {
-      "grant": "Грант",
-      "donations": "Хайрия",
-      "serviceIncome": "Даромад аз хизматҳо",
-      "otherIncome": "Дигар даромадҳо"
-    },
-    "expense": {
-      "rent": "Иҷора",
-      "utilityBills": "Коммуналӣ",
-      "educationalMaterials": "Маводи таълимӣ",
-      "marketing": "Маркетинг",
-      "support": "Дастгирӣ",
-      "transportationCosts": "Хароҷоти нақлиёт",
-      "otherExpenses": "Дигар харҷҳо"
-    }
-  },
-  "gender": {
-    "male": "Мард",
-    "female": "Зан"
-  },
-  "time": {
-    "morning": "Субҳ",
-    "afternoon": "Рӯз",
-    "evening": "Шом"
-  },
-  "level": {
-    "beginner": "Навкорум",
-    "intermediate": "Миёна",
-    "advanced": "Пешрафта"
-  },
-  "paymentStatus": {
-    "completed": "Пардохт шуд",
-    "pending": "Дар интизор",
-    "failed": "Пардохт нашуд",
-    "label": "Вазъи пардохт"
-  },
-  "salaryType": {
-    "fixed": "Маблағи собит",
-    "hourly": "Пардохти соатона",
-    "percentage": "Фоиз аз донишҷӯён",
-    "perGroup": "Пардохт барои гурӯҳ",
-    "mixed": "Навъи омехта"
-  },
-  "lessonStatus": {
-    "notFilled": "Пур нашудааст",
-    "noTopic": "Мавзӯъ нест",
-    "noHomework": "Вазифа нест",
-    "inProgress": "Дар ҷараён",
-    "notStarted": "Оғоз нашудааст",
-    "filled": "Пурра"
+    "completed": "Ба анҷом расидааст"
   },
   "fileInput": {
     "selectFile": "Файлро интихоб кунед...",
     "change": "Иваз кардан",
-    "delete": "Нест кардан",
-    "dragDrop": "Клик кунед ё файлро кашед"
+    "delete": "Ҳазф кардан",
+    "dragDrop": "Клик кунед ё файлро кашола карда партоед"
   },
   "customSelect": {
     "placeholder": "Интихоб кунед...",
-    "emptyText": "Чизе ёфт нашуд"
+    "emptyText": "Ҳеҷ чиз ёфт нашуд"
   },
   "dateRangePicker": {
     "placeholder": "Давраро интихоб кунед"
   },
   "role": {
-    "superAdmin": "Суперадмин",
-    "admin": "Администратор",
-    "manager": "Менеҷер",
-    "mentor": "Роҳнамо",
-    "student": "Донишҷӯ",
-    "user": "Корбар"
+    "admin": "Маъмур",
+    "owner": "Соҳиб",
+    "seller": "Фурӯшанда"
   },
   "startDate": "Санаи оғоз",
   "endDate": "Санаи анҷом",
-  "profilePhoto": "Аксҳои профил",
   "documentFile": "Ҳуҷҷат",
   "yearsUnit": "сол",
-  "groups": {
-    "title": "Гурӯҳҳо",
-    "create": "Сохтани гурӯҳ",
-    "createGroup": "Сохтани гурӯҳ",
-    "editGroup": "Таҳрири гурӯҳ",
-    "empty": "Гурӯҳе ёфт нашуд",
-    "notFound": "Гурӯҳ ёфт нашуд",
-    "course": "Курс",
-    "mentor": "Роҳнамо",
-    "classroom": "Аудитория",
-    "noClassroom": "Аудитория нест",
-    "image": "Тасвир",
-    "groupName": "Номи гурӯҳ",
-    "description": "Тавсиф",
-    "selectCourse": "Курсро интихоб кунед",
-    "selectMentor": "Роҳнаморо интихоб кунед",
-    "selectClassroom": "Аудиторияро интихоб кунед",
-    "lessonDays": "Рӯзҳои дарс",
-    "selectDays": "Рӯзҳоро интихоб кунед",
-    "lessonStartTime": "Вақти оғоз",
-    "lessonEndTime": "Вақти анҷом",
-    "createSuccess": "Гурӯҳ бомуваффақият сохта шуд",
-    "createError": "Сохтани гурӯҳ ноком шуд",
-    "updateSuccess": "Гурӯҳ бомуваффақият навсозӣ шуд",
-    "updateError": "Навсозии гурӯҳ ноком шуд",
-    "deleteTitle": "Нест кардани гурӯҳ",
-    "deleteDescription": "Оё шумо мутмаин ҳастед, ки гурӯҳи «{{name}}»-ро нест карданӣ ҳастед?",
-    "deleteSuccess": "Гурӯҳ нест карда шуд",
-    "deleteError": "Хатогӣ ҳангоми нест кардани гурӯҳ",
-    "activateJournalTitle": "Фаъол кардани журнал",
-    "activateJournalDescription": "Пас аз фаъол кардани журнал, қайди ҳузур оғоз мешавад. Идома диҳем?",
-    "activateJournalError": "Хатогӣ ҳангоми фаъол кардани журнал",
-    "journal": "Журнал",
-    "openJournal": "Кушодани журнал",
-    "attendanceNotes": "Ҳузур ва баллҳо",
-    "mentorDescription": "Роҳнамои гурӯҳ",
-    "progressCourse": "Пешрафти курс",
-    "weeks": "ҳафта",
-    "completed": "гузашт",
-    "schedule": "Ҷадвал",
-    "students": "Донишҷӯён",
-    "tableView": "Ҷадвал",
-    "leaderboardView": "Рейтинг",
-    "addStudents": "Илова кардани донишҷӯён",
-    "addStudentsTitle": "Илова кардани донишҷӯён",
-    "addStudentsSuccess": "Донишҷӯён бомуваффақият илова карда шуданд",
-    "addStudentsError": "Иловаи донишҷӯён ноком шуд",
-    "removeStudentTitle": "Хориҷ кардани донишҷӯ",
-    "removeStudentSuccess": "Донишҷӯ хориҷ карда шуд",
-    "removeStudentError": "Хатогӣ ҳангоми хориҷ кардани донишҷӯ",
-    "leftReasonLabel": "Сабаби хориҷ шудан",
-    "leftReasonPlaceholder": "Сабабро нависед...",
-    "leftDate": "Санаи хориҷ шудан",
-    "joinDate": "Санаи узвшавӣ",
-    "leftStudentsSection": "Донишҷӯёни хориҷшуда",
-    "restoreStudentTitle": "Баргардонидани донишҷӯ",
-    "restoreStudentDescription": "Донишҷӯ ба гурӯҳ баргардонида мешавад. Идома диҳем?",
-    "restoreStudentSuccess": "Донишҷӯ бомуваффақият баргардонида шуд",
-    "restoreStudentError": "Хатогӣ ҳангоми баргардонидани донишҷӯ",
-    "permanentDeleteTitle": "Барои ҳамеша нест кардан",
-    "permanentDeleteDescription": "Донишҷӯ барои ҳамеша аз гурӯҳ нест карда мешавад. Ин амал ғайри қобили бозгашт аст.",
-    "permanentDeleteSuccess": "Донишҷӯ барои ҳамеша нест карда шуд",
-    "permanentDeleteError": "Хатогӣ ҳангоми нест кардани донишҷӯ",
-    "selected": "Интихобшуда",
-    "noSelected": "Донишҷӯе интихоб нашудааст",
-    "searchStudents": "Ҷустуҷӯи донишҷӯён...",
-    "discount": "Тахфиф (TJS)",
-    "setDiscount": "Таъини тахфиф",
-    "discountAmount": "Андозаи тахфиф (TJS)",
-    "discountSuccess": "Тахфиф бомуваффақият таъин шуд",
-    "discountError": "Хатогӣ ҳангоми таъини тахфиф"
-  },
   "breadcrumbs": {
     "create": "Эҷод",
-    "edit": "Таҳрир",
-    "profile": "Профил"
+    "edit": "Таҳрир"
   },
   "header": {
-    "theme": "Реҷа",
+    "theme": "Мавзуъ",
     "language": "Забон"
   }
 }
