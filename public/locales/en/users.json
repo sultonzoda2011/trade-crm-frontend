@@ -1,0 +1,9 @@
+{
+  "title": "Users",
+  "create": "Create",
+  "notFound": "User not found",
+  "fields": {
+    "role": "Role",
+    "createdAt": "Created at"
+  }
+}

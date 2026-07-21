@@ -1,0 +1,95 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { usersApi } from '~/api/users';
+import { Button } from '~/components/ui/button';
+import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
+import { FormInput } from '~/components/ui/form/FormInput';
+import { getRoleOptions } from '~/config/enumOptions';
+import { useForm } from '~/hooks/useForm';
+import { Modal } from '~/components/shared/Modal';
+import { createUserSchema, type CreateUserSchema } from '~/validations/user';
+import { useUsersModals } from '~/routes/(crm)/users/store';
+
+export function CreateUserModal() {
+  const { t } = useTranslation(['users', 'common', 'validation']);
+  const queryClient = useQueryClient();
+  const createModal = useUsersModals((s) => s.create);
+
+  const roleOptions = getRoleOptions(t);
+
+  const { control, handleSubmit, reset } = useForm<CreateUserSchema>({
+    resolver: zodResolver(createUserSchema(t)),
+    defaultValues: { name: '', email: '', password: '', role: '' },
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: CreateUserSchema) => usersApi.create({ request: data as never }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success(t('createSuccess'));
+      createModal.close();
+      reset();
+    },
+    onError: () => {
+      toast.error(t('createError'));
+    },
+  });
+
+  function onSubmit(data: CreateUserSchema) {
+    mutate(data);
+  }
+
+  return (
+    <Modal
+      open={createModal.isOpen}
+      onClose={createModal.close}
+      title={t('create')}
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={createModal.close}>
+            {t('actions.cancel')}
+          </Button>
+          <Button type="submit" form="create-user-form" disabled={isPending}>
+            {t('actions.create')}
+          </Button>
+        </div>
+      }
+    >
+      <form id="create-user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormInput
+          control={control}
+          name="name"
+          label={t('fields.fullName')}
+          placeholder={t('fields.fullName')}
+          required
+        />
+        <FormInput
+          control={control}
+          name="email"
+          type="email"
+          label={t('fields.email')}
+          placeholder="example@mail.com"
+          required
+        />
+        <FormInput
+          control={control}
+          name="password"
+          type="password"
+          label={t('fields.password')}
+          placeholder="••••••••"
+          required
+        />
+        <FormCustomSelect
+          control={control}
+          name="role"
+          label={t('fields.role')}
+          options={roleOptions}
+          placeholder={t('fields.role')}
+          required
+        />
+      </form>
+    </Modal>
+  );
+}
