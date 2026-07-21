@@ -24,16 +24,16 @@ interface DataTableProps<TData> {
   /** Dims current rows while the next page/filter result is in flight (keepPreviousData) */
   isFetching?: boolean;
   isError?: boolean;
-  pageNumber?: number;
-  pageSize?: number;
+  page?: number;
+  limit?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
-  onPageSizeChange?: (size: number) => void;
+  onlimitChange?: (size: number) => void;
   getRowClassName?: (row: Row<TData>) => string;
   onRowClick?: (row: Row<TData>) => void;
 }
 
-function getPageNumbers(current: number, total: number): (number | 'ellipsis')[] {
+function getpages(current: number, total: number): (number | 'ellipsis')[] {
   if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
   const pages: (number | 'ellipsis')[] = [1];
   if (current > 3) pages.push('ellipsis');
@@ -44,30 +44,30 @@ function getPageNumbers(current: number, total: number): (number | 'ellipsis')[]
 }
 
 function PageControls({
-  pageNumber,
-  pageSize,
+  page,
+  limit,
   totalPages,
   onPageChange,
-  onPageSizeChange,
+  onlimitChange,
   t,
 }: {
-  pageNumber: number;
-  pageSize: number;
+  page: number;
+  limit: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
+  onlimitChange: (size: number) => void;
   t: (key: string) => string;
 }) {
-  const pages = getPageNumbers(pageNumber, totalPages || 1);
+  const pages = getpages(page, totalPages || 1);
 
   return (
     <div className="flex w-full flex-row items-center justify-between gap-2 overflow-x-auto px-3 py-2">
       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-sm">
         <span className="hidden sm:inline">{t('table.list')}</span>
         <CustomSelect
-          value={pageSize}
+          value={limit}
           options={[10, 20, 50].map((size) => ({ value: size, label: size.toString() }))}
-          onChange={(v) => onPageSizeChange(Number(v))}
+          onChange={(v) => onlimitChange(Number(v))}
           className="w-[70px]"
           isClearable={false}
         />
@@ -76,9 +76,9 @@ function PageControls({
         <PaginationContent className="flex-nowrap gap-0.5">
           <PaginationItem>
             <PaginationPrevious
-              onClick={() => onPageChange(Math.max(1, pageNumber - 1))}
+              onClick={() => onPageChange(Math.max(1, page - 1))}
               text=""
-              className={cn('size-8', pageNumber === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+              className={cn('size-8', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
             />
           </PaginationItem>
           {pages.map((page, i) =>
@@ -89,7 +89,7 @@ function PageControls({
             ) : (
               <PaginationItem key={page}>
                 <PaginationLink
-                  isActive={page === pageNumber}
+                  isActive={page === page}
                   onClick={() => onPageChange(page)}
                   className="size-8 cursor-pointer tabular-nums">
                   {page}
@@ -99,9 +99,9 @@ function PageControls({
           )}
           <PaginationItem>
             <PaginationNext
-              onClick={() => onPageChange(Math.min(totalPages, pageNumber + 1))}
+              onClick={() => onPageChange(Math.min(totalPages, page + 1))}
               text=""
-              className={cn('size-8', pageNumber === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+              className={cn('size-8', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
             />
           </PaginationItem>
         </PaginationContent>
@@ -117,11 +117,11 @@ export function DataTable<TData>({
   isLoading,
   isFetching,
   isError,
-  pageNumber = 1,
-  pageSize = 10,
+  page = 1,
+  limit = 10,
   totalPages = 1,
   onPageChange,
-  onPageSizeChange,
+  onlimitChange,
   getRowClassName,
   onRowClick,
 }: DataTableProps<TData>) {
@@ -143,9 +143,7 @@ export function DataTable<TData>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      index === 0 &&
-                        pinFirstColumn &&
-                        'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
+                      index === 0 && pinFirstColumn && 'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                       index === headerGroup.headers.length - 1 &&
                         pinLastColumn &&
                         'bg-card sticky right-0 z-10 w-[80px] min-w-[80px] border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
@@ -158,7 +156,7 @@ export function DataTable<TData>({
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              Array.from({ length: pageSize }).map((_, rowIndex) => (
+              Array.from({ length: limit }).map((_, rowIndex) => (
                 <TableRow key={rowIndex}>
                   {visibleColumns.map((_, colIndex) => {
                     const isFirst = colIndex === 0;
@@ -224,13 +222,13 @@ export function DataTable<TData>({
           </TableBody>
         </UITable>
       </div>
-      {onPageChange && onPageSizeChange && (
+      {onPageChange && onlimitChange && (
         <PageControls
-          pageNumber={pageNumber}
-          pageSize={pageSize}
+          page={page}
+          limit={limit}
           totalPages={totalPages}
           onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
+          onlimitChange={onlimitChange}
           t={t}
         />
       )}

@@ -4,6 +4,7 @@ import { Check, ChevronDown, LogOut, Moon, Settings, Sun, User as UserIcon } fro
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
+import { authApi } from '~/api/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   DropdownMenu,
@@ -14,9 +15,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
-import { Skeleton } from '~/components/ui/skeleton';
 import { useIsMobile } from '~/hooks/use-mobile';
-import { useUser } from '~/hooks/useUser';
+import { getUserFromToken } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -25,14 +25,12 @@ const LANGUAGES = [
 ];
 
 export function UserNav() {
-  const { data: userResponse, isLoading } = useUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation('auth');
   const { t: tc, i18n } = useTranslation('common');
   const { theme, setTheme, systemTheme } = useTheme();
-
-  const user = userResponse?.data;
+  const userInfo = getUserFromToken();
   const currentTheme = theme === 'system' ? systemTheme : theme;
   const currentLng = i18n.language?.split('-')[0];
 
@@ -43,13 +41,18 @@ export function UserNav() {
   };
 
   const handleLogout = () => {
+    const refreshToken = Cookies.get('refreshToken');
+    if (refreshToken) {
+      authApi.logout(refreshToken).catch(() => {});
+    }
     Cookies.remove('token');
+    Cookies.remove('refreshToken');
     queryClient.removeQueries({ queryKey: ['user-me'] });
     navigate('/login');
   };
 
-  const initials = user?.fullName
-    ? user.fullName
+  const initials = userInfo?.name
+    ? userInfo.name
         .split(' ')
         .map((n) => n[0])
         .join('')
@@ -62,27 +65,13 @@ export function UserNav() {
         render={
           <button className="hover:bg-accent hover:text-accent-foreground hover:border-border group flex h-9 items-center gap-2 rounded-lg border border-transparent px-1.5 transition-all outline-none sm:px-2" />
         }>
-        {isLoading ? (
-          <Skeleton className="h-8 w-8 rounded-full" />
-        ) : (
-          <Avatar className="h-8 w-8 border">
-            <AvatarImage src={import.meta.env.VITE_API_URL + user?.image} alt={user?.fullName} className="grayscale" />
-            <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{initials}</AvatarFallback>
-          </Avatar>
-        )}
+        <Avatar className="h-8 w-8 border">
+          <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{initials}</AvatarFallback>
+        </Avatar>
 
         <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
-          {isLoading ? (
-            <>
-              <Skeleton className="mb-1 h-3 w-20" />
-              <Skeleton className="h-2 w-24" />
-            </>
-          ) : (
-            <>
-              <span className="max-w-full truncate text-sm leading-none font-semibold">{user?.fullName}</span>
-              <span className="text-muted-foreground mt-1 text-[10px] leading-none">{user?.role}</span>
-            </>
-          )}
+          <span className="max-w-full truncate text-sm leading-none font-semibold">{userInfo?.name}</span>
+          <span className="text-muted-foreground mt-1 text-[10px] leading-none">{userInfo?.role}</span>
         </div>
 
         <ChevronDown className="text-muted-foreground hidden h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
@@ -94,40 +83,18 @@ export function UserNav() {
             <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 border-2">
-                  <AvatarImage
-                    className="object-cover"
-                    src={import.meta.env.VITE_API_URL + user?.image}
-                    alt={user?.fullName}
-                  />
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
-                  <p className="truncate text-sm leading-none font-bold">{user?.fullName}</p>
-                  <p className="text-muted-foreground mt-1 text-xs leading-none">{user?.role}</p>
+                  <p className="truncate text-sm leading-none font-bold">{userInfo?.name}</p>
+                  <p className="text-muted-foreground mt-1 text-xs leading-none">{userInfo?.role}</p>
                 </div>
               </div>
             </div>
           </DropdownMenuLabel>
         </DropdownMenuGroup>
-
-        {isMobile && (
-          <DropdownMenuGroup className="p-1.5">
-            <DropdownMenuItem className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
-              <Link to="/profile" className="flex items-center">
-                <UserIcon className="text-muted-foreground mr-2 h-4 w-4" />
-                <span className="text-sm">{t('myAccount')}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
-              <Link to="/settings" className="flex items-center">
-                <Settings className="text-muted-foreground mr-2 h-4 w-4" />
-                <span className="text-sm">{t('settings')}</span>
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        )}
 
         <DropdownMenuSeparator className="mx-0" />
 

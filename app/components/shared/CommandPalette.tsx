@@ -1,20 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import { Contact, GraduationCap, Loader2, UserRoundPlus, Users, Users2 } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  BookMarked,
+  GraduationCap,
+  Loader2,
+  Package,
+  UserRoundPlus,
+  Users,
+  Users2,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { groupsApi } from '~/api/groups';
-import { mentorsApi } from '~/api/mentors';
-import { studentsApi } from '~/api/students';
+import { marketsApi } from '~/api/markets';
+import { productsApi } from '~/api/products';
+import { usersApi } from '~/api/users';
 import {
   Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
+  CommandItem,
   CommandList,
   CommandSeparator,
-  CommandItem,
 } from '~/components/ui/command';
 import { Action } from '~/config/actions';
 import { getSidebarConfig, getVisibleNavigation, type NavItem } from '~/config/navigation';
@@ -77,10 +86,20 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const quickActions = useMemo(
     () =>
       [
-        { label: t('palette.createStudent'), url: '/students/create', action: Action.STUDENTS_CREATE, icon: UserRoundPlus },
-        { label: t('palette.createGroup'), url: '/groups/create', action: Action.GROUPS_CREATE, icon: Users2 },
-        { label: t('palette.createMentor'), url: '/mentors/create', action: Action.MENTORS_CREATE, icon: GraduationCap },
-        { label: t('palette.createEmployee'), url: '/employees/create', action: Action.EMPLOYEES_CREATE, icon: Contact },
+        { label: t('palette.createUser'), url: '/users/create', action: Action.USERS_CREATE, icon: UserRoundPlus },
+        { label: t('palette.createMarket'), url: '/markets/create', action: Action.MARKETS_CREATE, icon: BookMarked },
+        {
+          label: t('palette.createProduct'),
+          url: '/products/create',
+          action: Action.PRODUCTS_CREATE,
+          icon: Package,
+        },
+        {
+          label: t('palette.createTransaction'),
+          url: '/transactions/create',
+          action: Action.TRANSACTIONS_CREATE,
+          icon: ArrowLeftRight,
+        },
       ].filter((item) => can(item.action)),
     [t, role]
   );
@@ -91,33 +110,32 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return quickActions.filter((item) => item.label.toLowerCase().includes(q));
   }, [quickActions, query]);
 
-  const studentsQuery = useQuery({
-    queryKey: ['palette-students', search],
-    queryFn: () => studentsApi.getAll(1, 5, [{ key: 'fullName', value: search }]),
-    enabled: searchEnabled && !!role && canAccess(role, '/students'),
+  const usersQuery = useQuery({
+    queryKey: ['palette-users', search],
+    queryFn: () => usersApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    enabled: searchEnabled && !!role && canAccess(role, '/users'),
     staleTime: 30_000,
   });
 
-  const groupsQuery = useQuery({
-    queryKey: ['palette-groups', search],
-    queryFn: () => groupsApi.getAll(1, 5, [{ key: 'Name', value: search }]),
-    enabled: searchEnabled && !!role && canAccess(role, '/groups'),
+  const marketQuery = useQuery({
+    queryKey: ['palette-market', search],
+    queryFn: () => marketsApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    enabled: searchEnabled && !!role && canAccess(role, '/market'),
     staleTime: 30_000,
   });
 
-  const mentorsQuery = useQuery({
-    queryKey: ['palette-mentors', search],
-    queryFn: () => mentorsApi.getAll(1, 5, [{ key: 'FullName', value: search }]),
-    enabled: searchEnabled && !!role && canAccess(role, '/mentors'),
+  const productQuery = useQuery({
+    queryKey: ['palette-product', search],
+    queryFn: () => productsApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    enabled: searchEnabled && !!role && canAccess(role, '/product'),
     staleTime: 30_000,
   });
 
-  const students = searchEnabled ? (studentsQuery.data?.data ?? []) : [];
-  const groups = searchEnabled ? (groupsQuery.data?.data ?? []) : [];
-  const mentors = searchEnabled ? (mentorsQuery.data?.data ?? []) : [];
-  const isSearching =
-    searchEnabled && (studentsQuery.isFetching || groupsQuery.isFetching || mentorsQuery.isFetching);
-  const hasEntityResults = students.length > 0 || groups.length > 0 || mentors.length > 0;
+  const users = searchEnabled ? (usersQuery.data?.data?.data ?? []) : [];
+  const markets = searchEnabled ? (marketQuery.data?.data.data ?? []) : [];
+  const products = searchEnabled ? (productQuery.data?.data.data ?? []) : [];
+  const isSearching = searchEnabled && (usersQuery.isFetching || marketQuery.isFetching || productQuery.isFetching);
+  const hasEntityResults = users.length > 0 || markets.length > 0 || products.length > 0;
 
   const go = (url: string) => {
     onOpenChange(false);
@@ -177,52 +195,52 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             </div>
           )}
 
-          {students.length > 0 && (
+          {users.length > 0 && (
             <>
               <CommandSeparator />
-              <CommandGroup heading={t('palette.students')}>
-                {students.map((student) => (
+              <CommandGroup heading={t('palette.users')}>
+                {users.map((user) => (
                   <CommandItem
-                    key={`student-${student.id}`}
-                    value={`student-${student.id}`}
-                    onSelect={() => go(`/students/${student.id}`)}>
+                    key={`users-${user.id}`}
+                    value={`users-${user.id}`}
+                    onSelect={() => go(`/users/${user.id}`)}>
                     <Users />
-                    <span className="truncate">{student.fullName}</span>
+                    <span className="truncate">{user.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
             </>
           )}
 
-          {groups.length > 0 && (
+          {markets.length > 0 && (
             <>
               <CommandSeparator />
-              <CommandGroup heading={t('palette.groups')}>
-                {groups.map((group) => (
+              <CommandGroup heading={t('palette.market')}>
+                {markets.map((markets) => (
                   <CommandItem
-                    key={`group-${group.id}`}
-                    value={`group-${group.id}`}
-                    onSelect={() => go(`/groups/${group.id}`)}>
+                    key={`markets-${markets.id}`}
+                    value={`markets-${markets.id}`}
+                    onSelect={() => go(`/markets/${markets.id}`)}>
                     <Users2 />
-                    <span className="truncate">{group.name}</span>
-                    <span className="text-muted-foreground text-2xs ml-auto truncate">{group.course?.courseName}</span>
+                    <span className="truncate">{markets.name}</span>
+                    <span className="text-muted-foreground text-2xs ml-auto truncate">{markets.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
             </>
           )}
 
-          {mentors.length > 0 && (
+          {products.length > 0 && (
             <>
               <CommandSeparator />
-              <CommandGroup heading={t('palette.mentors')}>
-                {mentors.map((mentor) => (
+              <CommandGroup heading={t('palette.product')}>
+                {products.map((products) => (
                   <CommandItem
-                    key={`mentor-${mentor.id}`}
-                    value={`mentor-${mentor.id}`}
-                    onSelect={() => go(`/mentors/${mentor.id}`)}>
+                    key={`products-${products.id}`}
+                    value={`products-${products.id}`}
+                    onSelect={() => go(`/product/${products.id}`)}>
                     <GraduationCap />
-                    <span className="truncate">{mentor.fullName}</span>
+                    <span className="truncate">{products.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
