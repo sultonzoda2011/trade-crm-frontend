@@ -3,6 +3,8 @@ import axios from 'axios';
 import i18next from 'i18next';
 import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { Action, ACTION_PERMISSIONS } from '~/config/actions';
+import { getUserFromToken } from '~/lib/auth-utils';
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
@@ -24,28 +26,147 @@ const ERROR_MESSAGES: Record<number, string> = {
   503: 'errors.serviceUnavailable',
 };
 
-const SILENT_URLS = ['/auth/login', '/auth/register'];
+const SILENT_URLS = ['/auth/login', '/auth/register', '/auth/logout'];
 
 const isSilent = (url?: string): boolean => SILENT_URLS.some((silent) => url?.includes(silent));
 
+type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
+
+interface ApiRouteAction {
+  pattern: string;
+  methods: Method[];
+  action: Action;
+}
+
+const API_ROUTE_ACTIONS: ApiRouteAction[] = [
+  { pattern: '/users', methods: ['get'], action: Action.USERS_VIEW },
+  { pattern: '/users', methods: ['post'], action: Action.USERS_CREATE },
+  { pattern: '/users/:id', methods: ['get'], action: Action.USERS_VIEW },
+  { pattern: '/users/:id', methods: ['patch'], action: Action.USERS_EDIT },
+  { pattern: '/users/:id', methods: ['delete'], action: Action.USERS_DELETE },
+  { pattern: '/markets', methods: ['get'], action: Action.MARKETS_VIEW },
+  { pattern: '/markets', methods: ['post'], action: Action.MARKETS_CREATE },
+  { pattern: '/markets/:id', methods: ['get'], action: Action.MARKETS_VIEW },
+  { pattern: '/markets/:id', methods: ['patch'], action: Action.MARKETS_EDIT },
+  { pattern: '/markets/:id', methods: ['delete'], action: Action.MARKETS_DELETE },
+  { pattern: '/products', methods: ['get'], action: Action.PRODUCTS_VIEW },
+  { pattern: '/products', methods: ['post'], action: Action.PRODUCTS_CREATE },
+  { pattern: '/products/:id', methods: ['get'], action: Action.PRODUCTS_VIEW },
+  { pattern: '/products/:id', methods: ['patch'], action: Action.PRODUCTS_EDIT },
+  { pattern: '/products/:id', methods: ['delete'], action: Action.PRODUCTS_DELETE },
+  { pattern: '/sellers', methods: ['get'], action: Action.SELLERS_VIEW },
+  { pattern: '/sellers', methods: ['post'], action: Action.SELLERS_CREATE },
+  { pattern: '/sellers/:id', methods: ['get'], action: Action.SELLERS_VIEW },
+  { pattern: '/sellers/:id', methods: ['patch'], action: Action.SELLERS_EDIT },
+  { pattern: '/sellers/:id', methods: ['delete'], action: Action.SELLERS_DELETE },
+];
+
+function matchApiPath(urlPath: string, pattern: string): boolean {
+  const urlParts = urlPath.split('/').filter(Boolean);
+  const patternParts = pattern.split('/').filter(Boolean);
+  if (urlParts.length !== patternParts.length) return false;
+  return patternParts.every((part, i) => part.startsWith(':') || part === urlParts[i]);
+}
+
+function getApiAction(urlPath: string, method: Method): Action | null {
+  const path = urlPath.split('?')[0];
+  const matched = API_ROUTE_ACTIONS.find(
+    (r) => r.methods.includes(method) && matchApiPath(path, r.pattern),
+  );
+  return matched?.action ?? null;
+}
+
+function canAccessApi(action: Action): boolean {
+  const user = getUserFromToken();
+  if (!user) return false;
+  const allowedRoles = ACTION_PERMISSIONS[action];
+  return allowedRoles?.includes(user.role) ?? false;
+}
+
+// ---------- refresh token queue ----------
+let refreshPromise: Promise<boolean> | null = null;
+
+/**
+ * Пытается обновить accessToken через refreshToken.
+ * Возвращает true при успехе, false если refreshToken недействителен (фatal).
+ * При сетевых/серверных ошибках возвращает false — не fatal, без редиректа.
+ */
+async function tryRefreshToken(): Promise<boolean> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  const refreshTokenValue = Cookies.get('refreshToken');
+  if (!refreshTokenValue) {
+    return false;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const response = await axios.post(`${baseURL}/auth/refresh`, { refreshToken: refreshTokenValue });
+      const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+      Cookies.set('token', accessToken, { expires: 7 });
+      Cookies.set('refreshToken', newRefreshToken, { expires: 30 });
+      return true;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        Cookies.remove('token');
+        Cookies.remove('refreshToken');
+        return false;
+      }
+      return false;
+    }
+  })();
+
+  try {
+    return await refreshPromise;
+  } finally {
+    refreshPromise = null;
+  }
+}
+
+// ---------- request interceptor ----------
 apiClient.interceptors.request.use((config) => {
   const token = Cookies.get('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  const urlPath = config.url || '';
+  const method = (config.method || 'get') as Method;
+
+  if (!isSilent(urlPath)) {
+    const requiredAction = getApiAction(urlPath, method);
+    if (requiredAction && !canAccessApi(requiredAction)) {
+      toast.error(i18next.t('errors.forbidden', { ns: 'common' }));
+      return Promise.reject(new Error(`Access denied: ${requiredAction}`));
+    }
+  }
+
   return config;
 });
 
+// ---------- response interceptor ----------
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     const status: number | undefined = error.response?.status;
     const requestUrl: string | undefined = error.config?.url;
 
-    if (status === 401) {
-      Cookies.remove('token');
-      // full page reload so QueryClient is re-created and cache is gone
-      window.location.replace('/login');
+    if (status === 401 && !requestUrl?.includes('/auth/login')) {
+      const refreshed = await tryRefreshToken();
+      if (refreshed) {
+        const newToken = Cookies.get('token');
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return apiClient(error.config);
+      }
+
+      // tryRefreshToken removes cookies only on 401 from refresh endpoint (fatal)
+      // Если куки ещё живы — это временная ошибка сети/сервера, редирект не нужен
+      if (!Cookies.get('refreshToken')) {
+        Cookies.remove('token');
+        window.location.replace('/login');
+      }
       return Promise.reject(error);
     }
 

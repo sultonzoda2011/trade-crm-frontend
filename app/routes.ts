@@ -1,7 +1,15 @@
-import { type RouteConfig, layout, route } from '@react-router/dev/routes';
+import { type RouteConfig, index, layout, route } from '@react-router/dev/routes';
 
 export default [
   layout('routes/(auth)/layout.tsx', [route('login', 'routes/(auth)/login/route.tsx')]),
 
-  layout('routes/(crm)/layout.tsx', [route('dashboard', 'routes/(crm)/dashboard/route.tsx')]),
+  layout('routes/(crm)/layout.tsx', [
+    index('routes/(crm)/dashboard/route.tsx'),
+    route('/users', 'routes/(crm)/users/route.tsx'),
+    route('/users/:id', 'routes/(crm)/users/id/route.tsx'),
+    route('/markets', 'routes/(crm)/markets/route.tsx'),
+    route('/markets/:id', 'routes/(crm)/markets/id/route.tsx'),
+    route('/sellers', 'routes/(crm)/sellers/route.tsx'),
+    route('/sellers/:id', 'routes/(crm)/sellers/id/route.tsx'),
+  ]),
 ] satisfies RouteConfig;

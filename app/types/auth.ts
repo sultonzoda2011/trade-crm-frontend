@@ -1,53 +1,12 @@
-export enum Role {
-  Admin = 'Admin',
-  Owner = 'Owner',
-  Seller = 'Seller',
-}
-export interface Roles {
-  data: string[];
+import type { ApiResponse } from './common';
+import type { User } from './users';
+
+export interface Login {
+  accessToken: string;
+  refreshToken: string;
+  user: User;
 }
 
-export interface User {
-  userId: number;
-  username: string;
-  fullName: string;
-  email: string;
-  age: number;
-  dateOfBirth: string;
-  phoneNumber: string;
-  address: string;
-  gender: number;
-  activeStatus: number;
-  paymentStatus: number;
-  role: Role;
-  image: string;
-  documentPath: string;
-  centerId: number;
-  centerName: string;
-  salary: number;
-  experience: number;
-  createdAt: string;
-  updatedAt: string;
-  emailNotificationsEnabled: boolean;
-  telegramNotificationsEnabled: boolean;
-  telegramChatId: number | null;
-}
+export type RefreshResponse = Login;
 
-export interface ApiResponse<T> {
-  statusCode: number;
-  data: T;
-  message: string | null;
-}
-
-export interface ChangePasswordRequest {
-  oldPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-export interface ChangeMailRequest {
-  newEmail: string;
-}
-export interface UpdateProfilePictureRequest {
-  profilePicture: File;
-}
-export type LoginResponse = ApiResponse<string>; // data содержит JWT строку
+export type LoginResponse = ApiResponse<Login>;
