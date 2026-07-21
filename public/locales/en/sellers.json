@@ -1,0 +1,9 @@
+{
+  "title": "Sellers",
+  "create": "Create",
+  "notFound": "Seller not found",
+  "fields": {
+    "role": "Role",
+    "createdAt": "Created at"
+  }
+}
