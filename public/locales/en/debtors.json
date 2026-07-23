@@ -1,0 +1,13 @@
+{
+  "title": "Debtors",
+  "create": "Create",
+  "notFound": "Debtor not found",
+  "fields": {
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "transactions": "Transactions"
+  },
+  "navigation": {
+    "debtors": "Debtors"
+  }
+}

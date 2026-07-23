@@ -1,0 +1,46 @@
+{
+  "title": "Transactions",
+  "create": "Create Transaction",
+  "createSuccess": "Transaction created successfully",
+  "createError": "Error creating transaction",
+  "pay": "Make Payment",
+  "paySuccess": "Payment processed successfully",
+  "payError": "Error processing payment",
+  "notFound": "Transaction not found",
+  "type": {
+    "DEBT": "Debt",
+    "SALE": "Sale"
+  },
+  "paymentType": {
+    "CASH": "Cash",
+    "CARD": "Card",
+    "CREDIT": "Credit"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "PARTIAL": "Partial",
+    "PAID": "Paid"
+  },
+  "fields": {
+    "id": "ID",
+    "debtor": "Debtor",
+    "type": "Type",
+    "paymentType": "Payment Method",
+    "totalAmount": "Total Amount",
+    "remainingAmount": "Remaining",
+    "status": "Status",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "createdBy": "Created By",
+    "market": "Market",
+    "items": "Items",
+    "payments": "Payment History",
+    "product": "Product",
+    "quantity": "Quantity",
+    "price": "Price",
+    "totalPrice": "Total",
+    "amount": "Payment Amount",
+    "note": "Note",
+    "addItem": "Add Product"
+  }
+}

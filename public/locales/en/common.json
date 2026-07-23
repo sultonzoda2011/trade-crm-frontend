@@ -3,7 +3,10 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "markets": "Markets",
-    "sellers": "Sellers"
+    "sellers": "Sellers",
+    "debtors":"Debtors",
+    "products": "Products",
+    "transactions": "Transactions"
   },
   "palette": {
     "trigger": "Search",
