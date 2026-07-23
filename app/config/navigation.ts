@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { LayoutDashboard, Package, Store, Users } from 'lucide-react';
+import { LayoutDashboard, Package, ReceiptText, Store, StoreIcon, Users } from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
 import type { Role } from '~/types/common';
 import { Action } from './actions';
@@ -30,14 +30,32 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
   {
     title: t('navigation.markets'),
     url: '/markets',
-    icon: Package,
+    icon: StoreIcon,
     action: Action.MARKETS_VIEW,
   },
-   {
+  {
     title: t('navigation.sellers'),
     url: '/sellers',
     icon: Store,
     action: Action.SELLERS_VIEW,
+  },
+  {
+    title: t('navigation.products'),
+    url: '/products',
+    icon: Package,
+    action: Action.PRODUCTS_VIEW,
+  },
+  {
+    title: t('navigation.debtors'),
+    url: '/debtors',
+    icon: Store,
+    action: Action.DEBTORS_VIEW,
+  },
+  {
+    title: t('navigation.transactions'),
+    url: '/transactions',
+    icon: ReceiptText,
+    action: Action.TRANSACTIONS_VIEW,
   },
 ];
 
