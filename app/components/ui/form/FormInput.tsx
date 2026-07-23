@@ -17,6 +17,7 @@ export function FormInput<T extends FieldValues>({
   className,
   startIcon,
   endIcon,
+  type,
   ...inputProps
 }: FormInputProps<T>) {
   return (
@@ -33,12 +34,21 @@ export function FormInput<T extends FieldValues>({
           )}
           <CustomInput
             id={name}
+            type={type}
             aria-invalid={!!fieldState.error}
             startIcon={startIcon}
             endIcon={endIcon}
             {...inputProps}
             {...field}
             value={field.value ?? ''}
+            onChange={(e) => {
+              if (type === 'number') {
+                const val = e.target.value;
+                field.onChange(val === '' ? '' : Number(val));
+              } else {
+                field.onChange(e);
+              }
+            }}
           />
           {fieldState.error && (
             <p className="text-destructive text-sm">{fieldState.error.message}</p>
