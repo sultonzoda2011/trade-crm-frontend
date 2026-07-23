@@ -1,0 +1,13 @@
+{
+  "title": "Қарздорҳо",
+  "create": "Эҷод кардан",
+  "notFound": "Қарздор ёфт нашуд",
+  "fields": {
+    "createdAt": "Санаи эҷод",
+    "updatedAt": "Санаи навсозӣ",
+    "transactions": "Транзаксияҳо"
+  },
+  "navigation": {
+    "debtors": "Қарздорҳо"
+  }
+}

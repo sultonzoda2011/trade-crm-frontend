@@ -3,7 +3,10 @@
     "dashboard": "Панели идоракунӣ",
     "users": "Корбарон",
     "markets": "Бозорҳо",
-    "sellers": "Фурӯшанда"
+    "sellers": "Фурӯшанда",
+    "debtors": "Қарздорон",
+    "products": "Маҳсулотҳо",
+    "transactions": "Муомилотҳо"
   },
   "palette": {
     "trigger": "Ҷустуҷӯ",

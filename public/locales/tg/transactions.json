@@ -1,0 +1,46 @@
+{
+  "title": "Муомилотҳо",
+  "create": "Сохтани муомила",
+  "createSuccess": "Муомила бо муваффақият сохта шуд",
+  "createError": "Хатогӣ ҳангоми сохтани муомила",
+  "pay": "Супоридани маблағ",
+  "paySuccess": "Маблағ бо муваффақият қабул шуд",
+  "payError": "Хатогӣ ҳангоми қабули маблағ",
+  "notFound": "Муомила ёфт нашуд",
+  "type": {
+    "DEBT": "Қарз",
+    "SALE": "Фурӯш"
+  },
+  "paymentType": {
+    "CASH": "Нақд",
+    "CARD": "Корт",
+    "CREDIT": "Кредит"
+  },
+  "status": {
+    "ACTIVE": "Фаъол",
+    "PARTIAL": "Кисман",
+    "PAID": "Супорида шуд"
+  },
+  "fields": {
+    "id": "ID",
+    "debtor": "Қарздор",
+    "type": "Намуд",
+    "paymentType": "Тарзи пардохт",
+    "totalAmount": "Маблағ",
+    "remainingAmount": "Боқимонда",
+    "status": "Мақом",
+    "createdAt": "Таърихи сохт",
+    "updatedAt": "Таърихи тағйир",
+    "createdBy": "Сохт",
+    "market": "Бозор",
+    "items": "Молҳо",
+    "payments": "Таърихи пардохтҳо",
+    "product": "Мол",
+    "quantity": "Миқдор",
+    "price": "Нарх",
+    "totalPrice": "Ҷамъ",
+    "amount": "Маблағи пардохт",
+    "note": "Эзоҳ",
+    "addItem": "Илова кардани мол"
+  }
+}
