@@ -20,7 +20,7 @@ export const usersApi = {
     const { data } = await apiClient.get(`/users/${id}`);
     return data;
   },
-  create: async ({ request }: { request: CreateUserRequest }) => {
+  create: async (request: CreateUserRequest) => {
     const { data } = await apiClient.post(`/users`, request);
     return data;
   },
