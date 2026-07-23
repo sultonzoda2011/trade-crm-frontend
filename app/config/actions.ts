@@ -22,6 +22,10 @@ export enum Action {
   SELLERS_CREATE = 'SELLERS_CREATE',
   SELLERS_EDIT = 'SELLERS_EDIT',
   SELLERS_DELETE = 'SELLERS_DELETE',
+  DEBTORS_VIEW = 'DEBTORS_VIEW',
+  DEBTORS_CREATE = 'DEBTORS_CREATE',
+  DEBTORS_EDIT = 'DEBTORS_EDIT',
+  DEBTORS_DELETE = 'DEBTORS_DELETE',
 }
 
 export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
@@ -46,4 +50,8 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.SELLERS_CREATE]: [Role.Admin, Role.Owner],
   [Action.SELLERS_EDIT]: [Role.Admin, Role.Owner],
   [Action.SELLERS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.DEBTORS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.DEBTORS_CREATE]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.DEBTORS_EDIT]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.DEBTORS_DELETE]: [Role.Admin, Role.Owner, Role.Seller],
 };
