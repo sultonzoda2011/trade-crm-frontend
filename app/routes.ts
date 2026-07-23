@@ -11,5 +11,11 @@ export default [
     route('/markets/:id', 'routes/(crm)/markets/id/route.tsx'),
     route('/sellers', 'routes/(crm)/sellers/route.tsx'),
     route('/sellers/:id', 'routes/(crm)/sellers/id/route.tsx'),
+    route('/products', 'routes/(crm)/products/route.tsx'),
+    route('/products/:id', 'routes/(crm)/products/id/route.tsx'),
+    route('/debtors', 'routes/(crm)/debtors/route.tsx'),
+    route('/debtors/:id', 'routes/(crm)/debtors/id/route.tsx'),
+    route('/transactions', 'routes/(crm)/transactions/route.tsx'),
+    route('/transactions/:id', 'routes/(crm)/transactions/id/route.tsx'),
   ]),
 ] satisfies RouteConfig;
