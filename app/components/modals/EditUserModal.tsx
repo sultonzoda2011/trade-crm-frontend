@@ -4,14 +4,14 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { usersApi } from '~/api/users';
+import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { getRoleOptions } from '~/config/enumOptions';
 import { useForm } from '~/hooks/useForm';
-import { Modal } from '~/components/shared/Modal';
-import { updateUserSchema, type UpdateUserSchema } from '~/validations/user';
 import { useUsersModals } from '~/routes/(crm)/users/store';
+import { updateUserSchema, type UpdateUserSchema } from '~/validations/user';
 
 export function EditUserModal() {
   const { t } = useTranslation(['users', 'common', 'validation']);
@@ -68,8 +68,7 @@ export function EditUserModal() {
             {t('actions.save')}
           </Button>
         </div>
-      }
-    >
+      }>
       <form id="edit-user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FormInput
           control={control}
