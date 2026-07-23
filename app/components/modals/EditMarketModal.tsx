@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
@@ -12,6 +12,7 @@ import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { mapToOptions } from '~/lib/mapToOptions';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import { updateMarketSchema, type UpdateMarketSchema } from '~/validations/market';
 
@@ -26,14 +27,7 @@ export function EditMarketModal() {
     staleTime: 60_000,
   });
 
-  const userOptions = useMemo(
-    () =>
-      (usersResponse?.data?.data ?? []).map((u) => ({
-        value: u.id,
-        label: u.name,
-      })),
-    [usersResponse]
-  );
+  const userOptions = mapToOptions(usersResponse?.data.data ?? [], 'id', 'name');
 
   const { control, handleSubmit, reset } = useForm<UpdateMarketSchema>({
     resolver: zodResolver(updateMarketSchema(t)),
