@@ -13,6 +13,12 @@ export interface Market {
   count: MarketCount;
   owner: User;
 }
+export interface MarketInfo {
+  id: string;
+  name: string;
+  address: string;
+  image: string;
+}
 
 export interface MarketCount {
   products: number;
