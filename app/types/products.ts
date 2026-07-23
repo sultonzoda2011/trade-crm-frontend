@@ -1,11 +1,5 @@
 import type { ApiResponse, PaginatedData } from './common';
-
-export interface ProductMarket {
-  id: string;
-  name: string;
-  address: string;
-  image: string;
-}
+import type { MarketInfo } from './markets';
 
 export interface ProductCount {
   transactionItems: number;
@@ -21,8 +15,14 @@ export interface Product {
   marketId: string;
   createdAt: string;
   updatedAt: string;
-  market: ProductMarket;
+  market: MarketInfo;
   _count: ProductCount;
+}
+export interface ProductInfo {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
 }
 export type ProductsResponse = ApiResponse<PaginatedData<Product>>;
 export type ProductDetailResponse = ApiResponse<Product>;
