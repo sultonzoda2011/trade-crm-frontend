@@ -1,11 +1,5 @@
 import type { ApiResponse, PaginatedData } from './common';
-
-export interface MarketInfo {
-  id: string;
-  name: string;
-  address: string;
-  image: string;
-}
+import type { MarketInfo } from './markets';
 
 export interface Seller {
   id: string;
