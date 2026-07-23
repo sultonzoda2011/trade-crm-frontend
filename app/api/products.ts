@@ -16,7 +16,7 @@ export const productsApi = {
     return data;
   },
 
-  getById: async (id: number): Promise<ProductDetailResponse> => {
+  getById: async (id: string): Promise<ProductDetailResponse> => {
     const { data } = await apiClient.get(`/products/${id}`);
     return data;
   },
@@ -28,7 +28,7 @@ export const productsApi = {
     });
     return data;
   },
-  update: async ({ formData, id }: { formData: FormData; id: number }) => {
+  update: async ({ formData, id }: { formData: FormData; id: string }) => {
     const { data } = await apiClient.patch(`/products/${id}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -36,7 +36,7 @@ export const productsApi = {
     });
     return data;
   },
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/products/${id}`);
   },
 };
