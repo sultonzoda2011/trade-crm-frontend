@@ -1,21 +1,24 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { usersApi } from '~/api/users';
+import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { getRoleOptions } from '~/config/enumOptions';
 import { useForm } from '~/hooks/useForm';
-import { Modal } from '~/components/shared/Modal';
-import { createUserSchema, type CreateUserSchema } from '~/validations/user';
 import { useUsersModals } from '~/routes/(crm)/users/store';
+import { createUserSchema, type CreateUserSchema } from '~/validations/user';
 
 export function CreateUserModal() {
   const { t } = useTranslation(['users', 'common', 'validation']);
   const queryClient = useQueryClient();
   const createModal = useUsersModals((s) => s.create);
+  const [showPassword, setShowPassword] = useState(false);
 
   const roleOptions = getRoleOptions(t);
 
@@ -25,7 +28,7 @@ export function CreateUserModal() {
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateUserSchema) => usersApi.create({ request: data as never }),
+    mutationFn: (data: CreateUserSchema) => usersApi.create(data as never),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['users'] });
       toast.success(t('createSuccess'));
@@ -55,8 +58,7 @@ export function CreateUserModal() {
             {t('actions.create')}
           </Button>
         </div>
-      }
-    >
+      }>
       <form id="create-user-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <FormInput
           control={control}
@@ -76,7 +78,17 @@ export function CreateUserModal() {
         <FormInput
           control={control}
           name="password"
-          type="password"
+          type={showPassword ? 'text' : 'password'}
+          endIcon={
+            showPassword ? (
+              <EyeOff
+                className="h-4 w-4 cursor-pointer bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+              />
+            ) : (
+              <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
+            )
+          }
           label={t('fields.password')}
           placeholder="••••••••"
           required
