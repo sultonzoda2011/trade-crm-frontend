@@ -2,14 +2,14 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
+import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import type { User } from '~/types/users';
 import { useUsersModals } from '../store';
-import { ROLE_CONFIG } from '~/config/enumOptions'
-import { UserAvatar } from '~/components/shared/UserAvatar'
 
 function UserActionsCell({ row, t }: { row: User; t: TFunction }) {
   const deleteModal = useUsersModals((s) => s.delete);
@@ -55,15 +55,10 @@ const columnHelper = createColumnHelper<User>();
 
 export const getColumns = ({ t }: { t: TFunction }): ColumnDef<User, any>[] => {
   return [
-     columnHelper.accessor('name', {
+    columnHelper.accessor('name', {
       header: t('fields.name'),
       enableHiding: false,
-      cell: (info) => (
-        <UserAvatar
-          fullName={info.row.original.name}
-          imagePath={info.row.original.email ?? undefined}
-        />
-      ),
+      cell: (info) => <UserAvatar fullName={info.row.original.name} imagePath={info.row.original.email ?? undefined} />,
     }),
     columnHelper.accessor('email', {
       header: t('fields.email'),
@@ -71,12 +66,10 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<User, any>[] => {
     }),
     columnHelper.accessor('market.name', {
       header: t('fields.name'),
-      enableHiding: false,
       cell: (info) => <span className="text-sm">{info.getValue()}</span>,
     }),
     columnHelper.accessor('market.address', {
       header: () => <span>{t('fields.marketAddress')}</span>,
-      enableHiding: false,
       cell: (info) => <span className="text-sm">{info.getValue()}</span>,
     }),
     columnHelper.accessor('role', {
