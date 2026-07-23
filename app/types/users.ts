@@ -1,11 +1,5 @@
 import type { ApiResponse, PaginatedData } from './common';
-
-export interface MarketInfo {
-  id: string;
-  name: string;
-  address: string;
-  image: string;
-}
+import type { MarketInfo } from './markets';
 
 export interface User {
   id: string;
@@ -19,6 +13,11 @@ export interface UserRequest {
   name: string;
   email: string;
   password: string;
+}
+export interface UserInfo {
+  id: string;
+  name: string;
+  email: string;
 }
 export interface CreateUserRequest extends UserRequest {
   role: string;
