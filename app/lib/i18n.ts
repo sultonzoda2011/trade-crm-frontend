@@ -9,5 +9,5 @@ export const i18nConfig = {
   fallbackLng,
   defaultNS,
   fallbackNS: 'common',
-  ns: ['common', 'auth', 'validation', 'users', 'sellers'],
+  ns: ['common', 'auth', 'validation', 'users', 'sellers', 'products', 'debtors', 'transactions'],
 };
