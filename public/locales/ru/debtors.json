@@ -1,0 +1,13 @@
+{
+  "title": "Должники",
+  "create": "Создать",
+  "notFound": "Должник не найден",
+  "fields": {
+    "createdAt": "Дата создания",
+    "updatedAt": "Дата обновления",
+    "transactions": "Транзакции"
+  },
+  "navigation": {
+    "debtors": "Должники"
+  }
+}

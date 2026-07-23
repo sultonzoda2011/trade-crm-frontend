@@ -3,7 +3,10 @@
     "dashboard": "Панель управления",
     "users": "Пользователи",
     "markets": "Рынки",
-    "sellers": "Продавец"
+    "sellers": "Продавец",
+    "debtors":"Должники",
+    "products": "Продукты",
+    "transactions": "Транзакции"
   },
   "palette": {
     "trigger": "Поиск",
