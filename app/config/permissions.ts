@@ -12,6 +12,10 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/markets': [Role.Admin],
   '/sellers/:id': [Role.Admin, Role.Owner],
   '/sellers': [Role.Admin, Role.Owner],
+  '/products/:id': [Role.Admin, Role.Owner, Role.Seller],
+  '/products': [Role.Admin, Role.Owner, Role.Seller],
+  '/transactions/:id': [Role.Admin, Role.Owner, Role.Seller],
+  '/transactions': [Role.Admin, Role.Owner, Role.Seller],
 };
 
 export function canAccess(role: Role, pathname: string): boolean {
