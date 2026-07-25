@@ -13,15 +13,19 @@ import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
+import { useCan } from '~/hooks/useCan';
+import { Action } from '~/config/actions';
 import { fmtTJS } from '~/lib/format';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
-import { createTransactionSchema, type CreateTransactionSchema } from '~/validations/transaction';
+import type { CreateTransactionRequest } from '~/types/transactions';
+import { createTransactionSchema, type CreateTransactionSchema } from '~/validations/transactions';
 
 export function CreateTransactionModal() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
   const queryClient = useQueryClient();
   const createModal = useTransactionsModals((s) => s.create);
+  const { can } = useCan();
 
   const { data: debtorsRes } = useQuery({
     queryKey: ['debtors', 'select'],
@@ -51,12 +55,19 @@ export function CreateTransactionModal() {
     [productsList],
   );
 
+  // Продавец (SELLER) по бизнес-правилам может оформлять только продажу в долг —
+  // тип SALE ему в форме не показываем, даже если сама транзакция технически
+  // доступна к созданию (это решает backend через @Roles, но UI не должен
+  // предлагать действие, которое всё равно будет отклонено).
+  const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
+
   const typeOptions = useMemo(
-    () => [
-      { value: 'SALE', label: t('type.SALE') },
-      { value: 'DEBT', label: t('type.DEBT') },
-    ],
-    [t],
+    () =>
+      [
+        canCreateSale ? { value: 'SALE', label: t('type.SALE') } : null,
+        { value: 'DEBT', label: t('type.DEBT') },
+      ].filter(Boolean) as { value: string; label: string }[],
+    [t, canCreateSale],
   );
 
   const paymentTypeOptions = useMemo(
@@ -68,13 +79,14 @@ export function CreateTransactionModal() {
     [t],
   );
 
-  const { control, handleSubmit, reset, watch, setValue } = useForm<CreateTransactionSchema>({
+  const { control, handleSubmit, reset, watch } = useForm<CreateTransactionSchema>({
     resolver: zodResolver(createTransactionSchema(t)),
     defaultValues: {
       debtorId: '',
-      type: 'SALE',
+      type: canCreateSale ? 'SALE' : 'DEBT',
       paymentType: 'CASH',
-      items: [{ productId: '', quantity: 1, price: 0 }],
+      dueDate: '',
+      items: [{ productId: '', quantity: 1, discount: 0 }],
     },
   });
 
@@ -83,17 +95,35 @@ export function CreateTransactionModal() {
     name: 'items',
   });
 
+  const type = watch('type');
   const items = watch('items') || [];
   const calculatedTotal = useMemo(() => {
     return items.reduce((acc, item) => {
+      const product = productsList.find((p) => p.id === item.productId);
       const q = Number(item.quantity) || 0;
-      const p = Number(item.price) || 0;
-      return acc + q * p;
+      const p = product?.price ?? 0;
+      const d = Number(item.discount) || 0;
+      return acc + Math.max(q * p - d, 0);
     }, 0);
-  }, [items]);
+  }, [items, productsList]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateTransactionSchema) => transactionsApi.create(data),
+    mutationFn: (data: CreateTransactionSchema) => {
+      // Цена не отправляется вообще — сервер сам подставит её из карточки
+      // товара; с фронта уходит только id/quantity/discount.
+      const payload: CreateTransactionRequest = {
+        debtorId: data.debtorId || undefined,
+        type: data.type as CreateTransactionRequest['type'],
+        paymentType: data.paymentType,
+        dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
+        items: data.items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          discount: item.discount || undefined,
+        })),
+      };
+      return transactionsApi.create(payload);
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast.success(t('createSuccess'));
@@ -107,14 +137,6 @@ export function CreateTransactionModal() {
 
   function onSubmit(data: CreateTransactionSchema) {
     mutate(data);
-  }
-
-  function handleProductChange(index: number, productId: string) {
-    setValue(`items.${index}.productId`, productId);
-    const selectedProd = productsList.find((p) => p.id === productId);
-    if (selectedProd) {
-      setValue(`items.${index}.price`, selectedProd.price);
-    }
   }
 
   return (
@@ -164,6 +186,10 @@ export function CreateTransactionModal() {
           />
         </div>
 
+        {type === 'DEBT' && (
+          <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} />
+        )}
+
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">{t('fields.items')}</h4>
@@ -172,21 +198,20 @@ export function CreateTransactionModal() {
               variant="outline"
               size="sm"
               className="gap-1 text-xs"
-              onClick={() => append({ productId: '', quantity: 1, price: 0 })}>
+              onClick={() => append({ productId: '', quantity: 1, price: 0, discount: 0 })}>
               <Plus className="h-3.5 w-3.5" />
               {t('fields.addItem')}
             </Button>
           </div>
 
           {fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-[1fr_100px_120px_36px] gap-2 items-end">
+            <div key={field.id} className="grid grid-cols-[1fr_90px_110px_90px_36px] gap-2 items-end">
               <div>
                 <FormCustomSelect
                   control={control}
                   name={`items.${index}.productId`}
                   placeholder={t('fields.product')}
                   options={productOptions}
-                  onChange={(val) => handleProductChange(index, val as string)}
                 />
               </div>
               <div>
@@ -197,12 +222,17 @@ export function CreateTransactionModal() {
                   placeholder={t('fields.quantity')}
                 />
               </div>
+              <div className="flex h-9 items-center justify-end rounded-md border border-input bg-muted/40 px-3 font-mono text-sm text-muted-foreground">
+                {/* Цена только для отображения — не редактируется и не отправляется
+                    на сервер, реальную цену всегда берёт бэкенд из товара. */}
+                {fmtTJS(productsList.find((p) => p.id === items[index]?.productId)?.price ?? 0)}
+              </div>
               <div>
                 <FormInput
                   control={control}
-                  name={`items.${index}.price`}
+                  name={`items.${index}.discount`}
                   type="number"
-                  placeholder={t('fields.price')}
+                  placeholder={t('fields.discount')}
                 />
               </div>
               <div>
