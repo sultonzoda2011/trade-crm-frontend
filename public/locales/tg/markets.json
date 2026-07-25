@@ -17,7 +17,8 @@
     "debtors": "Қарздорҳо",
     "transactions": "Транзаксияҳо",
     "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ"
+    "updatedAt": "Санаи навсозӣ",
+    "employees": "Кормандон"
   },
   "statistics": "Омор",
   "actions": {
@@ -35,5 +36,6 @@
   },
   "filters": {
     "search": "Ҷустуҷӯи бозорҳо"
-  }
+  },
+  "noEmployees": "Ҳанӯз корманд нест"
 }
