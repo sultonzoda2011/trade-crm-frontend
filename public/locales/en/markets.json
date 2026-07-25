@@ -17,7 +17,8 @@
     "debtors": "Debtors",
     "transactions": "Transactions",
     "createdAt": "Created At",
-    "updatedAt": "Updated At"
+    "updatedAt": "Updated At",
+    "employees": "Employees"
   },
   "statistics": "Statistics",
   "actions": {
@@ -35,5 +36,6 @@
   },
   "filters": {
     "search": "Search markets"
-  }
+  },
+  "noEmployees": "No employees yet"
 }
