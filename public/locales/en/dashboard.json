@@ -1,0 +1,28 @@
+{
+  "title": "Dashboard",
+  "stats": {
+    "totalMarkets": "Markets",
+    "totalUsers": "Users",
+    "totalDebtors": "Debtors",
+    "activeDebts": "Active debts",
+    "totalDebtAmount": "Total debt",
+    "totalSaleAmount": "Total sales",
+    "todayTransactions": "Transactions today"
+  },
+  "recentTransactions": "Recent transactions",
+  "topDebtors": "Top debtors",
+  "sellersReport": "Sellers report",
+  "viewAll": "View all",
+  "empty": "No data",
+  "table": {
+    "seller": "Seller",
+    "salesCount": "Sales",
+    "salesAmount": "Sales amount",
+    "refundsCount": "Refunds",
+    "debtsAmount": "Debt issued"
+  },
+  "period": {
+    "from": "From",
+    "to": "To"
+  }
+}

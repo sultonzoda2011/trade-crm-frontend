@@ -1,0 +1,28 @@
+{
+  "title": "Дашборд",
+  "stats": {
+    "totalMarkets": "Бозорҳо",
+    "totalUsers": "Корбарон",
+    "totalDebtors": "Қарздорон",
+    "activeDebts": "Қарзҳои фаъол",
+    "totalDebtAmount": "Маблағи қарз",
+    "totalSaleAmount": "Фурӯши умумӣ",
+    "todayTransactions": "Амалиётҳои имрӯз"
+  },
+  "recentTransactions": "Амалиётҳои охирин",
+  "topDebtors": "Қарздорони калон",
+  "sellersReport": "Ҳисоботи фурӯшандагон",
+  "viewAll": "Ҳамаро дидан",
+  "empty": "Маълумот нест",
+  "table": {
+    "seller": "Фурӯшанда",
+    "salesCount": "Фурӯшҳо",
+    "salesAmount": "Маблағи фурӯш",
+    "refundsCount": "Бозгардонидан",
+    "debtsAmount": "Ба қарз дода шуд"
+  },
+  "period": {
+    "from": "Аз",
+    "to": "То"
+  }
+}

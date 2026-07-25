@@ -1,0 +1,28 @@
+{
+  "title": "Дашборд",
+  "stats": {
+    "totalMarkets": "Рынки",
+    "totalUsers": "Пользователи",
+    "totalDebtors": "Должники",
+    "activeDebts": "Активные долги",
+    "totalDebtAmount": "Сумма долгов",
+    "totalSaleAmount": "Продажи всего",
+    "todayTransactions": "Транзакций сегодня"
+  },
+  "recentTransactions": "Последние транзакции",
+  "topDebtors": "Крупнейшие должники",
+  "sellersReport": "Отчёт по продавцам",
+  "viewAll": "Смотреть все",
+  "empty": "Нет данных",
+  "table": {
+    "seller": "Продавец",
+    "salesCount": "Продаж",
+    "salesAmount": "Сумма продаж",
+    "refundsCount": "Возвратов",
+    "debtsAmount": "Оформлено в долг"
+  },
+  "period": {
+    "from": "С",
+    "to": "По"
+  }
+}
