@@ -1,5 +1,5 @@
-import { matchPath } from 'react-router';
-import { Role } from '~/types/common';
+import { matchPath } from 'react-router'
+import { Role } from '~/types/common'
 
 /**
  * Карта прав доступа для роутов.
@@ -8,7 +8,7 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/dashboard': [Role.Admin, Role.Owner, Role.Seller],
   '/users': [Role.Admin],
   '/users/:id': [Role.Admin],
-  '/markets/:id': [Role.Admin],
+  '/markets/:id': [Role.Admin,Role.Owner],
   '/markets': [Role.Admin],
   '/sellers/:id': [Role.Admin, Role.Owner],
   '/sellers': [Role.Admin, Role.Owner],

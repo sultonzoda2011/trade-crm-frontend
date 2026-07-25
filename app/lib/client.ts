@@ -1,10 +1,10 @@
 // app/lib/client.ts
-import axios from 'axios';
-import i18next from 'i18next';
-import Cookies from 'js-cookie';
-import { toast } from 'sonner';
-import { Action, ACTION_PERMISSIONS } from '~/config/actions';
-import { getUserFromToken } from '~/lib/auth-utils';
+import axios from 'axios'
+import i18next from 'i18next'
+import Cookies from 'js-cookie'
+import { toast } from 'sonner'
+import { Action, ACTION_PERMISSIONS } from '~/config/actions'
+import { getUserFromToken } from '~/lib/auth-utils'
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
@@ -46,7 +46,7 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/users/:id', methods: ['delete'], action: Action.USERS_DELETE },
   { pattern: '/markets', methods: ['get'], action: Action.MARKETS_VIEW },
   { pattern: '/markets', methods: ['post'], action: Action.MARKETS_CREATE },
-  { pattern: '/markets/:id', methods: ['get'], action: Action.MARKETS_VIEW },
+  { pattern: '/markets/:id', methods: ['get'], action: Action.MARKETS_VIEW_BY_ID },
   { pattern: '/markets/:id', methods: ['patch'], action: Action.MARKETS_EDIT },
   { pattern: '/markets/:id', methods: ['delete'], action: Action.MARKETS_DELETE },
   { pattern: '/products', methods: ['get'], action: Action.PRODUCTS_VIEW },

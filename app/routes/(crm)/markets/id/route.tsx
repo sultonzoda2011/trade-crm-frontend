@@ -1,17 +1,16 @@
-import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
-import { marketsApi } from '~/api/markets';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Badge } from '~/components/ui/badge';
-import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { Panel } from '~/components/layout/Panel';
-import { formatDate } from '~/lib/format';
-import { UserAvatar } from '~/components/shared/UserAvatar';
+import { useQuery } from '@tanstack/react-query'
+import { ArrowUpRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
+import { marketsApi } from '~/api/markets'
+import { Panel } from '~/components/layout/Panel'
+import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton'
+import { InfoItem } from '~/components/shared/InfoItem'
+import { UserAvatar } from '~/components/shared/UserAvatar'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
+import { Badge } from '~/components/ui/badge'
+import { Button } from '~/components/ui/button'
+import { formatDate } from '~/lib/format'
 
 export default function MarketDetailPage() {
   const { t } = useTranslation(['markets', 'common']);
@@ -43,14 +42,7 @@ export default function MarketDetailPage() {
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
-      <BreadCrumbs
-        items={[
-          { label: t('navigation.dashboard'), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-          { label: market.name },
-        ]}
-      />
-
+ 
       <Panel className="p-6">
         <div className="flex items-center gap-5">
           <Avatar className="size-16 rounded-xl">
@@ -122,8 +114,7 @@ export default function MarketDetailPage() {
             </div>
           </Panel>
 
-          {/* Бэкенд включает users[] (сотрудников маркета, включая владельца) в
-              ответ детальной страницы — раньше этот список не показывался вообще. */}
+      
           <Panel title={t('fields.employees', { defaultValue: 'Сотрудники' })}>
             {market.users.length === 0 ? (
               <p className="text-muted-foreground py-4 text-center text-sm">
@@ -139,14 +130,9 @@ export default function MarketDetailPage() {
                     className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors hover:bg-muted/40">
                     <UserAvatar fullName={employee.name} subInfo={employee.email} />
                     <div className="flex items-center gap-2">
-                      {employee.id === market.ownerId && (
-                        <Badge variant="secondary" className="text-xs font-normal">
-                          {t('fields.owner')}
+                     <Badge variant="secondary" className="text-xs font-normal">
+                          {t(`role.${employee.role.toLocaleLowerCase()}`)}
                         </Badge>
-                      )}
-                      <Badge variant="outline" className="text-xs font-normal">
-                        {employee.role}
-                      </Badge>
                     </div>
                   </Link>
                 ))}
