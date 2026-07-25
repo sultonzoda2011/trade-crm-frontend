@@ -14,10 +14,17 @@ export enum Action {
   PRODUCTS_CREATE = 'PRODUCTS_CREATE',
   PRODUCTS_EDIT = 'PRODUCTS_EDIT',
   PRODUCTS_DELETE = 'PRODUCTS_DELETE',
+  CATEGORIES_MANAGE = 'CATEGORIES_MANAGE',
   TRANSACTIONS_VIEW = 'TRANSACTIONS_VIEW',
+  // Общее разрешение "создать транзакцию" — включает Seller, т.к. по бизнес-правилам
+  // продавец обязан уметь оформить продажу в долг (DEBT).
   TRANSACTIONS_CREATE = 'TRANSACTIONS_CREATE',
+  // Более узкое разрешение — именно обычная продажа (SALE). Seller его не получает,
+  // используется в UI, чтобы не показывать продавцу тип SALE в форме создания.
+  TRANSACTIONS_CREATE_SALE = 'TRANSACTIONS_CREATE_SALE',
   TRANSACTIONS_EDIT = 'TRANSACTIONS_EDIT',
   TRANSACTIONS_DELETE = 'TRANSACTIONS_DELETE',
+  TRANSACTIONS_REFUND = 'TRANSACTIONS_REFUND',
   SELLERS_VIEW = 'SELLERS_VIEW',
   SELLERS_CREATE = 'SELLERS_CREATE',
   SELLERS_EDIT = 'SELLERS_EDIT',
@@ -25,6 +32,8 @@ export enum Action {
   DEBTORS_VIEW = 'DEBTORS_VIEW',
   DEBTORS_CREATE = 'DEBTORS_CREATE',
   DEBTORS_EDIT = 'DEBTORS_EDIT',
+  // На бэкенде DELETE /debtors/:id теперь доступен только ADMIN/OWNER —
+  // Seller тут больше не должен видеть/использовать удаление.
   DEBTORS_DELETE = 'DEBTORS_DELETE',
 }
 
@@ -38,14 +47,17 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.MARKETS_CREATE]: [Role.Admin],
   [Action.MARKETS_EDIT]: [Role.Admin],
   [Action.MARKETS_DELETE]: [Role.Admin],
-  [Action.PRODUCTS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.PRODUCTS_VIEW]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_CREATE]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_EDIT]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.CATEGORIES_MANAGE]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
-  [Action.TRANSACTIONS_CREATE]: [Role.Admin, Role.Owner],
+  [Action.TRANSACTIONS_CREATE]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.TRANSACTIONS_CREATE_SALE]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_EDIT]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.TRANSACTIONS_REFUND]: [Role.Admin, Role.Owner],
   [Action.SELLERS_VIEW]: [Role.Admin, Role.Owner],
   [Action.SELLERS_CREATE]: [Role.Admin, Role.Owner],
   [Action.SELLERS_EDIT]: [Role.Admin, Role.Owner],
@@ -53,5 +65,5 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.DEBTORS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_CREATE]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_EDIT]: [Role.Admin, Role.Owner, Role.Seller],
-  [Action.DEBTORS_DELETE]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.DEBTORS_DELETE]: [Role.Admin, Role.Owner],
 };

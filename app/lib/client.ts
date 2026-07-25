@@ -59,6 +59,23 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/sellers/:id', methods: ['get'], action: Action.SELLERS_VIEW },
   { pattern: '/sellers/:id', methods: ['patch'], action: Action.SELLERS_EDIT },
   { pattern: '/sellers/:id', methods: ['delete'], action: Action.SELLERS_DELETE },
+  { pattern: '/debtors', methods: ['get'], action: Action.DEBTORS_VIEW },
+  { pattern: '/debtors', methods: ['post'], action: Action.DEBTORS_CREATE },
+  { pattern: '/debtors/:id', methods: ['get'], action: Action.DEBTORS_VIEW },
+  { pattern: '/debtors/:id', methods: ['patch'], action: Action.DEBTORS_EDIT },
+  { pattern: '/debtors/:id', methods: ['delete'], action: Action.DEBTORS_DELETE },
+  { pattern: '/transactions', methods: ['get'], action: Action.TRANSACTIONS_VIEW },
+  { pattern: '/transactions', methods: ['post'], action: Action.TRANSACTIONS_CREATE },
+  { pattern: '/transactions/:id', methods: ['get'], action: Action.TRANSACTIONS_VIEW },
+  { pattern: '/transactions/:id', methods: ['patch'], action: Action.TRANSACTIONS_EDIT },
+  { pattern: '/transactions/:id', methods: ['delete'], action: Action.TRANSACTIONS_DELETE },
+  { pattern: '/transactions/:id/pay', methods: ['patch'], action: Action.TRANSACTIONS_EDIT },
+  { pattern: '/transactions/:id/refund', methods: ['post'], action: Action.TRANSACTIONS_REFUND },
+  { pattern: '/categories', methods: ['get'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories', methods: ['post'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/:id', methods: ['get'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/:id', methods: ['patch'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/:id', methods: ['delete'], action: Action.CATEGORIES_MANAGE },
 ];
 
 function matchApiPath(urlPath: string, pattern: string): boolean {
@@ -179,7 +196,9 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const serverMessage: string | undefined = error.response.data?.message || error.response.data?.error;
+    const serverMessageRaw: string | string[] | undefined =
+      error.response.data?.message || error.response.data?.error;
+    const serverMessage = Array.isArray(serverMessageRaw) ? serverMessageRaw.join(', ') : serverMessageRaw;
 
     const translationKey = ERROR_MESSAGES[status!];
     const translatedMessage = translationKey ? i18next.t(translationKey, { ns: 'common' }) : undefined;

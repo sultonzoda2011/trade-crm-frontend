@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { LayoutDashboard, Package, ReceiptText, Store, StoreIcon, Users } from 'lucide-react';
+import { BarChart3, LayoutDashboard, Package, ReceiptText, Store, StoreIcon, Tag, Users } from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
 import type { Role } from '~/types/common';
 import { Action } from './actions';
@@ -46,6 +46,12 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     action: Action.PRODUCTS_VIEW,
   },
   {
+    title: t('navigation.categories'),
+    url: '/categories',
+    icon: Tag,
+    action: Action.CATEGORIES_MANAGE,
+  },
+  {
     title: t('navigation.debtors'),
     url: '/debtors',
     icon: Store,
@@ -56,6 +62,14 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     url: '/transactions',
     icon: ReceiptText,
     action: Action.TRANSACTIONS_VIEW,
+  },
+  {
+    title: t('navigation.sellersReport'),
+    url: '/dashboard/sellers-report',
+    icon: BarChart3,
+    // Отчёт по продавцам — управленческая аналитика, доступна тем же ролям,
+    // что и управление продавцами (ADMIN/OWNER).
+    action: Action.SELLERS_VIEW,
   },
 ];
 
