@@ -13,6 +13,8 @@ export default [
     route('/sellers/:id', 'routes/(crm)/sellers/id/route.tsx'),
     route('/products', 'routes/(crm)/products/route.tsx'),
     route('/products/:id', 'routes/(crm)/products/id/route.tsx'),
+    route('/categories', 'routes/(crm)/categories/route.tsx'),
+    route('/dashboard/sellers-report', 'routes/(crm)/dashboard/sellers-report.tsx'),
     route('/debtors', 'routes/(crm)/debtors/route.tsx'),
     route('/debtors/:id', 'routes/(crm)/debtors/id/route.tsx'),
     route('/transactions', 'routes/(crm)/transactions/route.tsx'),
