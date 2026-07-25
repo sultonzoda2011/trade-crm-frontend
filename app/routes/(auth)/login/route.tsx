@@ -101,12 +101,8 @@ export default function LoginPage() {
           <img className="w-40" src={tradeLogo} alt="Trade Logo" />
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl leading-tight font-bold">
-            Знания — это сила,
-            <br />
-            которую никто не отнимет
-          </h1>
-          <p className="text-background/60 text-lg">Учись сегодня, чтобы стать лучшей версией себя завтра.</p>
+          <h1 className="text-4xl leading-tight font-bold">{t('tagline')}</h1>
+          <p className="text-background/60 text-lg">{t('description')}</p>
         </div>
         <div className="flex gap-2">
           {(['w-4', 'w-8', 'w-12', 'w-16', 'w-20'] as const).map((w, i) => (
