@@ -7,6 +7,9 @@ export const createProductSchema = (t: TFunction) =>
     description: z.string().min(1, t('required', { ns: 'validation' })),
     price: z.number().min(1, t('required', { ns: 'validation' })),
     quantity: z.number().min(0, t('required', { ns: 'validation' })),
+    unit: z.enum(['PCS', 'KG', 'L', 'M', 'BOX']).optional(),
+    lowStockThreshold: z.number().min(0, t('required', { ns: 'validation' })).optional(),
+    categoryId: z.string().optional(),
     image: z.any().optional(),
   });
 
@@ -18,6 +21,9 @@ export const updateProductSchema = (t: TFunction) =>
     description: z.string().min(1, t('required', { ns: 'validation' })),
     price: z.number().min(1, t('required', { ns: 'validation' })),
     quantity: z.number().min(0, t('required', { ns: 'validation' })),
+    unit: z.enum(['PCS', 'KG', 'L', 'M', 'BOX']).optional(),
+    lowStockThreshold: z.number().min(0, t('required', { ns: 'validation' })).optional(),
+    categoryId: z.string().optional(),
     image: z.any().optional(),
   });
 
