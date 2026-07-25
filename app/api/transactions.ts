@@ -41,4 +41,8 @@ export const transactionsApi = {
     const { data } = await apiClient.patch(`/transactions/${id}/pay`, request);
     return data;
   },
+  refund: async (id: string): Promise<TransactionDetailResponse> => {
+    const { data } = await apiClient.post(`/transactions/${id}/refund`);
+    return data;
+  },
 };
