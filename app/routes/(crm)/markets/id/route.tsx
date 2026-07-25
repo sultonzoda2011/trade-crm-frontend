@@ -121,6 +121,38 @@ export default function MarketDetailPage() {
               </div>
             </div>
           </Panel>
+
+          {/* Бэкенд включает users[] (сотрудников маркета, включая владельца) в
+              ответ детальной страницы — раньше этот список не показывался вообще. */}
+          <Panel title={t('fields.employees', { defaultValue: 'Сотрудники' })}>
+            {market.users.length === 0 ? (
+              <p className="text-muted-foreground py-4 text-center text-sm">
+                {t('noEmployees', { defaultValue: 'Пока нет сотрудников' })}
+              </p>
+            ) : (
+              <div className="divide-y divide-border">
+                {market.users.map((employee) => (
+                  <Link
+                    key={employee.id}
+                    to={employee.role === 'SELLER' ? `/sellers/${employee.id}` : `/users/${employee.id}`}
+                    state={{ fromPath: location.pathname, fromName: market.name }}
+                    className="-mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors hover:bg-muted/40">
+                    <UserAvatar fullName={employee.name} subInfo={employee.email} />
+                    <div className="flex items-center gap-2">
+                      {employee.id === market.ownerId && (
+                        <Badge variant="secondary" className="text-xs font-normal">
+                          {t('fields.owner')}
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="text-xs font-normal">
+                        {employee.role}
+                      </Badge>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Panel>
         </div>
 
         <div className="space-y-6">
