@@ -9,6 +9,7 @@ import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import type { Debtor } from '~/types/debtors';
 import { useDebtorsModals } from '../store';
+import { SimpleRiskBadge } from '~/components/dashboard/DebtorRiskBadge';
 
 function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
@@ -82,6 +83,16 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
     columnHelper.accessor('_count.transactions', {
       header: t('fields.transactions'),
       cell: (info) => <span className="text-sm">{info.getValue().toLocaleString()}</span>,
+    }),
+    columnHelper.display({
+      id: 'risk',
+      header: () => <div>{t('fields.riskLevel', { defaultValue: 'Risk' })}</div>,
+      cell: (info) => (
+        <SimpleRiskBadge
+          totalDebt={info.row.original.totalDebt ?? 0}
+          activeTransactions={info.row.original._count?.transactions ?? 0}
+        />
+      ),
     }),
     columnHelper.display({
       id: 'actions',

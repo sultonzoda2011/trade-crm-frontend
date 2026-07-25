@@ -34,10 +34,25 @@ export interface DashboardTopDebtor {
   activeTransactions: number;
 }
 
+export interface RevenueTrendData {
+  date: string; // YYYY-MM-DD format
+  revenue: number;
+  transactionCount: number;
+}
+
+export interface PaymentTypeDistribution {
+  type: 'CASH' | 'CARD' | 'CREDIT';
+  count: number;
+  amount: number;
+  percentage: number;
+}
+
 export interface DashboardData {
   stats: DashboardStats;
   recentTransactions: DashboardRecentTransaction[];
   topDebtors: DashboardTopDebtor[];
+  revenueTrend?: RevenueTrendData[];
+  paymentDistribution?: PaymentTypeDistribution[];
 }
 
 export type DashboardResponse = ApiResponse<DashboardData>;

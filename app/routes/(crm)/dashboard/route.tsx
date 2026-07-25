@@ -9,6 +9,9 @@ import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { useCan } from '~/hooks/useCan';
+import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
+import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
+import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
 
 function StatCard({
   icon: Icon,
@@ -70,6 +73,17 @@ export default function DashboardRoute() {
         <StatCard icon={Wallet} label={t('stats.totalDebtAmount')} value={fmtTJS(stats.totalDebtAmount)} />
         <StatCard icon={Banknote} label={t('stats.totalSaleAmount')} value={fmtTJS(stats.totalSaleAmount)} />
         <StatCard icon={ShoppingCart} label={t('stats.todayTransactions')} value={stats.todayTransactions} />
+      </div>
+
+      {/* Analytics Charts */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {dashboard.revenueTrend && <RevenueTrendChart data={dashboard.revenueTrend} />}
+        {dashboard.paymentDistribution && <PaymentDistributionChart data={dashboard.paymentDistribution} />}
+      </div>
+
+      {/* Alerts */}
+      <div className="grid gap-6">
+        <OverdueAlertCard debtors={topDebtors} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
