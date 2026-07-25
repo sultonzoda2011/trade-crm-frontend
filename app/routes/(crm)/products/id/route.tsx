@@ -65,6 +65,16 @@ export default function ProductDetailPage() {
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
+              {product.category && (
+                <Badge variant="secondary" className="font-normal">
+                  {product.category.name}
+                </Badge>
+              )}
+              {product.quantity <= product.lowStockThreshold && (
+                <Badge variant="destructive" className="font-normal">
+                  {t('lowStock', { defaultValue: 'Мало на складе' })}
+                </Badge>
+              )}
             </div>
             <p className="text-muted-foreground text-sm">{product.market?.name}</p>
           </div>
@@ -78,7 +88,32 @@ export default function ProductDetailPage() {
               <InfoItem label={t('fields.name')} value={product.name} />
               <InfoItem label={t('fields.description')} value={product.description} />
               <InfoItem label={t('fields.price')} value={fmtTJS(product.price)} />
-              <InfoItem label={t('fields.quantity')} value={String(product.quantity)} />
+              <InfoItem
+                label={t('fields.quantity')}
+                value={
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={
+                        product.quantity <= product.lowStockThreshold
+                          ? 'font-semibold text-destructive'
+                          : undefined
+                      }>
+                      {product.quantity} {t(`unit.${product.unit}`, { defaultValue: product.unit })}
+                    </span>
+                    {product.quantity <= product.lowStockThreshold && (
+                      <Badge variant="destructive" className="text-xs font-normal">
+                        {t('lowStock', { defaultValue: 'Мало на складе' })}
+                      </Badge>
+                    )}
+                  </span>
+                }
+              />
+              <InfoItem label={t('fields.unit')} value={t(`unit.${product.unit}`, { defaultValue: product.unit })} />
+              <InfoItem
+                label={t('fields.lowStockThreshold')}
+                value={`${product.lowStockThreshold} ${t(`unit.${product.unit}`, { defaultValue: product.unit })}`}
+              />
+              <InfoItem label={t('fields.category')} value={product.category?.name ?? '—'} />
               <InfoItem
                 label={t('fields.market')}
                 value={
