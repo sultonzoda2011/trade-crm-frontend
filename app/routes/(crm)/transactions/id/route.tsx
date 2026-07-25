@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, CreditCard } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { ArrowUpRight, CreditCard, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
@@ -20,6 +21,7 @@ export default function TransactionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { can } = useCan();
   const payModal = useTransactionsModals((s) => s.pay);
 
@@ -28,6 +30,16 @@ export default function TransactionDetailPage() {
     queryFn: () => transactionsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
+  });
+
+  const { mutate: refund, isPending: isRefunding } = useMutation({
+    mutationFn: () => transactionsApi.refund(id!),
+    onSuccess: () => {
+      toast.success(t('refundSuccess'));
+      void queryClient.invalidateQueries({ queryKey: ['transaction', id] });
+      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+    },
+    onError: () => toast.error(t('refundError')),
   });
 
   const transaction = response?.data;
@@ -49,6 +61,19 @@ export default function TransactionDetailPage() {
   if (transaction.status === 'ACTIVE') statusBadgeClass = 'bg-warning/15 text-warning border-warning/30';
   if (transaction.status === 'PARTIAL') statusBadgeClass = 'bg-sky-500/15 text-sky-500 border-sky-500/30';
   if (transaction.status === 'PAID') statusBadgeClass = 'bg-success/15 text-success border-success/30';
+  if (transaction.status === 'REFUNDED') statusBadgeClass = 'bg-destructive/15 text-destructive border-destructive/30';
+
+  let typeBadgeClass = 'border-success/40 bg-success/15 text-success font-medium';
+  if (transaction.type === 'DEBT') typeBadgeClass = 'border-warning/40 bg-warning/15 text-warning font-medium';
+  if (transaction.type === 'REFUND') typeBadgeClass = 'border-destructive/40 bg-destructive/15 text-destructive font-medium';
+
+  // Возврат доступен только для исходной SALE/DEBT-транзакции, которую ещё не
+  // возвращали, и только у ролей с правом TRANSACTIONS_REFUND.
+  const canRefund =
+    can(Action.TRANSACTIONS_REFUND) &&
+    transaction.type !== 'REFUND' &&
+    transaction.status !== 'REFUNDED' &&
+    !transaction.refundOfId;
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
@@ -71,18 +96,15 @@ export default function TransactionDetailPage() {
               <Badge variant="outline" className={`font-medium ${statusBadgeClass}`}>
                 {t(`status.${transaction.status}`, { defaultValue: transaction.status })}
               </Badge>
-              <Badge
-                variant="outline"
-                className={
-                  transaction.type === 'DEBT'
-                    ? 'border-warning/40 bg-warning/15 text-warning font-medium'
-                    : 'border-success/40 bg-success/15 text-success font-medium'
-                }>
+              <Badge variant="outline" className={typeBadgeClass}>
                 {t(`type.${transaction.type}`, { defaultValue: transaction.type })}
               </Badge>
             </div>
             <p className="text-muted-foreground text-xs">
               {t('fields.createdAt')}: {formatDate(transaction.createdAt, true)}
+              {transaction.dueDate && (
+                <> · {t('fields.dueDate')}: {formatDate(transaction.dueDate, false)}</>
+              )}
             </p>
           </div>
 
@@ -95,6 +117,16 @@ export default function TransactionDetailPage() {
               <Button onClick={() => payModal.open(transaction)} className="gap-2">
                 <CreditCard className="h-4 w-4" />
                 {t('pay')}
+              </Button>
+            )}
+            {canRefund && (
+              <Button
+                variant="outline"
+                className="gap-2 text-destructive hover:bg-destructive/10"
+                disabled={isRefunding}
+                onClick={() => refund()}>
+                <Undo2 className="h-4 w-4" />
+                {t('refund')}
               </Button>
             )}
           </div>

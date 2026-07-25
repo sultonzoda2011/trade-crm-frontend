@@ -72,11 +72,22 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Product, any>[] =
     }),
     columnHelper.accessor('quantity', {
       header: t('fields.quantity'),
-      cell: (info) => (
-        <Badge variant="secondary" className="font-mono">
-          {info.getValue()}
-        </Badge>
-      ),
+      cell: (info) => {
+        const product = info.row.original;
+        const isLow = product.quantity <= product.lowStockThreshold;
+        return (
+          <Badge variant={isLow ? 'destructive' : 'secondary'} className="font-mono">
+            {product.quantity} {t(`unit.${product.unit}`, { defaultValue: product.unit })}
+          </Badge>
+        );
+      },
+    }),
+    columnHelper.accessor('category.name', {
+      header: t('fields.category'),
+      cell: (info) => {
+        const name = info.getValue();
+        return name ? <span className="text-sm">{name}</span> : <span className="text-muted-foreground text-sm">—</span>;
+      },
     }),
     columnHelper.accessor('market.name', {
       header: t('fields.market'),

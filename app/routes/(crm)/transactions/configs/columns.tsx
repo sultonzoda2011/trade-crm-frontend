@@ -92,14 +92,11 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
       cell: (info) => {
         const type = info.getValue();
         const label = t(`type.${type}`, { defaultValue: type });
+        let className = 'border-success/40 bg-success/15 text-success font-medium';
+        if (type === 'DEBT') className = 'border-warning/40 bg-warning/15 text-warning font-medium';
+        if (type === 'REFUND') className = 'border-destructive/40 bg-destructive/15 text-destructive font-medium';
         return (
-          <Badge
-            variant="outline"
-            className={
-              type === 'DEBT'
-                ? 'border-warning/40 bg-warning/15 text-warning font-medium'
-                : 'border-success/40 bg-success/15 text-success font-medium'
-            }>
+          <Badge variant="outline" className={className}>
             {label}
           </Badge>
         );
@@ -140,6 +137,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
         if (status === 'ACTIVE') className = 'bg-warning/15 text-warning border-warning/30';
         if (status === 'PARTIAL') className = 'bg-sky-500/15 text-sky-500 border-sky-500/30';
         if (status === 'PAID') className = 'bg-success/15 text-success border-success/30';
+        if (status === 'REFUNDED') className = 'bg-destructive/15 text-destructive border-destructive/30';
 
         return (
           <Badge variant="outline" className={`font-medium ${className}`}>
