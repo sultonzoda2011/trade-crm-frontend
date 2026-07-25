@@ -9,5 +9,8 @@
   },
   "navigation": {
     "debtors": "Қарздорҳо"
-  }
+  },
+  "totalDebt": "Қарзи ҷорӣ",
+  "transactionsHistory": "Таърихи амалиётҳо",
+  "noTransactions": "Ҳанӯз амалиёт нест"
 }
