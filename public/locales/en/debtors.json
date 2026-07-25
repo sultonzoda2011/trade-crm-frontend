@@ -9,5 +9,8 @@
   },
   "navigation": {
     "debtors": "Debtors"
-  }
+  },
+  "totalDebt": "Current debt",
+  "transactionsHistory": "Transaction history",
+  "noTransactions": "No transactions yet"
 }
