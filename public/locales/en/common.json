@@ -4,9 +4,11 @@
     "users": "Users",
     "markets": "Markets",
     "sellers": "Sellers",
-    "debtors":"Debtors",
+    "debtors": "Debtors",
     "products": "Products",
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "categories": "Categories",
+    "sellersReport": "Sellers report"
   },
   "palette": {
     "trigger": "Search",
@@ -108,7 +110,6 @@
     "actions": "Actions",
     "status": "Status"
   },
-
   "logout": "Logout",
   "usernameRequired": "Username is required",
   "passwordRequired": "Password is required",
@@ -122,7 +123,6 @@
     "inactive": "Inactive",
     "completed": "Completed"
   },
-
   "fileInput": {
     "selectFile": "Select file...",
     "change": "Change",
@@ -145,7 +145,6 @@
   "endDate": "End date",
   "documentFile": "Document",
   "yearsUnit": "yr.",
-
   "breadcrumbs": {
     "create": "Create",
     "edit": "Edit"

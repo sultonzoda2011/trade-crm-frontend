@@ -6,7 +6,9 @@
     "sellers": "Фурӯшанда",
     "debtors": "Қарздорон",
     "products": "Маҳсулотҳо",
-    "transactions": "Муомилотҳо"
+    "transactions": "Муомилотҳо",
+    "categories": "Категорияҳо",
+    "sellersReport": "Ҳисоботи фурӯшандагон"
   },
   "palette": {
     "trigger": "Ҷустуҷӯ",

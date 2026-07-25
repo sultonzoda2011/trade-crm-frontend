@@ -16,7 +16,10 @@
     "market": "Бозор",
     "transactionItems": "Транзаксияҳо",
     "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ"
+    "updatedAt": "Санаи навсозӣ",
+    "unit": "Воҳиди ченак",
+    "category": "Категория",
+    "lowStockThreshold": "Ҳадди пасти захира"
   },
   "statistics": "Омор",
   "actions": {
@@ -34,5 +37,12 @@
   },
   "filters": {
     "search": "Ҷустуҷӯи молҳо"
+  },
+  "unit": {
+    "PCS": "дона",
+    "KG": "кг",
+    "L": "л",
+    "M": "м",
+    "BOX": "қуттӣ"
   }
 }

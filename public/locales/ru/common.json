@@ -4,9 +4,11 @@
     "users": "Пользователи",
     "markets": "Рынки",
     "sellers": "Продавец",
-    "debtors":"Должники",
+    "debtors": "Должники",
     "products": "Продукты",
-    "transactions": "Транзакции"
+    "transactions": "Транзакции",
+    "categories": "Категории",
+    "sellersReport": "Отчёт по продавцам"
   },
   "palette": {
     "trigger": "Поиск",

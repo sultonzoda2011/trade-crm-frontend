@@ -16,7 +16,10 @@
     "market": "Market",
     "transactionItems": "Transactions",
     "createdAt": "Created At",
-    "updatedAt": "Updated At"
+    "updatedAt": "Updated At",
+    "unit": "Unit",
+    "category": "Category",
+    "lowStockThreshold": "Low stock threshold"
   },
   "statistics": "Statistics",
   "actions": {
@@ -34,5 +37,12 @@
   },
   "filters": {
     "search": "Search products"
+  },
+  "unit": {
+    "PCS": "pcs",
+    "KG": "kg",
+    "L": "l",
+    "M": "m",
+    "BOX": "box"
   }
 }

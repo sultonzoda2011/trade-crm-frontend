@@ -16,7 +16,10 @@
     "market": "Рынок",
     "transactionItems": "Транзакции",
     "createdAt": "Дата создания",
-    "updatedAt": "Дата обновления"
+    "updatedAt": "Дата обновления",
+    "unit": "Единица измерения",
+    "category": "Категория",
+    "lowStockThreshold": "Порог низкого остатка"
   },
   "statistics": "Статистика",
   "actions": {
@@ -34,5 +37,12 @@
   },
   "filters": {
     "search": "Поиск по товарам"
+  },
+  "unit": {
+    "PCS": "шт",
+    "KG": "кг",
+    "L": "л",
+    "M": "м",
+    "BOX": "кор"
   }
 }

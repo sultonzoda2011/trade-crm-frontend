@@ -9,7 +9,8 @@
   "notFound": "Transaction not found",
   "type": {
     "DEBT": "Debt",
-    "SALE": "Sale"
+    "SALE": "Sale",
+    "REFUND": "Refund"
   },
   "paymentType": {
     "CASH": "Cash",
@@ -19,7 +20,8 @@
   "status": {
     "ACTIVE": "Active",
     "PARTIAL": "Partial",
-    "PAID": "Paid"
+    "PAID": "Paid",
+    "REFUNDED": "Refunded"
   },
   "fields": {
     "id": "ID",
@@ -41,6 +43,11 @@
     "totalPrice": "Total",
     "amount": "Payment Amount",
     "note": "Note",
-    "addItem": "Add Product"
-  }
+    "addItem": "Add Product",
+    "discount": "Discount",
+    "dueDate": "Due date"
+  },
+  "refund": "Refund",
+  "refundSuccess": "Refund created successfully",
+  "refundError": "Failed to create refund"
 }
