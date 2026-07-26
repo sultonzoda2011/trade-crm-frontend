@@ -6,7 +6,9 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  image: string | null;
   createdAt: string;
+  updatedAt: string;
   market: MarketInfo | null;
 }
 export interface UserRequest {

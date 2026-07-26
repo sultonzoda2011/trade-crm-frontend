@@ -1,4 +1,4 @@
-import { Role } from '~/types/common'
+import { Role } from '~/types/common';
 
 export enum Action {
   DASHBOARDS_VIEW = 'DASHBOARDS_VIEW',
@@ -7,7 +7,7 @@ export enum Action {
   USERS_EDIT = 'USERS_EDIT',
   USERS_DELETE = 'USERS_DELETE',
   MARKETS_VIEW = 'MARKETS_VIEW',
-  MARKETS_VIEW_BY_ID='MARKETS_VIEW_BY_ID',
+  MARKETS_VIEW_BY_ID = 'MARKETS_VIEW_BY_ID',
   MARKETS_CREATE = 'MARKETS_CREATE',
   MARKETS_EDIT = 'MARKETS_EDIT',
   MARKETS_DELETE = 'MARKETS_DELETE',
@@ -33,8 +33,6 @@ export enum Action {
   DEBTORS_VIEW = 'DEBTORS_VIEW',
   DEBTORS_CREATE = 'DEBTORS_CREATE',
   DEBTORS_EDIT = 'DEBTORS_EDIT',
-  // На бэкенде DELETE /debtors/:id теперь доступен только ADMIN/OWNER —
-  // Seller тут больше не должен видеть/использовать удаление.
   DEBTORS_DELETE = 'DEBTORS_DELETE',
 }
 
@@ -45,7 +43,7 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.USERS_EDIT]: [Role.Admin],
   [Action.USERS_DELETE]: [Role.Admin],
   [Action.MARKETS_VIEW]: [Role.Admin],
-  [Action.MARKETS_VIEW_BY_ID]: [Role.Admin,Role.Owner],
+  [Action.MARKETS_VIEW_BY_ID]: [Role.Admin, Role.Owner],
   [Action.MARKETS_CREATE]: [Role.Admin],
   [Action.MARKETS_EDIT]: [Role.Admin],
   [Action.MARKETS_DELETE]: [Role.Admin],

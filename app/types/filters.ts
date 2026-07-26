@@ -44,9 +44,18 @@ export interface DateRangeFilterConfig {
   placeholderTo?: string;
 }
 
+export interface BooleanFilterConfig {
+  type: 'boolean';
+  key: string;
+  label: string;
+  trueLabel?: string;
+  falseLabel?: string;
+}
+
 export type FilterConfig =
   | InputFilterConfig
   | SelectFilterConfig
   | NumberRangeFilterConfig
   | DateFilterConfig
-  | DateRangeFilterConfig;
+  | DateRangeFilterConfig
+  | BooleanFilterConfig;

@@ -10,6 +10,7 @@ export const createUserSchema = (t: TFunction) =>
       .min(1, t('emailRequired', { ns: 'validation' })),
     password: z.string().min(1, t('passwordRequired', { ns: 'validation' })),
     role: z.string().min(1, t('roleRequired', { ns: 'validation' })),
+    image: z.any().optional(),
   });
 
 export type CreateUserSchema = z.infer<ReturnType<typeof createUserSchema>>;
@@ -26,6 +27,7 @@ export const updateUserSchema = (t: TFunction) =>
       .transform((v) => v || undefined)
       .optional(),
     role: z.string().min(1, t('roleRequired', { ns: 'validation' })),
+    image: z.any().optional(),
   });
 
 export type UpdateUserSchema = z.infer<ReturnType<typeof updateUserSchema>>;
