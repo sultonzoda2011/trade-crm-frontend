@@ -4,15 +4,20 @@ import type { ActiveFilter } from '~/types/filters';
 import type { MarketDetailResponse, MarketsResponse } from '~/types/markets';
 
 export const marketsApi = {
-  getAll: async (page = 1, limit = 20, filters: ActiveFilter[] = []): Promise<MarketsResponse> => {
+  getAll: async (
+    page = 1,
+    limit = 20,
+    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<MarketsResponse> => {
     const { data } = await apiClient.get('/markets', {
       params: {
         page,
         limit,
+        ...options,
         ...filtersToParams(filters),
       },
     });
-
     return data;
   },
 

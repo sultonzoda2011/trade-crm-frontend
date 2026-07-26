@@ -4,15 +4,20 @@ import type { DebtorDetailResponse, DebtorRequest, DebtorsResponse } from '~/typ
 import type { ActiveFilter } from '~/types/filters';
 
 export const debtorsApi = {
-  getAll: async (page = 1, limit = 20, filters: ActiveFilter[] = []): Promise<DebtorsResponse> => {
+  getAll: async (
+    page = 1,
+    limit = 20,
+    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<DebtorsResponse> => {
     const { data } = await apiClient.get('/debtors', {
       params: {
         page,
         limit,
+        ...options,
         ...filtersToParams(filters),
       },
     });
-
     return data;
   },
 

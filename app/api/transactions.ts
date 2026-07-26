@@ -10,15 +10,20 @@ import type {
 } from '~/types/transactions';
 
 export const transactionsApi = {
-  getAll: async (page = 1, limit = 20, filters: ActiveFilter[] = []): Promise<TransactionsResponse> => {
+  getAll: async (
+    page = 1,
+    limit = 20,
+    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<TransactionsResponse> => {
     const { data } = await apiClient.get('/transactions', {
       params: {
         page,
         limit,
+        ...options,
         ...filtersToParams(filters),
       },
     });
-
     return data;
   },
 

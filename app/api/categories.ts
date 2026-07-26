@@ -1,26 +1,37 @@
+import type { ActiveFilter } from '~/types/filters';
+import { filtersToParams } from '~/lib/filtersToParams';
 import { apiClient } from '~/lib/client';
 import type {
   CategoriesResponse,
   CategoryDetailResponse,
-  CreateCategoryRequest,
-  UpdateCategoryRequest,
 } from '~/types/products';
 
 export const categoriesApi = {
-  getAll: async (): Promise<CategoriesResponse> => {
-    const { data } = await apiClient.get('/categories');
+  getAll: async (
+    page = 1,
+    limit = 20,
+    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<CategoriesResponse> => {
+    const { data } = await apiClient.get('/categories', {
+      params: { page, limit, ...options, ...filtersToParams(filters) },
+    });
     return data;
   },
   getById: async (id: string): Promise<CategoryDetailResponse> => {
     const { data } = await apiClient.get(`/categories/${id}`);
     return data;
   },
-  create: async (request: CreateCategoryRequest): Promise<CategoryDetailResponse> => {
-    const { data } = await apiClient.post('/categories', request);
+  create: async (formData: FormData): Promise<CategoryDetailResponse> => {
+    const { data } = await apiClient.post('/categories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data;
   },
-  update: async ({ id, request }: { id: string; request: UpdateCategoryRequest }): Promise<CategoryDetailResponse> => {
-    const { data } = await apiClient.patch(`/categories/${id}`, request);
+  update: async ({ formData, id }: { formData: FormData; id: string }): Promise<CategoryDetailResponse> => {
+    const { data } = await apiClient.patch(`/categories/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data;
   },
   delete: async (id: string): Promise<void> => {

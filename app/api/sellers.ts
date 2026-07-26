@@ -4,15 +4,20 @@ import type { ActiveFilter } from '~/types/filters';
 import type { SellerDetailResponse, SellerRequest, SellersResponse } from '~/types/sellers';
 
 export const sellersApi = {
-  getAll: async (page = 1, limit = 20, filters: ActiveFilter[] = []): Promise<SellersResponse> => {
+  getAll: async (
+    page = 1,
+    limit = 20,
+    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<SellersResponse> => {
     const { data } = await apiClient.get('/sellers', {
       params: {
         page,
         limit,
+        ...options,
         ...filtersToParams(filters),
       },
     });
-
     return data;
   },
 
@@ -20,12 +25,12 @@ export const sellersApi = {
     const { data } = await apiClient.get(`/sellers/${id}`);
     return data;
   },
-  create: async ({ request }: { request: SellerRequest }) => {
-    const { data } = await apiClient.post(`/sellers`, request);
+  create: async (formData: FormData) => {
+    const { data } = await apiClient.post('/sellers', formData);
     return data;
   },
-  update: async ({ request, id }: { request: SellerRequest; id: string }) => {
-    const { data } = await apiClient.patch(`/sellers/${id}`, request);
+  update: async ({ formData, id }: { formData: FormData; id: string }) => {
+    const { data } = await apiClient.patch(`/sellers/${id}`, formData);
     return data;
   },
   delete: async (id: string): Promise<void> => {
