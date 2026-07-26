@@ -27,13 +27,13 @@ export function OverdueAlertCard({ debtors, totalOverdueAmount = 0 }: OverdueAle
   return (
     <Panel className="border-destructive/20 bg-destructive/5">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-          <AlertCircle className="h-5 w-5 text-destructive" />
+        <div className="bg-destructive/10 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+          <AlertCircle className="text-destructive h-5 w-5" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-3">
-            <h3 className="font-semibold text-destructive">{t('overdueAlerts')}</h3>
-            <p className="text-muted-foreground text-xs mt-0.5">
+            <h3 className="text-destructive font-semibold">{t('overdueAlerts')}</h3>
+            <p className="text-muted-foreground mt-0.5 text-xs">
               {overdueDebtors.length} {t('activeOverdueDebts')}
             </p>
           </div>
@@ -43,12 +43,11 @@ export function OverdueAlertCard({ debtors, totalOverdueAmount = 0 }: OverdueAle
               <Link
                 key={debtor.id}
                 to={`/debtors/${debtor.id}`}
-                className="flex items-center justify-between gap-2 rounded-md bg-destructive/10 p-2.5 transition-colors hover:bg-destructive/15">
+                className="bg-destructive/10 hover:bg-destructive/15 flex items-center justify-between gap-2 rounded-md p-2.5 transition-colors">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{debtor.name}</p>
-                  <p className="text-muted-foreground truncate text-xs">{debtor.activeTransactions} active</p>
                 </div>
-                <span className="shrink-0 font-mono text-sm font-bold text-destructive">
+                <span className="text-destructive shrink-0 font-mono text-sm font-bold">
                   {fmtTJS(debtor.totalDebt)}
                 </span>
               </Link>
@@ -56,12 +55,10 @@ export function OverdueAlertCard({ debtors, totalOverdueAmount = 0 }: OverdueAle
           </div>
 
           {totalOverdueAmount > 0 && (
-            <div className="mt-3 border-t border-destructive/10 pt-3">
+            <div className="border-destructive/10 mt-3 border-t pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('totalOverdue')}</span>
-                <span className="font-mono text-sm font-bold text-destructive">
-                  {fmtTJS(totalOverdueAmount)}
-                </span>
+                <span className="text-destructive font-mono text-sm font-bold">{fmtTJS(totalOverdueAmount)}</span>
               </div>
             </div>
           )}

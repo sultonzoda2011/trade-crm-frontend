@@ -4,6 +4,17 @@
   "notFound": "Истифодабаранда ёфт нашуд",
   "fields": {
     "role": "Нақш",
-    "createdAt": "Санаи эҷод"
+    "image": "Акс",
+    "createdAt": "Санаи эҷод",
+    "updatedAt": "Санаи навсозӣ"
+  },
+  "statistics": "Омор",
+  "quickActions": "Амалҳои зуд",
+  "transactionsHistory": "Таърихи амалиётҳо",
+  "viewMarkets": "Бозорҳои корбар",
+  "noTransactions": "Ҳанӯз амалиёте нест",
+  "viewAll": "Ҳама",
+  "navigation": {
+    "users": "Истифодабарандагон"
   }
 }

@@ -1,39 +1,64 @@
 ﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link, useLocation } from 'react-router';
 import { toast } from 'sonner';
+import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
-import { CreateProductModal } from '~/components/modals/CreateProductModal';
-import { EditProductModal } from '~/components/modals/EditProductModal';
+import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { DataTable } from '~/components/shared/DataTable';
+import { FilterSheet } from '~/components/shared/FilterSheet';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useFilterParams } from '~/hooks/useFilterParams';
+import { mapToOptions } from '~/lib/mapToOptions';
 import { getColumns } from './configs/columns';
+import { getProductFilters } from './configs/filters';
 import { useProductsModals, useProductsStore } from './store';
-
-const SEARCH_KEY = 'Name';
 
 export default function ProductsPage() {
   const { t } = useTranslation(['products', 'common']);
   const queryClient = useQueryClient();
   const { can } = useCan();
   const deleteModal = useProductsModals((s) => s.delete);
-  const createModal = useProductsModals((s) => s.create);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch } = useProductsStore();
+  const {
+    page, limit, search, filters,
+    setPage, setLimit, setSearch, setFilter,
+    setFilters, resetFilters, removeFilter,
+  } = useProductsStore();
 
+  const location = useLocation();
   const debouncedSearch = useDebounce(search);
 
-  const queryFilters = useMemo(
-    () => (debouncedSearch ? [{ key: 'search', value: debouncedSearch }, ...filters] : filters),
-    [debouncedSearch, filters]
+  const hasProcessedState = useRef(false);
+
+  useEffect(() => {
+    if (hasProcessedState.current) return;
+    const state = location.state as Record<string, unknown> | null;
+    if (state?.fromCategoryId) {
+      setFilter('categoryId', state.fromCategoryId);
+    }
+    hasProcessedState.current = true;
+    window.history.replaceState({}, document.title);
+  }, []);
+
+  const { data: categoriesResponse } = useQuery({
+    queryKey: ['categories', 'list'],
+    queryFn: () => categoriesApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+
+  const categoryOptions = useMemo(
+    () => mapToOptions(categoriesResponse?.data?.data ?? [], 'id', 'name'),
+    [categoriesResponse],
   );
 
   const {
@@ -43,7 +68,14 @@ export default function ProductsPage() {
     isError,
   } = useQuery({
     queryKey: ['products', page, limit, debouncedSearch, filters],
-    queryFn: () => productsApi.getAll(page, limit, queryFilters),
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return productsApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+    },
     staleTime: 30_000,
   });
 
@@ -61,6 +93,14 @@ export default function ProductsPage() {
 
   const columns = useMemo(() => getColumns({ t }), [t]);
 
+  const filterConfig = useMemo(() => getProductFilters(t, categoryOptions), [t, categoryOptions]);
+
+  useFilterParams({
+    page, limit, search, filters,
+    setPage, setLimit, setSearch, setFilters,
+    filterConfigs: filterConfig,
+  });
+
   const products = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
 
@@ -68,6 +108,7 @@ export default function ProductsPage() {
     columns,
     data: products,
     storageKey: 'products-table-columns',
+    initialVisibility: { 'category.name': false, '_count.transactionItems': false, 'market.name': false, createdAt: false },
   });
 
   return (
@@ -85,15 +126,17 @@ export default function ProductsPage() {
             startIcon={<Search className="text-muted-foreground h-4 w-4" />}
           />
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
             <ColumnToggle table={table} />
             {can(Action.PRODUCTS_CREATE) && (
-              <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
+              <Button className="shrink-0 gap-2" render={<Link to="/products/create" />}>
                 <Plus className="h-4 w-4" data-icon="inline-start" />
                 <span className="hidden sm:inline">{t('create')}</span>
               </Button>
             )}
           </div>
         </div>
+        <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
         <DataTable
           table={table}
           pinLastColumn
@@ -107,8 +150,6 @@ export default function ProductsPage() {
           onlimitChange={setLimit}
         />
       </div>
-      <CreateProductModal />
-      <EditProductModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => !open && deleteModal.close()}

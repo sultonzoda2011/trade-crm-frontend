@@ -21,6 +21,7 @@
     "category": "Категория",
     "lowStockThreshold": "Порог низкого остатка"
   },
+  "quickActions": "Быстрые действия",
   "statistics": "Статистика",
   "actions": {
     "view": "Просмотр",
@@ -36,7 +37,8 @@
     "all": "Все товары"
   },
   "filters": {
-    "search": "Поиск по товарам"
+    "search": "Поиск по товарам",
+    "category": "Категория"
   },
   "unit": {
     "PCS": "шт",

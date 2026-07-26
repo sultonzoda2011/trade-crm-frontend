@@ -21,8 +21,6 @@ import { getColumns } from './configs/columns';
 import { getSellerFilters } from './configs/filters';
 import { useSellersModals, useSellersStore } from './store';
 
-const SEARCH_KEY = 'Name';
-
 export default function SellersPage() {
   const { t } = useTranslation(['sellers', 'common']);
   const location = useLocation();
@@ -31,14 +29,13 @@ export default function SellersPage() {
   const deleteModal = useSellersModals((s) => s.delete);
   const createModal = useSellersModals((s) => s.create);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useSellersStore();
+  const {
+    page, limit, search, filters,
+    setPage, setLimit, setSearch,
+    setFilters, resetFilters,
+  } = useSellersStore();
 
   const debouncedSearch = useDebounce(search);
-
-  const queryFilters = useMemo(
-    () => (debouncedSearch ? [{ key: 'search', value: debouncedSearch }, ...filters] : filters),
-    [debouncedSearch, filters]
-  );
 
   const {
     data: response,
@@ -47,7 +44,14 @@ export default function SellersPage() {
     isError,
   } = useQuery({
     queryKey: ['sellers', page, limit, debouncedSearch, filters],
-    queryFn: () => sellersApi.getAll(page, limit, queryFilters),
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return sellersApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+    },
     staleTime: 30_000,
   });
 
@@ -73,6 +77,7 @@ export default function SellersPage() {
     columns,
     data: sellers,
     storageKey: 'sellers-table-columns',
+    initialVisibility: { email: false },
   });
 
   return (

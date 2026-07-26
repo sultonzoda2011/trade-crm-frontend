@@ -27,7 +27,7 @@ export function CreateMarketModal() {
     staleTime: 60_000,
   });
 
-  const userOptions = mapToOptions(usersResponse?.data.data ?? [], 'id', 'name');
+  const userOptions = mapToOptions(usersResponse?.data?.data ?? [], 'id', 'name');
   const { control, handleSubmit, reset } = useForm<CreateMarketSchema>({
     resolver: zodResolver(createMarketSchema(t)),
     defaultValues: { name: '', address: '', ownerId: '', image: null },
@@ -48,12 +48,12 @@ export function CreateMarketModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['markets'] });
-      toast.success(t('createSuccess'));
+      toast.success(t('markets:createSuccess'));
       createModal.close();
       reset();
     },
     onError: () => {
-      toast.error(t('createError'));
+      toast.error(t('markets:createError'));
     },
   });
 
@@ -81,7 +81,7 @@ export function CreateMarketModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('fields.image')}
+            label={t('common:fields.image')}
             accept="image/*"
             aspectRatio="square"
             size="compact"

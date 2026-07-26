@@ -21,6 +21,11 @@
     "employees": "Кормандон"
   },
   "statistics": "Омор",
+  "quickActions": "Амалҳои зуд",
+  "viewProducts": "Молҳои бозор",
+  "viewDebtors": "Қарздорони бозор",
+  "viewTransactions": "Транзаксияҳои бозор",
+  "viewAll": "Ҳама",
   "actions": {
     "view": "Дидан",
     "edit": "Таҳрир кардан",

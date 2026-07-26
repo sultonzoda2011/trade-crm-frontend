@@ -1,13 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ArrowRight, Banknote, ShoppingCart, Store, Users, Wallet } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { dashboardApi } from '~/api/dashboard';
+import { dashboardApi, type DashboardParams } from '~/api/dashboard';
+import { sellersApi } from '~/api/sellers';
 import { Panel } from '~/components/layout/Panel';
+import { CustomSelect } from '~/components/shared/CustomSelect';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Label } from '~/components/ui/label';
 import { Skeleton } from '~/components/ui/skeleton';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { mapToOptions } from '~/lib/mapToOptions';
 import { useCan } from '~/hooks/useCan';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
@@ -35,13 +40,40 @@ function StatCard({
   );
 }
 
+const PERIOD_OPTIONS = [
+  { value: 'today', labelKey: 'period.today' },
+  { value: 'week', labelKey: 'period.week' },
+  { value: 'month', labelKey: 'period.month' },
+  { value: 'year', labelKey: 'period.year' },
+] as const;
+
 export default function DashboardRoute() {
   const { t } = useTranslation(['dashboard', 'transactions', 'common']);
   const { user } = useCan();
+  const [period, setPeriod] = useState('month');
+  const [sellerId, setSellerId] = useState<string | undefined>(undefined);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['dashboard'],
-    queryFn: () => dashboardApi.get(),
+  const { data: sellersResponse } = useQuery({
+    queryKey: ['sellers', 'list'],
+    queryFn: () => sellersApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+
+  const sellerOptions = useMemo(
+    () => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'),
+    [sellersResponse],
+  );
+
+  const params = useMemo(() => {
+    const p: DashboardParams = {};
+    if (period) p.period = period;
+    if (sellerId) p.sellerId = sellerId;
+    return p;
+  }, [period, sellerId]);
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ['dashboard', params],
+    queryFn: () => dashboardApi.get(params),
     staleTime: 30_000,
   });
 
@@ -61,8 +93,26 @@ export default function DashboardRoute() {
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
-      <div>
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t('title')}</h1>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">{t('period.from')}</Label>
+            <CustomSelect
+              options={PERIOD_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))}
+              value={period}
+              onChange={(v) => setPeriod(String(v))}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs">{t('seller')}</Label>
+            <CustomSelect
+              options={[{ value: '', label: t('viewAll') }, ...sellerOptions]}
+              value={sellerId ?? ''}
+              onChange={(v) => setSellerId(v ? String(v) : undefined)}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

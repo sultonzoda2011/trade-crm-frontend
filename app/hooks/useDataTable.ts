@@ -41,7 +41,7 @@ export function useDataTable<TData extends RowData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
     if (storageKey) {
       const persisted = loadVisibility(storageKey);
-      if (Object.keys(persisted).length > 0) return persisted;
+      return { ...initialVisibility, ...persisted };
     }
     return initialVisibility;
   });

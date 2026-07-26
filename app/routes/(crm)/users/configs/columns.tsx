@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
@@ -19,33 +20,45 @@ function UserActionsCell({ row, t }: { row: User; t: TFunction }) {
 
   return (
     <div className="flex justify-end gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
-        render={<Link to={`/users/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-        title={t('actions.view')}>
-        <Eye className="h-4 w-4" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            render={<Link to={`/users/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
+            <Eye className="h-4 w-4" />
+          </Button>
+        } />
+        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
+      </Tooltip>
       {can(Action.USERS_EDIT) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          title={t('actions.edit')}
-          onClick={() => editModal.open(row)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => editModal.open(row)}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          } />
+          <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+        </Tooltip>
       )}
       {can(Action.USERS_DELETE) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-          title={t('actions.delete')}
-          onClick={() => deleteModal.open(row.id)}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+              onClick={() => deleteModal.open(row.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          } />
+          <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
+        </Tooltip>
       )}
     </div>
   );
@@ -58,7 +71,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<User, any>[] => {
     columnHelper.accessor('name', {
       header: t('fields.name'),
       enableHiding: false,
-      cell: (info) => <UserAvatar fullName={info.row.original.name} imagePath={info.row.original.email ?? undefined} />,
+      cell: (info) => <UserAvatar fullName={info.row.original.name} imagePath={info.row.original.image ?? undefined} />,
     }),
     columnHelper.accessor('email', {
       header: t('fields.email'),

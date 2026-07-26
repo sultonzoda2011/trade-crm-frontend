@@ -1,160 +1,129 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Search } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
-import { Panel } from '~/components/layout/Panel';
+import { CreateCategoryModal } from '~/components/modals/CreateCategoryModal';
+import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
+import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { Modal } from '~/components/shared/Modal';
-import { Badge } from '~/components/ui/badge';
+import { CustomInput } from '~/components/shared/CustomInput';
+import { DataTable } from '~/components/shared/DataTable';
+import { FilterSheet } from '~/components/shared/FilterSheet';
 import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import type { Category } from '~/types/products';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
+import { useDataTable } from '~/hooks/useDataTable';
+import { useDebounce } from '~/hooks/useDebounce';
+import { getColumns } from './configs/columns';
+import { getCategoryFilters } from './configs/filters';
+import { useCategoriesModals, useCategoriesStore } from './store';
 
-// Простая страница управления категориями товаров (ADMIN/OWNER) — список +
-// создание/переименование/удаление. Доступ на уровне роута контролируется
-// бэкендом (@Roles(ADMIN, OWNER) на CategoriesController), а на фронте — тем,
-// что ссылка на страницу показывается только этим ролям в сайдбаре.
 export default function CategoriesPage() {
-  const { t } = useTranslation(['products', 'common']);
+  const { t } = useTranslation(['categories', 'common']);
   const queryClient = useQueryClient();
-  const [editing, setEditing] = useState<Category | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [isCreateOpen, setCreateOpen] = useState(false);
-  const [name, setName] = useState('');
+  const { can } = useCan();
+  const deleteModal = useCategoriesModals((s) => s.delete);
+  const createModal = useCategoriesModals((s) => s.create);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => categoriesApi.getAll(),
-  });
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useCategoriesStore();
 
-  const categories = data?.data ?? [];
+  const debouncedSearch = useDebounce(search);
 
-  const { mutate: create, isPending: isCreating } = useMutation({
-    mutationFn: () => categoriesApi.create({ name }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success(t('createSuccess'));
-      setCreateOpen(false);
-      setName('');
+  const {
+    data: response,
+    isLoading,
+    isFetching,
+    isError,
+  } = useQuery({
+    queryKey: ['categories', page, limit, debouncedSearch, filters],
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return categoriesApi.getAll(
+        page,
+        limit,
+        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
+        mf
+      );
     },
-    onError: () => toast.error(t('createError')),
+    staleTime: 30_000,
   });
 
-  const { mutate: update, isPending: isUpdating } = useMutation({
-    mutationFn: () => categoriesApi.update({ id: editing!.id, request: { name } }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success(t('updateSuccess'));
-      setEditing(null);
-      setName('');
-    },
-    onError: () => toast.error(t('updateError')),
-  });
-
-  const { mutate: remove, isPending: isDeleting } = useMutation({
+  const { mutate: deleteCategory, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success(t('actions.deleteSuccess'));
-      setDeletingId(null);
+      toast.success(t('actions.deleteSuccess', { defaultValue: 'Удалено' }));
+      deleteModal.close();
     },
-    onError: () => toast.error(t('actions.deleteError')),
+    onError: () => {
+      toast.error(t('actions.deleteError', { defaultValue: 'Ошибка при удалении' }));
+    },
+  });
+
+  const columns = useMemo(() => getColumns({ t }), [t]);
+
+  const filterConfig = useMemo(() => getCategoryFilters(t), [t]);
+  const categories = useMemo(() => response?.data?.data ?? [], [response]);
+  const totalPages = response?.data?.meta?.totalPages || 1;
+
+  const { table } = useDataTable({
+    columns,
+    data: categories,
+    storageKey: 'categories-table-columns',
+    initialVisibility: {  createdAt: false },
   });
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex-1 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('categories.title', { defaultValue: 'Категории' })}</h1>
-        <Button className="gap-2" onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" />
-          {t('actions.create')}
-        </Button>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
       </div>
-
-      <Panel className="p-0">
-        {isLoading ? (
-          <p className="text-muted-foreground p-6 text-center text-sm">{t('common:loading', { defaultValue: '...' })}</p>
-        ) : categories.length === 0 ? (
-          <p className="text-muted-foreground p-6 text-center text-sm">
-            {t('categories.empty', { defaultValue: 'Категорий пока нет' })}
-          </p>
-        ) : (
-          <div className="divide-y divide-border">
-            {categories.map((category) => (
-              <div key={category.id} className="flex items-center justify-between px-6 py-3">
-                <div className="flex items-center gap-3">
-                  <span className="font-medium">{category.name}</span>
-                  <Badge variant="secondary" className="font-mono">
-                    {category._count.products}
-                  </Badge>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => {
-                      setEditing(category);
-                      setName(category.name);
-                    }}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                    onClick={() => setDeletingId(category.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
+      <div className="space-y-2">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CustomInput
+            placeholder={`${t('filters.search')}...`}
+            className="w-full sm:max-w-96"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            startIcon={<Search className="text-muted-foreground h-4 w-4" />}
+          />
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
+            <ColumnToggle table={table} />
+            {can(Action.CATEGORIES_MANAGE) && (
+              <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
+                <Plus className="h-4 w-4" data-icon="inline-start" />
+                <span className="hidden sm:inline">{t('create')}</span>
+              </Button>
+            )}
           </div>
-        )}
-      </Panel>
-
-      <Modal
-        open={isCreateOpen}
-        onClose={() => setCreateOpen(false)}
-        title={t('categories.create', { defaultValue: 'Новая категория' })}
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              {t('actions.cancel')}
-            </Button>
-            <Button disabled={!name || isCreating} onClick={() => create()}>
-              {t('actions.create')}
-            </Button>
-          </div>
-        }>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('fields.name')} />
-      </Modal>
-
-      <Modal
-        open={!!editing}
-        onClose={() => setEditing(null)}
-        title={t('actions.edit')}
-        footer={
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setEditing(null)}>
-              {t('actions.cancel')}
-            </Button>
-            <Button disabled={!name || isUpdating} onClick={() => update()}>
-              {t('actions.save')}
-            </Button>
-          </div>
-        }>
-        <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('fields.name')} />
-      </Modal>
-
+        </div>
+        <DataTable
+          table={table}
+          pinLastColumn
+          isLoading={isLoading}
+          isFetching={isFetching}
+          isError={isError}
+          page={page}
+          limit={limit}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onlimitChange={setLimit}
+        />
+      </div>
+      <CreateCategoryModal />
+      <EditCategoryModal />
       <ConfirmDialog
-        open={!!deletingId}
-        onOpenChange={(open) => !open && setDeletingId(null)}
-        onConfirm={() => remove(deletingId!)}
-        isLoading={isDeleting}
-        type="danger"
+        open={deleteModal.isOpen}
+        onOpenChange={(open) => !open && deleteModal.close()}
+        onConfirm={() => deleteModal.data != null && deleteCategory(deleteModal.data)}
+        isLoading={isDeletePending}
         title={t('actions.confirm')}
         description={t('actions.areYouSure')}
       />

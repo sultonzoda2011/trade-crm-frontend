@@ -19,7 +19,7 @@ import { type DecodedToken, getAuthToken, getRefreshToken, isTokenExpired } from
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
-import tradeLogo from '/tradeLogo.png';
+import favicon from '/favicon.ico';
 
 export async function clientLoader() {
   const token = getAuthToken();
@@ -97,16 +97,13 @@ export default function LoginPage() {
   return (
     <>
       <div className="bg-foreground text-background hidden flex-col justify-between p-12 lg:flex">
-        <div className="text-2xl font-bold tracking-tight">
-          <img className="w-40" src={tradeLogo} alt="Trade Logo" />
+        <div className="flex items-center text-2xl font-bold tracking-tight">
+          <img className="w-20" src={favicon} alt="Trade Logo" />
+          <span className="">TradeCRM</span>
         </div>
         <div className="space-y-4">
-          <h1 className="text-4xl leading-tight font-bold">
-            Знания — это сила,
-            <br />
-            которую никто не отнимет
-          </h1>
-          <p className="text-background/60 text-lg">Учись сегодня, чтобы стать лучшей версией себя завтра.</p>
+          <h1 className="text-4xl leading-tight font-bold">{t('heroTitle')}</h1>
+          <p className="text-background/60 text-lg">{t('heroDescription')}</p>
         </div>
         <div className="flex gap-2">
           {(['w-4', 'w-8', 'w-12', 'w-16', 'w-20'] as const).map((w, i) => (

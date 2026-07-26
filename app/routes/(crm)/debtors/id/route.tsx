@@ -1,9 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Pencil, ReceiptText, Store } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
 import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
@@ -12,13 +14,18 @@ import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { useDebtorsModals } from '../store';
+import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 
 export default function DebtorDetailPage() {
   const { t } = useTranslation(['debtors', 'transactions', 'common']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = useCan();
+  const editModal = useDebtorsModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['debtor', id],
@@ -32,7 +39,7 @@ export default function DebtorDetailPage() {
   // запросом (тот же ресурс, что и на странице /transactions, с фильтром debtorId).
   const { data: txResponse, isLoading: isTxLoading } = useQuery({
     queryKey: ['debtor-transactions', id],
-    queryFn: () => transactionsApi.getAll(1, 50, [{ key: 'debtorId', value: id! }]),
+    queryFn: () => transactionsApi.getAll(1, 50, {}, [{ key: 'debtorId', value: id! }]),
     enabled: !!id,
     staleTime: 30_000,
   });
@@ -62,8 +69,8 @@ export default function DebtorDetailPage() {
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
         items={[
-          { label: t('navigation.dashboard'), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('navigation.debtors') },
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+          { link: location.state?.fromPath, label: location.state?.fromName || t('navigation.debtors', { ns: 'common' }) },
           { label: debtor.name },
         ]}
       />
@@ -81,11 +88,24 @@ export default function DebtorDetailPage() {
               <p className="text-muted-foreground text-sm">{debtor.phone}</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-muted-foreground text-xs">{t('totalDebt', { defaultValue: 'Текущий долг' })}</p>
-            <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
-              {fmtTJS(totalDebt)}
-            </p>
+          <div className="flex items-center gap-4">
+            {can(Action.DEBTORS_EDIT) && (
+              <Tooltip>
+                <TooltipTrigger render={
+                  <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(debtor)}>
+                    <Pencil className="size-3.5" />
+                    <span className="hidden sm:inline">{t('actions.edit', { ns: 'common' })}</span>
+                  </Button>
+                } />
+                <TooltipContent side="bottom">{t('actions.edit', { ns: 'common' })}</TooltipContent>
+              </Tooltip>
+            )}
+            <div className="text-right">
+              <p className="text-muted-foreground text-xs">{t('totalDebt', { defaultValue: 'Текущий долг' })}</p>
+              <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
+                {fmtTJS(totalDebt)}
+              </p>
+            </div>
           </div>
         </div>
       </Panel>
@@ -156,8 +176,8 @@ export default function DebtorDetailPage() {
           </Panel>
         </div>
 
-        {debtor.market && (
-          <div className="space-y-6">
+        <div className="space-y-6">
+          {debtor.market && (
             <Panel title={t('fields.market')}>
               <div className="space-y-4">
                 <InfoItem
@@ -174,9 +194,44 @@ export default function DebtorDetailPage() {
                 {debtor.market.address && <InfoItem label={t('fields.address')} value={debtor.market.address} />}
               </div>
             </Panel>
-          </div>
-        )}
+          )}
+
+          <Panel title={t('quickActions', { defaultValue: 'Быстрые действия' })}>
+            <div className="space-y-2">
+              {can(Action.DEBTORS_EDIT) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  onClick={() => editModal.open(debtor)}>
+                  <Pencil className="size-3.5" />
+                  {t('actions.edit', { ns: 'common' })}
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                size="sm"
+                render={<Link to="/transactions" state={{ fromDebtorId: debtor.id, fromDebtorName: debtor.name }} />}>
+                <ReceiptText className="size-3.5" />
+                {t('transactionsHistory', { defaultValue: 'Транзакции должника' })}
+              </Button>
+              {debtor.market && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  render={<Link to={`/markets/${debtor.market.id}`} />}>
+                  <Store className="size-3.5" />
+                  {t('fields.market')}
+                </Button>
+              )}
+            </div>
+          </Panel>
+        </div>
       </div>
+
+      <EditDebtorModal />
     </div>
   );
 }

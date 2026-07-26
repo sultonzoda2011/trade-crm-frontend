@@ -21,6 +21,7 @@
     "category": "Категория",
     "lowStockThreshold": "Ҳадди пасти захира"
   },
+  "quickActions": "Амалҳои зуд",
   "statistics": "Омор",
   "actions": {
     "view": "Дидан",
@@ -36,7 +37,8 @@
     "all": "Ҳамаи молҳо"
   },
   "filters": {
-    "search": "Ҷустуҷӯи молҳо"
+    "search": "Ҷустуҷӯи молҳо",
+    "category": "Категория"
   },
   "unit": {
     "PCS": "дона",

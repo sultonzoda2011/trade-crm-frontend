@@ -4,6 +4,7 @@
   "required": "Required field",
   "stringMin": "Minimum {{count}} characters",
   "stringMax": "Maximum {{count}} characters",
+  "emailRequired": "Email is required",
   "usernameRequired": "Username is required",
   "passwordRequired": "Password is required",
   "oldPassRequired": "Current password is required",

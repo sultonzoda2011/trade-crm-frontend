@@ -24,10 +24,17 @@
     "salesCount": "Продаж",
     "salesAmount": "Сумма продаж",
     "refundsCount": "Возвратов",
+    "refundsAmount": "Сумма возвратов",
+    "debtsCount": "Долгов",
     "debtsAmount": "Оформлено в долг"
   },
   "period": {
     "from": "С",
-    "to": "По"
-  }
+    "to": "По",
+    "today": "Сегодня",
+    "week": "Неделя",
+    "month": "Месяц",
+    "year": "Год"
+  },
+  "seller": "Продавец"
 }

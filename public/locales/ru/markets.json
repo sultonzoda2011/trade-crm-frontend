@@ -16,10 +16,18 @@
     "products": "Товары",
     "debtors": "Должники",
     "transactions": "Транзакции",
+    "employees": "Сотрудники",
     "createdAt": "Дата создания",
     "updatedAt": "Дата обновления"
   },
+  "hasUsers": "Есть пользователи",
+  "hasProducts": "Есть товары",
   "statistics": "Статистика",
+  "quickActions": "Быстрые действия",
+  "viewProducts": "Товары рынка",
+  "viewDebtors": "Должники рынка",
+  "viewTransactions": "Транзакции рынка",
+  "viewAll": "Все",
   "actions": {
     "view": "Просмотр",
     "edit": "Редактировать",

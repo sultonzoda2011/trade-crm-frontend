@@ -23,11 +23,11 @@ export function CreateDebtorModal() {
     mutationFn: debtorsApi.create,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['debtors'] });
-      toast.success(t('createSuccess'));
+      toast.success(t('debtors:createSuccess'));
       createModal.close();
     },
     onError: () => {
-      toast.error(t('createError'));
+      toast.error(t('debtors:createError'));
     },
   });
 

@@ -43,7 +43,9 @@
     "showAll": "Намоиши ҳама",
     "resetColumns": "Барқарор кардан",
     "noData": "Маълумот нест",
-    "error": "Боркунии маълумот ноком шуд"
+    "error": "Боркунии маълумот ноком шуд",
+    "previousPage": "Саҳифаи қаблӣ",
+    "nextPage": "Саҳифаи навбатӣ"
   },
   "filters": {
     "title": "Филтрҳо",
@@ -55,8 +57,20 @@
     "all": "Ҳама",
     "search": "Ҷустуҷӯ",
     "apply": "Татбиқ кардан",
-    "mentor": "Мураббӣ",
-    "employee": "Корманд"
+    "sortBy": "Тартиб додан",
+    "sortOrder": "Тартиб",
+    "dateRange": "Сана",
+    "asc": "Аз А то Я",
+    "desc": "Аз Я то А",
+    "createdAt": "Санаи эҷод",
+    "name": "Ном",
+    "email": "Email",
+    "role": "Нақш",
+    "description": "Тавсиф",
+    "price": "Нарх",
+    "amount": "Маблағ",
+    "mentor": "Роҳбар",
+    "employee": "Корманди"
   },
   "days": {
     "mon": "Дш",
@@ -91,7 +105,8 @@
     "settings": "Танзимот",
     "exclude": "Истисно кардан",
     "back": "Бозгашт",
-    "activate": "Фаъол кардан"
+    "activate": "Фаъол кардан",
+    "toggleTheme": "Иваз кардани мавзуъ"
   },
   "fields": {
     "fullName": "Ному насаб",
@@ -107,6 +122,7 @@
     "address": "Суроға",
     "name": "Ном",
     "description": "Тавсиф",
+    "image": "Акс",
     "actions": "Амалҳо",
     "status": "Ҳолат"
   },

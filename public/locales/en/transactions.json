@@ -47,6 +47,12 @@
     "discount": "Discount",
     "dueDate": "Due date"
   },
+  "filters": {
+    "debtor": "Debtor",
+    "category": "Category",
+    "product": "Product"
+  },
+  "quickActions": "Quick Actions",
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",
   "refundError": "Failed to create refund"

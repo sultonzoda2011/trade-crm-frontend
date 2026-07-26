@@ -12,9 +12,9 @@ import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
-import { useForm } from '~/hooks/useForm';
-import { useCan } from '~/hooks/useCan';
 import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
+import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
@@ -39,10 +39,7 @@ export function CreateTransactionModal() {
     enabled: createModal.isOpen,
   });
 
-  const debtorOptions = useMemo(
-    () => mapToOptions(debtorsRes?.data?.data ?? [], 'id', 'name'),
-    [debtorsRes],
-  );
+  const debtorOptions = useMemo(() => mapToOptions(debtorsRes?.data?.data ?? [], 'id', 'name'), [debtorsRes]);
 
   const productsList = useMemo(() => productsRes?.data?.data ?? [], [productsRes]);
 
@@ -52,7 +49,7 @@ export function CreateTransactionModal() {
         value: p.id,
         label: `${p.name} (${fmtTJS(p.price)})`,
       })),
-    [productsList],
+    [productsList]
   );
 
   // Продавец (SELLER) по бизнес-правилам может оформлять только продажу в долг —
@@ -67,7 +64,7 @@ export function CreateTransactionModal() {
         canCreateSale ? { value: 'SALE', label: t('type.SALE') } : null,
         { value: 'DEBT', label: t('type.DEBT') },
       ].filter(Boolean) as { value: string; label: string }[],
-    [t, canCreateSale],
+    [t, canCreateSale]
   );
 
   const paymentTypeOptions = useMemo(
@@ -76,7 +73,7 @@ export function CreateTransactionModal() {
       { value: 'CARD', label: t('paymentType.CARD') },
       { value: 'CREDIT', label: t('paymentType.CREDIT') },
     ],
-    [t],
+    [t]
   );
 
   const { control, handleSubmit, reset, watch } = useForm<CreateTransactionSchema>({
@@ -126,12 +123,12 @@ export function CreateTransactionModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success(t('createSuccess'));
+      toast.success(t('transactions:createSuccess'));
       createModal.close();
       reset();
     },
     onError: () => {
-      toast.error(t('createError'));
+      toast.error(t('transactions:createError'));
     },
   });
 
@@ -144,11 +141,10 @@ export function CreateTransactionModal() {
       open={createModal.isOpen}
       onClose={createModal.close}
       title={t('create')}
-      className="max-w-2xl"
       footer={
-        <div className="flex items-center justify-between w-full">
+        <div className="flex w-full items-center justify-between">
           <div className="text-sm font-medium">
-            {t('fields.totalAmount')}: <span className="font-mono font-bold text-base">{fmtTJS(calculatedTotal)}</span>
+            {t('fields.totalAmount')}: <span className="font-mono text-base font-bold">{fmtTJS(calculatedTotal)}</span>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={createModal.close}>
@@ -162,13 +158,7 @@ export function CreateTransactionModal() {
       }>
       <form id="create-transaction-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-3">
-          <FormCustomSelect
-            control={control}
-            name="type"
-            label={t('fields.type')}
-            options={typeOptions}
-            required
-          />
+          <FormCustomSelect control={control} name="type" label={t('fields.type')} options={typeOptions} required />
           <FormCustomSelect
             control={control}
             name="paymentType"
@@ -186,68 +176,77 @@ export function CreateTransactionModal() {
           />
         </div>
 
-        {type === 'DEBT' && (
-          <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} />
-        )}
+        {type === 'DEBT' && <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} />}
 
-        <div className="space-y-3 pt-2">
+        <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">{t('fields.items')}</h4>
+
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="gap-1 text-xs"
-              onClick={() => append({ productId: '', quantity: 1, price: 0, discount: 0 })}>
+              onClick={() => append({ productId: '', quantity: 1, discount: 0 })}>
               <Plus className="h-3.5 w-3.5" />
               {t('fields.addItem')}
             </Button>
           </div>
 
-          {fields.map((field, index) => (
-            <div key={field.id} className="grid grid-cols-[1fr_90px_110px_90px_36px] gap-2 items-end">
-              <div>
+          {fields.map((field, index) => {
+            const rowProduct = productsList.find((p) => p.id === items[index]?.productId);
+
+            const rowPrice = rowProduct?.price ?? 0;
+
+            return (
+              <div key={field.id} className="grid items-end gap-2 md:grid-cols-2">
                 <FormCustomSelect
                   control={control}
+                  label={t('fields.product')}
                   name={`items.${index}.productId`}
                   placeholder={t('fields.product')}
                   options={productOptions}
                 />
-              </div>
-              <div>
+
                 <FormInput
                   control={control}
+                  label={t('fields.quantity')}
                   name={`items.${index}.quantity`}
                   type="number"
+                  min={1}
                   placeholder={t('fields.quantity')}
                 />
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium">{t('fields.price')}</label>
+
+                  <div className="bg-muted/40 flex h-8 items-center justify-end rounded-md border px-3 font-mono text-xs">
+                    {fmtTJS(rowPrice)}
+                  </div>
+                </div>
+
+                <div className="flex items-end gap-3">
+                  <FormInput
+                    control={control}
+                    label={t('fields.discount')}
+                    name={`items.${index}.discount`}
+                    type="number"
+                    placeholder={t('fields.discount')}
+                  />
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:bg-destructive/10 mb-0 h-9 w-9"
+                    disabled={fields.length === 1}
+                    onClick={() => remove(index)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-              <div className="flex h-9 items-center justify-end rounded-md border border-input bg-muted/40 px-3 font-mono text-sm text-muted-foreground">
-                {/* Цена только для отображения — не редактируется и не отправляется
-                    на сервер, реальную цену всегда берёт бэкенд из товара. */}
-                {fmtTJS(productsList.find((p) => p.id === items[index]?.productId)?.price ?? 0)}
-              </div>
-              <div>
-                <FormInput
-                  control={control}
-                  name={`items.${index}.discount`}
-                  type="number"
-                  placeholder={t('fields.discount')}
-                />
-              </div>
-              <div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:bg-destructive/10 h-9 w-9"
-                  disabled={fields.length === 1}
-                  onClick={() => remove(index)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </form>
     </Modal>

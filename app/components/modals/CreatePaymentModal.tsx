@@ -36,12 +36,12 @@ export function CreatePaymentModal() {
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: ['transaction', transaction.id] });
       }
-      toast.success(t('paySuccess'));
+      toast.success(t('transactions:paySuccess'));
       payModal.close();
       reset();
     },
     onError: () => {
-      toast.error(t('payError'));
+      toast.error(t('transactions:payError'));
     },
   });
 

@@ -24,6 +24,8 @@
     "salesCount": "Фурӯшҳо",
     "salesAmount": "Маблағи фурӯш",
     "refundsCount": "Бозгардонидан",
+    "refundsAmount": "Маблағи бозгардонидан",
+    "debtsCount": "Қарзҳо",
     "debtsAmount": "Ба қарз дода шуд"
   },
   "period": {

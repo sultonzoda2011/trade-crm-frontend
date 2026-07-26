@@ -4,6 +4,7 @@
   "required": "Обязательное поле",
   "stringMin": "Минимум {{count}} символов",
   "stringMax": "Максимум {{count}} символов",
+  "emailRequired": "Введите email",
   "usernameRequired": "Введите логин",
   "passwordRequired": "Введите пароль",
   "oldPassRequired": "Введите текущий пароль",

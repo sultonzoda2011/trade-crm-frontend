@@ -10,7 +10,10 @@
   "navigation": {
     "debtors": "Debtors"
   },
+  "hasActiveDebts": "Has active debts",
+  "totalDebtAmount": "Total debt amount",
   "totalDebt": "Current debt",
   "transactionsHistory": "Transaction history",
-  "noTransactions": "No transactions yet"
+  "noTransactions": "No transactions yet",
+  "quickActions": "Quick Actions"
 }

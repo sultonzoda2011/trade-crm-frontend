@@ -112,28 +112,28 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
 
   const usersQuery = useQuery({
     queryKey: ['palette-users', search],
-    queryFn: () => usersApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    queryFn: () => usersApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/users'),
     staleTime: 30_000,
   });
 
   const marketQuery = useQuery({
     queryKey: ['palette-market', search],
-    queryFn: () => marketsApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    queryFn: () => marketsApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/market'),
     staleTime: 30_000,
   });
 
   const productQuery = useQuery({
     queryKey: ['palette-product', search],
-    queryFn: () => productsApi.getAll(1, 5, [{ key: 'Name', value: search }]),
+    queryFn: () => productsApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/product'),
     staleTime: 30_000,
   });
 
   const users = searchEnabled ? (usersQuery.data?.data?.data ?? []) : [];
-  const markets = searchEnabled ? (marketQuery.data?.data.data ?? []) : [];
-  const products = searchEnabled ? (productQuery.data?.data.data ?? []) : [];
+  const markets = searchEnabled ? (marketQuery.data?.data?.data ?? []) : [];
+  const products = searchEnabled ? (productQuery.data?.data?.data ?? []) : [];
   const isSearching = searchEnabled && (usersQuery.isFetching || marketQuery.isFetching || productQuery.isFetching);
   const hasEntityResults = users.length > 0 || markets.length > 0 || products.length > 0;
 

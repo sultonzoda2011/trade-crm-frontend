@@ -43,7 +43,9 @@
     "showAll": "Show all",
     "resetColumns": "Reset",
     "noData": "No data",
-    "error": "Failed to load data"
+    "error": "Failed to load data",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "filters": {
     "title": "Filters",
@@ -55,6 +57,23 @@
     "all": "All",
     "search": "Search",
     "apply": "Apply",
+    "sortBy": "Sort by",
+    "sortOrder": "Order",
+    "dateRange": "Date",
+    "asc": "Ascending",
+    "desc": "Descending",
+    "createdAt": "Created at",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "description": "Description",
+    "price": "Price",
+    "priceRange": "Price range",
+    "amount": "Amount",
+    "min": "Min",
+    "max": "Max",
+    "yes": "Yes",
+    "no": "No",
     "mentor": "Mentor",
     "employee": "Employee"
   },
@@ -91,7 +110,8 @@
     "settings": "Settings",
     "exclude": "Exclude",
     "back": "Back",
-    "activate": "Activate"
+    "activate": "Activate",
+    "toggleTheme": "Toggle theme"
   },
   "fields": {
     "fullName": "Full Name",
@@ -107,6 +127,7 @@
     "address": "Address",
     "name": "Name",
     "description": "Description",
+    "image": "Image",
     "actions": "Actions",
     "status": "Status"
   },

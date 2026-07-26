@@ -4,6 +4,7 @@
   "required": "Майдони ҳатмӣ",
   "stringMin": "Ҳадди аққал {{count}} аломат",
   "stringMax": "Ҳадди аксар {{count}} аломат",
+  "emailRequired": "Email-ро ворид кунед",
   "usernameRequired": "Логинро ворид кунед",
   "passwordRequired": "Рамзро ворид кунед",
   "oldPassRequired": "Рамзи феълиро ворид кунед",

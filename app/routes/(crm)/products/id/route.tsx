@@ -1,23 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Pencil, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
+import { Panel } from '~/components/layout/Panel';
+import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { InfoItem } from '~/components/shared/InfoItem';
+import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { Panel } from '~/components/layout/Panel';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { UserAvatar } from '~/components/shared/UserAvatar';
 
 export default function ProductDetailPage() {
   const { t } = useTranslation(['products', 'common']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { can } = useCan();
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['product', id],
@@ -45,7 +49,7 @@ export default function ProductDetailPage() {
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
         items={[
-          { label: t('navigation.dashboard'), link: '/' },
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
           { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
           { label: product.name },
         ]}
@@ -54,26 +58,38 @@ export default function ProductDetailPage() {
       <Panel className="p-6">
         <div className="flex items-center gap-5">
           <Avatar className="size-16 rounded-xl">
-            <AvatarImage
-              src={product.image ? import.meta.env.VITE_API_URL + product.image : undefined}
-              className="object-cover"
-            />
+            <AvatarImage src={product.image ? product.image : undefined} className="object-cover" />
             <AvatarFallback className="bg-muted rounded-xl text-2xl font-semibold">
               {product.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-              {product.category && (
-                <Badge variant="secondary" className="font-normal">
-                  {product.category.name}
-                </Badge>
-              )}
-              {product.quantity <= product.lowStockThreshold && (
-                <Badge variant="destructive" className="font-normal">
-                  {t('lowStock', { defaultValue: 'Мало на складе' })}
-                </Badge>
+          <div className="flex flex-1 flex-col gap-1.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
+                {product.category && (
+                  <Badge variant="secondary" className="font-normal">
+                    {product.category.name}
+                  </Badge>
+                )}
+                {product.quantity <= product.lowStockThreshold && (
+                  <Badge variant="destructive" className="font-normal">
+                    {t('lowStock', { defaultValue: 'Мало на складе' })}
+                  </Badge>
+                )}
+              </div>
+              {can(Action.PRODUCTS_EDIT) && (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button variant="outline" size="sm" render={<Link to={`/products/${product.id}/edit`} />}>
+                        <Pencil className="mr-1 size-4" />
+                        {t('actions.edit')}
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+                </Tooltip>
               )}
             </div>
             <p className="text-muted-foreground text-sm">{product.market?.name}</p>
@@ -94,9 +110,7 @@ export default function ProductDetailPage() {
                   <span className="flex items-center gap-2">
                     <span
                       className={
-                        product.quantity <= product.lowStockThreshold
-                          ? 'font-semibold text-destructive'
-                          : undefined
+                        product.quantity <= product.lowStockThreshold ? 'text-destructive font-semibold' : undefined
                       }>
                       {product.quantity} {t(`unit.${product.unit}`, { defaultValue: product.unit })}
                     </span>
@@ -153,11 +167,39 @@ export default function ProductDetailPage() {
                 className="w-full"
                 size="sm"
                 render={
-                  <Link to={`/markets/${product.marketId}`} state={{ fromPath: location.pathname, fromName: t('title') }} />
+                  <Link
+                    to={`/markets/${product.marketId}`}
+                    state={{ fromPath: location.pathname, fromName: t('title') }}
+                  />
                 }>
                 {t('actions.view')}
                 <ArrowUpRight className="size-3.5" />
               </Button>
+            </div>
+          </Panel>
+
+          <Panel title={t('quickActions', { defaultValue: 'Быстрые действия' })}>
+            <div className="space-y-2">
+              {can(Action.PRODUCTS_EDIT) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  render={<Link to={`/products/${product.id}/edit`} />}>
+                  <Pencil className="size-3.5" />
+                  {t('actions.edit')}
+                </Button>
+              )}
+              {product.market && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  render={<Link to={`/markets/${product.marketId}`} />}>
+                  <Store className="size-3.5" />
+                  {t('fields.market')}
+                </Button>
+              )}
             </div>
           </Panel>
         </div>

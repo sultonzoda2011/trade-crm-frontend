@@ -20,7 +20,14 @@
     "updatedAt": "Updated At",
     "employees": "Employees"
   },
+  "hasUsers": "Has users",
+  "hasProducts": "Has products",
   "statistics": "Statistics",
+  "quickActions": "Quick Actions",
+  "viewProducts": "Market Products",
+  "viewDebtors": "Market Debtors",
+  "viewTransactions": "Market Transactions",
+  "viewAll": "All",
   "actions": {
     "view": "View",
     "edit": "Edit",

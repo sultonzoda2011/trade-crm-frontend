@@ -27,7 +27,7 @@ export function EditMarketModal() {
     staleTime: 60_000,
   });
 
-  const userOptions = mapToOptions(usersResponse?.data.data ?? [], 'id', 'name');
+  const userOptions = mapToOptions(usersResponse?.data?.data ?? [], 'id', 'name');
 
   const { control, handleSubmit, reset } = useForm<UpdateMarketSchema>({
     resolver: zodResolver(updateMarketSchema(t)),
@@ -57,11 +57,11 @@ export function EditMarketModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['markets'] });
-      toast.success(t('updateSuccess'));
+      toast.success(t('markets:updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('updateError'));
+      toast.error(t('markets:updateError'));
     },
   });
 
@@ -89,7 +89,7 @@ export function EditMarketModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('fields.image')}
+            label={t('common:fields.image')}
             accept="image/*"
             aspectRatio="square"
             size="compact"

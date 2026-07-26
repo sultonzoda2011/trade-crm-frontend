@@ -7,8 +7,10 @@ export const createTransactionItemSchema = (t: TFunction) =>
   z.object({
     productId: z.string().min(1, t('required', { ns: 'validation' })),
     quantity: z.number().min(1, t('required', { ns: 'validation' })),
-    discount: z.number().min(0, t('required', { ns: 'validation' })).optional(),
-    // Только для отображения цены/суммы строки в форме — на бэкенд не отправляется.
+    discount: z
+      .number()
+      .min(0, t('required', { ns: 'validation' }))
+      .optional(),
     price: z.number().optional(),
   });
 

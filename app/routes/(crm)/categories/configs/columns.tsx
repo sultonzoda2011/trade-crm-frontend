@@ -7,15 +7,14 @@ import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
-import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import type { Market } from '~/types/markets';
-import { useMarketsModals } from '../store';
+import type { Category, CategoryDetail } from '~/types/products';
+import { useCategoriesModals } from '../store';
 
-function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
-  const deleteModal = useMarketsModals((s) => s.delete);
-  const editModal = useMarketsModals((s) => s.edit);
+function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
+  const deleteModal = useCategoriesModals((s) => s.delete);
+  const editModal = useCategoriesModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
@@ -27,27 +26,27 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
             variant="ghost"
             size="icon"
             className="h-8 w-8"
-            render={<Link to={`/markets/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
+            render={<Link to={`/categories/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
             <Eye className="h-4 w-4" />
           </Button>
         } />
         <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
       </Tooltip>
-      {can(Action.MARKETS_EDIT) && (
+      {can(Action.CATEGORIES_MANAGE) && (
         <Tooltip>
           <TooltipTrigger render={
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => editModal.open(row)}>
+              onClick={() => editModal.open(row as unknown as CategoryDetail)}>
               <Pencil className="h-4 w-4" />
             </Button>
           } />
           <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
         </Tooltip>
       )}
-      {can(Action.MARKETS_DELETE) && (
+      {can(Action.CATEGORIES_MANAGE) && (
         <Tooltip>
           <TooltipTrigger render={
             <Button
@@ -65,53 +64,25 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   );
 }
 
-const columnHelper = createColumnHelper<Market>();
+const columnHelper = createColumnHelper<Category>();
 
-export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] => {
+export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Category, any>[] => {
   return [
     columnHelper.accessor('name', {
       header: t('fields.name'),
       enableHiding: false,
-      cell: (info) => (
-        <UserAvatar
-          fullName={info.row.original.name}
-          imagePath={info.row.original.image ?? undefined}
-          subInfo={info.row.original.address}
-        />
-      ),
+      cell: (info) => <UserAvatar fullName={info.row.original.name} imagePath={info.row.original.image ?? undefined} />,
     }),
-    columnHelper.accessor('address', {
-      header: t('fields.address'),
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
-    }),
-    columnHelper.accessor('owner.name', {
-      header: t('fields.owner', 'Владелец'),
+    columnHelper.accessor('description', {
+      header: t('fields.description'),
       cell: (info) => (
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">{info.getValue()}</span>
-          <span className="text-muted-foreground text-2xs">{info.row.original.owner.email}</span>
+        <div className="w-[180px] truncate text-sm text-muted-foreground">
+          {info.getValue() ?? '—'}
         </div>
       ),
     }),
-
-    columnHelper.accessor('count.products', {
-      header: t('fields.products', 'Товары'),
-      cell: (info) => (
-        <Badge variant="secondary" className="font-mono">
-          {info.getValue()}
-        </Badge>
-      ),
-    }),
-    columnHelper.accessor('count.debtors', {
-      header: t('fields.debtors', 'Должники'),
-      cell: (info) => (
-        <Badge variant="secondary" className="font-mono">
-          {info.getValue()}
-        </Badge>
-      ),
-    }),
-    columnHelper.accessor('count.transactions', {
-      header: t('fields.transactions', 'Транзакции'),
+    columnHelper.accessor('_count.products', {
+      header: t('fields.productsCount'),
       cell: (info) => (
         <Badge variant="secondary" className="font-mono">
           {info.getValue()}
@@ -119,14 +90,14 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
       ),
     }),
     columnHelper.accessor('createdAt', {
-      header: t('fields.createdAt', 'Дата создания'),
+      header: t('fields.createdAt'),
       cell: (info) => <span className="text-sm">{formatDate(info.getValue())}</span>,
     }),
     columnHelper.display({
       id: 'actions',
       enableHiding: false,
       header: () => <div className="text-center">{t('fields.actions')}</div>,
-      cell: (info) => <MarketActionsCell row={info.row.original} t={t} />,
+      cell: (info) => <CategoriesActionsCell row={info.row.original} t={t} />,
     }),
-  ] as ColumnDef<Market, any>[];
+  ] as ColumnDef<Category, any>[];
 };

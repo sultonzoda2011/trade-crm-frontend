@@ -2,6 +2,12 @@
   "title": "Должники",
   "create": "Создать",
   "notFound": "Должник не найден",
+  "hasActiveDebts": "Есть активные долги",
+  "totalDebtAmount": "Общая сумма долга",
+  "totalDebt": "Текущий долг",
+  "transactionsHistory": "История транзакций",
+  "noTransactions": "Пока нет транзакций",
+  "quickActions": "Быстрые действия",
   "fields": {
     "createdAt": "Дата создания",
     "updatedAt": "Дата обновления",

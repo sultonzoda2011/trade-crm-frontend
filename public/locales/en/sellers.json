@@ -4,6 +4,15 @@
   "notFound": "Seller not found",
   "fields": {
     "role": "Role",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "updatedAt": "Updated at"
+  },
+  "statistics": "Statistics",
+  "quickActions": "Quick Actions",
+  "transactionsHistory": "Transaction History",
+  "viewMarkets": "Seller's Market",
+  "noTransactions": "No transactions yet",
+  "navigation": {
+    "sellers": "Sellers"
   }
 }

@@ -4,6 +4,15 @@
   "notFound": "Фурӯшанда ёфт нашуд",
   "fields": {
     "role": "Нақш",
-    "createdAt": "Санаи эҷод"
+    "createdAt": "Санаи эҷод",
+    "updatedAt": "Санаи навсозӣ"
+  },
+  "statistics": "Омор",
+  "quickActions": "Амалҳои зуд",
+  "transactionsHistory": "Таърихи амалиётҳо",
+  "viewMarkets": "Бозори фурӯшанда",
+  "noTransactions": "Ҳанӯз амалиёте нест",
+  "navigation": {
+    "sellers": "Фурӯшандагон"
   }
 }

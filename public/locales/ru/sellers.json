@@ -4,6 +4,15 @@
   "notFound": "Продавец не найден",
   "fields": {
     "role": "Роль",
-    "createdAt": "Дата создания"
+    "createdAt": "Дата создания",
+    "updatedAt": "Дата обновления"
+  },
+  "statistics": "Статистика",
+  "quickActions": "Быстрые действия",
+  "transactionsHistory": "История транзакций",
+  "viewMarkets": "Рынок продавца",
+  "noTransactions": "Пока нет транзакций",
+  "navigation": {
+    "sellers": "Продавцы"
   }
 }

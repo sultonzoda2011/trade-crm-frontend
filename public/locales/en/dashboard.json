@@ -24,10 +24,17 @@
     "salesCount": "Sales",
     "salesAmount": "Sales amount",
     "refundsCount": "Refunds",
+    "refundsAmount": "Refund amount",
+    "debtsCount": "Debts",
     "debtsAmount": "Debt issued"
   },
   "period": {
     "from": "From",
-    "to": "To"
-  }
+    "to": "To",
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year"
+  },
+  "seller": "Seller"
 }

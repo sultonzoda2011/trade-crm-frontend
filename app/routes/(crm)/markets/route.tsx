@@ -10,15 +10,15 @@ import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { DataTable } from '~/components/shared/DataTable';
+import { FilterSheet } from '~/components/shared/FilterSheet';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { getColumns } from './configs/columns';
+import { getMarketFilters } from './configs/filters';
 import { useMarketsModals, useMarketsStore } from './store';
-
-const SEARCH_KEY = 'Name';
 
 export default function MarketsPage() {
   const { t } = useTranslation(['markets', 'common']);
@@ -27,14 +27,13 @@ export default function MarketsPage() {
   const deleteModal = useMarketsModals((s) => s.delete);
   const createModal = useMarketsModals((s) => s.create);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch } = useMarketsStore();
+  const {
+    page, limit, search, filters,
+    setPage, setLimit, setSearch,
+    setFilters, resetFilters,
+  } = useMarketsStore();
 
   const debouncedSearch = useDebounce(search);
-
-  const queryFilters = useMemo(
-    () => (debouncedSearch ? [{ key: 'search', value: debouncedSearch }, ...filters] : filters),
-    [debouncedSearch, filters]
-  );
 
   const {
     data: response,
@@ -43,7 +42,14 @@ export default function MarketsPage() {
     isError,
   } = useQuery({
     queryKey: ['markets', page, limit, debouncedSearch, filters],
-    queryFn: () => marketsApi.getAll(page, limit, queryFilters),
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return marketsApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+    },
     staleTime: 30_000,
   });
 
@@ -61,6 +67,7 @@ export default function MarketsPage() {
 
   const columns = useMemo(() => getColumns({ t }), [t]);
 
+  const filterConfig = useMemo(() => getMarketFilters(t), [t]);
   const markets = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
 
@@ -68,9 +75,7 @@ export default function MarketsPage() {
     columns,
     data: markets,
     storageKey: 'markets-table-columns',
-    initialVisibility: {
-      'owner.name': false,
-    },
+    initialVisibility: { 'owner.name': false, 'count.debtors': false, 'count.transactions': false, createdAt: false },
   });
 
   return (
@@ -88,6 +93,7 @@ export default function MarketsPage() {
             startIcon={<Search className="text-muted-foreground h-4 w-4" />}
           />
           <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+            <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
             <ColumnToggle table={table} />
             {can(Action.MARKETS_CREATE) && (
               <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>

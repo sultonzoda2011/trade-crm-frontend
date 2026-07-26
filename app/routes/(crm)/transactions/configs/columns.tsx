@@ -19,10 +19,10 @@ function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) 
 
   return (
     <div className="flex justify-end gap-1">
-      {row.remainingAmount > 0 && can(Action.TRANSACTIONS_EDIT) && (
+      {can(Action.TRANSACTIONS_EDIT) && (
         <Tooltip>
           <TooltipTrigger render={
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => payModal.open(row)}>
+            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => payModal.open(row)} disabled={row.remainingAmount <= 0}>
               <CreditCard className="h-3.5 w-3.5" />
             </Button>
           } />

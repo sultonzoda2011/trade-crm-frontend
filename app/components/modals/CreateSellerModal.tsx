@@ -5,9 +5,10 @@ import { toast } from 'sonner';
 import { sellersApi } from '~/api/sellers';
 import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
+import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
-import { getRoleOptions } from '~/config/enumOptions';
 import { useForm } from '~/hooks/useForm';
+import { appendToFormData } from '~/lib/form-data';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 import { createSellerSchema, type CreateSellerSchema } from '~/validations/seller';
 
@@ -16,23 +17,31 @@ export function CreateSellerModal() {
   const queryClient = useQueryClient();
   const createModal = useSellersModals((s) => s.create);
 
-  const roleOptions = getRoleOptions(t);
-
   const { control, handleSubmit, reset } = useForm<CreateSellerSchema>({
     resolver: zodResolver(createSellerSchema(t)),
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '', image: null },
   });
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateSellerSchema) => sellersApi.create({ request: data as never }),
+    mutationFn: (data: CreateSellerSchema) => {
+      const payload: Record<string, unknown> = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      };
+      if (data.image instanceof File) {
+        payload.image = data.image;
+      }
+      return sellersApi.create(appendToFormData(payload));
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sellers'] });
-      toast.success(t('createSuccess'));
+      toast.success(t('sellers:createSuccess'));
       createModal.close();
       reset();
     },
     onError: () => {
-      toast.error(t('createError'));
+      toast.error(t('sellers:createError'));
     },
   });
 
@@ -55,30 +64,42 @@ export function CreateSellerModal() {
           </Button>
         </div>
       }>
-      <form id="create-seller-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <FormInput
-          control={control}
-          name="name"
-          label={t('fields.fullName')}
-          placeholder={t('fields.fullName')}
-          required
-        />
-        <FormInput
-          control={control}
-          name="email"
-          type="email"
-          label={t('fields.email')}
-          placeholder="example@mail.com"
-          required
-        />
-        <FormInput
-          control={control}
-          name="password"
-          type="password"
-          label={t('fields.password')}
-          placeholder="••••••••"
-          required
-        />
+      <form id="create-seller-form" onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+          <FormFileInput
+            control={control}
+            name="image"
+            label={t('common:fields.image')}
+            accept="image/*"
+            aspectRatio="square"
+            size="compact"
+          />
+          <div className="space-y-4">
+            <FormInput
+              control={control}
+              name="name"
+              label={t('fields.fullName')}
+              placeholder={t('fields.fullName')}
+              required
+            />
+            <FormInput
+              control={control}
+              name="email"
+              type="email"
+              label={t('fields.email')}
+              placeholder="example@mail.com"
+              required
+            />
+            <FormInput
+              control={control}
+              name="password"
+              type="password"
+              label={t('fields.password')}
+              placeholder="••••••••"
+              required
+            />
+          </div>
+        </div>
       </form>
     </Modal>
   );

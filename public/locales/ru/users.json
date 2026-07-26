@@ -4,6 +4,18 @@
   "notFound": "Пользователь не найден",
   "fields": {
     "role": "Роль",
-    "createdAt": "Дата создания"
+    "image": "Изображение",
+    "createdAt": "Дата создания",
+    "updatedAt": "Дата обновления"
+  },
+  "isOwner": "Владелец",
+  "statistics": "Статистика",
+  "quickActions": "Быстрые действия",
+  "transactionsHistory": "История транзакций",
+  "viewMarkets": "Рынки пользователя",
+  "noTransactions": "Пока нет транзакций",
+  "viewAll": "Все",
+  "navigation": {
+    "users": "Пользователи"
   }
 }

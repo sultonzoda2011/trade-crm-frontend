@@ -1,9 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useLocation } from 'react-router'
 import { toast } from 'sonner'
+import { debtorsApi } from '~/api/debtors'
 import { transactionsApi } from '~/api/transactions'
+import { categoriesApi } from '~/api/categories'
+import { productsApi } from '~/api/products'
+import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills'
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal'
 import { CreateTransactionModal } from '~/components/modals/CreateTransactionModal'
 import { ColumnToggle } from '~/components/shared/ColumnToggle'
@@ -16,6 +21,8 @@ import { Action } from '~/config/actions'
 import { useCan } from '~/hooks/useCan'
 import { useDataTable } from '~/hooks/useDataTable'
 import { useDebounce } from '~/hooks/useDebounce'
+import { useFilterParams } from '~/hooks/useFilterParams'
+import { mapToOptions } from '~/lib/mapToOptions'
 import { getColumns } from './configs/columns'
 import { getTransactionFilters } from './configs/filters'
 import { useTransactionsModals, useTransactionsStore } from './store'
@@ -27,14 +34,61 @@ export default function TransactionsPage() {
   const deleteModal = useTransactionsModals((s) => s.delete);
   const createModal = useTransactionsModals((s) => s.create);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } =
-    useTransactionsStore();
+  const {
+    page, limit, search, filters,
+    setPage, setLimit, setSearch, setFilter,
+    setFilters, resetFilters, removeFilter,
+  } = useTransactionsStore();
 
+  const location = useLocation();
   const debouncedSearch = useDebounce(search);
 
-  const queryFilters = useMemo(
-    () => (debouncedSearch ? [{ key: 'search', value: debouncedSearch }, ...filters] : filters),
-    [debouncedSearch, filters],
+  const hasProcessedState = useRef(false);
+
+  useEffect(() => {
+    if (hasProcessedState.current) return;
+    const state = location.state as Record<string, unknown> | null;
+    if (state?.fromDebtorId) {
+      setFilter('debtorId', state.fromDebtorId);
+    }
+    if (state?.fromSellerId) {
+      setFilter('createdById', state.fromSellerId);
+    }
+    hasProcessedState.current = true;
+    window.history.replaceState({}, document.title);
+  }, []);
+
+  const { data: debtorsResponse } = useQuery({
+    queryKey: ['debtors', 'list'],
+    queryFn: () => debtorsApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+
+  const debtorOptions = useMemo(
+    () => mapToOptions(debtorsResponse?.data?.data ?? [], 'id', 'name'),
+    [debtorsResponse],
+  );
+
+  const { data: categoriesResponse } = useQuery({
+    queryKey: ['categories', 'list'],
+    queryFn: () => categoriesApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+
+  const { data: productsResponse } = useQuery({
+    queryKey: ['products', 'list'],
+    queryFn: () => productsApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+
+  const categoryOptions = useMemo(
+    () => mapToOptions(categoriesResponse?.data?.data ?? [], 'id', 'name'),
+    [categoriesResponse],
+  );
+
+  const productOptions = useMemo(
+    () => mapToOptions(productsResponse?.data?.data ?? [], 'id', 'name'),
+    [productsResponse],
   );
 
   const {
@@ -43,8 +97,15 @@ export default function TransactionsPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['transactions', page, limit, queryFilters],
-    queryFn: () => transactionsApi.getAll(page, limit, queryFilters),
+    queryKey: ['transactions', page, limit, debouncedSearch, filters],
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return transactionsApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+    },
     staleTime: 30_000,
   });
 
@@ -69,9 +130,19 @@ export default function TransactionsPage() {
     columns,
     data: transactions,
     storageKey: 'transactions-table-columns',
+    initialVisibility: { paymentType: false, remainingAmount: false, createdAt: false },
   });
 
-  const filterConfig = useMemo(() => getTransactionFilters(t), [t]);
+  const filterConfig = useMemo(
+    () => getTransactionFilters(t, debtorOptions, categoryOptions, productOptions),
+    [t, debtorOptions, categoryOptions, productOptions],
+  );
+
+  useFilterParams({
+    page, limit, search, filters,
+    setPage, setLimit, setSearch, setFilters,
+    filterConfigs: filterConfig,
+  });
 
   return (
     <div className="flex-1 space-y-4">
@@ -98,6 +169,7 @@ export default function TransactionsPage() {
             )}
           </div>
         </div>
+        <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
         <DataTable
           table={table}
           pinLastColumn

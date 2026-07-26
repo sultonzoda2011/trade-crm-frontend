@@ -5,6 +5,7 @@ import { Link, useLocation } from 'react-router';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate, fmtTJS } from '~/lib/format';
@@ -13,39 +14,50 @@ import { useProductsModals } from '../store';
 
 function ProductActionsCell({ row, t }: { row: Product; t: TFunction }) {
   const deleteModal = useProductsModals((s) => s.delete);
-  const editModal = useProductsModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
   return (
     <div className="flex justify-end gap-1">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
-        render={<Link to={`/products/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-        title={t('actions.view')}>
-        <Eye className="h-4 w-4" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger render={
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            render={<Link to={`/products/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
+            <Eye className="h-4 w-4" />
+          </Button>
+        } />
+        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
+      </Tooltip>
       {can(Action.PRODUCTS_EDIT) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          title={t('actions.edit')}
-          onClick={() => editModal.open(row)}>
-          <Pencil className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              render={<Link to={`/products/${row.id}/edit`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
+              <Pencil className="h-4 w-4" />
+            </Button>
+          } />
+          <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+        </Tooltip>
       )}
       {can(Action.PRODUCTS_DELETE) && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-          title={t('actions.delete')}
-          onClick={() => deleteModal.open(row.id)}>
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+              onClick={() => deleteModal.open(row.id)}>
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          } />
+          <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
+        </Tooltip>
       )}
     </div>
   );

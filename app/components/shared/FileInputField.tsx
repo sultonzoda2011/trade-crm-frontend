@@ -1,35 +1,35 @@
-import { useEffect, useRef, useState } from 'react'
-import { ImageIcon, Upload, Pencil, X, FileIcon, Paperclip } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
-import { cn } from '~/lib/utils'
-import { Label } from '~/components/ui/label'
-import { Button } from '~/components/ui/button'
+import { FileIcon, ImageIcon, Paperclip, Pencil, Upload, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Button } from '~/components/ui/button';
+import { Label } from '~/components/ui/label';
+import { cn } from '~/lib/utils';
 
 export interface FileInputFieldProps {
-  value: File | string | null | undefined
-  onChange: (value: File | null) => void
-  onBlur?: () => void
-  error?: string
-  label?: string
-  required?: boolean
-  accept: string
-  aspectRatio: 'video' | 'square'
+  value: File | string | null | undefined;
+  onChange: (value: File | null) => void;
+  onBlur?: () => void;
+  error?: string;
+  label?: string;
+  required?: boolean;
+  accept: string;
+  aspectRatio: 'video' | 'square';
   /** "dropzone" — drag & drop с preview (default). "simple" — кнопка + имя файла */
-  variant?: 'dropzone' | 'simple'
+  variant?: 'dropzone' | 'simple';
   /** "compact" — без текста, иконки вместо кнопок (для использования в модалках) */
-  size?: 'default' | 'compact'
-  className?: string
+  size?: 'default' | 'compact';
+  className?: string;
 }
 
 function resolveUrl(value: string): string {
   if (value.startsWith('http') || value.startsWith('blob:') || value.startsWith('data:')) {
-    return value
+    return value;
   }
-  return `${import.meta.env.VITE_API_URL ?? ''}${value}`
+  return value;
 }
 
 function acceptsImages(accept: string) {
-  return accept.includes('image')
+  return accept.includes('image');
 }
 
 export function FileInputField({
@@ -45,47 +45,40 @@ export function FileInputField({
   size = 'default',
   className,
 }: FileInputFieldProps) {
-  const { t } = useTranslation('common')
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [objectUrl, setObjectUrl] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
+  const { t } = useTranslation('common');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [objectUrl, setObjectUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!(value instanceof File)) {
-      setObjectUrl(null)
-      return
+      setObjectUrl(null);
+      return;
     }
-    const url = URL.createObjectURL(value)
-    setObjectUrl(url)
-    return () => URL.revokeObjectURL(url)
-  }, [value])
+    const url = URL.createObjectURL(value);
+    setObjectUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [value]);
 
-  const previewUrl = typeof value === 'string' ? resolveUrl(value) : objectUrl
-  const hasPreview = Boolean(previewUrl)
-  const showAsImage = hasPreview && acceptsImages(accept)
-  const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video'
-  const compactSizeClass = size === 'compact'
-    ? (aspectRatio === 'square' ? 'aspect-square' : 'h-20')
-    : aspectClass
+  const previewUrl = typeof value === 'string' ? resolveUrl(value) : objectUrl;
+  const hasPreview = Boolean(previewUrl);
+  const showAsImage = hasPreview && acceptsImages(accept);
+  const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
+  const compactSizeClass = size === 'compact' ? (aspectRatio === 'square' ? 'aspect-square' : 'h-20') : aspectClass;
 
-  const fileName =
-    value instanceof File
-      ? value.name
-      : typeof value === 'string'
-        ? value.split('/').pop()
-        : null
+  const fileName = value instanceof File ? value.name : typeof value === 'string' ? value.split('/').pop() : null;
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] ?? null
-    if (file) onChange(file)
-    e.target.value = ''
+    const file = e.target.files?.[0] ?? null;
+    if (file) onChange(file);
+    e.target.value = '';
   }
 
   function handleDrop(e: React.DragEvent<HTMLButtonElement>) {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file) onChange(file)
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) onChange(file);
   }
 
   return (
@@ -113,19 +106,20 @@ export function FileInputField({
             'flex h-8 w-full items-center gap-2 rounded-lg border bg-transparent px-2.5 text-sm transition-colors',
             'dark:bg-input/30',
             error ? 'border-destructive' : 'border-border',
-            !value && 'cursor-pointer hover:bg-muted/40',
+            !value && 'hover:bg-muted/40 cursor-pointer'
           )}
-          onClick={() => !value && inputRef.current?.click()}
-        >
+          onClick={() => !value && inputRef.current?.click()}>
           {value ? (
             <>
               <FileIcon className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
               <span className="text-foreground min-w-0 flex-1 truncate">{fileName}</span>
               <button
                 type="button"
-                onClick={(e) => { e.stopPropagation(); onChange(null) }}
-                className="text-muted-foreground hover:text-foreground shrink-0 transition-colors"
-              >
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(null);
+                }}
+                className="text-muted-foreground hover:text-foreground shrink-0 transition-colors">
                 <X className="h-3.5 w-3.5" />
               </button>
             </>
@@ -140,10 +134,7 @@ export function FileInputField({
         // ── Dropzone variant ──────────────────────────────────────────────
         <>
           {hasPreview ? (
-            <div className={cn(
-              'group relative overflow-hidden rounded-xl border bg-muted/40',
-              compactSizeClass,
-            )}>
+            <div className={cn('group bg-muted/40 relative overflow-hidden rounded-xl border', compactSizeClass)}>
               {showAsImage ? (
                 <img src={previewUrl!} alt="" className="h-full w-full object-cover" />
               ) : (
@@ -162,8 +153,7 @@ export function FileInputField({
                       size="icon"
                       variant="secondary"
                       className="h-7 w-7 shadow-md"
-                      onClick={() => inputRef.current?.click()}
-                    >
+                      onClick={() => inputRef.current?.click()}>
                       <Pencil className="h-3.5 w-3.5" />
                     </Button>
                     <Button
@@ -171,8 +161,7 @@ export function FileInputField({
                       size="icon"
                       variant="destructive"
                       className="h-7 w-7 shadow-md"
-                      onClick={() => onChange(null)}
-                    >
+                      onClick={() => onChange(null)}>
                       <X className="h-3.5 w-3.5" />
                     </Button>
                   </>
@@ -183,8 +172,7 @@ export function FileInputField({
                       size="sm"
                       variant="secondary"
                       className="gap-1.5 shadow-md"
-                      onClick={() => inputRef.current?.click()}
-                    >
+                      onClick={() => inputRef.current?.click()}>
                       <Pencil className="h-3.5 w-3.5" />
                       {t('fileInput.change')}
                     </Button>
@@ -193,8 +181,7 @@ export function FileInputField({
                       size="sm"
                       variant="destructive"
                       className="gap-1.5 shadow-md"
-                      onClick={() => onChange(null)}
-                    >
+                      onClick={() => onChange(null)}>
                       <X className="h-3.5 w-3.5" />
                       {t('fileInput.delete')}
                     </Button>
@@ -206,7 +193,10 @@ export function FileInputField({
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              onDragOver={(e) => { e.preventDefault(); setIsDragging(true) }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
               className={cn(
@@ -214,13 +204,9 @@ export function FileInputField({
                 'bg-muted/40 text-muted-foreground hover:border-primary/40 hover:bg-muted/60',
                 isDragging && 'border-primary bg-primary/5',
                 error && 'border-destructive',
-                size === 'compact' ? cn(compactSizeClass, 'gap-2') : cn('flex-col gap-3', aspectClass),
-              )}
-            >
-              <div className={cn(
-                'bg-background rounded-full border shadow-sm',
-                size === 'compact' ? 'p-2' : 'p-3',
+                size === 'compact' ? cn(compactSizeClass, 'gap-2') : cn('flex-col gap-3', aspectClass)
               )}>
+              <div className={cn('bg-background rounded-full border shadow-sm', size === 'compact' ? 'p-2' : 'p-3')}>
                 {acceptsImages(accept) ? (
                   <ImageIcon className={size === 'compact' ? 'h-4 w-4' : 'h-5 w-5'} />
                 ) : (
@@ -240,5 +226,5 @@ export function FileInputField({
 
       {error && <p className="text-destructive text-sm">{error}</p>}
     </div>
-  )
+  );
 }

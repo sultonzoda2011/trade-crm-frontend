@@ -29,14 +29,13 @@ export default function DebtorsPage() {
   const deleteModal = useDebtorsModals((s) => s.delete);
   const createModal = useDebtorsModals((s) => s.create);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useDebtorsStore();
+  const {
+    page, limit, search, filters,
+    setPage, setLimit, setSearch,
+    setFilters, resetFilters,
+  } = useDebtorsStore();
 
   const debouncedSearch = useDebounce(search);
-
-  const queryFilters = useMemo(
-    () => (debouncedSearch ? [{ key: 'search', value: debouncedSearch }, ...filters] : filters),
-    [debouncedSearch, filters]
-  );
 
   const {
     data: response,
@@ -45,7 +44,14 @@ export default function DebtorsPage() {
     isError,
   } = useQuery({
     queryKey: ['debtors', page, limit, debouncedSearch, filters],
-    queryFn: () => debtorsApi.getAll(page, limit, queryFilters),
+    queryFn: () => {
+      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
+      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
+      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
+      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
+      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+      return debtorsApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+    },
     staleTime: 30_000,
   });
 
@@ -71,6 +77,7 @@ export default function DebtorsPage() {
     columns,
     data: debtors,
     storageKey: 'debtors-table-columns',
+    initialVisibility: { updatedAt: false, '_count.transactions': false, 'market.address': false, createdAt: false },
   });
 
   return (

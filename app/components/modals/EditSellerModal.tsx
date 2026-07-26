@@ -6,10 +6,10 @@ import { toast } from 'sonner';
 import { sellersApi } from '~/api/sellers';
 import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
-import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
+import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
-import { getRoleOptions } from '~/config/enumOptions';
 import { useForm } from '~/hooks/useForm';
+import { appendToFormData } from '~/lib/form-data';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 import { updateSellerSchema, type UpdateSellerSchema } from '~/validations/seller';
 
@@ -17,8 +17,6 @@ export function EditSellerModal() {
   const { t } = useTranslation(['sellers', 'common', 'validation']);
   const queryClient = useQueryClient();
   const editModal = useSellersModals((s) => s.edit);
-
-  const roleOptions = getRoleOptions(t);
 
   const { control, handleSubmit, reset } = useForm<UpdateSellerSchema>({
     resolver: zodResolver(updateSellerSchema(t)),
@@ -30,22 +28,26 @@ export function EditSellerModal() {
       name: editModal.data.name,
       email: editModal.data.email,
       password: '',
+      image: editModal.data.image,
     });
   }, [editModal.data, reset]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: UpdateSellerSchema) => {
-      const request: Record<string, unknown> = { name: data.name, email: data.email };
-      if (data.password) request.password = data.password;
-      return sellersApi.update({ request: request as never, id: editModal.data!.id });
+      const payload: Record<string, unknown> = { name: data.name, email: data.email };
+      if (data.password) payload.password = data.password;
+      if (data.image instanceof File) {
+        payload.image = data.image;
+      }
+      return sellersApi.update({ formData: appendToFormData(payload), id: editModal.data!.id });
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sellers'] });
-      toast.success(t('updateSuccess'));
+      toast.success(t('sellers:updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('updateError'));
+      toast.error(t('sellers:updateError'));
     },
   });
 
@@ -68,29 +70,41 @@ export function EditSellerModal() {
           </Button>
         </div>
       }>
-      <form id="edit-seller-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <FormInput
-          control={control}
-          name="name"
-          label={t('fields.fullName')}
-          placeholder={t('fields.fullName')}
-          required
-        />
-        <FormInput
-          control={control}
-          name="email"
-          type="email"
-          label={t('fields.email')}
-          placeholder="example@mail.com"
-          required
-        />
-        <FormInput
-          control={control}
-          name="password"
-          type="password"
-          label={t('fields.password')}
-          placeholder={t('fields.password')}
-        />
+      <form id="edit-seller-form" onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
+          <FormFileInput
+            control={control}
+            name="image"
+            label={t('common:fields.image')}
+            accept="image/*"
+            aspectRatio="square"
+            size="compact"
+          />
+          <div className="space-y-4">
+            <FormInput
+              control={control}
+              name="name"
+              label={t('fields.fullName')}
+              placeholder={t('fields.fullName')}
+              required
+            />
+            <FormInput
+              control={control}
+              name="email"
+              type="email"
+              label={t('fields.email')}
+              placeholder="example@mail.com"
+              required
+            />
+            <FormInput
+              control={control}
+              name="password"
+              type="password"
+              label={t('fields.password')}
+              placeholder={t('fields.password')}
+            />
+          </div>
+        </div>
       </form>
     </Modal>
   );

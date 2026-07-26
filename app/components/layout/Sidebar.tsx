@@ -6,7 +6,6 @@ import { useCan } from '~/hooks/useCan';
 import { NavMain } from './NavMain';
 
 import favicon from '/favicon.ico';
-import logo from '/tradeLogo.png';
 
 export function AppSidebar() {
   const { can } = useCan();
@@ -17,10 +16,13 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="mt-2 border-none">
-      <SidebarHeader className="px-2 ">
+      <SidebarHeader className="px-2">
         <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center">
           {/* Full logo */}
-          <img src={logo} className="h-12 w-auto object-contain group-data-[collapsible=icon]:hidden" alt="Trade CRM" />
+          <div className="flex items-center group-data-[collapsible=icon]:hidden">
+            <img src={favicon} className="h-10 w-auto object-contain" alt="Trade CRM" />
+            <span className="font-semibold">TradeCRM</span>
+          </div>
 
           {/* Small logo */}
           <img

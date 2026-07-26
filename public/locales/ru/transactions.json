@@ -47,6 +47,12 @@
     "discount": "Скидка",
     "dueDate": "Срок оплаты"
   },
+  "filters": {
+    "debtor": "Должник",
+    "category": "Категория",
+    "product": "Товар"
+  },
+  "quickActions": "Быстрые действия",
   "refund": "Оформить возврат",
   "refundSuccess": "Возврат успешно оформлен",
   "refundError": "Ошибка при оформлении возврата"

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, CreditCard, Undo2 } from 'lucide-react';
+import { ArrowUpRight, CreditCard, Pencil, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -11,6 +11,7 @@ import { InfoItem } from '~/components/shared/InfoItem';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
@@ -48,7 +49,7 @@ export default function TransactionDetailPage() {
 
   if (!transaction) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
+      <div className="flex h-100 flex-col items-center justify-center space-y-4">
         <p className="text-muted-foreground">{t('notFound')}</p>
         <Button variant="outline" onClick={() => navigate('/transactions')}>
           {t('actions.back', { ns: 'common' })}
@@ -113,21 +114,31 @@ export default function TransactionDetailPage() {
               <p className="text-muted-foreground text-xs">{t('fields.remainingAmount')}</p>
               <p className="font-mono text-lg font-bold text-warning">{fmtTJS(transaction.remainingAmount)}</p>
             </div>
-            {transaction.remainingAmount > 0 && can(Action.TRANSACTIONS_EDIT) && (
-              <Button onClick={() => payModal.open(transaction)} className="gap-2">
-                <CreditCard className="h-4 w-4" />
-                {t('pay')}
-              </Button>
+            {can(Action.TRANSACTIONS_EDIT) && (
+              <Tooltip>
+                <TooltipTrigger render={
+                  <Button onClick={() => payModal.open(transaction)} className="gap-2" disabled={transaction.remainingAmount <= 0}>
+                    <CreditCard className="h-4 w-4" />
+                    {t('pay')}
+                  </Button>
+                } />
+                <TooltipContent side="bottom">{t('pay')}</TooltipContent>
+              </Tooltip>
             )}
             {canRefund && (
-              <Button
-                variant="outline"
-                className="gap-2 text-destructive hover:bg-destructive/10"
-                disabled={isRefunding}
-                onClick={() => refund()}>
-                <Undo2 className="h-4 w-4" />
-                {t('refund')}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger render={
+                  <Button
+                    variant="outline"
+                    className="gap-2 text-destructive hover:bg-destructive/10"
+                    disabled={isRefunding}
+                    onClick={() => refund()}>
+                    <Undo2 className="h-4 w-4" />
+                    {t('refund')}
+                  </Button>
+                } />
+                <TooltipContent side="bottom">{t('refund')}</TooltipContent>
+              </Tooltip>
             )}
           </div>
         </div>
@@ -262,6 +273,42 @@ export default function TransactionDetailPage() {
               </div>
             </Panel>
           )}
+
+          <Panel title={t('quickActions', { defaultValue: 'Быстрые действия' })}>
+            <div className="space-y-2">
+              {transaction.remainingAmount > 0 && can(Action.TRANSACTIONS_EDIT) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  onClick={() => payModal.open(transaction)}>
+                  <CreditCard className="size-3.5" />
+                  {t('pay')}
+                </Button>
+              )}
+              {canRefund && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10"
+                  size="sm"
+                  disabled={isRefunding}
+                  onClick={() => refund()}>
+                  <Undo2 className="size-3.5" />
+                  {t('refund')}
+                </Button>
+              )}
+              {transaction.debtor && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2"
+                  size="sm"
+                  render={<Link to={`/debtors/${transaction.debtor.id}`} />}>
+                  <ArrowUpRight className="size-3.5" />
+                  {t('fields.debtor')}
+                </Button>
+              )}
+            </div>
+          </Panel>
         </div>
       </div>
 

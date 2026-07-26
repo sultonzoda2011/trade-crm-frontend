@@ -129,7 +129,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
         </SheetHeader>
 
         {/* Body */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 p-4">
             {config.map((field, i) => (
               <FilterField key={i} field={field} draft={draft} onChange={setDraftValue} />

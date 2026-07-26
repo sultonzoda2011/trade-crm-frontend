@@ -4,6 +4,7 @@ import { CustomInput } from '~/components/shared/CustomInput'
 import { Label } from '~/components/ui/label'
 import { CustomSelect } from '~/components/shared/CustomSelect'
 import { DateInputField } from '~/components/shared/DateInputField'
+import { cn } from '~/lib/utils'
 
 interface FilterFieldProps {
   field: FilterConfig
@@ -85,6 +86,25 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
         placeholder={field.placeholder}
         value={getValue(draft, field.key)}
         onChange={(date) => onChange(field.key, date)}
+      />
+    )
+  }
+
+  if (field.type === 'boolean') {
+    const raw = getValue(draft, field.key)
+    const current = raw === '' || raw == null ? null : String(raw)
+    const options = [
+      { value: 'true', label: field.trueLabel ?? t('filters.yes') },
+      { value: 'false', label: field.falseLabel ?? t('filters.no') },
+    ]
+
+    return (
+      <CustomSelect
+        label={field.label}
+        placeholder={t('filters.all')}
+        options={options}
+        value={current}
+        onChange={(v) => onChange(field.key, v === null ? '' : v)}
       />
     )
   }

@@ -21,6 +21,7 @@
     "category": "Category",
     "lowStockThreshold": "Low stock threshold"
   },
+  "quickActions": "Quick Actions",
   "statistics": "Statistics",
   "actions": {
     "view": "View",
@@ -36,7 +37,8 @@
     "all": "All products"
   },
   "filters": {
-    "search": "Search products"
+    "search": "Search products",
+    "category": "Category"
   },
   "unit": {
     "PCS": "pcs",
