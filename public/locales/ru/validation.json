@@ -11,5 +11,10 @@
   "passwordMinLength": "Пароль должен содержать не менее 8 символов",
   "invalidEmail": "Неверный формат email",
   "invalidDate": "Некорректная дата",
-  "fileMustBeImage": "Файл должен быть изображением"
+  "fileMustBeImage": "Файл должен быть изображением",
+  "quantityMin": "Минимум 1",
+  "discountMin": "Минимум 0",
+  "itemProductRequired": "Выберите товар",
+  "itemsRequired": "Добавьте хотя бы один товар",
+  "dueDateRequired": "Обязательное поле для типа «В долг»"
 }

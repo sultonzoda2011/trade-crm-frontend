@@ -11,5 +11,10 @@
   "passwordMinLength": "Password must be at least 8 characters",
   "invalidEmail": "Invalid email address",
   "invalidDate": "Invalid date",
-  "fileMustBeImage": "File must be an image"
+  "fileMustBeImage": "File must be an image",
+  "quantityMin": "Minimum 1",
+  "discountMin": "Minimum 0",
+  "itemProductRequired": "Select product",
+  "itemsRequired": "Add at least one item",
+  "dueDateRequired": "Required for DEBT type"
 }

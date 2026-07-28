@@ -11,5 +11,10 @@
   "passwordMinLength": "Рамз бояд ҳадди аққал 8 аломат бошад",
   "invalidEmail": "Формати email нодуруст",
   "invalidDate": "Санаи нодуруст",
-  "fileMustBeImage": "Файл бояд тасвир бошад"
+  "fileMustBeImage": "Файл бояд тасвир бошад",
+  "quantityMin": "Ҳадди аққал 1",
+  "discountMin": "Ҳадди аққал 0",
+  "itemProductRequired": "Молро интихоб кунед",
+  "itemsRequired": "Ҳадди аққал як мол илова кунед",
+  "dueDateRequired": "Барои намуди «Қарз» ҳатмӣ"
 }
