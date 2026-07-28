@@ -112,7 +112,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="bg-background flex flex-col">
+      <div className="bg-background scrollbar-thin flex min-h-0 flex-col overflow-y-auto">
         <div className="flex justify-end gap-2 p-4">
           <LanguageSwitcher />
           <ModeToggle />

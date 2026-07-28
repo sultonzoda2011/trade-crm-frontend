@@ -13,13 +13,18 @@ import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
+import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { CreateTransactionRequest } from '~/types/transactions';
-import { createTransactionSchema, type CreateTransactionSchema } from '~/validations/transactions';
+import {
+  createTransactionSchema,
+  type CreateTransactionItemSchema,
+  type CreateTransactionSchema,
+} from '~/validations/transactions';
 
 export function CreateTransactionModal() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
@@ -52,32 +57,19 @@ export function CreateTransactionModal() {
     [productsList]
   );
 
-  // Продавец (SELLER) по бизнес-правилам может оформлять только продажу в долг —
-  // тип SALE ему в форме не показываем, даже если сама транзакция технически
-  // доступна к созданию (это решает backend через @Roles, но UI не должен
-  // предлагать действие, которое всё равно будет отклонено).
   const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
 
   const typeOptions = useMemo(
-    () =>
-      [
-        canCreateSale ? { value: 'SALE', label: t('type.SALE') } : null,
-        { value: 'DEBT', label: t('type.DEBT') },
-      ].filter(Boolean) as { value: string; label: string }[],
+    () => getTransactionTypeOptions(t).filter((opt) => canCreateSale || opt.value !== 'SALE'),
     [t, canCreateSale]
   );
 
-  const paymentTypeOptions = useMemo(
-    () => [
-      { value: 'CASH', label: t('paymentType.CASH') },
-      { value: 'CARD', label: t('paymentType.CARD') },
-      { value: 'CREDIT', label: t('paymentType.CREDIT') },
-    ],
-    [t]
-  );
+  const paymentTypeOptions = useMemo(() => getPaymentTypeOptions(t), [t]);
 
-  const { control, handleSubmit, reset, watch } = useForm<CreateTransactionSchema>({
+  const { control, handleSubmit, reset, watch, formState } = useForm<CreateTransactionSchema>({
     resolver: zodResolver(createTransactionSchema(t)),
+    mode: 'onChange',
+    shouldUnregister: true,
     defaultValues: {
       debtorId: '',
       type: canCreateSale ? 'SALE' : 'DEBT',
@@ -94,20 +86,25 @@ export function CreateTransactionModal() {
 
   const type = watch('type');
   const items = watch('items') || [];
-  const calculatedTotal = useMemo(() => {
-    return items.reduce((acc, item) => {
+
+  const getItemTotal = useMemo(
+    () => (item?: CreateTransactionItemSchema | undefined) => {
+      if (!item) return 0;
       const product = productsList.find((p) => p.id === item.productId);
       const q = Number(item.quantity) || 0;
       const p = product?.price ?? 0;
       const d = Number(item.discount) || 0;
-      return acc + Math.max(q * p - d, 0);
-    }, 0);
-  }, [items, productsList]);
+      return Math.max(q * p - d, 0);
+    },
+    [productsList]
+  );
+
+  const calculatedTotal = useMemo(() => {
+    return (Array.isArray(items) ? items : []).reduce((acc, item) => acc + getItemTotal(item), 0);
+  }, [items, getItemTotal]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateTransactionSchema) => {
-      // Цена не отправляется вообще — сервер сам подставит её из карточки
-      // товара; с фронта уходит только id/quantity/discount.
       const payload: CreateTransactionRequest = {
         debtorId: data.debtorId || undefined,
         type: data.type as CreateTransactionRequest['type'],
@@ -150,7 +147,7 @@ export function CreateTransactionModal() {
             <Button variant="outline" onClick={createModal.close}>
               {t('actions.cancel', { ns: 'common' })}
             </Button>
-            <Button type="submit" form="create-transaction-form" disabled={isPending}>
+            <Button type="submit" form="create-transaction-form" disabled={isPending || !formState.isValid}>
               {t('actions.create', { ns: 'common' })}
             </Button>
           </div>
@@ -176,12 +173,13 @@ export function CreateTransactionModal() {
           />
         </div>
 
-        {type === 'DEBT' && <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} />}
+        {type === 'DEBT' && (
+          <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} required />
+        )}
 
-        <div className="space-y-4 pt-4">
+        <div className="space-y-3 pt-4">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-semibold">{t('fields.items')}</h4>
-
             <Button
               type="button"
               variant="outline"
@@ -192,61 +190,66 @@ export function CreateTransactionModal() {
               {t('fields.addItem')}
             </Button>
           </div>
+          <div className="bg-border/60 h-px" />
+          <div className="space-y-3">
+            {fields.map((field, index) => {
+              const item = items[index];
+              const itemTotal = getItemTotal(item);
 
-          {fields.map((field, index) => {
-            const rowProduct = productsList.find((p) => p.id === items[index]?.productId);
-
-            const rowPrice = rowProduct?.price ?? 0;
-
-            return (
-              <div key={field.id} className="grid items-end gap-2 md:grid-cols-2">
-                <FormCustomSelect
-                  control={control}
-                  label={t('fields.product')}
-                  name={`items.${index}.productId`}
-                  placeholder={t('fields.product')}
-                  options={productOptions}
-                />
-
-                <FormInput
-                  control={control}
-                  label={t('fields.quantity')}
-                  name={`items.${index}.quantity`}
-                  type="number"
-                  min={1}
-                  placeholder={t('fields.quantity')}
-                />
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium">{t('fields.price')}</label>
-
-                  <div className="bg-muted/40 flex h-8 items-center justify-end rounded-md border px-3 font-mono text-xs">
-                    {fmtTJS(rowPrice)}
+              return (
+                <div key={field.id} className="grid gap-3 grid-cols-12 lg:grid-cols-12 lg:items-end">
+                  <div className="col-span-12 lg:col-span-5">
+                    <FormCustomSelect
+                      control={control}
+                      label={t('fields.product')}
+                      name={`items.${index}.productId`}
+                      placeholder={t('fields.product')}
+                      options={productOptions}
+                      required
+                    />
+                  </div>
+                  <div className="col-span-12 lg:col-span-2">
+                    <FormInput
+                      control={control}
+                      label={t('fields.quantity')}
+                      name={`items.${index}.quantity`}
+                      type="number"
+                      min={1}
+                      placeholder={t('fields.quantity')}
+                      required
+                    />
+                  </div>
+                  <div className="col-span-12 lg:col-span-2">
+                    <FormInput
+                      control={control}
+                      label={t('fields.discount')}
+                      name={`items.${index}.discount`}
+                      type="number"
+                      placeholder={t('fields.discount')}
+                      required
+                    />
+                  </div>
+                  <div className="col-span-12 lg:col-span-2">
+                    <label className="mb-2 block text-sm font-medium">{t('fields.totalPrice')}</label>
+                    <div className="bg-muted/40 flex h-10 items-center justify-end rounded-md border px-3 font-mono text-sm">
+                      {fmtTJS(itemTotal)}
+                    </div>
+                  </div>
+                  <div className="col-span-12 lg:col-span-1 lg:col-start-12 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:bg-destructive/10 h-10 w-9"
+                      disabled={fields.length === 1}
+                      onClick={() => remove(index)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
-
-                <div className="flex items-end gap-3">
-                  <FormInput
-                    control={control}
-                    label={t('fields.discount')}
-                    name={`items.${index}.discount`}
-                    type="number"
-                    placeholder={t('fields.discount')}
-                  />
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="text-destructive hover:bg-destructive/10 mb-0 h-9 w-9"
-                    disabled={fields.length === 1}
-                    onClick={() => remove(index)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </form>
     </Modal>

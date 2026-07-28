@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import type { FilterConfig } from '~/types/filters';
+import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
 
 export const getTransactionFilters = (
   t: TFunction,
@@ -45,10 +46,7 @@ export const getTransactionFilters = (
       key: 'type',
       label: t('fields.type'),
       placeholder: t('filters.all', { ns: 'common' }),
-      options: [
-        { value: 'SALE', label: t('type.SALE') },
-        { value: 'DEBT', label: t('type.DEBT') },
-      ],
+      options: getTransactionTypeOptions(t),
     },
     {
       type: 'select',
@@ -66,11 +64,7 @@ export const getTransactionFilters = (
       key: 'paymentType',
       label: t('fields.paymentType'),
       placeholder: t('filters.all', { ns: 'common' }),
-      options: [
-        { value: 'CASH', label: t('paymentType.CASH') },
-        { value: 'CARD', label: t('paymentType.CARD') },
-        { value: 'CREDIT', label: t('paymentType.CREDIT') },
-      ],
+      options: getPaymentTypeOptions(t),
     },
     {
       type: 'number-range',

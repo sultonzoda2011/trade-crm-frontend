@@ -61,3 +61,14 @@ export const getRoleOptions = (t: TFunction) => [
   { value: Role.Owner, label: t('role.owner') },
   { value: Role.Seller, label: t('role.seller') },
 ];
+
+export const getTransactionTypeOptions = (t: TFunction) => [
+  { value: 'SALE', label: t('type.SALE') },
+  { value: 'DEBT', label: t('type.DEBT') },
+];
+
+export const getPaymentTypeOptions = (t: TFunction) => [
+  { value: 'CASH', label: t('paymentType.CASH') },
+  { value: 'CARD', label: t('paymentType.CARD') },
+  { value: 'CREDIT', label: t('paymentType.CREDIT') },
+];

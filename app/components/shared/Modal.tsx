@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { cn } from '~/lib/utils';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
+import { cn } from '~/lib/utils';
 
 interface ModalProps {
   open: boolean;
@@ -28,7 +28,7 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
 
-        <div className={cn('flex-1 overflow-y-visible py-3')}>{children}</div>
+        <div className={cn('scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto py-3')}>{children}</div>
 
         {footer && <DialogFooter>{footer}</DialogFooter>}
       </DialogContent>
