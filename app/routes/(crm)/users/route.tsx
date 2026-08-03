@@ -1,26 +1,26 @@
-﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search } from 'lucide-react';
-import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { usersApi } from '~/api/users';
-import { marketsApi } from '~/api/markets';
-import { CreateUserModal } from '~/components/modals/CreateUserModal';
-import { EditUserModal } from '~/components/modals/EditUserModal';
-import { ColumnToggle } from '~/components/shared/ColumnToggle';
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { CustomInput } from '~/components/shared/CustomInput';
-import { DataTable } from '~/components/shared/DataTable';
-import { FilterSheet } from '~/components/shared/FilterSheet';
-import { Button } from '~/components/ui/button';
-import { Action } from '~/config/actions';
-import { useCan } from '~/hooks/useCan';
-import { useDataTable } from '~/hooks/useDataTable';
-import { useDebounce } from '~/hooks/useDebounce';
-import { mapToOptions } from '~/lib/mapToOptions';
-import { getColumns } from './configs/columns';
-import { getUserFilters } from './configs/filters';
-import { useUsersModals, useUsersStore } from './store';
+﻿import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Plus, Search } from 'lucide-react'
+import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
+import { marketsApi } from '~/api/markets'
+import { usersApi } from '~/api/users'
+import { CreateUserModal } from '~/components/modals/CreateUserModal'
+import { EditUserModal } from '~/components/modals/EditUserModal'
+import { ColumnToggle } from '~/components/shared/ColumnToggle'
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog'
+import { CustomInput } from '~/components/shared/CustomInput'
+import { DataTable } from '~/components/shared/DataTable'
+import { FilterSheet } from '~/components/shared/FilterSheet'
+import { Button } from '~/components/ui/button'
+import { Action } from '~/config/actions'
+import { useCan } from '~/hooks/useCan'
+import { useDataTable } from '~/hooks/useDataTable'
+import { useDebounce } from '~/hooks/useDebounce'
+import { mapToOptions } from '~/lib/mapToOptions'
+import { getColumns } from './configs/columns'
+import { getUserFilters } from './configs/filters'
+import { useUsersModals, useUsersStore } from './store'
 
 export default function UsersPage() {
   const { t } = useTranslation(['users', 'common']);
@@ -39,10 +39,7 @@ export default function UsersPage() {
     staleTime: 60_000,
   });
 
-  const marketOptions = useMemo(
-    () => mapToOptions(marketsResponse?.data?.data ?? [], 'id', 'name'),
-    [marketsResponse],
-  );
+  const marketOptions = useMemo(() => mapToOptions(marketsResponse?.data?.data ?? [], 'id', 'name'), [marketsResponse]);
 
   const {
     data: response,
@@ -89,7 +86,7 @@ export default function UsersPage() {
     columns,
     data: users,
     storageKey: 'users-table-columns',
-    initialVisibility: { 'market.name': false, 'market.address': false, role: false },
+    initialVisibility: { market: false },
   });
 
   return (
