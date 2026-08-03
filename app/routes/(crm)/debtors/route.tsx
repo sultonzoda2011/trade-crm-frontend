@@ -77,7 +77,7 @@ export default function DebtorsPage() {
     columns,
     data: debtors,
     storageKey: 'debtors-table-columns',
-    initialVisibility: { updatedAt: false, '_count.transactions': false, 'market.address': false, createdAt: false },
+    initialVisibility: { updatedAt: false, '_count.transactions': false, createdAt: false },
   });
 
   return (
