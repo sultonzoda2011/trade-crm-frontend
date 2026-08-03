@@ -3,12 +3,10 @@ import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
-import { Role } from '~/types/common';
 import type { Seller } from '~/types/sellers';
 import { useSellersModals } from '../store';
 
@@ -21,42 +19,44 @@ function SellerActionsCell({ row, t }: { row: Seller; t: TFunction }) {
   return (
     <div className="flex justify-end gap-1">
       <Tooltip>
-        <TooltipTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            render={<Link to={`/sellers/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
-            <Eye className="h-4 w-4" />
-          </Button>
-        } />
-        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
-      </Tooltip>
-      {can(Action.SELLERS_EDIT) && (
-        <Tooltip>
-          <TooltipTrigger render={
+        <TooltipTrigger
+          render={
             <Button
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => editModal.open(row)}>
-              <Pencil className="h-4 w-4" />
+              render={<Link to={`/sellers/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
+              <Eye className="h-4 w-4" />
             </Button>
-          } />
+          }
+        />
+        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
+      </Tooltip>
+      {can(Action.SELLERS_EDIT) && (
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editModal.open(row)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            }
+          />
           <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
         </Tooltip>
       )}
       {can(Action.SELLERS_DELETE) && (
         <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-              onClick={() => deleteModal.open(row.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          } />
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
+                onClick={() => deleteModal.open(row.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            }
+          />
           <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
         </Tooltip>
       )}
@@ -78,14 +78,11 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Seller, any>[] =>
       cell: (info) => <span className="text-sm">{info.getValue()}</span>,
     }),
     columnHelper.accessor('market.name', {
-      header: t('fields.name'),
-      enableHiding: false,
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
-    }),
-    columnHelper.accessor('market.address', {
-      header: () => <span>{t('fields.marketAddress')}</span>,
-      enableHiding: false,
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
+      header: t('fields.market'),
+      cell: (info) => {
+        const market = info.row.original.market;
+        return <UserAvatar fullName={market?.name ?? ''} subInfo={market?.address ?? ''} />;
+      },
     }),
 
     columnHelper.display({
