@@ -1,11 +1,11 @@
-import { useQueryClient } from '@tanstack/react-query';
-import Cookies from 'js-cookie';
-import { Check, ChevronDown, LogOut, Moon, Settings, Sun, User as UserIcon } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router';
-import { authApi } from '~/api/auth';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { useQueryClient } from '@tanstack/react-query'
+import Cookies from 'js-cookie'
+import { Check, ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import { authApi } from '~/api/auth'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,9 +14,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
-import { useIsMobile } from '~/hooks/use-mobile';
-import { getUserFromToken } from '~/lib/auth-utils';
+} from '~/components/ui/dropdown-menu'
+import { ROLE_CONFIG } from '~/config/enumOptions'
+import { useIsMobile } from '~/hooks/use-mobile'
+import { getUserFromToken } from '~/lib/auth-utils'
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -58,7 +59,7 @@ export function UserNav() {
         .join('')
         .toUpperCase()
     : 'U';
-
+  const roleLabel = userInfo?.role ? ROLE_CONFIG[userInfo.role]?.label(t) : '';
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -71,7 +72,7 @@ export function UserNav() {
 
         <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
           <span className="max-w-full truncate text-sm leading-none font-semibold">{userInfo?.name}</span>
-          <span className="text-muted-foreground mt-1 text-[10px] leading-none">{userInfo?.role}</span>
+          <span className="text-muted-foreground mt-1 text-[10px] leading-none">{roleLabel}</span>
         </div>
 
         <ChevronDown className="text-muted-foreground hidden h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
@@ -89,7 +90,7 @@ export function UserNav() {
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
                   <p className="truncate text-sm leading-none font-bold">{userInfo?.name}</p>
-                  <p className="text-muted-foreground mt-1 text-xs leading-none">{userInfo?.role}</p>
+                  <p className="text-muted-foreground mt-1 text-xs leading-none">{roleLabel}</p>
                 </div>
               </div>
             </div>
