@@ -75,12 +75,11 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
       cell: (info) => <UserAvatar fullName={info.row.original.name} subInfo={info.row.original.phone} />,
     }),
     columnHelper.accessor('market.name', {
-      header: t('fields.market'),
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
-    }),
-    columnHelper.accessor('market.address', {
       header: t('fields.marketAddress'),
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
+      cell: (info) => {
+        const market = info.row.original.market;
+        return <UserAvatar fullName={market?.name ?? ''} subInfo={market?.address ?? ''} />;
+      },
     }),
     columnHelper.accessor('createdAt', {
       header: t('fields.createdAt'),
