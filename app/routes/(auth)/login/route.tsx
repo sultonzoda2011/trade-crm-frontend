@@ -126,7 +126,7 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <FormInput control={control} name="email" label={t('email')} placeholder="0098865885" type="text" />
+              <FormInput control={control} name="email" label={t('email')} placeholder={t('emailPlaceholder')} type="email" />
               <FormInput
                 control={control}
                 name="password"
