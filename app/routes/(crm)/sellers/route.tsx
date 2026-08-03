@@ -29,11 +29,7 @@ export default function SellersPage() {
   const deleteModal = useSellersModals((s) => s.delete);
   const createModal = useSellersModals((s) => s.create);
 
-  const {
-    page, limit, search, filters,
-    setPage, setLimit, setSearch,
-    setFilters, resetFilters,
-  } = useSellersStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useSellersStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -50,7 +46,12 @@ export default function SellersPage() {
       const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
       const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
       const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-      return sellersApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+      return sellersApi.getAll(
+        page,
+        limit,
+        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
+        mf
+      );
     },
     staleTime: 30_000,
   });
@@ -77,7 +78,6 @@ export default function SellersPage() {
     columns,
     data: sellers,
     storageKey: 'sellers-table-columns',
-    initialVisibility: { email: false },
   });
 
   return (
