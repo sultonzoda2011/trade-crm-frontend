@@ -25,61 +25,52 @@
 }
 
 :root {
-  /* Тёплая "бумага", а не стерильный белый — меньше усталости глаз при
-     плотных таблицах цифр весь день. */
-  --background: oklch(0.99 0.0035 85);
-  --foreground: oklch(0.225 0.032 255);
+  /* Классическая нейтральная (zinc) палитра shadcn. Чистый белый фон —
+     без тёплой "бумаги", высокий контраст для плотных таблиц. */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.225 0.032 255);
+  --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.225 0.032 255);
-  /* Кобальт/азур — отсылка к майолике Самарканда и Бухары, а не
-     дефолтный shadcn-сине-фиолетовый. Насыщенный, но не кричащий —
-     доверие финансового инструмента, а не стартап-градиент. */
-  --primary: oklch(0.465 0.155 224);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.94 0.018 224);
-  --secondary-foreground: oklch(0.33 0.09 224);
-  --muted: oklch(0.966 0.006 95);
-  --muted-foreground: oklch(0.5 0.028 255);
-  --accent: oklch(0.94 0.018 224);
-  --accent-foreground: oklch(0.33 0.09 224);
-  /* Terracotta — цвет обожжённой глины и специй базара, а не generic
-     bootstrap-red; при этом остаётся однозначно "опасным" красным. */
-  --destructive: oklch(0.577 0.209 21);
-  --destructive-foreground: oklch(1 0 0);
-  /* Приглушённый шалфейно-зелёный — спокойнее неонового tailwind-green,
-     лучше читается рядом с cobalt-primary. */
-  --success: oklch(0.585 0.128 155);
-  --success-foreground: oklch(1 0 0);
-  /* Шафран — специя базара, тёплый акцент для "внимание"/долгов. */
-  --warning: oklch(0.715 0.152 73);
-  --warning-foreground: oklch(0.25 0.05 73);
-  --border: oklch(0.9 0.012 90);
-  --input: oklch(0.9 0.012 90);
-  --ring: oklch(0.465 0.155 224);
-  --chart-1: oklch(0.465 0.155 224);
-  --chart-2: var(--success);
-  --chart-3: var(--warning);
-  --chart-4: var(--destructive);
-  /* Слива — пятый цвет графиков, чтобы не изобретать ещё один синий. */
-  --chart-5: oklch(0.5 0.16 322);
-  --sidebar: oklch(0.975 0.008 224);
-  --sidebar-foreground: oklch(0.27 0.036 255);
-  --sidebar-primary: oklch(0.465 0.155 224);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.018 224);
-  --sidebar-accent-foreground: oklch(0.33 0.09 224);
-  --sidebar-border: oklch(0.9 0.012 90);
-  --sidebar-ring: oklch(0.465 0.155 224);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.596 0.145 163.225);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.277 0.033 12.896);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.277 0.046 256.788);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.21 0.006 285.885);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 3px;
   --shadow-blur: 12px;
   --shadow-spread: -2px;
   --shadow-opacity: 0.07;
-  /* Тёмно-синяя, а не чёрная тень — мягче и в тон палитре. */
-  --shadow-color: #0b1526;
+  /* Нейтральная тёмно-серая тень вместо синей. */
+  --shadow-color: #1c1c1c;
   --shadow-2xs: 0px 1px 8px 0px hsl(220 60% 8% / 0.04);
   --shadow-xs: 0px 1px 8px 0px hsl(220 60% 8% / 0.04);
   --shadow-sm: 0px 2px 10px -2px hsl(220 60% 8% / 0.08), 0px 1px 2px -1px hsl(220 60% 8% / 0.06);
@@ -98,44 +89,43 @@
 }
 
 .dark {
-  /* Глубокий чернильно-синий, а не нейтральный gray-900 — держит ту же
-     цветовую семью, что и primary, вместо "любой тёмной темы". */
-  --background: oklch(0.195 0.028 255);
-  --foreground: oklch(0.97 0.006 90);
-  --card: oklch(0.245 0.03 255);
-  --card-foreground: oklch(0.97 0.006 90);
-  --popover: oklch(0.225 0.03 255);
-  --popover-foreground: oklch(0.97 0.006 90);
-  --primary: oklch(0.685 0.155 224);
-  --primary-foreground: oklch(0.16 0.03 255);
-  --secondary: oklch(0.29 0.032 250);
-  --secondary-foreground: oklch(0.9 0.03 224);
-  --muted: oklch(0.27 0.028 250);
-  --muted-foreground: oklch(0.68 0.025 250);
-  --accent: oklch(0.29 0.032 250);
-  --accent-foreground: oklch(0.9 0.03 224);
-  --destructive: oklch(0.66 0.195 22);
-  --destructive-foreground: oklch(0.16 0.03 255);
-  --success: oklch(0.72 0.145 155);
-  --success-foreground: oklch(0.16 0.03 255);
-  --warning: oklch(0.8 0.145 78);
-  --warning-foreground: oklch(0.2 0.05 78);
-  --border: oklch(0.335 0.032 250);
-  --input: oklch(0.335 0.032 250);
-  --ring: oklch(0.685 0.155 224);
-  --chart-1: oklch(0.685 0.155 224);
-  --chart-2: var(--success);
-  --chart-3: var(--warning);
-  --chart-4: var(--destructive);
-  --chart-5: oklch(0.68 0.15 322);
-  --sidebar: oklch(0.225 0.03 255);
-  --sidebar-foreground: oklch(0.97 0.006 90);
-  --sidebar-primary: oklch(0.685 0.155 224);
-  --sidebar-primary-foreground: oklch(0.16 0.03 255);
-  --sidebar-accent: oklch(0.29 0.032 250);
-  --sidebar-accent-foreground: oklch(0.9 0.03 224);
-  --sidebar-border: oklch(0.335 0.032 250);
-  --sidebar-ring: oklch(0.685 0.155 224);
+  /* Нейтральный zinc-тёмный, без цветовой "цветовой семьи" primary. */
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.92 0.004 286.32);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(0.985 0 0);
+  --warning: oklch(0.8 0.16 70);
+  --warning-foreground: oklch(0.277 0.033 12.896);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.552 0.016 285.938);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.669 0.157 58.318);
+  --chart-3: oklch(0.696 0.17 162.48);
+  --chart-4: oklch(0.769 0.188 70.08);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.92 0.004 286.32);
+  --sidebar-primary-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.552 0.016 285.938);
   --radius: 0.5rem;
   --shadow-x: 0px;
   --shadow-y: 8px;
