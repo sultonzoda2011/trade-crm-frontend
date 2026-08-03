@@ -80,10 +80,6 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
         />
       ),
     }),
-    columnHelper.accessor('address', {
-      header: t('fields.address'),
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
-    }),
     columnHelper.accessor('owner.name', {
       header: t('fields.owner', 'Владелец'),
       cell: (info) => (
