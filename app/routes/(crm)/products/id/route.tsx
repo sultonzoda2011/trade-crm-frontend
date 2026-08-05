@@ -1,14 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, Pencil, Store } from 'lucide-react';
+import { Package, Pencil, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { DetailHeader } from '~/components/shared/DetailHeader';
+import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { UserAvatar } from '~/components/shared/UserAvatar';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { InfoLink } from '~/components/shared/InfoLink';
+import { QuickActions } from '~/components/shared/QuickActions';
+import { StatCard } from '~/components/shared/StatCard';
 import { Badge } from '~/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
@@ -45,6 +49,9 @@ export default function ProductDetailPage() {
     );
   }
 
+  const isLowStock = product.quantity <= product.lowStockThreshold;
+  const marketState = { fromPath: location.pathname, fromName: t('title') };
+
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
@@ -56,65 +63,68 @@ export default function ProductDetailPage() {
       />
 
       <Panel className="p-6">
-        <div className="flex items-center gap-5">
-          <Avatar className="size-16 rounded-xl">
-            <AvatarImage src={product.image ? product.image : undefined} className="object-cover" />
-            <AvatarFallback className="bg-muted rounded-xl text-2xl font-semibold">
-              {product.name.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-1 flex-col gap-1.5">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight">{product.name}</h1>
-                {product.category && (
-                  <Badge variant="secondary" className="font-normal">
-                    {product.category.name}
-                  </Badge>
-                )}
-                {product.quantity <= product.lowStockThreshold && (
-                  <Badge variant="destructive" className="font-normal">
-                    {t('lowStock', { defaultValue: 'Мало на складе' })}
-                  </Badge>
-                )}
-              </div>
-              {can(Action.PRODUCTS_EDIT) && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button variant="outline" size="sm" render={<Link to={`/products/${product.id}/edit`} />}>
-                        <Pencil className="mr-1 size-4" />
-                        {t('actions.edit')}
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-                </Tooltip>
+        <DetailHeader
+          name={product.name}
+          subtitle={product.market?.name}
+          image={product.image}
+          badges={
+            <>
+              {product.category && (
+                <Badge variant="secondary" className="font-normal">
+                  {product.category.name}
+                </Badge>
               )}
-            </div>
-            <p className="text-muted-foreground text-sm">{product.market?.name}</p>
-          </div>
-        </div>
+              {isLowStock && (
+                <Badge variant="destructive" className="font-normal">
+                  {t('lowStock', { defaultValue: 'Мало на складе' })}
+                </Badge>
+              )}
+            </>
+          }
+          actions={
+            can(Action.PRODUCTS_EDIT) ? (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="outline" size="sm" render={<Link to={`/products/${product.id}/edit`} />}>
+                      <Pencil className="mr-1 size-4" />
+                      {t('actions.edit')}
+                    </Button>
+                  }
+                />
+                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+              </Tooltip>
+            ) : undefined
+          }
+        />
       </Panel>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Panel>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <InfoItem label={t('fields.name')} value={product.name} />
+              <InfoItem
+                label={t('fields.name')}
+                value={
+                  <span className="flex items-center gap-2">
+                    <Avatar size="sm" className="shrink-0">
+                      {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
+                      <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{product.name}</span>
+                  </span>
+                }
+              />
               <InfoItem label={t('fields.description')} value={product.description} />
               <InfoItem label={t('fields.price')} value={fmtTJS(product.price)} />
               <InfoItem
                 label={t('fields.quantity')}
                 value={
                   <span className="flex items-center gap-2">
-                    <span
-                      className={
-                        product.quantity <= product.lowStockThreshold ? 'text-destructive font-semibold' : undefined
-                      }>
+                    <span className={isLowStock ? 'text-destructive font-semibold' : undefined}>
                       {product.quantity} {t(`unit.${product.unit}`, { defaultValue: product.unit })}
                     </span>
-                    {product.quantity <= product.lowStockThreshold && (
+                    {isLowStock && (
                       <Badge variant="destructive" className="text-xs font-normal">
                         {t('lowStock', { defaultValue: 'Мало на складе' })}
                       </Badge>
@@ -131,12 +141,17 @@ export default function ProductDetailPage() {
               <InfoItem
                 label={t('fields.market')}
                 value={
-                  <Link
-                    to={`/markets/${product.marketId}`}
-                    className="group text-primary inline-flex items-center gap-1 text-sm font-semibold hover:underline">
-                    {product.market?.name}
-                    <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
+                  <span className="flex items-center gap-2">
+                    <Avatar size="sm" className="shrink-0">
+                      {product.market?.image ? (
+                        <AvatarImage src={product.market.image} alt={product.market.name} />
+                      ) : null}
+                      <AvatarFallback>{(product.market?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <InfoLink to={`/markets/${product.marketId}`} state={marketState}>
+                      {product.market?.name}
+                    </InfoLink>
+                  </span>
                 }
               />
               <InfoItem label={t('fields.createdAt')} value={formatDate(product.createdAt, true)} />
@@ -146,62 +161,46 @@ export default function ProductDetailPage() {
 
           <Panel title={t('statistics')}>
             <div className="grid grid-cols-1 gap-4">
-              <div className="bg-muted/50 flex flex-col items-center gap-1.5 rounded-xl p-4">
-                <span className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
-                  {t('fields.transactionItems')}
-                </span>
-                <Badge variant="secondary" className="font-mono text-base">
-                  {product._count.transactionItems}
-                </Badge>
-              </div>
+              <StatCard icon={Package} label={t('fields.transactionItems')} value={product._count.transactionItems} />
             </div>
           </Panel>
         </div>
 
         <div className="space-y-6">
-          <Panel title={t('fields.market')}>
-            <div className="space-y-4">
-              <UserAvatar fullName={product.market?.name} subInfo={product.market?.address} />
-              <Button
-                variant="outline"
-                className="w-full"
-                size="sm"
-                render={
-                  <Link
-                    to={`/markets/${product.marketId}`}
-                    state={{ fromPath: location.pathname, fromName: t('title') }}
-                  />
-                }>
-                {t('actions.view')}
-                <ArrowUpRight className="size-3.5" />
-              </Button>
-            </div>
-          </Panel>
+          <EntityCard
+            title={t('fields.market')}
+            fullName={product.market?.name ?? '—'}
+            subInfo={product.market?.address}
+            imagePath={product.market?.image ?? undefined}
+            viewTo={`/markets/${product.marketId}`}
+            viewLabel={t('actions.view')}
+            viewState={marketState}
+          />
 
-          <Panel title={t('quickActions', { defaultValue: 'Быстрые действия' })}>
-            <div className="space-y-2">
-              {can(Action.PRODUCTS_EDIT) && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                  size="sm"
-                  render={<Link to={`/products/${product.id}/edit`} />}>
-                  <Pencil className="size-3.5" />
-                  {t('actions.edit')}
-                </Button>
-              )}
-              {product.market && (
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start gap-2"
-                  size="sm"
-                  render={<Link to={`/markets/${product.marketId}`} />}>
-                  <Store className="size-3.5" />
-                  {t('fields.market')}
-                </Button>
-              )}
-            </div>
-          </Panel>
+          <QuickActions
+            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            actions={[
+              ...(can(Action.PRODUCTS_EDIT)
+                ? [
+                    {
+                      icon: Pencil,
+                      label: t('actions.edit'),
+                      variant: 'outline' as const,
+                      render: <Link to={`/products/${product.id}/edit`} />,
+                    },
+                  ]
+                : []),
+              ...(product.market
+                ? [
+                    {
+                      icon: Store,
+                      label: t('fields.market'),
+                      render: <Link to={`/markets/${product.marketId}`} />,
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </div>
       </div>
     </div>
