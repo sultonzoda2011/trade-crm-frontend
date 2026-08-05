@@ -81,7 +81,13 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Seller, any>[] =>
       header: t('fields.market'),
       cell: (info) => {
         const market = info.row.original.market;
-        return <UserAvatar fullName={market?.name ?? ''} subInfo={market?.address ?? ''} />;
+        return (
+          <UserAvatar
+            fullName={market?.name ?? ''}
+            subInfo={market?.address ?? ''}
+            imagePath={market?.image ?? undefined}
+          />
+        );
       },
     }),
 
