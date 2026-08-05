@@ -28,6 +28,7 @@
   "viewDebtors": "Должники рынка",
   "viewTransactions": "Транзакции рынка",
   "viewAll": "Все",
+  "soldCount": "Продано {{count}}",
   "actions": {
     "view": "Просмотр",
     "edit": "Редактировать",
