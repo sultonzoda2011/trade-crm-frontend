@@ -21,8 +21,8 @@ export interface DashboardRecentTransaction {
   remainingAmount: number;
   createdAt: string;
   debtor: { id: string; name: string } | null;
-  market: { id: string; name: string };
-  createdBy: { id: string; name: string };
+  market: { id: string; name: string; image: string | null };
+  createdBy: { id: string; name: string; image: string | null };
 }
 
 export interface DashboardTopDebtor {
@@ -58,7 +58,7 @@ export interface DashboardData {
 export type DashboardResponse = ApiResponse<DashboardData>;
 
 export interface SellerReportRow {
-  seller: { id: string; name: string; email: string; role: string } | null;
+  seller: { id: string; name: string; email: string; role: string; image: string | null } | null;
   salesCount: number;
   salesAmount: number;
   refundsCount: number;
