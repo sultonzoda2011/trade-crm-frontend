@@ -3,7 +3,8 @@
     "dashboard": "Панель управления",
     "users": "Пользователи",
     "markets": "Рынки",
-    "sellers": "Продавец",
+    "myMarket": "Мой рынок",
+    "sellers": "Продавцы",
     "debtors": "Должники",
     "products": "Продукты",
     "transactions": "Транзакции",
@@ -111,7 +112,9 @@
     "exclude": "Исключить",
     "back": "Назад",
     "activate": "Активировать",
-    "toggleTheme": "Сменить тему"
+    "toggleTheme": "Сменить тему",
+    "collapse": "Свернуть",
+    "expand": "Раскрыть"
   },
   "fields": {
     "fullName": "Полное имя",
@@ -172,6 +175,7 @@
   },
   "header": {
     "theme": "Тема",
-    "language": "Язык"
+    "language": "Язык",
+    "profile": "Профиль"
   }
 }
