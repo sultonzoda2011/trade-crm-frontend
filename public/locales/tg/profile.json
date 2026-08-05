@@ -1,0 +1,43 @@
+{
+  "title": "Профил",
+  "editTitle": "Таҳрири профил",
+  "avatar": "Аватар",
+  "sections": {
+    "profile": "Маълумоти умумӣ",
+    "password": "Иваз кардани рамз",
+    "market": "Бозори ман",
+    "statistics": "Омор"
+  },
+  "fields": {
+    "name": "Ном",
+    "email": "Почтаи электронӣ",
+    "currentPassword": "Рамзи феълӣ",
+    "newPassword": "Рамзи нав",
+    "confirmPassword": "Тасдиқи рамз",
+    "role": "Нақш",
+    "marketId": "ID бозор",
+    "createdAt": "Санаи бақайдгирӣ",
+    "updatedAt": "Санаи навсозӣ",
+    "market": "Бозор",
+    "address": "Суроға",
+    "products": "Молҳо",
+    "debtors": "Қарздорон",
+    "transactions": "Амалиётҳо"
+  },
+  "noMarket": "Бозор таъин нашудааст",
+  "viewAll": "Ҳама",
+  "viewProducts": "Ҳамаи молҳо",
+  "viewDebtors": "Ҳамаи қарздорон",
+  "viewTransactions": "Ҳамаи амалиётҳо",
+  "quickActions": "Амалҳои зуд",
+  "goToMarket": "Гузаштан ба бозор",
+  "editProfile": "Таҳрири профил",
+  "actions": {
+    "save": "Сабт кардан",
+    "savePassword": "Иваз кардани рамз"
+  },
+  "updateSuccess": "Профил нав карда шуд",
+  "updateError": "Нав кардани профил муяссар нашуд",
+  "passwordSuccess": "Рамз иваз карда шуд",
+  "passwordError": "Иваз кардани рамз муяссар нашуд"
+}
