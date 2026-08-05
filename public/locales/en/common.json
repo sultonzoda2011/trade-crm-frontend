@@ -3,6 +3,7 @@
     "dashboard": "Dashboard",
     "users": "Users",
     "markets": "Markets",
+    "myMarket": "My market",
     "sellers": "Sellers",
     "debtors": "Debtors",
     "products": "Products",
@@ -111,7 +112,9 @@
     "exclude": "Exclude",
     "back": "Back",
     "activate": "Activate",
-    "toggleTheme": "Toggle theme"
+    "toggleTheme": "Toggle theme",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "fields": {
     "fullName": "Full Name",
@@ -172,6 +175,7 @@
   },
   "header": {
     "theme": "Theme",
-    "language": "Language"
+    "language": "Language",
+    "profile": "Profile"
   }
 }
