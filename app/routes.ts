@@ -23,6 +23,7 @@ export default [
     route('/debtors', 'routes/(crm)/debtors/route.tsx'),
     route('/debtors/:id', 'routes/(crm)/debtors/id/route.tsx'),
     route('/transactions', 'routes/(crm)/transactions/route.tsx'),
+    route('/transactions/create', 'routes/(crm)/transactions/create/route.tsx'),
     route('/transactions/:id', 'routes/(crm)/transactions/id/route.tsx'),
   ]),
 ] satisfies RouteConfig;
