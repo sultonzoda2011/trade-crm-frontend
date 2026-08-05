@@ -22,7 +22,7 @@ function SellerNameCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
         render={
           <Link to={`/users/${seller.id}`} state={{ fromPath: location.pathname, fromName: t('usersReport') }} />
         }>
-        <UserAvatar fullName={seller.name} subInfo={seller.email} />
+        <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
       </Button>
     </div>
   );
@@ -36,17 +36,22 @@ function SellerActionsCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
   return (
     <div className="flex justify-end gap-1">
       <Tooltip>
-        <TooltipTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            render={
-              <Link to={`/users/${row.seller.id}`} state={{ fromPath: location.pathname, fromName: t('usersReport') }} />
-            }>
-            <Eye className="h-4 w-4" />
-          </Button>
-        } />
+        <TooltipTrigger
+          render={
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              render={
+                <Link
+                  to={`/users/${row.seller.id}`}
+                  state={{ fromPath: location.pathname, fromName: t('usersReport') }}
+                />
+              }>
+              <Eye className="h-4 w-4" />
+            </Button>
+          }
+        />
         <TooltipContent side="bottom">{t('actions.view', { ns: 'common', defaultValue: 'Открыть' })}</TooltipContent>
       </Tooltip>
     </div>
