@@ -5,9 +5,11 @@ export default [
 
   layout('routes/(crm)/layout.tsx', [
     index('routes/(crm)/dashboard/route.tsx'),
+    route('/profile', 'routes/(crm)/profile/route.tsx'),
     route('/users', 'routes/(crm)/users/route.tsx'),
     route('/users/:id', 'routes/(crm)/users/id/route.tsx'),
     route('/markets', 'routes/(crm)/markets/route.tsx'),
+    route('/my-market', 'routes/(crm)/my-market/route.tsx'),
     route('/markets/:id', 'routes/(crm)/markets/id/route.tsx'),
     route('/sellers', 'routes/(crm)/sellers/route.tsx'),
     route('/sellers/:id', 'routes/(crm)/sellers/id/route.tsx'),
