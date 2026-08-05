@@ -1,0 +1,43 @@
+{
+  "title": "Profile",
+  "editTitle": "Edit profile",
+  "avatar": "Avatar",
+  "sections": {
+    "profile": "General information",
+    "password": "Change password",
+    "market": "My market",
+    "statistics": "Statistics"
+  },
+  "fields": {
+    "name": "Name",
+    "email": "Email",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "role": "Role",
+    "marketId": "Market ID",
+    "createdAt": "Registered at",
+    "updatedAt": "Updated at",
+    "market": "Market",
+    "address": "Address",
+    "products": "Products",
+    "debtors": "Debtors",
+    "transactions": "Transactions"
+  },
+  "noMarket": "No market assigned",
+  "viewAll": "All",
+  "viewProducts": "All products",
+  "viewDebtors": "All debtors",
+  "viewTransactions": "All transactions",
+  "quickActions": "Quick actions",
+  "goToMarket": "Go to market",
+  "editProfile": "Edit profile",
+  "actions": {
+    "save": "Save",
+    "savePassword": "Change password"
+  },
+  "updateSuccess": "Profile updated",
+  "updateError": "Failed to update profile",
+  "passwordSuccess": "Password changed",
+  "passwordError": "Failed to change password"
+}
