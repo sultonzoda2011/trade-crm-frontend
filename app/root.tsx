@@ -113,9 +113,18 @@ function Splash({ locale }: { locale: string }) {
   return (
     <div ref={ref} id="app-splash">
       <div className="splash-content">
-        <p className="splash-logo">
-          TRADE<span>CRM</span>
-        </p>
+        <div className="splash-logo">
+          <img
+            className="h-24 w-auto object-contain dark:hidden"
+            src="/text-in-bottom-logo-light.png"
+            alt="Trade CRM"
+          />
+          <img
+            className="hidden h-24 w-auto object-contain dark:block"
+            src="/text-in-bottom-logo-dark.png"
+            alt="Trade CRM"
+          />
+        </div>
         <div className="splash-loader" />
         <p className="splash-hint">{splashHints[locale] ?? splashHints.ru}</p>
       </div>
