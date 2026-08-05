@@ -1,0 +1,43 @@
+{
+  "title": "Профиль",
+  "editTitle": "Редактировать профиль",
+  "avatar": "Аватар",
+  "sections": {
+    "profile": "Общая информация",
+    "password": "Смена пароля",
+    "market": "Мой рынок",
+    "statistics": "Статистика"
+  },
+  "fields": {
+    "name": "Имя",
+    "email": "Электронная почта",
+    "currentPassword": "Текущий пароль",
+    "newPassword": "Новый пароль",
+    "confirmPassword": "Подтверждение пароля",
+    "role": "Роль",
+    "marketId": "ID рынка",
+    "createdAt": "Дата регистрации",
+    "updatedAt": "Дата обновления",
+    "market": "Рынок",
+    "address": "Адрес",
+    "products": "Товары",
+    "debtors": "Должники",
+    "transactions": "Сделки"
+  },
+  "noMarket": "Рынок не назначен",
+  "viewAll": "Все",
+  "viewProducts": "Все товары",
+  "viewDebtors": "Все должники",
+  "viewTransactions": "Все сделки",
+  "quickActions": "Быстрые действия",
+  "goToMarket": "Перейти к рынку",
+  "editProfile": "Редактировать профиль",
+  "actions": {
+    "save": "Сохранить",
+    "savePassword": "Сменить пароль"
+  },
+  "updateSuccess": "Профиль обновлён",
+  "updateError": "Не удалось обновить профиль",
+  "passwordSuccess": "Пароль изменён",
+  "passwordError": "Не удалось изменить пароль"
+}
