@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
 import { sellersApi } from '~/api/sellers';
 import { Panel } from '~/components/layout/Panel';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -29,7 +30,7 @@ function StatCard({
 }) {
   return (
     <Panel className="flex items-center gap-3 p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+      <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
         <Icon className="h-5 w-5" />
       </div>
       <div className="min-w-0">
@@ -59,10 +60,7 @@ export default function DashboardRoute() {
     staleTime: 60_000,
   });
 
-  const sellerOptions = useMemo(
-    () => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'),
-    [sellersResponse],
-  );
+  const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
 
   const params = useMemo(() => {
     const p: DashboardParams = {};
@@ -99,7 +97,7 @@ export default function DashboardRoute() {
           <div className="flex items-center gap-2">
             <Label className="text-xs">{t('period.from')}</Label>
             <CustomSelect
-              options={PERIOD_OPTIONS.map(o => ({ value: o.value, label: t(o.labelKey) }))}
+              options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
               value={period}
               onChange={(v) => setPeriod(String(v))}
             />
@@ -140,29 +138,31 @@ export default function DashboardRoute() {
         <Panel
           title={t('recentTransactions')}
           actions={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 text-xs"
-              render={<Link to="/transactions" />}>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/transactions" />}>
               {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           }>
           {recentTransactions.length === 0 ? (
             <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-border divide-y">
               {recentTransactions.map((tx) => (
                 <Link
                   key={tx.id}
                   to={`/transactions/${tx.id}`}
-                  className="flex items-center justify-between gap-3 py-3 hover:bg-muted/40 -mx-2 px-2 rounded-md transition-colors">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">
-                      {tx.debtor?.name ?? tx.market.name}
-                      <span className="text-muted-foreground ml-2 font-mono text-xs">#{tx.id.slice(0, 8)}</span>
-                    </p>
-                    <p className="text-muted-foreground text-xs">{formatDate(tx.createdAt, true)}</p>
+                  className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors">
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <Avatar size="sm" className="shrink-0">
+                      {tx.createdBy.image ? <AvatarImage src={tx.createdBy.image} alt={tx.createdBy.name} /> : null}
+                      <AvatarFallback>{tx.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">
+                        {tx.debtor?.name ?? tx.market.name}
+                        <span className="text-muted-foreground ml-2 font-mono text-xs">#{tx.id.slice(0, 8)}</span>
+                      </p>
+                      <p className="text-muted-foreground text-xs">{formatDate(tx.createdAt, true)}</p>
+                    </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Badge
@@ -187,28 +187,24 @@ export default function DashboardRoute() {
         <Panel
           title={t('topDebtors')}
           actions={
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 text-xs"
-              render={<Link to="/debtors" />}>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/debtors" />}>
               {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           }>
           {topDebtors.length === 0 ? (
             <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
           ) : (
-            <div className="divide-y divide-border">
+            <div className="divide-border divide-y">
               {topDebtors.map((debtor) => (
                 <Link
                   key={debtor.id}
                   to={`/debtors/${debtor.id}`}
-                  className="flex items-center justify-between gap-3 py-3 hover:bg-muted/40 -mx-2 px-2 rounded-md transition-colors">
+                  className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{debtor.name}</p>
                     <p className="text-muted-foreground text-xs">{debtor.phone}</p>
                   </div>
-                  <span className="font-mono text-sm font-semibold text-warning">{fmtTJS(debtor.totalDebt)}</span>
+                  <span className="text-warning font-mono text-sm font-semibold">{fmtTJS(debtor.totalDebt)}</span>
                 </Link>
               ))}
             </div>
