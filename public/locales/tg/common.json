@@ -3,7 +3,8 @@
     "dashboard": "Панели идоракунӣ",
     "users": "Корбарон",
     "markets": "Бозорҳо",
-    "sellers": "Фурӯшанда",
+    "myMarket": "Бозори ман",
+    "sellers": "Фурӯшандагон",
     "debtors": "Қарздорон",
     "products": "Маҳсулотҳо",
     "transactions": "Муомилотҳо",
@@ -106,7 +107,9 @@
     "exclude": "Истисно кардан",
     "back": "Бозгашт",
     "activate": "Фаъол кардан",
-    "toggleTheme": "Иваз кардани мавзуъ"
+    "toggleTheme": "Иваз кардани мавзуъ",
+    "collapse": "Гузордан",
+    "expand": "Кшода кардан"
   },
   "fields": {
     "fullName": "Ному насаб",
@@ -167,6 +170,7 @@
   },
   "header": {
     "theme": "Мавзуъ",
-    "language": "Забон"
+    "language": "Забон",
+    "profile": "Профил"
   }
 }
