@@ -3,6 +3,11 @@
   "create": "Create Transaction",
   "createSuccess": "Transaction created successfully",
   "createError": "Error creating transaction",
+  "createSubtitle": "Record a sale or register a debt",
+  "details": "Details",
+  "paymentSummary": "Payment summary",
+  "creditedHint": "The amount is credited immediately — the transaction is marked as paid.",
+  "debtHint": "The full amount is recorded as a debt: 0 credited, everything stays as remaining.",
   "pay": "Make Payment",
   "paySuccess": "Payment processed successfully",
   "payError": "Error processing payment",
@@ -45,6 +50,7 @@
     "note": "Note",
     "addItem": "Add Product",
     "discount": "Discount",
+    "credited": "Credited",
     "dueDate": "Due date"
   },
   "filters": {
