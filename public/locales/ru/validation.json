@@ -5,6 +5,8 @@
   "stringMin": "Минимум {{count}} символов",
   "stringMax": "Максимум {{count}} символов",
   "emailRequired": "Введите email",
+  "nameRequired": "Введите имя",
+  "passwordMismatch": "Пароли не совпадают",
   "usernameRequired": "Введите логин",
   "passwordRequired": "Введите пароль",
   "oldPassRequired": "Введите текущий пароль",
@@ -16,5 +18,6 @@
   "discountMin": "Минимум 0",
   "itemProductRequired": "Выберите товар",
   "itemsRequired": "Добавьте хотя бы один товар",
-  "dueDateRequired": "Обязательное поле для типа «В долг»"
+  "dueDateRequired": "Обязательное поле для типа «В долг»",
+  "debtorRequired": "Выберите должника"
 }
