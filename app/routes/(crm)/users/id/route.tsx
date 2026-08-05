@@ -9,16 +9,23 @@ import { usersApi } from '~/api/users';
 import { Panel } from '~/components/layout/Panel';
 import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { InfoLink } from '~/components/shared/InfoLink';
+import { ListLink } from '~/components/shared/ListLink';
+import { PanelViewAll } from '~/components/shared/PanelViewAll';
+import { QuickActions } from '~/components/shared/QuickActions';
+import { SkeletonList } from '~/components/shared/SkeletonList';
+import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
-import { fmtTJS, formatDate } from '~/lib/format';
+import { formatDate } from '~/lib/format';
 import { Role } from '~/types/common';
 import { useUsersModals } from '../store';
 
@@ -90,43 +97,45 @@ export default function UserDetailPage() {
       />
 
       <Panel className="p-6">
-        <div className="flex items-center justify-between gap-5">
-          <div className="flex items-center gap-5">
-            <Avatar className="size-16 rounded-xl">
-              {user.image && <AvatarImage src={user.image} alt={user.name} className="object-cover" />}
-              <AvatarFallback className="bg-muted rounded-xl text-2xl font-semibold">
-                {user.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col gap-1.5">
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
-                <Badge variant="outline">{roleLabel}</Badge>
-              </div>
-              <p className="text-muted-foreground text-sm">{user.email}</p>
-            </div>
-          </div>
-          {can(Action.USERS_EDIT) && (
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(user)}>
-                    <Pencil className="size-3.5" />
-                    <span className="hidden sm:inline">{t('actions.edit')}</span>
-                  </Button>
-                }
-              />
-              <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+        <DetailHeader
+          name={user.name}
+          subtitle={user.email}
+          image={user.image}
+          badges={<Badge variant="outline">{roleLabel}</Badge>}
+          actions={
+            can(Action.USERS_EDIT) ? (
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(user)}>
+                      <Pencil className="size-3.5" />
+                      <span className="hidden sm:inline">{t('actions.edit')}</span>
+                    </Button>
+                  }
+                />
+                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+              </Tooltip>
+            ) : undefined
+          }
+        />
       </Panel>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           <Panel>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <InfoItem label={t('fields.name')} value={user.name} />
+              <InfoItem
+                label={t('fields.name')}
+                value={
+                  <span className="flex items-center gap-2">
+                    <Avatar size="sm" className="shrink-0">
+                      {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+                      <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{user.name}</span>
+                  </span>
+                }
+              />
               <InfoItem label={t('fields.email')} value={user.email} />
               <InfoItem
                 label={t('fields.role')}
@@ -147,17 +156,23 @@ export default function UserDetailPage() {
             <Panel title={t('fields.market')}>
               <div className="divide-border divide-y">
                 {isMarketsLoading ? (
-                  <div className="bg-muted/50 h-12 animate-pulse rounded-lg" />
+                  <SkeletonList count={3} height="h-12" className="py-0" />
                 ) : (
                   ownedMarkets.slice(0, 5).map((m) => (
-                    <Link
+                    <ListLink
                       key={m.id}
                       to={`/markets/${m.id}`}
                       state={{ fromPath: location.pathname, fromName: user.name }}
-                      className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-2.5 transition-colors">
-                      <span className="text-sm font-medium">{m.name}</span>
+                      className="py-2.5">
+                      <span className="flex min-w-0 items-center gap-2.5">
+                        <Avatar size="sm" className="shrink-0">
+                          {m.image ? <AvatarImage src={m.image} alt={m.name} /> : null}
+                          <AvatarFallback>{m.name.charAt(0).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <span className="truncate text-sm font-medium">{m.name}</span>
+                      </span>
                       <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
-                    </Link>
+                    </ListLink>
                   ))
                 )}
               </div>
@@ -170,12 +185,17 @@ export default function UserDetailPage() {
                 <InfoItem
                   label={t('fields.name')}
                   value={
-                    <Link
-                      to={`/markets/${user.market.id}`}
-                      className="group text-primary inline-flex items-center gap-1 text-sm font-semibold hover:underline">
-                      {user.market.name}
-                      <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </Link>
+                    <span className="flex items-center gap-2">
+                      <Avatar size="sm" className="shrink-0">
+                        {user.market.image ? <AvatarImage src={user.market.image} alt={user.market.name} /> : null}
+                        <AvatarFallback>{user.market.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <InfoLink
+                        to={`/markets/${user.market.id}`}
+                        state={{ fromPath: location.pathname, fromName: user.name }}>
+                        {user.market.name}
+                      </InfoLink>
+                    </span>
                   }
                 />
                 {user.market.address && <InfoItem label={t('fields.address')} value={user.market.address} />}
@@ -187,86 +207,56 @@ export default function UserDetailPage() {
             <Panel
               title={t('transactionsHistory')}
               actions={
-                <Link
+                <PanelViewAll
                   to="/transactions"
                   state={{ fromSellerId: user.id, fromSellerName: user.name }}
-                  className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium transition-colors">
-                  {t('viewAll')} ({totalTx})
-                  <ArrowUpRight className="size-3" />
-                </Link>
+                  label={t('viewAll')}
+                  count={totalTx}
+                />
               }>
               {isTxLoading ? (
-                <div className="bg-muted/50 h-24 animate-pulse rounded-lg" />
+                <SkeletonList count={3} height="h-24" className="py-0" />
               ) : (
                 <div className="divide-border divide-y">
                   {userTransactions.map((tx) => (
-                    <Link
+                    <TransactionRow
                       key={tx.id}
+                      tx={tx}
+                      t={t}
                       to={`/transactions/${tx.id}`}
                       state={{ fromPath: location.pathname, fromName: user.name }}
-                      className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors">
-                      <div className="min-w-0">
-                        <p className="flex items-center gap-2 truncate text-sm font-medium">
-                          #{tx.id.slice(0, 8)}
-                          <Badge
-                            variant="outline"
-                            className={
-                              tx.status === 'PAID'
-                                ? 'border-success/40 bg-success/15 text-success text-xs font-normal'
-                                : tx.status === 'REFUNDED'
-                                  ? 'border-destructive/40 bg-destructive/15 text-destructive text-xs font-normal'
-                                  : 'border-warning/40 bg-warning/15 text-warning text-xs font-normal'
-                            }>
-                            {t(`status.${tx.status}`, { ns: 'transactions', defaultValue: tx.status })}
-                          </Badge>
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {formatDate(tx.createdAt, true)}
-                          {tx.debtor && <> · {tx.debtor.name}</>}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</p>
-                        {tx.remainingAmount > 0 && (
-                          <p className="text-warning font-mono text-xs">
-                            {t('remaining', { ns: 'transactions', defaultValue: 'Остаток' })}:{' '}
-                            {fmtTJS(tx.remainingAmount)}
-                          </p>
-                        )}
-                      </div>
-                    </Link>
+                    />
                   ))}
                 </div>
               )}
             </Panel>
           )}
 
-          <Panel title={t('quickActions', { defaultValue: 'Быстрые действия' })}>
-            <div className="space-y-2">
-              {can(Action.USERS_EDIT) && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start gap-2"
-                  size="sm"
-                  onClick={() => editModal.open(user)}>
-                  <Pencil className="size-3.5" />
-                  {t('actions.edit')}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-2"
-                size="sm"
-                render={<Link to="/transactions" />}>
-                <ReceiptText className="size-3.5" />
-                {t('transactionsHistory', { defaultValue: 'Транзакции' })}
-              </Button>
-              <Button variant="ghost" className="w-full justify-start gap-2" size="sm" render={<Link to="/markets" />}>
-                <Store className="size-3.5" />
-                {t('viewMarkets', { defaultValue: 'Рынки' })}
-              </Button>
-            </div>
-          </Panel>
+          <QuickActions
+            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            actions={[
+              ...(can(Action.USERS_EDIT)
+                ? [
+                    {
+                      icon: Pencil,
+                      label: t('actions.edit'),
+                      variant: 'outline' as const,
+                      onClick: () => editModal.open(user),
+                    },
+                  ]
+                : []),
+              {
+                icon: ReceiptText,
+                label: t('transactionsHistory', { defaultValue: 'Транзакции' }),
+                render: <Link to="/transactions" />,
+              },
+              {
+                icon: Store,
+                label: t('viewMarkets', { defaultValue: 'Рынки' }),
+                render: <Link to="/markets" />,
+              },
+            ]}
+          />
         </div>
       </div>
 
