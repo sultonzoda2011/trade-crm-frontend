@@ -17,11 +17,7 @@ export enum Action {
   PRODUCTS_DELETE = 'PRODUCTS_DELETE',
   CATEGORIES_MANAGE = 'CATEGORIES_MANAGE',
   TRANSACTIONS_VIEW = 'TRANSACTIONS_VIEW',
-  // Общее разрешение "создать транзакцию" — включает Seller, т.к. по бизнес-правилам
-  // продавец обязан уметь оформить продажу в долг (DEBT).
   TRANSACTIONS_CREATE = 'TRANSACTIONS_CREATE',
-  // Более узкое разрешение — именно обычная продажа (SALE). Seller его не получает,
-  // используется в UI, чтобы не показывать продавцу тип SALE в форме создания.
   TRANSACTIONS_CREATE_SALE = 'TRANSACTIONS_CREATE_SALE',
   TRANSACTIONS_EDIT = 'TRANSACTIONS_EDIT',
   TRANSACTIONS_DELETE = 'TRANSACTIONS_DELETE',
@@ -45,7 +41,7 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.MARKETS_VIEW]: [Role.Admin],
   [Action.MARKETS_VIEW_BY_ID]: [Role.Admin, Role.Owner],
   [Action.MARKETS_CREATE]: [Role.Admin],
-  [Action.MARKETS_EDIT]: [Role.Admin],
+  [Action.MARKETS_EDIT]: [Role.Admin, Role.Owner],
   [Action.MARKETS_DELETE]: [Role.Admin],
   [Action.PRODUCTS_VIEW]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_CREATE]: [Role.Admin, Role.Owner],
