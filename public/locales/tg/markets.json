@@ -26,6 +26,7 @@
   "viewDebtors": "Қарздорони бозор",
   "viewTransactions": "Транзаксияҳои бозор",
   "viewAll": "Ҳама",
+  "soldCount": "Фурӯхта шуд {{count}}",
   "actions": {
     "view": "Дидан",
     "edit": "Таҳрир кардан",
