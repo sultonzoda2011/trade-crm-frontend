@@ -61,5 +61,8 @@
   "quickActions": "Quick Actions",
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",
-  "refundError": "Failed to create refund"
+  "refundError": "Failed to create refund",
+  "stockError": "Not enough stock available",
+  "inStock": "In stock"
 }
+ 
