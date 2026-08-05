@@ -5,6 +5,8 @@
   "stringMin": "Minimum {{count}} characters",
   "stringMax": "Maximum {{count}} characters",
   "emailRequired": "Email is required",
+  "nameRequired": "Name is required",
+  "passwordMismatch": "Passwords do not match",
   "usernameRequired": "Username is required",
   "passwordRequired": "Password is required",
   "oldPassRequired": "Current password is required",
@@ -16,5 +18,6 @@
   "discountMin": "Minimum 0",
   "itemProductRequired": "Select product",
   "itemsRequired": "Add at least one item",
-  "dueDateRequired": "Required for DEBT type"
+  "dueDateRequired": "Required for DEBT type",
+  "debtorRequired": "Debtor is required"
 }
