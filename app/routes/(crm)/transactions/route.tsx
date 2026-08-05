@@ -1,43 +1,49 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search } from 'lucide-react'
-import { useEffect, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router'
-import { toast } from 'sonner'
-import { debtorsApi } from '~/api/debtors'
-import { transactionsApi } from '~/api/transactions'
-import { categoriesApi } from '~/api/categories'
-import { productsApi } from '~/api/products'
-import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills'
-import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal'
-import { CreateTransactionModal } from '~/components/modals/CreateTransactionModal'
-import { ColumnToggle } from '~/components/shared/ColumnToggle'
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog'
-import { CustomInput } from '~/components/shared/CustomInput'
-import { DataTable } from '~/components/shared/DataTable'
-import { FilterSheet } from '~/components/shared/FilterSheet'
-import { Button } from '~/components/ui/button'
-import { Action } from '~/config/actions'
-import { useCan } from '~/hooks/useCan'
-import { useDataTable } from '~/hooks/useDataTable'
-import { useDebounce } from '~/hooks/useDebounce'
-import { useFilterParams } from '~/hooks/useFilterParams'
-import { mapToOptions } from '~/lib/mapToOptions'
-import { getColumns } from './configs/columns'
-import { getTransactionFilters } from './configs/filters'
-import { useTransactionsModals, useTransactionsStore } from './store'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Plus, Search } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, Link } from 'react-router';
+import { toast } from 'sonner';
+import { debtorsApi } from '~/api/debtors';
+import { transactionsApi } from '~/api/transactions';
+import { categoriesApi } from '~/api/categories';
+import { productsApi } from '~/api/products';
+import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
+import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
+import { ColumnToggle } from '~/components/shared/ColumnToggle';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
+import { CustomInput } from '~/components/shared/CustomInput';
+import { DataTable } from '~/components/shared/DataTable';
+import { FilterSheet } from '~/components/shared/FilterSheet';
+import { Button } from '~/components/ui/button';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
+import { useDataTable } from '~/hooks/useDataTable';
+import { useDebounce } from '~/hooks/useDebounce';
+import { useFilterParams } from '~/hooks/useFilterParams';
+import { mapToOptions } from '~/lib/mapToOptions';
+import { getColumns } from './configs/columns';
+import { getTransactionFilters } from './configs/filters';
+import { useTransactionsModals, useTransactionsStore } from './store';
 
 export default function TransactionsPage() {
   const { t } = useTranslation(['transactions', 'common']);
   const queryClient = useQueryClient();
   const { can } = useCan();
   const deleteModal = useTransactionsModals((s) => s.delete);
-  const createModal = useTransactionsModals((s) => s.create);
 
   const {
-    page, limit, search, filters,
-    setPage, setLimit, setSearch, setFilter,
-    setFilters, resetFilters, removeFilter,
+    page,
+    limit,
+    search,
+    filters,
+    setPage,
+    setLimit,
+    setSearch,
+    setFilter,
+    setFilters,
+    resetFilters,
+    removeFilter,
   } = useTransactionsStore();
 
   const location = useLocation();
@@ -64,10 +70,7 @@ export default function TransactionsPage() {
     staleTime: 60_000,
   });
 
-  const debtorOptions = useMemo(
-    () => mapToOptions(debtorsResponse?.data?.data ?? [], 'id', 'name'),
-    [debtorsResponse],
-  );
+  const debtorOptions = useMemo(() => mapToOptions(debtorsResponse?.data?.data ?? [], 'id', 'name'), [debtorsResponse]);
 
   const { data: categoriesResponse } = useQuery({
     queryKey: ['categories', 'list'],
@@ -83,12 +86,12 @@ export default function TransactionsPage() {
 
   const categoryOptions = useMemo(
     () => mapToOptions(categoriesResponse?.data?.data ?? [], 'id', 'name'),
-    [categoriesResponse],
+    [categoriesResponse]
   );
 
   const productOptions = useMemo(
     () => mapToOptions(productsResponse?.data?.data ?? [], 'id', 'name'),
-    [productsResponse],
+    [productsResponse]
   );
 
   const {
@@ -104,7 +107,12 @@ export default function TransactionsPage() {
       const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
       const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
       const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-      return transactionsApi.getAll(page, limit, { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder }, mf);
+      return transactionsApi.getAll(
+        page,
+        limit,
+        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
+        mf
+      );
     },
     staleTime: 30_000,
   });
@@ -135,12 +143,18 @@ export default function TransactionsPage() {
 
   const filterConfig = useMemo(
     () => getTransactionFilters(t, debtorOptions, categoryOptions, productOptions),
-    [t, debtorOptions, categoryOptions, productOptions],
+    [t, debtorOptions, categoryOptions, productOptions]
   );
 
   useFilterParams({
-    page, limit, search, filters,
-    setPage, setLimit, setSearch, setFilters,
+    page,
+    limit,
+    search,
+    filters,
+    setPage,
+    setLimit,
+    setSearch,
+    setFilters,
     filterConfigs: filterConfig,
   });
 
@@ -162,7 +176,7 @@ export default function TransactionsPage() {
             <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
             <ColumnToggle table={table} />
             {can(Action.TRANSACTIONS_CREATE) && (
-              <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
+              <Button className="shrink-0 gap-2" render={<Link to="/transactions/new" />}>
                 <Plus className="h-4 w-4" />
                 <span className="hidden sm:inline">{t('create')}</span>
               </Button>
@@ -183,7 +197,6 @@ export default function TransactionsPage() {
           onlimitChange={setLimit}
         />
       </div>
-      <CreateTransactionModal />
       <CreatePaymentModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
