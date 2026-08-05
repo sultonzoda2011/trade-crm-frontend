@@ -1,14 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowLeftRight,
-  BookMarked,
-  GraduationCap,
-  Loader2,
-  Package,
-  UserRoundPlus,
-  Users,
-  Users2,
-} from 'lucide-react';
+import { ArrowLeftRight, BookMarked, Loader2, Package, UserRoundPlus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -30,6 +21,7 @@ import { getSidebarConfig, getVisibleNavigation, type NavItem } from '~/config/n
 import { canAccess } from '~/config/permissions';
 import { useCan } from '~/hooks/useCan';
 import { useDebounce } from '~/hooks/useDebounce';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -204,7 +196,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     key={`users-${user.id}`}
                     value={`users-${user.id}`}
                     onSelect={() => go(`/users/${user.id}`)}>
-                    <Users />
+                    <Avatar size="sm">
+                      {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+                      <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                     <span className="truncate">{user.name}</span>
                   </CommandItem>
                 ))}
@@ -221,9 +216,12 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     key={`markets-${markets.id}`}
                     value={`markets-${markets.id}`}
                     onSelect={() => go(`/markets/${markets.id}`)}>
-                    <Users2 />
+                    <Avatar size="sm">
+                      {markets.image ? <AvatarImage src={markets.image} alt={markets.name} /> : null}
+                      <AvatarFallback>{markets.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                     <span className="truncate">{markets.name}</span>
-                    <span className="text-muted-foreground text-2xs ml-auto truncate">{markets.name}</span>
+                    <span className="text-muted-foreground text-2xs ml-auto truncate">{markets.address}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -239,7 +237,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                     key={`products-${products.id}`}
                     value={`products-${products.id}`}
                     onSelect={() => go(`/product/${products.id}`)}>
-                    <GraduationCap />
+                    <Avatar size="sm">
+                      {products.image ? <AvatarImage src={products.image} alt={products.name} /> : null}
+                      <AvatarFallback>{products.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
                     <span className="truncate">{products.name}</span>
                   </CommandItem>
                 ))}
