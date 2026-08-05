@@ -28,6 +28,7 @@
   "viewDebtors": "Market Debtors",
   "viewTransactions": "Market Transactions",
   "viewAll": "All",
+  "soldCount": "Sold {{count}}",
   "actions": {
     "view": "View",
     "edit": "Edit",
