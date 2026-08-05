@@ -13,7 +13,6 @@ interface RevenueTrendChartProps {
 const chartConfig = {
   revenue: {
     label: 'Revenue',
-    color: '#22c55e', // success color
     theme: {
       light: '#22c55e',
       dark: '#22c55e',
@@ -21,7 +20,6 @@ const chartConfig = {
   },
   transactionCount: {
     label: 'Transactions',
-    color: '#3b82f6', // blue
     theme: {
       light: '#3b82f6',
       dark: '#3b82f6',
