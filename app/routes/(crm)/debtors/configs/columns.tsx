@@ -1,15 +1,15 @@
-import { type ColumnDef, createColumnHelper } from '@tanstack/react-table'
-import type { TFunction } from 'i18next'
-import { Eye, Pencil, Trash2 } from 'lucide-react'
-import { Link, useLocation } from 'react-router'
-import { UserAvatar } from '~/components/shared/UserAvatar'
-import { Button } from '~/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip'
-import { Action } from '~/config/actions'
-import { useCan } from '~/hooks/useCan'
-import { fmtTJS, formatDate } from '~/lib/format'
-import type { Debtor } from '~/types/debtors'
-import { useDebtorsModals } from '../store'
+import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
+import type { TFunction } from 'i18next';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Link, useLocation } from 'react-router';
+import { UserAvatar } from '~/components/shared/UserAvatar';
+import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
+import { fmtTJS, formatDate } from '~/lib/format';
+import type { Debtor } from '~/types/debtors';
+import { useDebtorsModals } from '../store';
 
 function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
@@ -78,7 +78,13 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
       header: t('fields.marketAddress'),
       cell: (info) => {
         const market = info.row.original.market;
-        return <UserAvatar fullName={market?.name ?? ''} subInfo={market?.address ?? ''} />;
+        return (
+          <UserAvatar
+            fullName={market?.name ?? ''}
+            subInfo={market?.address ?? ''}
+            imagePath={market?.image ?? undefined}
+          />
+        );
       },
     }),
     columnHelper.accessor('createdAt', {
