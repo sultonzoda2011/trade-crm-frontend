@@ -10,20 +10,25 @@ import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { Action } from '~/config/actions';
+import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { mapToOptions } from '~/lib/mapToOptions';
-import { useMarketsModals } from '~/routes/(crm)/markets/store';
+import { useMarketsModals } from '~/routes/(crm)/markets/store'
 import { updateMarketSchema, type UpdateMarketSchema } from '~/validations/market';
 
 export function EditMarketModal() {
   const { t } = useTranslation(['markets', 'common', 'validation']);
   const queryClient = useQueryClient();
+  const { can } = useCan();
   const editModal = useMarketsModals((s) => s.edit);
+  const canManageUsers = can(Action.USERS_VIEW);
 
   const { data: usersResponse } = useQuery({
     queryKey: ['users'],
     queryFn: () => usersApi.getAll(),
+    enabled: editModal.isOpen && canManageUsers,
     staleTime: 60_000,
   });
 
@@ -57,6 +62,7 @@ export function EditMarketModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['markets'] });
+      void queryClient.invalidateQueries({ queryKey: ['market'] });
       toast.success(t('markets:updateSuccess'));
       editModal.close();
     },
@@ -103,14 +109,16 @@ export function EditMarketModal() {
               placeholder={t('fields.address')}
               required
             />
-            <FormCustomSelect
-              control={control}
-              name="ownerId"
-              label={t('fields.ownerId')}
-              options={userOptions}
-              placeholder={t('fields.ownerId')}
-              required
-            />
+            {canManageUsers && (
+              <FormCustomSelect
+                control={control}
+                name="ownerId"
+                label={t('fields.ownerId')}
+                options={userOptions}
+                placeholder={t('fields.ownerId')}
+                required
+              />
+            )}
           </div>
         </div>
       </form>
