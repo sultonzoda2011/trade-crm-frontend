@@ -9,7 +9,9 @@ export interface DecodedToken {
   email: string;
   role: Role;
   marketId: string;
+  id: string;
   name: string;
+  image: string | null;
   iat: string;
   exp: number;
 }
