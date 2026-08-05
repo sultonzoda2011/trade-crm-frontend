@@ -1,11 +1,11 @@
-import { useQueryClient } from '@tanstack/react-query'
-import Cookies from 'js-cookie'
-import { Check, ChevronDown, LogOut, Moon, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
-import { authApi } from '~/api/auth'
-import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { useQueryClient } from '@tanstack/react-query';
+import Cookies from 'js-cookie';
+import { Check, ChevronDown, LogOut, Moon, Sun, User } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+import { authApi } from '~/api/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +14,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu'
-import { ROLE_CONFIG } from '~/config/enumOptions'
-import { useIsMobile } from '~/hooks/use-mobile'
-import { getUserFromToken } from '~/lib/auth-utils'
+} from '~/components/ui/dropdown-menu';
+import { ROLE_CONFIG } from '~/config/enumOptions';
+import { useIsMobile } from '~/hooks/use-mobile';
+import { getUserFromToken } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -67,6 +67,7 @@ export function UserNav() {
           <button className="hover:bg-accent hover:text-accent-foreground hover:border-border group flex h-9 items-center gap-2 rounded-lg border border-transparent px-1.5 transition-all outline-none sm:px-2" />
         }>
         <Avatar className="h-8 w-8 border">
+          {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
           <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{initials}</AvatarFallback>
         </Avatar>
 
@@ -84,6 +85,7 @@ export function UserNav() {
             <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 border-2">
+                  {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                     {initials}
                   </AvatarFallback>
@@ -110,6 +112,15 @@ export function UserNav() {
               <Moon className="text-muted-foreground mr-2 h-4 w-4" />
             )}
             <span className="text-sm">{tc('header.theme')}</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              navigate('/profile');
+            }}
+            closeOnClick={false}
+            className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
+            <User className="text-muted-foreground mr-2 h-4 w-4" />
+            <span className="text-sm">{tc('header.profile')}</span>
           </DropdownMenuItem>
           <DropdownMenuLabel className="text-muted-foreground text-2xs px-3 pt-2 pb-1 font-semibold tracking-wider uppercase">
             {tc('header.language')}
