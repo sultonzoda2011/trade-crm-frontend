@@ -34,6 +34,12 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     action: Action.MARKETS_VIEW,
   },
   {
+    title: t('navigation.myMarket'),
+    url: '/my-market',
+    icon: StoreIcon,
+    action: Action.MARKETS_VIEW_BY_ID,
+  },
+  {
     title: t('navigation.sellers'),
     url: '/sellers',
     icon: Store,
