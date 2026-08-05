@@ -6,8 +6,7 @@ export const useTransactionsStore = createTableStore();
 
 type TransactionsModals = {
   delete: string;
-  create: null;
   pay: Transaction;
 };
 
-export const useTransactionsModals = createModalStore<TransactionsModals>(['delete', 'create', 'pay']);
+export const useTransactionsModals = createModalStore<TransactionsModals>(['delete', 'pay']);
