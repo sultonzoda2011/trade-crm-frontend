@@ -19,7 +19,8 @@ import { type DecodedToken, getAuthToken, getRefreshToken, isTokenExpired } from
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
-import favicon from '/favicon.ico';
+import textInRightLight from '/text-in-right-logo-light.png';
+import textInRightDark from '/text-in-right-logo-dark.png';
 
 export async function clientLoader() {
   const token = getAuthToken();
@@ -98,8 +99,16 @@ export default function LoginPage() {
     <>
       <div className="bg-foreground text-background hidden flex-col justify-between p-12 lg:flex">
         <div className="flex items-center text-2xl font-bold tracking-tight">
-          <img className="w-20" src={favicon} alt="Trade Logo" />
-          <span className="">TradeCRM</span>
+          <img
+            className="h-12 w-auto object-contain dark:hidden"
+            src={textInRightDark}
+            alt="Trade Logo"
+          />
+          <img
+            className="hidden h-12 w-auto object-contain dark:block"
+            src={textInRightLight}
+            alt="Trade Logo"
+          />
         </div>
         <div className="space-y-4">
           <h1 className="text-4xl leading-tight font-bold">{t('heroTitle')}</h1>
