@@ -1,9 +1,8 @@
-import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Panel } from '~/components/layout/Panel';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '~/components/ui/chart';
-import type { PaymentTypeDistribution } from '~/types/dashboard';
 import { fmtTJS } from '~/lib/format';
+import type { PaymentTypeDistribution } from '~/types/dashboard';
 
 interface PaymentDistributionChartProps {
   data: PaymentTypeDistribution[];
@@ -62,7 +61,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
     if (active && payload && payload[0]) {
       const data = payload[0].payload;
       return (
-        <div className="rounded-lg border border-border/50 bg-background px-3 py-2 text-xs shadow-xl">
+        <div className="border-border/50 bg-background rounded-lg border px-3 py-2 text-xs shadow-xl">
           <p className="font-medium">{data.label}</p>
           <p className="text-muted-foreground">{fmtTJS(data.amount)}</p>
           <p className="text-muted-foreground">{data.count} transactions</p>
@@ -75,7 +74,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
 
   return (
     <Panel title={t('paymentTypes')} className="col-span-1 flex flex-col">
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
             <Pie
@@ -83,7 +82,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ percentage }) => `${percentage.toFixed(0)}%`}
+              label={({ percent = 0 }) => `${(percent * 100).toFixed(0)}%`}
               outerRadius={80}
               fill="#8884d8"
               dataKey="amount">
@@ -97,11 +96,11 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4">
+      <div className="border-border mt-4 grid grid-cols-3 gap-2 border-t pt-4">
         {formattedData.map((item) => (
           <div key={item.type} className="text-center">
             <p className="text-xs font-medium">{item.label}</p>
-            <p className="text-muted-foreground text-xs mt-1">{fmtTJS(item.amount)}</p>
+            <p className="text-muted-foreground mt-1 text-xs">{fmtTJS(item.amount)}</p>
             <p className="text-muted-foreground text-xs">{item.percentage.toFixed(1)}%</p>
           </div>
         ))}
