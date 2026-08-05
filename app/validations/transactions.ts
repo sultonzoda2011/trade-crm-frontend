@@ -24,12 +24,21 @@ export const createTransactionSchema = (t: TFunction) =>
       ),
     items: z.array(createTransactionItemSchema(t)).min(1, t('itemsRequired', { ns: 'validation' })),
   }).superRefine((data, ctx) => {
-    if (data.type === 'DEBT' && !data.dueDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: t('dueDateRequired', { ns: 'validation' }),
-        path: ['dueDate'],
-      });
+    if (data.type === 'DEBT') {
+      if (!data.dueDate) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('dueDateRequired', { ns: 'validation' }),
+          path: ['dueDate'],
+        });
+      }
+      if (!data.debtorId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('debtorRequired', { ns: 'validation' }),
+          path: ['debtorId'],
+        });
+      }
     }
   });
 
