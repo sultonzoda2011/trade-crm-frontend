@@ -2,14 +2,14 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { CreditCard, Eye, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
-import { Badge } from '~/components/ui/badge';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { TRANSACTION_STATUS_BADGE, TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import type { Transaction, TransactionStatus, TransactionType } from '~/types/transactions';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
+import type { Transaction, TransactionStatus, TransactionType } from '~/types/transactions';
 
 function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) {
   const deleteModal = useTransactionsModals((s) => s.delete);
@@ -60,17 +60,24 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
         </Link>
       ),
     }),
+
     columnHelper.accessor('debtor', {
       header: t('fields.debtor'),
       cell: (info) => {
         const debtor = info.getValue();
-        return debtor ? (
-          <Link to={`/debtors/${debtor.id}`} className="text-sm font-medium hover:underline">
-            {debtor.name}
-          </Link>
-        ) : (
-          <span className="text-muted-foreground text-sm">-</span>
+        return (
+          debtor && (
+            <Link to={`/debtors/${debtor.id}`} className="text-sm font-medium hover:underline">
+              {debtor.name}
+            </Link>
+          )
         );
+      },
+    }),
+    columnHelper.accessor('customerName', {
+      header: t('fields.customer'),
+      cell: (info) => {
+        return <span>{info.getValue()}</span>;
       },
     }),
     columnHelper.accessor('type', {
