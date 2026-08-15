@@ -31,7 +31,7 @@ Backend: NestJS + Prisma + PostgreSQL.
 | HTTP | Axios (интерцепторы: JWT, refresh, тосты ошибок) |
 | Forms | react-hook-form + @hookform/resolvers/zod |
 | Validation | Zod (схемы-фабрики с i18n сообщениями) |
-| Auth | JWT в cookie, jwt-decode, requireAuth() в clientLoader |
+| Auth | httpOnly cookie (`accessToken`/`refreshToken`) + читаемый `user` cookie; гейт — `getClientUser()` + `canAccess()` в `clientLoader` |
 | i18n | react-i18next + i18next-http-backend |
 | Charts | Recharts |
 | Dates | dayjs + customParseFormat |
@@ -47,22 +47,31 @@ Backend: NestJS + Prisma + PostgreSQL.
 /auth layout (двухколоночный логин, LanguageSwitcher + ModeToggle)
   /login
 
-/crm layout (сайдбар + хедер, защищён requireAuth)
-  /                              — Dashboard
+/crm layout (сайдбар + хедер, защищён clientLoader-гейтом)
+  /                              — Редирект по роли (Admin/Owner → /dashboard, Seller → /transactions)
+  /dashboard                     — Dashboard
+  /profile                       — Профиль текущего пользователя
   /users                         — Users list
   /users/:id                     — User detail
   /markets                       — Markets list
   /markets/:id                   — Market detail
+  /my-market                     — Свой маркет (только Owner)
   /sellers                       — Sellers list
   /sellers/:id                   — Seller detail
   /products                      — Products list
+  /products/create               — Создание товара
   /products/:id                  — Product detail
+  /products/:id/edit             — Редактирование товара
   /categories                    — Categories
-  /dashboard/sellers-report      — Отчёт по продавцам
+  /categories/:id                — Category detail
+  /sellers-report                — Отчёт по продавцам (файл лежит в dashboard/, но URL плоский)
   /debtors                       — Debtors list
   /debtors/:id                   — Debtor detail
   /transactions                  — Transactions list
+  /transactions/create           — Создание транзакции
   /transactions/:id              — Transaction detail
+  /403                           — Доступ запрещён
+  *                              — 404
 ```
 
 ---
@@ -127,7 +136,7 @@ public/
 - **ACTION_PERMISSIONS** — маппинг Action → Role[]
 - **ROUTE_PERMISSIONS** — маппинг route pattern → Role[]
 - **`useCan()`** — хук для UI-гейтинга: `can(Action.USERS_EDIT)` или `can(Role.Admin)`
-- **`requireAuth()`** — guard в `clientLoader`, редирект на `/login` при отсутствии/просрочке токена
+- **`getClientUser()` + `canAccess()`** — guard в `clientLoader` слоя `(crm)`: нет пользователя → `/login`, роль не подходит → `/403`. Читать cookie из `Request.headers` в SPA-режиме нельзя, поэтому серверных guard-хелперов здесь нет
 
 ---
 
