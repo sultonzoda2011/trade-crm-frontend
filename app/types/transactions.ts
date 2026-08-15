@@ -44,6 +44,7 @@ export interface Transaction {
   marketId: string;
   createdById: string;
   debtorId: string | null;
+  customerName: string | null;
   refundOfId: string | null;
   type: TransactionType;
   paymentType: PaymentType;
@@ -71,12 +72,14 @@ export interface CreateTransactionItemRequest {
 export interface CreateTransactionRequest {
   debtorId?: string;
   type: TransactionType;
+  customerName?: string;
   paymentType: PaymentType;
   dueDate?: string;
   items: CreateTransactionItemRequest[];
 }
 export interface UpdateTransactionRequest {
   debtorId?: string;
+  customerName?: string;
   type?: TransactionType;
   paymentType?: PaymentType;
   dueDate?: string;
