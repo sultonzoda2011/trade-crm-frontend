@@ -1,12 +1,12 @@
-import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form'
-import { CustomInput, type CustomInputProps } from '~/components/shared/CustomInput'
-import { Label } from '~/components/ui/label'
-import { cn } from '~/lib/utils'
+import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
+import { CustomInput, type CustomInputProps } from '~/components/shared/CustomInput';
+import { Label } from '~/components/ui/label';
+import { cn } from '~/lib/utils';
 
 interface FormInputProps<T extends FieldValues> extends CustomInputProps {
-  control: Control<T>
-  name: Path<T>
-  label?: string
+  control: Control<T>;
+  name: Path<T>;
+  label?: string;
 }
 
 export function FormInput<T extends FieldValues>({
@@ -50,11 +50,9 @@ export function FormInput<T extends FieldValues>({
               }
             }}
           />
-          {fieldState.error && (
-            <p className="text-destructive text-sm">{fieldState.error.message}</p>
-          )}
+          {fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
         </div>
       )}
     />
-  )
+  );
 }

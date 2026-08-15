@@ -1,5 +1,5 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
-import { DateInputField, type DateInputFieldProps } from '../../shared/DateInputField';
+import { DateInputField, type DateInputFieldProps } from '~/components/shared/DateInputField';
 
 interface FormDateInputProps<T extends FieldValues> extends Omit<
   DateInputFieldProps,

@@ -1,7 +1,5 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
-import { FileInputField } from '../../shared/FileInputField';
-
-import { type FileInputFieldProps } from '../../shared/FileInputField';
+import { FileInputField, type FileInputFieldProps } from '~/components/shared/FileInputField';
 
 export interface FormFileInputProps<T extends FieldValues> extends Omit<
   FileInputFieldProps,

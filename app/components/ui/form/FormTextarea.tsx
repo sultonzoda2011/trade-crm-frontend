@@ -37,7 +37,7 @@ export function FormTextarea<T extends FieldValues>({
             className={fieldClassName}
             {...textareaProps}
             {...field}
-             value={field.value ?? ''}
+            value={field.value ?? ''}
           />
           {fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
         </div>

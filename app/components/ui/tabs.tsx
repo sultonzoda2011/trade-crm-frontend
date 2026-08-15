@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from 'react';
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs';
 
 import { cn } from '~/lib/utils';
@@ -13,10 +12,7 @@ function TabsList({ className, ...props }: TabsPrimitive.List.Props) {
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
-      className={cn(
-        'bg-muted text-muted-foreground inline-flex h-9 items-center justify-start gap-1 rounded-lg p-1',
-        className
-      )}
+      className={cn('border-border flex items-center justify-start gap-1 overflow-x-auto border-b', className)}
       {...props}
     />
   );
@@ -27,7 +23,7 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        'data-selected:bg-background data-selected:text-foreground data-selected:shadow-xs focus-visible:ring-ring inline-flex h-7 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50',
+        'data-active:border-primary data-active:text-foreground focus-visible:ring-ring text-muted-foreground hover:text-foreground inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 border-b-2 border-transparent px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50',
         className
       )}
       {...props}

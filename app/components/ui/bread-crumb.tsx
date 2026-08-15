@@ -19,8 +19,7 @@ const BreadCrumbs = ({ items }: BreadCrumbProps) => {
       {backItem?.link && (
         <Link
           to={backItem.link}
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors sm:hidden"
-        >
+          className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors sm:hidden">
           <ChevronLeft className="size-4" />
           {backItem.label}
         </Link>
