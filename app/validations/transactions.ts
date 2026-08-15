@@ -73,6 +73,7 @@ export const createTransactionSchema = (t: TFunction, stockMap?: StockMap) =>
       type: z
         .union([z.enum(['DEBT', 'SALE']), z.null()])
         .refine((v) => v != null, { message: t('required', { ns: 'validation' }) }),
+      customerName: z.string().optional(),
       paymentType: z
         .union([z.enum(['CASH', 'CARD', 'CREDIT']), z.null()])
         .refine((v) => v != null, { message: t('required', { ns: 'validation' }) }),
@@ -122,6 +123,7 @@ export type CreateTransactionInput = z.input<ReturnType<typeof createTransaction
 export const updateTransactionSchema = (t: TFunction) =>
   z.object({
     debtorId: z.string().optional(),
+    customerName: z.string().optional(),
     type: z.enum(['DEBT', 'SALE']),
     paymentType: z.enum(['CASH', 'CARD', 'CREDIT']),
     dueDate: z.string().optional(),
@@ -153,7 +155,10 @@ export const refundTransactionSchema = (t: TFunction, refundable: RefundableMap)
   z
     .object({
       mode: z.enum(['ALL', 'PARTIAL']),
-      reason: z.string().max(500, t('stringMax', { count: 500, ns: 'validation' })).optional(),
+      reason: z
+        .string()
+        .max(500, t('stringMax', { count: 500, ns: 'validation' }))
+        .optional(),
       items: z.array(
         z.object({
           itemId: z.string(),
