@@ -1,55 +1,92 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, Banknote, ShoppingCart, Store, Users, Wallet } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  Banknote,
+  Package,
+  Receipt,
+  ShoppingCart,
+  Undo2,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
 import { sellersApi } from '~/api/sellers';
+import { CategoryPerformance } from '~/components/dashboard/CategoryPerformance';
+import { InsightList } from '~/components/dashboard/InsightList';
+import { InventoryHealth, ReorderList } from '~/components/dashboard/InventoryHealth';
+import { MetricCard } from '~/components/dashboard/MetricCard';
+import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
+import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
+import { ReturnsPanel } from '~/components/dashboard/ReturnsPanel';
+import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { CustomSelect } from '~/components/shared/CustomSelect';
-import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 import { Skeleton } from '~/components/ui/skeleton';
+import { PERIOD_OPTIONS } from '~/config/period';
+import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { mapToOptions } from '~/lib/mapToOptions';
-import { useCan } from '~/hooks/useCan';
-import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
-import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
-import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
+import type { ProductLeaderRow } from '~/types/dashboard';
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | number;
-}) {
+/**
+ * Топ товаров периода: чистые единицы и чистая выручка, уже за вычетом
+ * возвратов — иначе «лидер продаж» мог бы оказаться товаром, который
+ * массово возвращают.
+ */
+function TopProducts({ products, title }: { products: ProductLeaderRow[]; title: string }) {
+  const { t } = useTranslation('dashboard');
+
   return (
-    <Panel className="flex items-center gap-3 p-4">
-      <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0">
-        <p className="text-muted-foreground truncate text-xs">{label}</p>
-        <p className="truncate font-mono text-lg font-bold">{value}</p>
-      </div>
+    <Panel
+      title={title}
+      className="p-0"
+      actions={
+        <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/products" />}>
+          {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
+        </Button>
+      }>
+      {products.length === 0 ? (
+        <p className="text-muted-foreground px-4 py-6 text-sm">{t('empty')}</p>
+      ) : (
+        <div className="divide-border divide-y">
+          {products.map((product, index) => (
+            <Link
+              key={product.productId}
+              to={`/products/${product.productId}`}
+              className="hover:bg-muted/40 flex items-center justify-between gap-3 px-4 py-2.5 transition-colors">
+              <span className="flex min-w-0 items-center gap-2.5">
+                <span className="text-muted-foreground w-4 shrink-0 font-mono text-xs">
+                  {index + 1}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-medium">{product.productName}</span>
+                  <span className="text-muted-foreground block text-xs">
+                    {t('products.netUnits', { count: product.netUnits })}
+                    {product.refundedUnits > 0 && (
+                      <span className="text-destructive ml-1.5">
+                        −{product.refundedUnits} {t('products.returned')}
+                      </span>
+                    )}
+                  </span>
+                </span>
+              </span>
+              <span className="shrink-0 font-mono text-sm font-semibold">
+                {fmtTJS(product.netRevenue)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </Panel>
   );
 }
 
-const PERIOD_OPTIONS = [
-  { value: 'today', labelKey: 'period.today' },
-  { value: 'week', labelKey: 'period.week' },
-  { value: 'month', labelKey: 'period.month' },
-  { value: 'year', labelKey: 'period.year' },
-] as const;
-
 export default function DashboardRoute() {
-  const { t } = useTranslation(['dashboard', 'transactions', 'common']);
+  const { t } = useTranslation(['dashboard', 'common']);
   const { user } = useCan();
   const [period, setPeriod] = useState('month');
   const [sellerId, setSellerId] = useState<string | undefined>(undefined);
@@ -60,7 +97,10 @@ export default function DashboardRoute() {
     staleTime: 60_000,
   });
 
-  const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
+  const sellerOptions = useMemo(
+    () => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'),
+    [sellersResponse]
+  );
 
   const params = useMemo(() => {
     const p: DashboardParams = {};
@@ -69,43 +109,71 @@ export default function DashboardRoute() {
     return p;
   }, [period, sellerId]);
 
-  const { data, isLoading, isFetching } = useQuery({
-    queryKey: ['dashboard', params],
-    queryFn: () => dashboardApi.get(params),
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['dashboard', 'overview', params],
+    queryFn: () => dashboardApi.getOverview(params),
     staleTime: 30_000,
   });
 
-  const dashboard = data?.data;
+  const overview = data?.data;
 
-  if (isLoading || !dashboard) {
+  if (isError) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-20 rounded-xl" />
-        ))}
+      <div className="flex flex-1 items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="text-destructive mx-auto mb-3 h-8 w-8" />
+          <p className="font-medium">{t('loadError')}</p>
+        </div>
       </div>
     );
   }
 
-  const { stats, recentTransactions, topDebtors } = dashboard;
+  if (isLoading || !overview) {
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 rounded-xl" />
+          ))}
+        </div>
+        <Skeleton className="h-56 w-full rounded-xl" />
+        <div className="grid gap-6 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const { sales, debts, returns, inventory, products, categories, insights, period: range } = overview;
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">{t('title')}</h1>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">{t('title')}</h1>
+          {/* Какой именно отрезок сейчас на экране — иначе сравнение «с прошлым
+              периодом» невозможно прочитать однозначно. */}
+          <p className="text-muted-foreground text-xs">
+            {formatDate(range.current.gte)} — {formatDate(range.current.lte)}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <Label className="text-xs">{t('period.from')}</Label>
             <CustomSelect
               options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
               value={period}
-              onChange={(v) => setPeriod(String(v))}
+              onChange={(v) => setPeriod(v ? String(v) : '')}
             />
           </div>
+          {/* Владелец смотрит по продавцам, продавец видит только свой рынок —
+              список продавцов приходит уже отфильтрованным по market scope. */}
           <div className="flex items-center gap-2">
             <Label className="text-xs">{t('seller')}</Label>
             <CustomSelect
-              options={[{ value: '', label: t('viewAll') }, ...sellerOptions]}
+              options={[{ value: '', label: t('allSellers') }, ...sellerOptions]}
               value={sellerId ?? ''}
               onChange={(v) => setSellerId(v ? String(v) : undefined)}
             />
@@ -113,101 +181,105 @@ export default function DashboardRoute() {
         </div>
       </div>
 
+      <InsightList insights={insights} />
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {!user?.marketId && <StatCard icon={Store} label={t('stats.totalMarkets')} value={stats.totalMarkets} />}
-        {!user?.marketId && <StatCard icon={Users} label={t('stats.totalUsers')} value={stats.totalUsers} />}
-        <StatCard icon={Users} label={t('stats.totalDebtors')} value={stats.totalDebtors} />
-        <StatCard icon={AlertTriangle} label={t('stats.activeDebts')} value={stats.activeDebts} />
-        <StatCard icon={Wallet} label={t('stats.totalDebtAmount')} value={fmtTJS(stats.totalDebtAmount)} />
-        <StatCard icon={Banknote} label={t('stats.totalSaleAmount')} value={fmtTJS(stats.totalSaleAmount)} />
-        <StatCard icon={ShoppingCart} label={t('stats.todayTransactions')} value={stats.todayTransactions} />
+        <MetricCard
+          icon={Banknote}
+          label={t('metrics.revenue')}
+          value={fmtTJS(sales.netRevenue)}
+          hint={t('metrics.revenueHint', {
+            sales: fmtTJS(sales.saleRevenue),
+            debts: fmtTJS(sales.debtIssued),
+          })}
+          comparison={sales.comparison.netRevenue}
+          to="/transactions"
+        />
+        <MetricCard
+          icon={Receipt}
+          label={t('metrics.transactions')}
+          value={sales.transactionCount}
+          hint={t('metrics.transactionsHint', { sales: sales.saleCount, debts: sales.debtCount })}
+          comparison={sales.comparison.transactionCount}
+          to="/transactions"
+        />
+        <MetricCard
+          icon={ShoppingCart}
+          label={t('metrics.averageCheck')}
+          value={fmtTJS(sales.averageCheck)}
+          hint={t('metrics.unitsSold', { count: sales.unitsSold })}
+          comparison={sales.comparison.averageCheck}
+        />
+        <MetricCard
+          icon={Undo2}
+          label={t('metrics.returns')}
+          value={fmtTJS(returns.amount)}
+          hint={t('metrics.returnsHint', { percent: Math.round(returns.returnRate * 1000) / 10 })}
+          comparison={returns.comparison.amount}
+          invertComparison
+          to="/transactions?type=REFUND"
+        />
       </div>
 
-      {/* Analytics Charts */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {dashboard.revenueTrend && <RevenueTrendChart data={dashboard.revenueTrend} />}
-        {dashboard.paymentDistribution && <PaymentDistributionChart data={dashboard.paymentDistribution} />}
+        <RevenueTrendChart data={overview.revenueTrend} />
+        <OverdueAlertCard debts={debts} />
       </div>
 
-      {/* Alerts */}
-      <div className="grid gap-6">
-        <OverdueAlertCard debtors={topDebtors} />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <ReorderList products={products.reorder} />
+        <InventoryHealth inventory={inventory} />
+        <ReturnsPanel returns={returns} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Panel
-          title={t('recentTransactions')}
-          actions={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/transactions" />}>
-              {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          }>
-          {recentTransactions.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
-          ) : (
-            <div className="divide-border divide-y">
-              {recentTransactions.map((tx) => (
-                <Link
-                  key={tx.id}
-                  to={`/transactions/${tx.id}`}
-                  className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors">
-                  <div className="flex min-w-0 items-center gap-2.5">
-                    <Avatar size="sm" className="shrink-0">
-                      {tx.createdBy.image ? <AvatarImage src={tx.createdBy.image} alt={tx.createdBy.name} /> : null}
-                      <AvatarFallback>{tx.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
-                        {tx.debtor?.name ?? tx.market.name}
-                        <span className="text-muted-foreground ml-2 font-mono text-xs">#{tx.id.slice(0, 8)}</span>
-                      </p>
-                      <p className="text-muted-foreground text-xs">{formatDate(tx.createdAt, true)}</p>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={
-                        tx.type === 'DEBT'
-                          ? 'border-warning/40 bg-warning/15 text-warning'
-                          : tx.type === 'REFUND'
-                            ? 'border-destructive/40 bg-destructive/15 text-destructive'
-                            : 'border-success/40 bg-success/15 text-success'
-                      }>
-                      {t(`type.${tx.type}`, { ns: 'transactions', defaultValue: tx.type })}
-                    </Badge>
-                    <span className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </Panel>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <TopProducts products={products.topByRevenue} title={t('products.topByRevenue')} />
+        <TopProducts products={products.topByUnits} title={t('products.topByUnits')} />
+        <CategoryPerformance categories={categories} />
+      </div>
 
-        <Panel
-          title={t('topDebtors')}
-          actions={
-            <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/debtors" />}>
-              {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
-          }>
-          {topDebtors.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
-          ) : (
-            <div className="divide-border divide-y">
-              {topDebtors.map((debtor) => (
-                <Link
-                  key={debtor.id}
-                  to={`/debtors/${debtor.id}`}
-                  className="hover:bg-muted/40 -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{debtor.name}</p>
-                    <p className="text-muted-foreground text-xs">{debtor.phone}</p>
-                  </div>
-                  <span className="text-warning font-mono text-sm font-semibold">{fmtTJS(debtor.totalDebt)}</span>
-                </Link>
-              ))}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <PaymentDistributionChart data={overview.paymentMix} />
+        <Panel title={t('stockSummary')} className="space-y-3 lg:col-span-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Link
+              to="/products"
+              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
+              <span className="flex items-center gap-1.5 font-mono text-xl font-bold">
+                <Package className="text-muted-foreground h-4 w-4" />
+                {inventory.totalProducts}
+              </span>
+              <span className="text-muted-foreground text-[11px]">{t('inventory.total')}</span>
+            </Link>
+            <Link
+              to="/products?needsReorder=true"
+              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
+              <span className="text-warning font-mono text-xl font-bold">
+                {inventory.needsReorder}
+              </span>
+              <span className="text-muted-foreground text-[11px]">{t('inventory.toOrder')}</span>
+            </Link>
+            <Link
+              to="/products?health=HEALTHY"
+              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
+              <span className="text-success font-mono text-xl font-bold">{inventory.healthy}</span>
+              <span className="text-muted-foreground text-[11px]">{t('inventory.healthy')}</span>
+            </Link>
+            <div className="bg-muted/50 flex flex-col gap-0.5 rounded-lg p-3">
+              <span className="font-mono text-xl font-bold">{fmtTJS(sales.discountAmount)}</span>
+              <span className="text-muted-foreground text-[11px]">{t('metrics.discounts')}</span>
             </div>
+          </div>
+          {!user?.marketId && (
+            /* ADMIN без своего рынка видит сводку по всем рынкам, поэтому
+               ссылка на управление рынками имеет смысл только здесь. */
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-1 text-xs"
+              render={<Link to="/markets" />}>
+              {t('allMarkets')} <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
           )}
         </Panel>
       </div>

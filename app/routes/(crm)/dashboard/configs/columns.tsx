@@ -8,11 +8,30 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip
 import { fmtTJS } from '~/lib/format';
 import type { SellerReportRow } from '~/types/dashboard';
 
-function SellerNameCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
+function SellerNameCell({
+  row,
+  t,
+  currentUserId,
+  canViewSellers,
+}: {
+  row: SellerReportRow;
+  t: TFunction;
+  currentUserId?: string;
+  canViewSellers: boolean;
+}) {
   const seller = row.seller;
   const location = useLocation();
 
   if (!seller) return <span className="text-muted-foreground font-medium">—</span>;
+
+  const isSelf = currentUserId === seller.id;
+  if (!isSelf && !canViewSellers) {
+    return (
+      <div className="flex items-center gap-2">
+        <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -20,7 +39,10 @@ function SellerNameCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
         variant="ghost"
         className="h-auto p-0 font-medium hover:underline"
         render={
-          <Link to={`/users/${seller.id}`} state={{ fromPath: location.pathname, fromName: t('usersReport') }} />
+          <Link
+            to={isSelf ? '/profile' : `/sellers/${seller.id}`}
+            state={{ fromPath: location.pathname, fromName: t('usersReport') }}
+          />
         }>
         <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
       </Button>
@@ -28,10 +50,18 @@ function SellerNameCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
   );
 }
 
-function SellerActionsCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
+function SellerActionsCell({
+  row,
+  t,
+  canViewSellers,
+}: {
+  row: SellerReportRow;
+  t: TFunction;
+  canViewSellers: boolean;
+}) {
   const location = useLocation();
 
-  if (!row.seller) return null;
+  if (!row.seller || !canViewSellers) return null;
 
   return (
     <div className="flex justify-end gap-1">
@@ -44,7 +74,7 @@ function SellerActionsCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
               className="h-8 w-8"
               render={
                 <Link
-                  to={`/users/${row.seller.id}`}
+                  to={`/sellers/${row.seller.id}`}
                   state={{ fromPath: location.pathname, fromName: t('usersReport') }}
                 />
               }>
@@ -52,7 +82,7 @@ function SellerActionsCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
             </Button>
           }
         />
-        <TooltipContent side="bottom">{t('actions.view', { ns: 'common', defaultValue: 'Открыть' })}</TooltipContent>
+        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
       </Tooltip>
     </div>
   );
@@ -60,11 +90,21 @@ function SellerActionsCell({ row, t }: { row: SellerReportRow; t: TFunction }) {
 
 const columnHelper = createColumnHelper<SellerReportRow>();
 
-export const getColumns = ({ t }: { t: TFunction }): ColumnDef<SellerReportRow, any>[] => [
+export const getColumns = ({
+  t,
+  currentUserId,
+  canViewSellers,
+}: {
+  t: TFunction;
+  currentUserId?: string;
+  canViewSellers: boolean;
+}): ColumnDef<SellerReportRow, any>[] => [
   columnHelper.accessor('seller.name', {
     header: t('table.seller'),
     enableHiding: false,
-    cell: (info) => <SellerNameCell row={info.row.original} t={t} />,
+    cell: (info) => (
+      <SellerNameCell row={info.row.original} t={t} currentUserId={currentUserId} canViewSellers={canViewSellers} />
+    ),
   }),
   columnHelper.accessor('salesCount', {
     header: t('table.salesCount'),
@@ -81,13 +121,13 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<SellerReportRow, 
     cell: (info) => <span className="font-mono tabular-nums">{info.getValue()}</span>,
   }),
   columnHelper.accessor('refundsAmount', {
-    header: t('table.refundsAmount', { defaultValue: 'Сумма возвратов' }),
+    header: t('table.refundsAmount'),
     cell: (info) => (
       <span className="text-destructive font-mono font-medium tabular-nums">{fmtTJS(info.getValue())}</span>
     ),
   }),
   columnHelper.accessor('debtsCount', {
-    header: t('table.debtsCount', { defaultValue: 'Долгов' }),
+    header: t('table.debtsCount'),
     cell: (info) => <span className="font-mono tabular-nums">{info.getValue()}</span>,
   }),
   columnHelper.accessor('debtsAmount', {
@@ -97,7 +137,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<SellerReportRow, 
   columnHelper.display({
     id: 'actions',
     enableHiding: false,
-    header: () => <div className="text-center">{t('fields.actions', { ns: 'common', defaultValue: 'Действия' })}</div>,
-    cell: (info) => <SellerActionsCell row={info.row.original} t={t} />,
+    header: () => <div className="text-center">{t('fields.actions')}</div>,
+    cell: (info) => <SellerActionsCell row={info.row.original} t={t} canViewSellers={canViewSellers} />,
   }),
 ];
