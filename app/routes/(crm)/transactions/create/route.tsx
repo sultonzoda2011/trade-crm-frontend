@@ -1,39 +1,36 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import dayjs from 'dayjs';
-import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
-import { useFieldArray } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-import { toast } from 'sonner';
-import { debtorsApi } from '~/api/debtors';
-import { productsApi } from '~/api/products';
-import { transactionsApi } from '~/api/transactions';
-import { Panel } from '~/components/layout/Panel';
-import { CustomInput } from '~/components/shared/CustomInput';
-import { Badge } from '~/components/ui/badge';
-import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
-import { FormDateInput } from '~/components/ui/form/FormDateInput';
-import { FormInput } from '~/components/ui/form/FormInput';
-import { Action } from '~/config/actions';
-import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
-import { useCan } from '~/hooks/useCan';
-import { useForm } from '~/hooks/useForm';
-import { fmtTJS } from '~/lib/format';
-import { mapToOptions } from '~/lib/mapToOptions';
-import type { CreateTransactionRequest } from '~/types/transactions';
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import dayjs from 'dayjs'
+import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react'
+import { useEffect, useMemo } from 'react'
+import { useFieldArray } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
+import { debtorsApi } from '~/api/debtors'
+import { productsApi } from '~/api/products'
+import { transactionsApi } from '~/api/transactions'
+import { Panel } from '~/components/layout/Panel'
+import { CustomInput } from '~/components/shared/CustomInput'
+import { Badge } from '~/components/ui/badge'
+import BreadCrumbs from '~/components/ui/bread-crumb'
+import { Button } from '~/components/ui/button'
+import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect'
+import { FormDateInput } from '~/components/ui/form/FormDateInput'
+import { FormInput } from '~/components/ui/form/FormInput'
+import { Action } from '~/config/actions'
+import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions'
+import { useCan } from '~/hooks/useCan'
+import { useForm } from '~/hooks/useForm'
+import { fmtTJS } from '~/lib/format'
+import { mapToOptions } from '~/lib/mapToOptions'
+import type { CreateTransactionRequest } from '~/types/transactions'
 import {
   createTransactionSchema,
   isOverStock,
   type CreateTransactionInput,
   type CreateTransactionItemInput,
-} from '~/validations/transactions';
-
-const DEFAULT_DUE_OFFSET_DAYS = 7;
-const MAX_DUE_OFFSET_DAYS = 365;
+} from '~/validations/transactions'
 
 export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
@@ -85,9 +82,10 @@ export default function CreateTransactionPage() {
     // mutationFn ниже, поэтому реальной необходимости в этой опции не было.
     defaultValues: {
       debtorId: '',
+      customerName: '',
       type: canCreateSale ? 'SALE' : 'DEBT',
       paymentType: canCreateSale ? 'CASH' : 'CREDIT',
-      dueDate: dayjs().add(DEFAULT_DUE_OFFSET_DAYS, 'day').format('YYYY-MM-DD'),
+      dueDate: dayjs().format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0 }],
     },
   });
@@ -172,6 +170,7 @@ export default function CreateTransactionPage() {
     mutationFn: (data: CreateTransactionInput) => {
       const payload: CreateTransactionRequest = {
         debtorId: data.debtorId || undefined,
+        customerName:data.customerName || undefined,
         type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
         paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
         dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
@@ -395,25 +394,32 @@ export default function CreateTransactionPage() {
                 options={paymentTypeOptions}
                 required
               />
-              <FormCustomSelect
+              <FormInput
                 control={control}
-                name="debtorId"
-                label={t('fields.debtor')}
-                placeholder={t('fields.debtor')}
-                options={debtorOptions}
-                isClearable
-                required={type === 'DEBT'}
+                name="customerName"
+                label={t('fields.customer')}
+                placeholder={t('fields.customer')}
               />
               {type === 'DEBT' && (
-                <FormDateInput
-                  control={control}
-                  name="dueDate"
-                  placeholder={t('fields.dueDate')}
-                  maxDate={dayjs().add(MAX_DUE_OFFSET_DAYS, 'day').format('YYYY-MM-DD')}
-                  minDate={dayjs().format('YYYY-MM-DD')}
-                  label={t('fields.dueDate')}
-                  required
-                />
+                <div>
+                  <FormCustomSelect
+                    control={control}
+                    name="debtorId"
+                    label={t('fields.debtor')}
+                    placeholder={t('fields.debtor')}
+                    options={debtorOptions}
+                    isClearable
+                    required
+                  />
+                  <FormDateInput
+                    control={control}
+                    name="dueDate"
+                    placeholder={t('fields.dueDate')}
+                    minDate={new Date()}
+                    label={t('fields.dueDate')}
+                    required
+                  />
+                </div>
               )}
             </div>
           </Panel>
