@@ -16,7 +16,7 @@
 | i18n | react-i18next + i18next-http-backend | Locales: `public/locales/{ru,en,tg}/` |
 | Icons | lucide-react | Import by name |
 | Forms | react-hook-form + `@hookform/resolvers/zod` | Zod schemas with i18n messages |
-| Auth | httpOnly `accessToken` + refresh cookies; non-httpOnly `user` JSON cookie | RBAC reads the `user` cookie via `getClientUser()` — **not** `jwt-decode` |
+| Auth | httpOnly `accessToken` cookie; non-httpOnly `user` JSON cookie | RBAC reads the `user` cookie via `getClientUser()` — **not** `jwt-decode` |
 | Charts | recharts | Via `~/components/ui/chart.tsx`; used by `app/components/dashboard/` |
 | Toasts | sonner | `<Toaster>` in `root.tsx`; flips to `top-center` on mobile |
 | Font | Manrope (Google Fonts) | `200..800` weight range |
@@ -127,8 +127,8 @@ There are **three** permission surfaces. A new gated feature usually needs all t
 
 | Concept | Implementation | Location |
 |---------|---------------|----------|
-| Credential | httpOnly `accessToken` cookie (15 min) + httpOnly refresh cookie, both set by the backend | — |
-| Client identity | non-httpOnly `user` cookie: URL-encoded JSON `UserInfo`, written by `setUserCookie()` on login **and on refresh** | `~/lib/auth-utils.ts` |
+| Credential | httpOnly `accessToken` cookie (15 min), set by the backend | — |
+| Client identity | non-httpOnly `user` cookie: URL-encoded JSON `UserInfo`, written by `setUserCookie()` on login | `~/lib/auth-utils.ts` |
 | Read identity | `getClientUser()` — parses the `user` cookie, validates the role | `~/lib/auth-utils.ts` |
 | Route guard | `getClientUser()` + `canAccess(role, pathname)` in `(crm)/layout.tsx` `clientLoader` | `~/config/permissions.ts` |
 | Action map | `ACTION_PERMISSIONS` — `Action` → `Role[]` | `~/config/actions.ts` |
@@ -136,11 +136,11 @@ There are **three** permission surfaces. A new gated feature usually needs all t
 | UI gate | `useCan()` → `can(Action.X)` or `can(Role.X)` | `~/hooks/useCan.ts` |
 | Role enum | `Admin`, `Owner`, `Seller` | `~/types/common.ts` |
 
-**Session flow**: login → backend sets 3 cookies → `setUserCookie()` → role-aware redirect via `getRedirectPath`. On a 401, `~/lib/client.ts` calls `tryRefreshToken()` (POST `/auth/refresh`, single-flight via a shared `refreshPromise`) and **retries the original request**; only if that fails does it `navigateTo('/login')` — an SPA navigation through the `setNavigate`-injected router callback, not a page reload.
+**Session flow**: login → backend sets 2 cookies (`accessToken`, `user`) → `setUserCookie()` → role-aware redirect via `getRedirectPath`. On a 401, `~/lib/client.ts` surfaces the error and calls `navigateTo('/login')` — an SPA navigation through the `setNavigate`-injected router callback, not a page reload.
 
 **`canAccess(role, pathname)`** collects *all* patterns matching `matchPath({ path, end: true })`, sorts by descending pattern length, and checks the longest. Unmatched routes still return `true` (open to every authenticated role).
 
-`auth-utils.ts` deliberately contains **no** header-reading or token-expiry helpers: in SPA mode `request.headers` carries no Cookie, and `accessToken` is httpOnly so its expiry cannot be inspected from JS. Expiry is handled reactively — a 401 triggers `tryRefreshToken()` in `~/lib/client.ts`. Do not reintroduce a `requireAuth(request)` or `isTokenExpired(token)` helper; they cannot work here.
+`auth-utils.ts` deliberately contains **no** header-reading or token-expiry helpers: in SPA mode `request.headers` carries no Cookie, and `accessToken` is httpOnly so its expiry cannot be inspected from JS. Expiry is handled reactively — a 401 triggers  in `~/lib/client.ts`. Do not reintroduce a `requireAuth(request)` or `isTokenExpired(token)` helper; they cannot work here.
 
 **How `useCan` works** (`app/hooks/useCan.ts`):
 
@@ -166,11 +166,10 @@ apiClient = axios.create({ baseURL: VITE_API_URL + '/api', withCredentials: true
 
 - **Request interceptor**: performs the client-side RBAC pre-flight against `API_ROUTE_ACTIONS` (see Auth & RBAC). It does **not** set an `Authorization` header — auth rides on the httpOnly cookie.
 - **Response interceptor**:
-  - **401** → `tryRefreshToken()` (single-flight) → retry the original request; on failure `navigateTo('/login')`
+  
   - **Network error** → toast `errors.noConnection`
   - **4xx/5xx** → toast mapped i18n key (`errors.badRequest`, `errors.forbidden`, etc.) or server message
   - **Silent URLs** (`/auth/login`) → no toast, error is just passed through
-- Also exports `tryRefreshToken(): Promise<boolean>`.
 
 API modules live in `app/api/`. Shared list signature for `users`, `markets`, `products`, `sellers`, `debtors`, `transactions`, `categories`:
 
@@ -659,7 +658,7 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 | File | Exports | Purpose |
 |------|---------|---------|
 | `~/lib/auth-utils` | `UserInfo`, `getUserFromCookie`, `setUserCookie`, `removeUserCookie`, `getClientUser` | `user` cookie ops only. **`getClientUser()` is the real guard primitive.** No `Request.headers` readers — SPA mode makes them impossible |
-| `~/lib/client` | `apiClient`, `tryRefreshToken` | Axios instance with RBAC pre-flight + refresh-and-retry interceptors |
+| `~/lib/client` | `apiClient` | Axios instance with RBAC pre-flight + error-toast interceptors |
 | `~/lib/navigation` | `setNavigate(fn)`, `navigateTo(path)`, `redirectToLogin(redirectTo?)` | Module-level holder for the router `navigate`, injected once from `root.tsx` so non-React code (the axios interceptor) can navigate without a page reload |
 | `~/lib/date` | `DateValue`, `toDayjs(value)`, `toDate(value)` | Parse dates in DD-MM-YYYY / DD.MM.YYYY / ISO / Date |
 | `~/lib/filtersToParams` | `filtersToParams(filters)` | Convert `ActiveFilter[]` to flat query params |
@@ -677,7 +676,7 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 | File | Key Types |
 |------|-----------|
 | `~/types/common` | `Status` enum (Inactive/Active/Completed), `Role` enum (Admin/Owner/Seller), `ApiResponse<T>`, `PaginatedData<T>`, `PaginationMeta` |
-| `~/types/auth` | `User`, `Login`, `LoginResponse`, `RefreshResponse` |
+| `~/types/auth` | `User`, `Login`, `LoginResponse` |
 | `~/types/users` | `User`, `UserRequest`, `UserInfo`, `CreateUserRequest`, `UsersResponse`, `UserDetailResponse` |
 | `~/types/filters` | `ActiveFilter`, `FilterConfig` — **six** variants: input/select/number-range/date/date-range/**boolean** |
 | `~/types/markets` | `Market`, `MarketInfo`, `MarketCount`, `MarketsResponse`, `MarketDetailResponse` |
@@ -817,10 +816,10 @@ Naming holds across `app/validations/` (`createXxxSchema(t)` / `updateXxxSchema(
 | Database | PostgreSQL |
 | API base | `http://localhost:4000/api/` (set via `VITE_API_URL` in `.env`) |
 | Docs | `/api/docs` (Swagger, dev only) |
-| Auth | Cookie-based. Backend sets httpOnly `accessToken` (15 min) + httpOnly refresh cookie + non-httpOnly `user` cookie. A Bearer header will **not** authenticate |
+| Auth | Cookie-based. Backend sets httpOnly `accessToken` (15 min) + non-httpOnly `user` cookie. A Bearer header will **not** authenticate |
 | Roles | `ADMIN`, `OWNER`, `SELLER` |
-| 401 behavior | FE calls POST `/auth/refresh` (single-flight) and retries; only on failure does it navigate to `/login` |
-| Rate limits | Global 100 req/60s per IP; login 5/60s; refresh 10/60s |
+| 401 behavior | FE surfaces the error and navigates to `/login` |
+| Rate limits | Global 100 req/60s per IP; login 5/60s |
 | Multipart | Image upload endpoints accept `multipart/form-data` |
 | Market scoping | OWNER is scoped to its own `marketId`; cross-market access returns **404, not 403** |
 | Seller limits | A SELLER may only create `DEBT` transactions, never `SALE` |
