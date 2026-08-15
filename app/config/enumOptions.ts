@@ -43,11 +43,13 @@ export const getDayOptions = (t: TFunction) => [
 export const ROLE_CONFIG: Record<string, { label: (t: TFunction) => string; className: string }> = {
   [Role.Admin]: {
     label: (t) => t('role.admin'),
-    className: 'bg-violet-500/15 text-violet-600 border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30',
+    className:
+      'bg-violet-500/15 text-violet-600 border-violet-200 dark:bg-violet-500/20 dark:text-violet-400 dark:border-violet-500/30',
   },
   [Role.Owner]: {
     label: (t) => t('role.owner'),
-    className: 'bg-amber-500/15 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30',
+    className:
+      'bg-amber-500/15 text-amber-600 border-amber-200 dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30',
   },
   [Role.Seller]: {
     label: (t) => t('role.seller'),
@@ -56,15 +58,17 @@ export const ROLE_CONFIG: Record<string, { label: (t: TFunction) => string; clas
 };
 
 export const getRoleOptions = (t: TFunction) => [
-  { value: 'all', label: t('filters.all') },
   { value: Role.Admin, label: t('role.admin') },
   { value: Role.Owner, label: t('role.owner') },
   { value: Role.Seller, label: t('role.seller') },
 ];
 
+export const getRoleFilterOptions = (t: TFunction) => [{ value: 'all', label: t('filters.all') }, ...getRoleOptions(t)];
+
 export const getTransactionTypeOptions = (t: TFunction) => [
   { value: 'SALE', label: t('type.SALE') },
   { value: 'DEBT', label: t('type.DEBT') },
+  
 ];
 
 export const getPaymentTypeOptions = (t: TFunction) => [

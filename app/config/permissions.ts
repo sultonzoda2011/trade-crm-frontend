@@ -5,7 +5,10 @@ import { Role } from '~/types/common';
  * Карта прав доступа для роутов.
  */
 export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
-  '/dashboard': [Role.Admin, Role.Owner, Role.Seller],
+  '/dashboard': [Role.Admin, Role.Owner],
+  '/dashboard/inventory': [Role.Admin, Role.Owner],
+  '/dashboard/products': [Role.Admin, Role.Owner],
+  '/dashboard/sellers': [Role.Admin, Role.Owner],
   '/profile': [Role.Admin, Role.Owner, Role.Seller],
   '/users': [Role.Admin],
   '/users/:id': [Role.Admin],
@@ -18,10 +21,14 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/products/:id': [Role.Admin, Role.Owner, Role.Seller],
   '/products/:id/edit': [Role.Admin, Role.Owner],
   '/products': [Role.Admin, Role.Owner, Role.Seller],
+  '/transactions/create': [Role.Admin, Role.Owner, Role.Seller],
   '/transactions/:id': [Role.Admin, Role.Owner, Role.Seller],
   '/transactions': [Role.Admin, Role.Owner, Role.Seller],
   '/categories': [Role.Admin, Role.Owner],
   '/categories/:id': [Role.Admin, Role.Owner],
+  '/debtors': [Role.Admin, Role.Owner, Role.Seller],
+  '/debtors/:id': [Role.Admin, Role.Owner, Role.Seller],
+  '/403': [Role.Admin, Role.Owner, Role.Seller],
 };
 
 export function canAccess(role: Role, pathname: string): boolean {

@@ -33,7 +33,7 @@ export enum Action {
 }
 
 export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
-  [Action.DASHBOARDS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
+  [Action.DASHBOARDS_VIEW]: [Role.Admin, Role.Owner],
   [Action.USERS_VIEW]: [Role.Admin],
   [Action.USERS_CREATE]: [Role.Admin],
   [Action.USERS_EDIT]: [Role.Admin],
