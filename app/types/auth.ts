@@ -11,6 +11,5 @@ export interface Login {
   user: User;
 }
 
-export type RefreshResponse = Login;
 
 export type LoginResponse = ApiResponse<Login>;
