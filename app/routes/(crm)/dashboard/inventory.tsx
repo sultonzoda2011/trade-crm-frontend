@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
+import { InsightList } from '~/components/dashboard/InsightList';
 import { InventoryHealth, ReorderList } from '~/components/dashboard/InventoryHealth';
 import { ReturnsPanel } from '~/components/dashboard/ReturnsPanel';
 import { Skeleton } from '~/components/ui/skeleton';
@@ -28,6 +29,12 @@ export default function DashboardInventoryPage() {
 
   const overview = data?.data;
 
+  // Только инсайты по складу/товарам — про продажи и долги уже есть на "Обзоре".
+  const inventoryInsights = useMemo(
+    () => overview?.insights.filter((insight) => insight.category === 'inventory') ?? [],
+    [overview?.insights]
+  );
+
   if (isError) {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
@@ -50,10 +57,13 @@ export default function DashboardInventoryPage() {
   }
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-3">
-      <ReorderList products={overview.products.reorder} />
-      <InventoryHealth inventory={overview.inventory} />
-      <ReturnsPanel returns={overview.returns} />
+    <div className="space-y-6">
+      <InsightList insights={inventoryInsights} />
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <ReorderList products={overview.products.reorder} />
+        <InventoryHealth inventory={overview.inventory} />
+        <ReturnsPanel returns={overview.returns} />
+      </div>
     </div>
   );
 }
