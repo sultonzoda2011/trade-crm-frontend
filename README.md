@@ -20,24 +20,24 @@ Backend: NestJS + Prisma + PostgreSQL.
 
 ## Технический стек
 
-| Категория | Технологии |
-|-----------|------------|
-| Framework | React Router 7 (SPA, `ssr: false`) |
-| View | React 19 + TypeScript 5.9 + Vite 7 |
-| Styling | TailwindCSS 4 + tw-animate-css |
-| UI primitives | shadcn/ui на **@base-ui/react** (не Radix) |
-| State | Zustand (createTableStore / createModalStore фабрики) |
-| Server state | @tanstack/react-query v5 (staleTime: 60s, keepPreviousData) |
-| HTTP | Axios (интерцепторы: JWT, refresh, тосты ошибок) |
-| Forms | react-hook-form + @hookform/resolvers/zod |
-| Validation | Zod (схемы-фабрики с i18n сообщениями) |
-| Auth | httpOnly cookie (`accessToken`/`refreshToken`) + читаемый `user` cookie; гейт — `getClientUser()` + `canAccess()` в `clientLoader` |
-| i18n | react-i18next + i18next-http-backend |
-| Charts | Recharts |
-| Dates | dayjs + customParseFormat |
-| Icons | lucide-react |
-| Overlays | flatpickr (date pickers), cmdk (command palette) |
-| Navigation | NProgress (top bar), React Router |
+| Категория     | Технологии                                                                                                          |
+| ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Framework     | React Router 7 (SPA, `ssr: false`)                                                                                  |
+| View          | React 19 + TypeScript 5.9 + Vite 7                                                                                  |
+| Styling       | TailwindCSS 4 + tw-animate-css                                                                                      |
+| UI primitives | shadcn/ui на **@base-ui/react** (не Radix)                                                                          |
+| State         | Zustand (createTableStore / createModalStore фабрики)                                                               |
+| Server state  | @tanstack/react-query v5 (staleTime: 60s, keepPreviousData)                                                         |
+| HTTP          | Axios (интерцепторы: JWT, тосты ошибок)                                                                    |
+| Forms         | react-hook-form + @hookform/resolvers/zod                                                                           |
+| Validation    | Zod (схемы-фабрики с i18n сообщениями)                                                                              |
+| Auth          | httpOnly cookie (`accessToken`) + читаемый `user` cookie; гейт — `getClientUser()` + `canAccess()` в `clientLoader` |
+| i18n          | react-i18next + i18next-http-backend                                                                                |
+| Charts        | Recharts                                                                                                            |
+| Dates         | dayjs + customParseFormat                                                                                           |
+| Icons         | lucide-react                                                                                                        |
+| Overlays      | flatpickr (date pickers), cmdk (command palette)                                                                    |
+| Navigation    | NProgress (top bar), React Router                                                                                   |
 
 ---
 
@@ -78,13 +78,13 @@ Backend: NestJS + Prisma + PostgreSQL.
 
 ## Команды
 
-| Команда | Описание |
-|---------|----------|
-| `npm run dev` | Vite dev server с HMR (http://localhost:5173) |
-| `npm run dev:fresh` | Очистка `.vite` кэша + dev |
-| `npm run build` | Production сборка (react-router build) |
-| `npm run typecheck` | `react-router typegen && tsc` |
-| `npm run start` | Запуск production сборки |
+| Команда             | Описание                                      |
+| ------------------- | --------------------------------------------- |
+| `npm run dev`       | Vite dev server с HMR (http://localhost:5173) |
+| `npm run dev:fresh` | Очистка `.vite` кэша + dev                    |
+| `npm run build`     | Production сборка (react-router build)        |
+| `npm run typecheck` | `react-router typegen && tsc`                 |
+| `npm run start`     | Запуск production сборки                      |
 
 ---
 
@@ -142,8 +142,8 @@ public/
 
 ## Окружение
 
-| Переменная | По умолчанию | Описание |
-|-----------|-------------|----------|
+| Переменная     | По умолчанию            | Описание                    |
+| -------------- | ----------------------- | --------------------------- |
 | `VITE_API_URL` | `http://localhost:4000` | URL backend API (без слеша) |
 
 ---
