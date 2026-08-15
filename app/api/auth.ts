@@ -7,9 +7,4 @@ export const authApi = {
     const { data } = await apiClient.post<LoginResponse>('/auth/login', payload);
     return data;
   },
-
-  // refreshToken передаётся автоматически как httpOnly cookie браузером
-  logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout');
-  },
 };
