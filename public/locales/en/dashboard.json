@@ -89,7 +89,8 @@
       "runningOut": "{{count}} products will run out within {{days}} days",
       "slowMoving": "{{count}} products barely sell: over {{days}} days of stock",
       "noSales": "{{count}} products had no sales this period",
-      "reorderList": "{{count}} products need reordering"
+      "reorderList": "{{count}} products need reordering",
+      "recordProduct": "{{name}} is the top seller: {{count}} transactions this period, a record among products"
     },
     "sales": {
       "none": "No sales this period",
