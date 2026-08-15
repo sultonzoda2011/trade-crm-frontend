@@ -1,7 +1,7 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
-import type { SellerDetailResponse, SellerRequest, SellersResponse } from '~/types/sellers';
+import type { SellerDetailResponse, SellersResponse } from '~/types/sellers';
 
 export const sellersApi = {
   getAll: async (
@@ -26,11 +26,15 @@ export const sellersApi = {
     return data;
   },
   create: async (formData: FormData) => {
-    const { data } = await apiClient.post('/sellers', formData);
+    const { data } = await apiClient.post('/sellers', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data;
   },
   update: async ({ formData, id }: { formData: FormData; id: string }) => {
-    const { data } = await apiClient.patch(`/sellers/${id}`, formData);
+    const { data } = await apiClient.patch(`/sellers/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return data;
   },
   delete: async (id: string): Promise<void> => {

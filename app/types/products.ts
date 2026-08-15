@@ -1,5 +1,6 @@
-import type { ApiResponse, PaginatedData } from './common';
-import type { MarketInfo } from './markets';
+import type { MetricComparison, ProductMetrics } from '~/types/analytics';
+import type { ApiResponse, PaginatedData } from '~/types/common';
+import type { MarketInfo } from '~/types/markets';
 
 export interface ProductCount {
   transactionItems: number;
@@ -28,6 +29,25 @@ export interface Product {
   market: MarketInfo;
   category: CategoryInfo | null;
   _count: ProductCount;
+  /** Period metrics computed by the backend. Present on list and detail. */
+  metrics: ProductMetrics;
+}
+
+/** All-time sales totals shown on the product card, net of refunds. */
+export interface ProductSalesStats {
+  count: number;
+  unitsSold: number;
+  refundedUnits: number;
+  revenue: number;
+}
+
+export interface ProductDetail extends Product {
+  sales: ProductSalesStats;
+  comparison: {
+    netUnitsSold: MetricComparison;
+    revenue: MetricComparison;
+    transactionCount: MetricComparison;
+  };
 }
 export interface ProductInfo {
   id: string;
@@ -36,7 +56,7 @@ export interface ProductInfo {
   image: string;
 }
 export type ProductsResponse = ApiResponse<PaginatedData<Product>>;
-export type ProductDetailResponse = ApiResponse<Product>;
+export type ProductDetailResponse = ApiResponse<ProductDetail>;
 
 export interface Category {
   id: string;

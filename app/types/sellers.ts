@@ -1,5 +1,5 @@
-import type { ApiResponse, PaginatedData } from './common';
-import type { MarketInfo } from './markets';
+import type { ApiResponse, PaginatedData } from '~/types/common';
+import type { MarketInfo } from '~/types/markets';
 
 export interface Seller {
   id: string;

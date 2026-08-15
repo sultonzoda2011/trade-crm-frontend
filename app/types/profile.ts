@@ -1,5 +1,5 @@
-import type { ApiResponse } from './common';
-import type { Role } from './common';
+import type { ApiResponse } from '~/types/common';
+import type { Role } from '~/types/common';
 
 export interface Profile {
   id: string;

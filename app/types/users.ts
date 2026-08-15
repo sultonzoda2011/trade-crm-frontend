@@ -1,5 +1,5 @@
-import type { ApiResponse, PaginatedData } from './common';
-import type { MarketInfo } from './markets';
+import type { ApiResponse, PaginatedData } from '~/types/common';
+import type { MarketInfo } from '~/types/markets';
 
 export interface User {
   id: string;
@@ -11,6 +11,7 @@ export interface User {
   updatedAt: string;
   market: MarketInfo | null;
 }
+
 export interface UserRequest {
   name: string;
   email: string;
