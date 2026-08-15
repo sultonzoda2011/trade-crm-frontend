@@ -29,7 +29,7 @@ export function EditDebtorModal() {
   }, [editModal.data, reset]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: debtorsApi.create,
+    mutationFn: ({ request, id }: { request: RequestDebtorSchema; id: string }) => debtorsApi.update({ request, id }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['debtors'] });
       toast.success(t('debtors:updateSuccess'));
@@ -41,7 +41,8 @@ export function EditDebtorModal() {
   });
 
   function onSubmit(request: RequestDebtorSchema) {
-    mutate(request);
+    if (!editModal.data) return;
+    mutate({ request, id: editModal.data.id });
   }
 
   return (

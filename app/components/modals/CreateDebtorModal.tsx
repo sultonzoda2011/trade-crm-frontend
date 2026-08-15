@@ -15,8 +15,9 @@ export function CreateDebtorModal() {
   const queryClient = useQueryClient();
   const createModal = useDebtorsModals((s) => s.create);
 
-  const { control, handleSubmit } = useForm<RequestDebtorSchema>({
+  const { control, handleSubmit, reset } = useForm<RequestDebtorSchema>({
     resolver: zodResolver(requestDebtorSchema(t)),
+    defaultValues: { name: '', phone: '' },
   });
 
   const { mutate, isPending } = useMutation({
@@ -25,6 +26,7 @@ export function CreateDebtorModal() {
       void queryClient.invalidateQueries({ queryKey: ['debtors'] });
       toast.success(t('debtors:createSuccess'));
       createModal.close();
+      reset();
     },
     onError: () => {
       toast.error(t('debtors:createError'));

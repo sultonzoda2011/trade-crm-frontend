@@ -13,6 +13,7 @@ import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
+import { Role } from '~/types/common';
 import type { UsersResponse } from '~/types/users';
 import { createMarketSchema, type CreateMarketSchema } from '~/validations/market';
 
@@ -22,12 +23,16 @@ export function CreateMarketModal() {
   const createModal = useMarketsModals((s) => s.create);
 
   const { data: usersResponse } = useQuery<UsersResponse>({
-    queryKey: ['users'],
-    queryFn: () => usersApi.getAll(),
+    queryKey: ['users', 'owners'],
+    queryFn: () => usersApi.getAll(1, 100),
     staleTime: 60_000,
   });
 
-  const userOptions = mapToOptions(usersResponse?.data?.data ?? [], 'id', 'name');
+  const userOptions = mapToOptions(
+    (usersResponse?.data?.data ?? []).filter((user) => user.role === Role.Owner),
+    'id',
+    'name'
+  );
   const { control, handleSubmit, reset } = useForm<CreateMarketSchema>({
     resolver: zodResolver(createMarketSchema(t)),
     defaultValues: { name: '', address: '', ownerId: '', image: null },

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader } from '~/components/ui/sidebar';
 import { getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
-import { NavMain } from './NavMain';
+import { NavMain } from '~/components/layout/NavMain';
 
 import darkFavicon from '/dark-favicon.png';
 import lightFavicon from '/light-favicon.png';

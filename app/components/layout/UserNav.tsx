@@ -16,8 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { ROLE_CONFIG } from '~/config/enumOptions';
-import { useIsMobile } from '~/hooks/use-mobile';
-import { getUserFromToken } from '~/lib/auth-utils';
+import { getClientUser } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -31,25 +30,23 @@ export function UserNav() {
   const { t } = useTranslation('auth');
   const { t: tc, i18n } = useTranslation('common');
   const { theme, setTheme, systemTheme } = useTheme();
-  const userInfo = getUserFromToken();
+  const userInfo = getClientUser();
   const currentTheme = theme === 'system' ? systemTheme : theme;
   const currentLng = i18n.language?.split('-')[0];
 
-  const isMobile = useIsMobile();
   const changeLanguage = (lng: string) => {
     Cookies.set('lng', lng, { expires: 365 });
     void i18n.changeLanguage(lng);
   };
 
   const handleLogout = () => {
-    const refreshToken = Cookies.get('refreshToken');
-    if (refreshToken) {
-      authApi.logout(refreshToken).catch(() => {});
-    }
-    Cookies.remove('token');
-    Cookies.remove('refreshToken');
-    queryClient.removeQueries({ queryKey: ['user-me'] });
-    navigate('/login');
+    authApi
+      .logout()
+      .catch(() => {}) // httpOnly cookie отправляется автоматически, сервер его отзывает
+      .finally(() => {
+        queryClient.removeQueries({ queryKey: ['user-me'] });
+        navigate('/login');
+      });
   };
 
   const initials = userInfo?.name

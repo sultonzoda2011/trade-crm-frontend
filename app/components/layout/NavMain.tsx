@@ -62,7 +62,8 @@ export function NavMain({ items }: NavMainProps) {
               onOpenChange={(isOpen) => handleGroupTrigger(item.title, isOpen)}
               className="group/collapsible">
               <SidebarMenuItem>
-                <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.title} isActive={isCurrentGroupOpen || isGroupActive} />}>
+                <CollapsibleTrigger
+                  render={<SidebarMenuButton tooltip={item.title} isActive={isCurrentGroupOpen || isGroupActive} />}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                   <ChevronRight className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />

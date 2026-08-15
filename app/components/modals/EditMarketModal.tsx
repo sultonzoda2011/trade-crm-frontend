@@ -15,7 +15,8 @@ import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { mapToOptions } from '~/lib/mapToOptions';
-import { useMarketsModals } from '~/routes/(crm)/markets/store'
+import { useMarketsModals } from '~/routes/(crm)/markets/store';
+import { Role } from '~/types/common';
 import { updateMarketSchema, type UpdateMarketSchema } from '~/validations/market';
 
 export function EditMarketModal() {
@@ -26,13 +27,17 @@ export function EditMarketModal() {
   const canManageUsers = can(Action.USERS_VIEW);
 
   const { data: usersResponse } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.getAll(),
+    queryKey: ['users', 'owners'],
+    queryFn: () => usersApi.getAll(1, 100),
     enabled: editModal.isOpen && canManageUsers,
     staleTime: 60_000,
   });
 
-  const userOptions = mapToOptions(usersResponse?.data?.data ?? [], 'id', 'name');
+  const userOptions = mapToOptions(
+    (usersResponse?.data?.data ?? []).filter((user) => user.role === Role.Owner),
+    'id',
+    'name'
+  );
 
   const { control, handleSubmit, reset } = useForm<UpdateMarketSchema>({
     resolver: zodResolver(updateMarketSchema(t)),

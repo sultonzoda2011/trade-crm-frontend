@@ -5,7 +5,7 @@ import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { CommandPalette } from '~/components/shared/CommandPalette';
 import { SidebarTrigger } from '~/components/ui/sidebar';
-import { UserNav } from './UserNav';
+import { UserNav } from '~/components/layout/UserNav';
 
 export default function Header() {
   const { t } = useTranslation('common');
