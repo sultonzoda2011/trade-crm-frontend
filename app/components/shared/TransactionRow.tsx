@@ -17,7 +17,7 @@ export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProp
     showDebtor && tx.debtor ? `${tx.debtor.name} · ${formatDate(tx.createdAt, true)}` : formatDate(tx.createdAt, true);
 
   return (
-    <ListLink {...linkProps} className="py-3">
+    <ListLink {...linkProps} className="py-2">
       <div className="min-w-0">
         <p className="flex items-center gap-2 truncate text-sm font-medium">
           #{tx.id.slice(0, 8)}
@@ -29,10 +29,7 @@ export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProp
         <p className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</p>
         {tx.remainingAmount > 0 && (
           <p className="text-warning font-mono text-xs">
-            {/* Компонент используется со страниц с разными наборами неймспейсов
-                (debtors/sellers/users/profile) — 'remaining' лежит только в
-                transactions, поэтому неймспейс фиксируем явно, а не полагаемся
-                на то, что вызывающая страница его подключила. */}
+       
             {t('remaining', { ns: 'transactions' })}: {fmtTJS(tx.remainingAmount)}
           </p>
         )}
