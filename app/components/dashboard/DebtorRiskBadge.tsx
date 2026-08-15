@@ -1,104 +1,57 @@
 import { AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { Badge } from '~/components/ui/badge';
-import dayjs from 'dayjs';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
+import { cn } from '~/lib/utils';
+import type { DebtorRisk } from '~/types/analytics';
+
+const RISK_ICON: Record<DebtorRisk, React.ComponentType<{ className?: string }>> = {
+  HIGH: AlertCircle,
+  MEDIUM: AlertTriangle,
+  LOW: CheckCircle2,
+};
 
 interface DebtorRiskBadgeProps {
-  debtorName: string;
-  totalDebt: number;
-  dueDate?: string;
-  activeTransactions: number;
-  overdueCount?: number;
+  risk: DebtorRisk;
+  /** Factor keys behind the score — shown as the tooltip explanation. */
+  factors?: string[];
+  className?: string;
 }
 
-export type RiskLevel = 'critical' | 'warning' | 'healthy';
+/**
+ * Renders the repayment risk computed by the backend.
+ *
+ * The badge deliberately does no scoring of its own: the rule lives in one
+ * place (backend `scoreDebtorRisk`), so the list, the detail page and the
+ * dashboard can never disagree about who is risky. The tooltip turns the
+ * factor keys into readable reasons — a risk level nobody can explain is
+ * a number the owner will not act on.
+ */
+export function DebtorRiskBadge({ risk, factors, className }: DebtorRiskBadgeProps) {
+  const { t } = useTranslation('debtors');
+  const Icon = RISK_ICON[risk];
 
-export function calculateRiskLevel(dueDate?: string, totalDebt?: number, overdueCount?: number): RiskLevel {
-  // If no due date, can't determine risk
-  if (!dueDate) return 'healthy';
-
-  const daysOverdue = dayjs().diff(dayjs(dueDate), 'days');
-
-  // Critical: more than 30 days overdue or has overdue debts
-  if (daysOverdue > 30 || (overdueCount && overdueCount > 0)) {
-    return 'critical';
-  }
-
-  // Warning: 7-30 days overdue
-  if (daysOverdue > 7) {
-    return 'warning';
-  }
-
-  // Healthy: all good
-  return 'healthy';
-}
-
-export function DebtorRiskBadge({
-  debtorName,
-  totalDebt,
-  dueDate,
-  activeTransactions,
-  overdueCount,
-}: DebtorRiskBadgeProps) {
-  const riskLevel = calculateRiskLevel(dueDate, totalDebt, overdueCount);
-
-  const iconProps = { className: 'h-3.5 w-3.5' };
-
-  if (riskLevel === 'critical') {
-    return (
-      <Badge className="gap-1 border-destructive/40 bg-destructive/15 text-destructive" variant="outline">
-        <AlertCircle {...iconProps} />
-        Critical
-      </Badge>
-    );
-  }
-
-  if (riskLevel === 'warning') {
-    return (
-      <Badge className="gap-1 border-warning/40 bg-warning/15 text-warning" variant="outline">
-        <AlertTriangle {...iconProps} />
-        Warning
-      </Badge>
-    );
-  }
-
-  return (
-    <Badge className="gap-1 border-success/40 bg-success/15 text-success" variant="outline">
-      <CheckCircle2 {...iconProps} />
-      Healthy
+  const badge = (
+    <Badge variant="outline" className={cn('gap-1', DEBTOR_RISK_BADGE[risk], className)}>
+      <Icon className="h-3.5 w-3.5" />
+      {t(`risk.${risk}`)}
     </Badge>
   );
-}
 
-// Simplified version for list views
-interface SimpleRiskBadgeProps {
-  totalDebt: number;
-  activeTransactions: number;
-}
-
-export function SimpleRiskBadge({ totalDebt, activeTransactions }: SimpleRiskBadgeProps) {
-  // Simple risk indicator based on number of active transactions
-  if (activeTransactions > 5) {
-    return (
-      <Badge className="gap-1 border-destructive/40 bg-destructive/15 text-destructive" variant="outline">
-        <AlertCircle className="h-3 w-3" />
-        High Risk
-      </Badge>
-    );
-  }
-
-  if (activeTransactions > 2) {
-    return (
-      <Badge className="gap-1 border-warning/40 bg-warning/15 text-warning" variant="outline">
-        <AlertTriangle className="h-3 w-3" />
-        Medium Risk
-      </Badge>
-    );
-  }
+  if (!factors?.length) return badge;
 
   return (
-    <Badge className="gap-1 border-success/40 bg-success/15 text-success" variant="outline">
-      <CheckCircle2 className="h-3 w-3" />
-      Low Risk
-    </Badge>
+    <Tooltip>
+      <TooltipTrigger render={<span className="inline-flex" />}>{badge}</TooltipTrigger>
+      <TooltipContent className="max-w-64">
+        <p className="mb-1 font-medium">{t('risk.whyTitle')}</p>
+        <ul className="list-inside list-disc space-y-0.5">
+          {factors.map((factor) => (
+            <li key={factor}>{t(`riskFactors.${factor}`)}</li>
+          ))}
+        </ul>
+      </TooltipContent>
+    </Tooltip>
   );
 }

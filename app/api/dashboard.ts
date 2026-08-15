@@ -1,5 +1,5 @@
 import { apiClient } from '~/lib/client';
-import type { DashboardResponse, SellersReportResponse } from '~/types/dashboard';
+import type { DashboardResponse, OverviewResponse, SellersReportResponse } from '~/types/dashboard';
 
 export interface DashboardParams {
   period?: string;
@@ -9,6 +9,14 @@ export interface DashboardParams {
 }
 
 export const dashboardApi = {
+  /**
+   * Business control centre: sales, debts, returns, inventory health and
+   * recommendations in one round-trip.
+   */
+  getOverview: async (params?: DashboardParams): Promise<OverviewResponse> => {
+    const { data } = await apiClient.get('/dashboard/overview', { params });
+    return data;
+  },
   get: async (params?: DashboardParams): Promise<DashboardResponse> => {
     const { data } = await apiClient.get('/dashboard', { params });
     return data;

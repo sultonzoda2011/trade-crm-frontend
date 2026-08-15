@@ -1,5 +1,6 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Panel } from '~/components/layout/Panel';
 import { fmtTJS } from '~/lib/format';
 import type { PaymentTypeDistribution } from '~/types/dashboard';
@@ -8,43 +9,48 @@ interface PaymentDistributionChartProps {
   data: PaymentTypeDistribution[];
 }
 
-const COLORS = {
-  CASH: '#10b981', // emerald
-  CARD: '#3b82f6', // blue
-  CREDIT: '#f59e0b', // amber
+const CHART_COLORS: Record<PaymentTypeDistribution['type'], string> = {
+  CASH: 'var(--chart-2)', // green
+  CARD: 'var(--chart-1)', // blue
+  CREDIT: 'var(--chart-3)', // amber
 };
 
-const chartConfig = {
-  CASH: {
-    label: 'Cash',
-    color: '#10b981',
-    theme: {
-      light: '#10b981',
-      dark: '#10b981',
-    },
-  },
-  CARD: {
-    label: 'Card',
-    color: '#3b82f6',
-    theme: {
-      light: '#3b82f6',
-      dark: '#3b82f6',
-    },
-  },
-  CREDIT: {
-    label: 'Credit',
-    color: '#f59e0b',
-    theme: {
-      light: '#f59e0b',
-      dark: '#f59e0b',
-    },
-  },
-};
+interface PaymentTooltipProps {
+  active?: boolean;
+  payload?: ReadonlyArray<{ payload?: PaymentTypeDistribution }>;
+  labels: Record<string, string>;
+  transactionsLabel: string;
+}
+
+function PaymentTooltip({ active, payload, labels, transactionsLabel }: PaymentTooltipProps) {
+  const item = active && payload?.[0]?.payload;
+  if (!item) return null;
+
+  return (
+    <div className="border-border/50 bg-background rounded-lg border px-3 py-2 text-xs shadow-xl">
+      <p className="font-medium">{labels[item.type] ?? item.type}</p>
+      <p className="text-muted-foreground">{fmtTJS(item.amount)}</p>
+      <p className="text-muted-foreground">
+        {item.count} {transactionsLabel}
+      </p>
+      <p className="mt-1 font-semibold">{item.percentage.toFixed(1)}%</p>
+    </div>
+  );
+}
 
 export function PaymentDistributionChart({ data }: PaymentDistributionChartProps) {
-  const { t } = useTranslation(['dashboard']);
+  const { t } = useTranslation(['dashboard', 'transactions']);
 
-  if (!data || data.length === 0) {
+  const labels = useMemo(
+    () => ({
+      CASH: t('paymentType.CASH', { ns: 'transactions' }),
+      CARD: t('paymentType.CARD', { ns: 'transactions' }),
+      CREDIT: t('paymentType.CREDIT', { ns: 'transactions' }),
+    }),
+    [t]
+  );
+
+  if (data.length === 0) {
     return (
       <Panel title={t('paymentTypes')} className="col-span-1">
         <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
@@ -54,23 +60,8 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
 
   const formattedData = data.map((item) => ({
     ...item,
-    label: chartConfig[item.type as keyof typeof chartConfig]?.label || item.type,
+    label: labels[item.type] ?? item.type,
   }));
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload[0]) {
-      const data = payload[0].payload;
-      return (
-        <div className="border-border/50 bg-background rounded-lg border px-3 py-2 text-xs shadow-xl">
-          <p className="font-medium">{data.label}</p>
-          <p className="text-muted-foreground">{fmtTJS(data.amount)}</p>
-          <p className="text-muted-foreground">{data.count} transactions</p>
-          <p className="mt-1 font-semibold">{data.percentage.toFixed(1)}%</p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <Panel title={t('paymentTypes')} className="col-span-1 flex flex-col">
@@ -86,12 +77,11 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
               outerRadius={80}
               fill="#8884d8"
               dataKey="amount">
-              {formattedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[entry.type as keyof typeof COLORS]} />
+              {formattedData.map((entry) => (
+                <Cell key={entry.type} fill={CHART_COLORS[entry.type]} />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
+            <Tooltip content={<PaymentTooltip labels={labels} transactionsLabel={t('charts.transactions')} />} />
           </PieChart>
         </ResponsiveContainer>
       </div>
