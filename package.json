@@ -6,7 +6,7 @@
     "build": "react-router build",
     "dev": "react-router dev",
     "dev:fresh": "rimraf node_modules/.vite && react-router dev",
-    "start": "react-router-serve ./build/server/index.js",
+    "start": "vite preview --port 3000",
     "typecheck": "react-router typegen && tsc"
   },
   "dependencies": {

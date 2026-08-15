@@ -18,6 +18,7 @@
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
+    "noUnusedLocals": true,
     "strict": true
   }
 }
