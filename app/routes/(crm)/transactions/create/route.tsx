@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -10,10 +11,12 @@ import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
+import { CustomInput } from '~/components/shared/CustomInput';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
+import { FormDateInput } from '~/components/ui/form/FormDateInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
 import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
@@ -24,9 +27,13 @@ import { mapToOptions } from '~/lib/mapToOptions';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
   createTransactionSchema,
-  type CreateTransactionItemSchema,
-  type CreateTransactionSchema,
+  isOverStock,
+  type CreateTransactionInput,
+  type CreateTransactionItemInput,
 } from '~/validations/transactions';
+
+const DEFAULT_DUE_OFFSET_DAYS = 7;
+const MAX_DUE_OFFSET_DAYS = 365;
 
 export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
@@ -52,31 +59,35 @@ export default function CreateTransactionPage() {
 
   const productsList = useMemo(() => productsRes?.data?.data ?? [], [productsRes]);
 
-  const productOptions = useMemo(
-    () =>
-      productsList.map((p) => ({
-        value: p.id,
-        label: `${p.name} — ${fmtTJS(p.price)}`,
-      })),
-    [productsList]
-  );
+  const stockMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const p of productsList) map[p.id] = p.quantity;
+    return map;
+  }, [productsList]);
+
+  const productOptions = useMemo(() => mapToOptions(productsList, 'id', 'name'), [productsList]);
 
   const typeOptions = useMemo(
     () => getTransactionTypeOptions(t).filter((opt) => canCreateSale || opt.value !== 'SALE'),
     [t, canCreateSale]
   );
 
-  const paymentTypeOptions = useMemo(() => getPaymentTypeOptions(t), [t]);
+  const transactionSchema = useMemo(() => createTransactionSchema(t, stockMap), [t, stockMap]);
 
-  const { control, handleSubmit, watch, formState } = useForm<CreateTransactionSchema>({
-    resolver: zodResolver(createTransactionSchema(t)),
+  const { control, handleSubmit, watch, setValue, formState } = useForm<CreateTransactionInput>({
+    resolver: zodResolver(transactionSchema),
     mode: 'onChange',
-    shouldUnregister: true,
+    // shouldUnregister: true конфликтует с useFieldArray (задокументированная
+    // проблема RHF) — при добавлении/удалении строки товара значения массива
+    // items могли кратковременно рассинхронизироваться, из-за чего сводка
+    // платежа не подхватывала первую позицию сразу. dueDate (единственное
+    // поле, что рендерится условно) и без unregister корректно отсекается в
+    // mutationFn ниже, поэтому реальной необходимости в этой опции не было.
     defaultValues: {
       debtorId: '',
       type: canCreateSale ? 'SALE' : 'DEBT',
-      paymentType: 'CASH',
-      dueDate: '',
+      paymentType: canCreateSale ? 'CASH' : 'CREDIT',
+      dueDate: dayjs().add(DEFAULT_DUE_OFFSET_DAYS, 'day').format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0 }],
     },
   });
@@ -87,15 +98,35 @@ export default function CreateTransactionPage() {
   });
 
   const type = watch('type');
-  const items = watch('items') || [];
+  const paymentType = watch('paymentType');
+  const items = (watch('items') ?? []) as CreateTransactionItemInput[];
+
+  const paymentTypeOptions = useMemo(() => {
+    const base = getPaymentTypeOptions(t);
+    return type === 'DEBT' ? base.filter((o) => o.value === 'CREDIT') : base.filter((o) => o.value !== 'CREDIT');
+  }, [t, type]);
+
+  useEffect(() => {
+    if (type === 'DEBT') {
+      if (paymentType !== 'CREDIT') setValue('paymentType', 'CREDIT', { shouldValidate: true });
+    } else if (paymentType === 'CREDIT') {
+      setValue('paymentType', 'CASH', { shouldValidate: true });
+    }
+  }, [type, paymentType, setValue]);
+
+  const productMap = useMemo(() => {
+    const map = new Map<string, (typeof productsList)[number]>();
+    for (const p of productsList) map.set(p.id, p);
+    return map;
+  }, [productsList]);
 
   const getProduct = useMemo(
-    () => (productId?: string) => productsList.find((p) => p.id === productId),
-    [productsList]
+    () => (productId?: string | null) => (productId ? productMap.get(productId) : undefined),
+    [productMap]
   );
 
   const getItemTotal = useMemo(
-    () => (item?: CreateTransactionItemSchema | undefined) => {
+    () => (item?: CreateTransactionItemInput | undefined) => {
       if (!item) return 0;
       const product = getProduct(item.productId);
       const q = Number(item.quantity) || 0;
@@ -111,7 +142,7 @@ export default function CreateTransactionPage() {
   }, [items, getItemTotal]);
 
   const getItemGross = useMemo(
-    () => (item?: CreateTransactionItemSchema | undefined) => {
+    () => (item?: CreateTransactionItemInput | undefined) => {
       if (!item) return 0;
       const product = getProduct(item.productId);
       const q = Number(item.quantity) || 0;
@@ -131,24 +162,23 @@ export default function CreateTransactionPage() {
 
   const hasStockIssue = useMemo(
     () =>
-      (Array.isArray(items) ? items : []).some((item) => {
-        const product = getProduct(item?.productId);
-        return !!product && Number(item?.quantity) > product.quantity;
-      }),
-    [items, getProduct]
+      (Array.isArray(items) ? items : []).some((item) =>
+        isOverStock(item?.quantity, item?.productId ? stockMap[item.productId] : undefined)
+      ),
+    [items, stockMap]
   );
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateTransactionSchema) => {
+    mutationFn: (data: CreateTransactionInput) => {
       const payload: CreateTransactionRequest = {
         debtorId: data.debtorId || undefined,
-        type: data.type as CreateTransactionRequest['type'],
-        paymentType: data.paymentType,
+        type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
+        paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
         dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
         items: data.items.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          discount: item.discount || undefined,
+          productId: item.productId ?? '',
+          quantity: Number(item.quantity),
+          discount: item.discount ? Number(item.discount) : undefined,
         })),
       };
       return transactionsApi.create(payload);
@@ -163,7 +193,11 @@ export default function CreateTransactionPage() {
     },
   });
 
-  function onSubmit(data: CreateTransactionSchema) {
+  function onSubmit(data: CreateTransactionInput) {
+    if (data.type === 'SALE' && !canCreateSale) {
+      toast.error(t('errors.forbidden', { ns: 'common' }));
+      return;
+    }
     mutate(data);
   }
 
@@ -171,7 +205,7 @@ export default function CreateTransactionPage() {
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
         items={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
           { label: t('title'), link: '/transactions' },
           { label: t('create') },
         ]}
@@ -179,17 +213,14 @@ export default function CreateTransactionPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t('create')}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('create')}</h1>
           <p className="text-muted-foreground text-sm">{t('createSubtitle')}</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate('/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button
-            type="submit"
-            form="create-transaction-page-form"
-            disabled={isPending || !formState.isValid || hasStockIssue}>
+          <Button type="submit" form="create-transaction-page-form" disabled={isPending || !formState.isValid}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create', { ns: 'common' })}
           </Button>
@@ -199,7 +230,7 @@ export default function CreateTransactionPage() {
       <form
         id="create-transaction-page-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-1 gap-6 lg:grid-cols-[7fr_3.2fr] items-start">
+        className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[5fr_3fr]">
         <div className="space-y-6">
           <Panel
             title={t('fields.items')}
@@ -220,62 +251,63 @@ export default function CreateTransactionPage() {
                 const item = items[index];
                 const product = getProduct(item?.productId);
                 const itemTotal = getItemTotal(item);
-                const overStock = !!product && Number(item?.quantity) > product.quantity;
+                const overStock = isOverStock(item?.quantity, product?.quantity);
+                const qty = Number(item?.quantity) || 0;
 
                 return (
-                  <div key={field.id} className="bg-muted/30 rounded-lg border p-3">
-                    <div className="grid grid-cols-12 gap-3 lg:items-end">
-                      <div className="col-span-12 lg:col-span-5">
-                        <FormCustomSelect
-                          control={control}
-                          label={t('fields.product')}
-                          name={`items.${index}.productId`}
-                          placeholder={t('fields.product')}
-                          options={productOptions}
-                          required
-                        />
+                  <div key={field.id} className="bg-card rounded-xl border p-4 shadow-sm">
+                    <FormCustomSelect
+                      control={control}
+                      label={t('fields.product')}
+                      name={`items.${index}.productId`}
+                      placeholder={t('fields.product')}
+                      options={productOptions}
+                      required
+                    />
+
+                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+                      <div>
+                        <label className="mb-1.5 block text-sm font-medium">{t('fields.price')}</label>
+                        <CustomInput readOnly value={product ? fmtTJS(product.price) : ''} placeholder="—" />
                       </div>
-                      <div className="col-span-6 lg:col-span-2">
-                        <FormInput
-                          control={control}
-                          label={t('fields.quantity')}
-                          name={`items.${index}.quantity`}
-                          type="number"
-                          min={1}
-                          placeholder={t('fields.quantity')}
-                          required
-                        />
-                      </div>
-                      <div className="col-span-6 lg:col-span-2">
-                        <FormInput
-                          control={control}
-                          label={t('fields.discount')}
-                          name={`items.${index}.discount`}
-                          type="number"
-                          min={0}
-                          placeholder={t('fields.discount')}
-                        />
-                      </div>
-                      <div className="col-span-9 lg:col-span-2">
-                        <label className="mb-2 block text-sm font-medium">{t('fields.totalPrice')}</label>
-                        <div className="bg-background flex h-10 items-center justify-end rounded-md border px-3 font-mono text-sm font-semibold">
+                      <FormInput
+                        control={control}
+                        label={t('fields.quantity')}
+                        name={`items.${index}.quantity`}
+                        type="number"
+                        min={1}
+                        placeholder={t('fields.quantity')}
+                        required
+                      />
+                      <FormInput
+                        control={control}
+                        label={t('fields.discount')}
+                        name={`items.${index}.discount`}
+                        type="number"
+                        min={0}
+                        placeholder={t('fields.discount')}
+                      />
+                      <div>
+                        <label className="mb-1.5 block text-sm font-medium">{t('fields.totalPrice')}</label>
+                        <div className="bg-muted/40 flex h-8 items-center justify-end rounded-lg border px-2.5 font-mono text-sm font-semibold">
                           {fmtTJS(itemTotal)}
                         </div>
                       </div>
-                      <div className="col-span-3 lg:col-span-1 flex justify-end">
+                      <div className="flex items-end justify-end">
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:bg-destructive/10 h-10 w-9"
+                          className="text-destructive hover:bg-destructive/10 h-8 w-8"
                           disabled={fields.length === 1}
                           onClick={() => remove(index)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
+
                     {product && (
-                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t pt-2 text-xs">
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
                         <div className="flex items-center gap-2">
                           <Package className="text-muted-foreground h-3.5 w-3.5" />
                           <span className={overStock ? 'text-destructive font-medium' : 'text-muted-foreground'}>
@@ -289,7 +321,7 @@ export default function CreateTransactionPage() {
                           )}
                         </div>
                         <div className="text-muted-foreground font-mono">
-                          {fmtTJS(product.price)} × {Number(item?.quantity) || 0}
+                          {fmtTJS(product.price)} × {qty}
                           {Number(item?.discount) > 0 && <> − {fmtTJS(Number(item?.discount) || 0)}</>}
                           {' = '}
                           <span className="text-foreground font-semibold">{fmtTJS(itemTotal)}</span>
@@ -299,6 +331,55 @@ export default function CreateTransactionPage() {
                   </div>
                 );
               })}
+            </div>
+          </Panel>
+
+          <Panel title={t('paymentSummary')} className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <ShoppingCart className="h-3.5 w-3.5" />
+                  {t('fields.totalAmount')}
+                </span>
+                <span className="font-mono font-semibold">{fmtTJS(calculatedTotal)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Tag className="h-3.5 w-3.5" />
+                  {t('fields.discount')}
+                </span>
+                {totalDiscount > 0 && <span className="font-mono font-semibold">− {fmtTJS(totalDiscount)}</span>}
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Wallet className="h-3.5 w-3.5" />
+                  {t('fields.credited')}
+                </span>
+                <span className="text-success font-mono font-semibold">
+                  {fmtTJS(type === 'DEBT' ? 0 : calculatedTotal)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground flex items-center gap-1.5">
+                  <Banknote className="h-3.5 w-3.5" />
+                  {t('fields.remainingAmount')}
+                </span>
+                <span className="text-warning font-mono font-semibold">
+                  {fmtTJS(type === 'DEBT' ? calculatedTotal : 0)}
+                </span>
+              </div>
+              <div className="bg-border h-px" />
+              <p className="text-muted-foreground text-xs leading-relaxed">
+                {type === 'DEBT' ? t('debtHint') : t('creditedHint')}
+              </p>
+              {hasStockIssue && (
+                <Badge
+                  variant="outline"
+                  className="border-destructive/40 bg-destructive/10 text-destructive w-full justify-center gap-1.5 py-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  {t('stockError')}
+                </Badge>
+              )}
             </div>
           </Panel>
         </div>
@@ -324,56 +405,15 @@ export default function CreateTransactionPage() {
                 required={type === 'DEBT'}
               />
               {type === 'DEBT' && (
-                <FormInput control={control} name="dueDate" type="date" label={t('fields.dueDate')} required />
-              )}
-            </div>
-          </Panel>
-
-          <Panel title={t('paymentSummary')} className="p-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ShoppingCart className="h-3.5 w-3.5" />
-                  {t('fields.totalAmount')}
-                </span>
-                <span className="font-mono font-semibold">{fmtTJS(calculatedTotal)}</span>
-              </div>
-              {totalDiscount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5" />
-                    {t('fields.discount')}
-                  </span>
-                  <span className="font-mono font-semibold">− {fmtTJS(totalDiscount)}</span>
-                </div>
-              )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Wallet className="h-3.5 w-3.5" />
-                  {t('fields.credited')}
-                </span>
-                <span className="text-success font-mono font-semibold">
-                  {fmtTJS(type === 'DEBT' ? 0 : calculatedTotal)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Banknote className="h-3.5 w-3.5" />
-                  {t('fields.remainingAmount')}
-                </span>
-                <span className="text-warning font-mono font-semibold">
-                  {fmtTJS(type === 'DEBT' ? calculatedTotal : 0)}
-                </span>
-              </div>
-              <div className="bg-border h-px" />
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                {type === 'DEBT' ? t('debtHint') : t('creditedHint')}
-              </p>
-              {hasStockIssue && (
-                <Badge variant="outline" className="border-destructive/40 bg-destructive/10 text-destructive w-full justify-center gap-1.5 py-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5" />
-                  {t('stockError')}
-                </Badge>
+                <FormDateInput
+                  control={control}
+                  name="dueDate"
+                  placeholder={t('fields.dueDate')}
+                  maxDate={dayjs().add(MAX_DUE_OFFSET_DAYS, 'day').format('YYYY-MM-DD')}
+                  minDate={dayjs().format('YYYY-MM-DD')}
+                  label={t('fields.dueDate')}
+                  required
+                />
               )}
             </div>
           </Panel>

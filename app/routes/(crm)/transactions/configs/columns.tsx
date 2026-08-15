@@ -3,13 +3,13 @@ import type { TFunction } from 'i18next';
 import { CreditCard, Eye, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Action } from '~/config/actions';
+import { TRANSACTION_STATUS_BADGE, TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import type { Transaction } from '~/types/transactions';
-import { useTransactionsModals } from '../store';
+import type { Transaction, TransactionStatus, TransactionType } from '~/types/transactions';
+import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
 function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) {
   const deleteModal = useTransactionsModals((s) => s.delete);
@@ -18,44 +18,30 @@ function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) 
   const { can } = useCan();
 
   return (
-    <div className="flex justify-end gap-1">
+    <RowActionsCell>
       {can(Action.TRANSACTIONS_EDIT) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => payModal.open(row)} disabled={row.remainingAmount <= 0}>
-              <CreditCard className="h-3.5 w-3.5" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('pay')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<CreditCard className="h-3.5 w-3.5" />}
+          label={t('pay')}
+          outline
+          disabled={row.remainingAmount <= 0}
+          onClick={() => payModal.open(row)}
+        />
       )}
-      <Tooltip>
-        <TooltipTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            render={<Link to={`/transactions/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
-            <Eye className="h-4 w-4" />
-          </Button>
-        } />
-        <TooltipContent side="bottom">{t('actions.view', { ns: 'common' })}</TooltipContent>
-      </Tooltip>
+      <IconActionButton
+        icon={<Eye className="h-4 w-4" />}
+        label={t('actions.view', { ns: 'common' })}
+        render={<Link to={`/transactions/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
+      />
       {can(Action.TRANSACTIONS_DELETE) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-              onClick={() => deleteModal.open(row.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('actions.delete', { ns: 'common' })}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Trash2 className="h-4 w-4" />}
+          label={t('actions.delete', { ns: 'common' })}
+          danger
+          onClick={() => deleteModal.open(row.id)}
+        />
       )}
-    </div>
+    </RowActionsCell>
   );
 }
 
@@ -90,13 +76,10 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
     columnHelper.accessor('type', {
       header: t('fields.type'),
       cell: (info) => {
-        const type = info.getValue();
-        const label = t(`type.${type}`, { defaultValue: type });
-        let className = 'border-success/40 bg-success/15 text-success font-medium';
-        if (type === 'DEBT') className = 'border-warning/40 bg-warning/15 text-warning font-medium';
-        if (type === 'REFUND') className = 'border-destructive/40 bg-destructive/15 text-destructive font-medium';
+        const type = info.getValue() as TransactionType;
+        const label = t(`type.${type}`);
         return (
-          <Badge variant="outline" className={className}>
+          <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[type]}>
             {label}
           </Badge>
         );
@@ -108,7 +91,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
         const pType = info.getValue();
         return (
           <Badge variant="secondary" className="font-normal">
-            {t(`paymentType.${pType}`, { defaultValue: pType })}
+            {t(`paymentType.${pType}`)}
           </Badge>
         );
       },
@@ -122,8 +105,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
       cell: (info) => {
         const remaining = info.getValue();
         return (
-          <span
-            className={`font-mono text-sm font-medium ${remaining > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+          <span className={`font-mono text-sm font-medium ${remaining > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
             {fmtTJS(remaining)}
           </span>
         );
@@ -132,16 +114,10 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
     columnHelper.accessor('status', {
       header: t('fields.status'),
       cell: (info) => {
-        const status = info.getValue();
-        let className = 'bg-muted text-muted-foreground';
-        if (status === 'ACTIVE') className = 'bg-warning/15 text-warning border-warning/30';
-        if (status === 'PARTIAL') className = 'bg-sky-500/15 text-sky-500 border-sky-500/30';
-        if (status === 'PAID') className = 'bg-success/15 text-success border-success/30';
-        if (status === 'REFUNDED') className = 'bg-destructive/15 text-destructive border-destructive/30';
-
+        const status = info.getValue() as TransactionStatus;
         return (
-          <Badge variant="outline" className={`font-medium ${className}`}>
-            {t(`status.${status}`, { defaultValue: status })}
+          <Badge variant="outline" className={`font-medium ${TRANSACTION_STATUS_BADGE[status]}`}>
+            {t(`status.${status}`)}
           </Badge>
         );
       },

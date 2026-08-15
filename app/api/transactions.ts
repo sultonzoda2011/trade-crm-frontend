@@ -4,7 +4,9 @@ import type { ActiveFilter } from '~/types/filters';
 import type {
   CreatePaymentRequest,
   CreateTransactionRequest,
+  RefundTransactionRequest,
   TransactionDetailResponse,
+  TransactionResponse,
   TransactionsResponse,
   UpdateTransactionRequest,
 } from '~/types/transactions';
@@ -27,8 +29,17 @@ export const transactionsApi = {
     return data;
   },
 
-  getById: async (id: string): Promise<TransactionDetailResponse> => {
+  getById: async (id: string): Promise<TransactionResponse> => {
     const { data } = await apiClient.get(`/transactions/${id}`);
+    return data;
+  },
+  /**
+   * Transaction as a business process: lines with their remaining refundable
+   * quantity, payments, refunds, the original sale and a merged event timeline.
+   * `getById` stays for the places that only need the plain record.
+   */
+  getDetail: async (id: string): Promise<TransactionDetailResponse> => {
+    const { data } = await apiClient.get(`/transactions/${id}/detail`);
     return data;
   },
   create: async (request: CreateTransactionRequest) => {
@@ -46,8 +57,18 @@ export const transactionsApi = {
     const { data } = await apiClient.patch(`/transactions/${id}/pay`, request);
     return data;
   },
-  refund: async (id: string): Promise<TransactionDetailResponse> => {
-    const { data } = await apiClient.post(`/transactions/${id}/refund`);
+  /**
+   * Partial or full refund. Omitting `request` returns everything still
+   * refundable, which keeps the previous whole-transaction behaviour working.
+   */
+  refund: async ({
+    id,
+    request,
+  }: {
+    id: string;
+    request?: RefundTransactionRequest;
+  }): Promise<TransactionDetailResponse> => {
+    const { data } = await apiClient.post(`/transactions/${id}/refund`, request ?? {});
     return data;
   },
 };

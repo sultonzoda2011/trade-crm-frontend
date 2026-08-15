@@ -6,7 +6,7 @@ export const getTransactionFilters = (
   t: TFunction,
   debtorOptions?: { value: unknown; label: string }[],
   categoryOptions?: { value: unknown; label: string }[],
-  productOptions?: { value: unknown; label: string }[],
+  productOptions?: { value: unknown; label: string }[]
 ): FilterConfig[] => {
   const config: FilterConfig[] = [];
 
@@ -57,6 +57,8 @@ export const getTransactionFilters = (
         { value: 'ACTIVE', label: t('status.ACTIVE') },
         { value: 'PARTIAL', label: t('status.PARTIAL') },
         { value: 'PAID', label: t('status.PAID') },
+        { value: 'PARTIALLY_REFUNDED', label: t('status.PARTIALLY_REFUNDED') },
+        { value: 'REFUNDED', label: t('status.REFUNDED') },
       ],
     },
     {
@@ -99,7 +101,7 @@ export const getTransactionFilters = (
         { value: 'asc', label: t('filters.asc') },
         { value: 'desc', label: t('filters.desc') },
       ],
-    },
+    }
   );
 
   return config;

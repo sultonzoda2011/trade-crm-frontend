@@ -1,56 +1,45 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, CreditCard, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
-import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
+import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { InfoItem } from '~/components/shared/InfoItem';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
+import { TransactionTimeline } from '~/components/transactions/TransactionTimeline';
+import { RefundHistory } from '~/components/transactions/RefundHistory';
 import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
+import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useTransactionsModals } from '../store';
-
-const TYPE_BADGE_CLASS: Record<string, string> = {
-  SALE: 'border-success/40 bg-success/15 text-success font-medium',
-  DEBT: 'border-warning/40 bg-warning/15 text-warning font-medium',
-  REFUND: 'border-destructive/40 bg-destructive/15 text-destructive font-medium',
-};
+import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
 export default function TransactionDetailPage() {
   const { t } = useTranslation(['transactions', 'common']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
   const { can } = useCan();
   const payModal = useTransactionsModals((s) => s.pay);
+  const refundModal = useTransactionsModals((s) => s.refund);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['transaction', id],
-    queryFn: () => transactionsApi.getById(id!),
+    queryFn: () => transactionsApi.getDetail(id!),
     enabled: !!id,
     staleTime: 30_000,
-  });
-
-  const { mutate: refund, isPending: isRefunding } = useMutation({
-    mutationFn: () => transactionsApi.refund(id!),
-    onSuccess: () => {
-      toast.success(t('refundSuccess'));
-      void queryClient.invalidateQueries({ queryKey: ['transaction', id] });
-      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
-    },
-    onError: () => toast.error(t('refundError')),
   });
 
   const transaction = response?.data;
@@ -59,20 +48,25 @@ export default function TransactionDetailPage() {
 
   if (!transaction) {
     return (
-      <div className="flex h-100 flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/transactions')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/transactions')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
+  const { summary } = transaction;
+  const refundableUnits = transaction.items.reduce((sum, item) => sum + item.refundableQuantity, 0);
+
+  // A partially refunded sale can still be refunded further — the ceiling is
+  // what is left on the lines, not the status. Refund rows themselves are
+  // never refundable, and neither is anything already fully returned.
   const canRefund =
     can(Action.TRANSACTIONS_REFUND) &&
     transaction.type !== 'REFUND' &&
-    transaction.status !== 'REFUNDED' &&
-    !transaction.refundOfId;
+    !transaction.refundOfId &&
+    refundableUnits > 0;
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
@@ -93,12 +87,8 @@ export default function TransactionDetailPage() {
             <div className="flex items-center gap-2.5">
               <h2 className="font-mono text-lg font-bold">#{transaction.id.slice(0, 8)}</h2>
               <TransactionStatusBadge status={transaction.status} t={t} />
-              <Badge
-                variant="outline"
-                className={
-                  TYPE_BADGE_CLASS[transaction.type] ?? 'border-success/40 bg-success/15 text-success font-medium'
-                }>
-                {t(`type.${transaction.type}`, { defaultValue: transaction.type })}
+              <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[transaction.type]}>
+                {t(`type.${transaction.type}`)}
               </Badge>
             </div>
             <p className="text-muted-foreground text-2xs">
@@ -142,8 +132,7 @@ export default function TransactionDetailPage() {
                       variant="outline"
                       size="sm"
                       className="text-destructive hover:bg-destructive/10 gap-2"
-                      disabled={isRefunding}
-                      onClick={() => refund()}>
+                      onClick={() => refundModal.open(transaction)}>
                       <Undo2 className="size-4" />
                       {t('refund')}
                     </Button>
@@ -172,11 +161,12 @@ export default function TransactionDetailPage() {
                     <th className="px-2.5 py-1.5">{t('fields.product')}</th>
                     <th className="px-2.5 py-1.5 text-right">{t('fields.price')}</th>
                     <th className="px-2.5 py-1.5 text-center">{t('fields.quantity')}</th>
+                    <th className="px-2.5 py-1.5 text-center">{t('fieldsRefund.refundedQuantity')}</th>
                     <th className="px-2.5 py-1.5 text-right">{t('fields.totalPrice')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {(transaction.items || []).map((item) => (
+                  {transaction.items.map((item) => (
                     <tr key={item.id}>
                       <td className="px-2.5 py-2 font-medium">
                         <span className="flex items-center gap-2">
@@ -195,6 +185,13 @@ export default function TransactionDetailPage() {
                       </td>
                       <td className="px-2.5 py-2 text-right font-mono">{fmtTJS(item.price)}</td>
                       <td className="px-2.5 py-2 text-center font-mono">{item.quantity}</td>
+                      <td className="px-2.5 py-2 text-center font-mono">
+                        {item.refundedQuantity > 0 ? (
+                          <span className="text-destructive font-semibold">−{item.refundedQuantity}</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
                       <td className="px-2.5 py-2 text-right font-mono font-semibold">
                         {fmtTJS(item.totalPrice || item.price * item.quantity)}
                       </td>
@@ -204,23 +201,22 @@ export default function TransactionDetailPage() {
                 <tfoot className="border-border border-t">
                   <tr>
                     <td
-                      colSpan={3}
+                      colSpan={4}
                       className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium uppercase">
                       {t('fields.totalPrice')}
                     </td>
                     <td className="px-2.5 py-2 text-right font-mono text-sm font-semibold">
-                      {fmtTJS(
-                        (transaction.items || []).reduce(
-                          (sum, item) => sum + (item.totalPrice || item.price * item.quantity),
-                          0
-                        )
-                      )}
+                      {fmtTJS(summary.totalAmount)}
                     </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
           </Panel>
+
+          <RefundHistory refundOf={transaction.refundOf} refunds={transaction.refunds} />
+
+          <TransactionTimeline events={transaction.timeline} currentId={transaction.id} />
 
           <Panel title={t('fields.payments')}>
             {transaction.payments && transaction.payments.length > 0 ? (
@@ -265,17 +261,38 @@ export default function TransactionDetailPage() {
         </div>
 
         <div className="space-y-3">
-          <Panel title={t('fields.id')} className="p-3">
+          <Panel title={t('detail.summary')} className="p-3">
             <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
-              <InfoItem label={t('fields.totalAmount')} value={fmtTJS(transaction.totalAmount)} />
-              <InfoItem label={t('fields.remainingAmount')} value={fmtTJS(transaction.remainingAmount)} />
-              {transaction.discountAmount > 0 && (
-                <InfoItem label={t('fields.discount')} value={fmtTJS(transaction.discountAmount)} />
+              <InfoItem label={t('summary.totalAmount')} value={fmtTJS(summary.totalAmount)} />
+              <InfoItem
+                label={t('summary.paidAmount')}
+                value={<span className="text-success font-mono">{fmtTJS(summary.paidAmount)}</span>}
+              />
+              {summary.discountAmount > 0 && (
+                <InfoItem label={t('summary.discountAmount')} value={fmtTJS(summary.discountAmount)} />
               )}
               <InfoItem
-                label={t('fields.paymentType')}
-                value={t(`paymentType.${transaction.paymentType}`, { defaultValue: transaction.paymentType })}
+                label={t('summary.remainingAmount')}
+                value={<span className="text-warning font-mono">{fmtTJS(summary.remainingAmount)}</span>}
               />
+              {summary.refundedAmount > 0 && (
+                <>
+                  <InfoItem
+                    label={t('summary.refundedAmount')}
+                    value={<span className="text-destructive font-mono">−{fmtTJS(summary.refundedAmount)}</span>}
+                  />
+                  <InfoItem
+                    label={t('summary.netAmount')}
+                    value={<span className="font-mono font-semibold">{fmtTJS(summary.netAmount)}</span>}
+                  />
+                </>
+              )}
+            </div>
+          </Panel>
+
+          <Panel title={t('fields.id')} className="p-3">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+              <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
               <InfoItem label={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
               {transaction.createdBy && (
@@ -319,32 +336,16 @@ export default function TransactionDetailPage() {
           )}
 
           {transaction.market && (
-            <Panel title={t('fields.market')} className="p-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="size-10 shrink-0 rounded-lg">
-                  {transaction.market.image ? (
-                    <AvatarImage src={transaction.market.image} alt={transaction.market.name} />
-                  ) : null}
-                  <AvatarFallback className="bg-muted rounded-lg">
-                    {transaction.market.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <InfoLink
-                    to={`/markets/${transaction.market.id}`}
-                    state={{ fromPath: location.pathname, fromName: t('title') }}>
-                    {transaction.market.name}
-                  </InfoLink>
-                  {transaction.market.address && (
-                    <p className="text-muted-foreground truncate text-xs">{transaction.market.address}</p>
-                  )}
-                </div>
-              </div>
-            </Panel>
+            <MarketCard
+              market={transaction.market}
+              t={t}
+              viewState={{ fromPath: location.pathname, fromName: t('title') }}
+              className="p-3"
+            />
           )}
 
           <QuickActions
-            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            title={t('quickActions')}
             actions={[
               ...(transaction.remainingAmount > 0 && can(Action.TRANSACTIONS_EDIT)
                 ? [
@@ -363,8 +364,7 @@ export default function TransactionDetailPage() {
                       label: t('refund'),
                       variant: 'outline' as const,
                       className: 'text-destructive hover:bg-destructive/10',
-                      disabled: isRefunding,
-                      onClick: () => refund(),
+                      onClick: () => refundModal.open(transaction),
                     },
                   ]
                 : []),
@@ -383,6 +383,7 @@ export default function TransactionDetailPage() {
       </div>
 
       <CreatePaymentModal />
+      <RefundTransactionModal />
     </div>
   );
 }

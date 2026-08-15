@@ -10,7 +10,7 @@ import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
-import { createPaymentSchema, type CreatePaymentSchema } from '~/validations/transaction';
+import { createPaymentSchema, type CreatePaymentSchema } from '~/validations/transactions';
 
 export function CreatePaymentModal() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
@@ -66,7 +66,7 @@ export function CreatePaymentModal() {
           </Button>
         </div>
       }>
-      <div className="bg-muted/50 mb-4 rounded-lg p-3 text-sm space-y-1">
+      <div className="bg-muted/50 mb-4 space-y-1 rounded-lg p-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('fields.id')}:</span>
           <span className="font-mono font-medium">#{transaction.id.slice(0, 8)}</span>
@@ -77,7 +77,7 @@ export function CreatePaymentModal() {
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('fields.remainingAmount')}:</span>
-          <span className="font-mono font-bold text-warning">{fmtTJS(transaction.remainingAmount)}</span>
+          <span className="text-warning font-mono font-bold">{fmtTJS(transaction.remainingAmount)}</span>
         </div>
       </div>
 
@@ -90,12 +90,7 @@ export function CreatePaymentModal() {
           placeholder={t('fields.amount')}
           required
         />
-        <FormTextarea
-          control={control}
-          name="note"
-          label={t('fields.note')}
-          placeholder={t('fields.note')}
-        />
+        <FormTextarea control={control} name="note" label={t('fields.note')} placeholder={t('fields.note')} />
       </form>
     </Modal>
   );
