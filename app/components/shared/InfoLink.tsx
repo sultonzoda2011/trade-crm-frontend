@@ -17,7 +17,7 @@ export function InfoLink({ to, state, children, className }: InfoLinkProps) {
       state={state}
       className={cn(
         'group text-primary inline-flex items-center gap-1 text-sm font-semibold hover:underline',
-        className,
+        className
       )}>
       {children}
       <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

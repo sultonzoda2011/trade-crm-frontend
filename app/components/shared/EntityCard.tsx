@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
@@ -13,11 +12,21 @@ interface EntityCardProps {
   viewTo: string;
   viewLabel: string;
   viewState?: unknown;
+  className?: string;
 }
 
-export function EntityCard({ title, fullName, subInfo, imagePath, viewTo, viewLabel, viewState }: EntityCardProps) {
+export function EntityCard({
+  title,
+  fullName,
+  subInfo,
+  imagePath,
+  viewTo,
+  viewLabel,
+  viewState,
+  className,
+}: EntityCardProps) {
   return (
-<Panel title={title}>
+    <Panel title={title} className={className}>
       <div className="space-y-4">
         <UserAvatar fullName={fullName} subInfo={subInfo} imagePath={imagePath} />
         <Button variant="outline" className="w-full" size="sm" render={<Link to={viewTo} state={viewState} />}>

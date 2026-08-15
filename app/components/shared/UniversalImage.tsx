@@ -33,7 +33,7 @@ export function UniversalImage({
 
   const fallbackNode = useMemo(() => {
     if (!fallback) {
-      return <div className="h-full w-full bg-muted" />;
+      return <div className="bg-muted h-full w-full" />;
     }
     return typeof fallback === 'function' ? fallback(status) : fallback;
   }, [fallback, status]);

@@ -22,7 +22,7 @@ interface ModalProps {
  */
 export function Modal({ open, onClose, title, children, footer, className }: ModalProps) {
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => !o && onClose()} modal={false}>
       <DialogContent className={cn('flex max-h-[85vh] flex-col sm:max-w-lg', className)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

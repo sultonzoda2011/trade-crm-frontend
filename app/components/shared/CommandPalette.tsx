@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftRight, BookMarked, Loader2, Package, UserRoundPlus } from 'lucide-react';
+import { ArrowLeftRight, Loader2, Package } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -55,7 +55,6 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     if (!open) setQuery('');
   }, [open]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const pages = useMemo(() => {
     const flat: PageEntry[] = [];
     const walk = (items: NavItem[]) => {
@@ -66,7 +65,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     };
     walk(getVisibleNavigation(getSidebarConfig(t), can));
     return flat;
-  }, [t, role]);
+  }, [t, role, can]);
 
   const filteredPages = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -74,12 +73,10 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     return pages.filter((page) => page.title.toLowerCase().includes(q));
   }, [pages, query]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Создание пользователей/рынков — модалки, страниц /users/create и /markets/create не существует.
   const quickActions = useMemo(
     () =>
       [
-        { label: t('palette.createUser'), url: '/users/create', action: Action.USERS_CREATE, icon: UserRoundPlus },
-        { label: t('palette.createMarket'), url: '/markets/create', action: Action.MARKETS_CREATE, icon: BookMarked },
         {
           label: t('palette.createProduct'),
           url: '/products/create',
@@ -112,14 +109,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const marketQuery = useQuery({
     queryKey: ['palette-market', search],
     queryFn: () => marketsApi.getAll(1, 5, { search }, []),
-    enabled: searchEnabled && !!role && canAccess(role, '/market'),
+    enabled: searchEnabled && !!role && canAccess(role, '/markets'),
     staleTime: 30_000,
   });
 
   const productQuery = useQuery({
     queryKey: ['palette-product', search],
     queryFn: () => productsApi.getAll(1, 5, { search }, []),
-    enabled: searchEnabled && !!role && canAccess(role, '/product'),
+    enabled: searchEnabled && !!role && canAccess(role, '/products'),
     staleTime: 30_000,
   });
 
@@ -211,17 +208,17 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <>
               <CommandSeparator />
               <CommandGroup heading={t('palette.market')}>
-                {markets.map((markets) => (
+                {markets.map((market) => (
                   <CommandItem
-                    key={`markets-${markets.id}`}
-                    value={`markets-${markets.id}`}
-                    onSelect={() => go(`/markets/${markets.id}`)}>
+                    key={`markets-${market.id}`}
+                    value={`markets-${market.id}`}
+                    onSelect={() => go(`/markets/${market.id}`)}>
                     <Avatar size="sm">
-                      {markets.image ? <AvatarImage src={markets.image} alt={markets.name} /> : null}
-                      <AvatarFallback>{markets.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
+                      <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{markets.name}</span>
-                    <span className="text-muted-foreground text-2xs ml-auto truncate">{markets.address}</span>
+                    <span className="truncate">{market.name}</span>
+                    <span className="text-muted-foreground text-2xs ml-auto truncate">{market.address}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -232,16 +229,16 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             <>
               <CommandSeparator />
               <CommandGroup heading={t('palette.product')}>
-                {products.map((products) => (
+                {products.map((product) => (
                   <CommandItem
-                    key={`products-${products.id}`}
-                    value={`products-${products.id}`}
-                    onSelect={() => go(`/product/${products.id}`)}>
+                    key={`products-${product.id}`}
+                    value={`products-${product.id}`}
+                    onSelect={() => go(`/products/${product.id}`)}>
                     <Avatar size="sm">
-                      {products.image ? <AvatarImage src={products.image} alt={products.name} /> : null}
-                      <AvatarFallback>{products.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
+                      <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{products.name}</span>
+                    <span className="truncate">{product.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

@@ -1,23 +1,22 @@
-import { useTranslation } from 'react-i18next'
-import type { ActiveFilter, FilterConfig } from '~/types/filters'
-import { CustomInput } from '~/components/shared/CustomInput'
-import { Label } from '~/components/ui/label'
-import { CustomSelect } from '~/components/shared/CustomSelect'
-import { DateInputField } from '~/components/shared/DateInputField'
-import { cn } from '~/lib/utils'
+import { useTranslation } from 'react-i18next';
+import type { ActiveFilter, FilterConfig } from '~/types/filters';
+import { CustomInput } from '~/components/shared/CustomInput';
+import { Label } from '~/components/ui/label';
+import { CustomSelect } from '~/components/shared/CustomSelect';
+import { DateInputField } from '~/components/shared/DateInputField';
 
 interface FilterFieldProps {
-  field: FilterConfig
-  draft: ActiveFilter[]
-  onChange: (key: string, value: any) => void
+  field: FilterConfig;
+  draft: ActiveFilter[];
+  onChange: (key: string, value: any) => void;
 }
 
 function getValue(filters: ActiveFilter[], key: string): any {
-  return filters.find((f) => f.key === key)?.value ?? ''
+  return filters.find((f) => f.key === key)?.value ?? '';
 }
 
 export function FilterField({ field, draft, onChange }: FilterFieldProps) {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation('common');
 
   if (field.type === 'input') {
     return (
@@ -29,16 +28,16 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
           onChange={(e) => onChange(field.key, e.target.value)}
         />
       </div>
-    )
+    );
   }
 
   if (field.type === 'select') {
     const options = field.options.map((opt) => ({
       value: String(opt.value),
       label: opt.label,
-    }))
-    const raw = getValue(draft, field.key)
-    const current = raw === '' || raw == null ? null : String(raw)
+    }));
+    const raw = getValue(draft, field.key);
+    const current = raw === '' || raw == null ? null : String(raw);
 
     return (
       <CustomSelect
@@ -47,13 +46,10 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
         options={options}
         value={current}
         onChange={(v) => {
-          onChange(
-            field.key,
-            v === null ? '' : Number.isNaN(Number(v)) ? v : Number(v)
-          )
+          onChange(field.key, v === null ? '' : Number.isNaN(Number(v)) ? v : Number(v));
         }}
       />
-    )
+    );
   }
 
   if (field.type === 'number-range') {
@@ -76,7 +72,7 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
           />
         </div>
       </div>
-    )
+    );
   }
 
   if (field.type === 'date') {
@@ -87,16 +83,16 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
         value={getValue(draft, field.key)}
         onChange={(date) => onChange(field.key, date)}
       />
-    )
+    );
   }
 
   if (field.type === 'boolean') {
-    const raw = getValue(draft, field.key)
-    const current = raw === '' || raw == null ? null : String(raw)
+    const raw = getValue(draft, field.key);
+    const current = raw === '' || raw == null ? null : String(raw);
     const options = [
       { value: 'true', label: field.trueLabel ?? t('filters.yes') },
       { value: 'false', label: field.falseLabel ?? t('filters.no') },
-    ]
+    ];
 
     return (
       <CustomSelect
@@ -106,7 +102,7 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
         value={current}
         onChange={(v) => onChange(field.key, v === null ? '' : v)}
       />
-    )
+    );
   }
 
   if (field.type === 'date-range') {
@@ -129,8 +125,8 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
           />
         </div>
       </div>
-    )
+    );
   }
 
-  return null
+  return null;
 }

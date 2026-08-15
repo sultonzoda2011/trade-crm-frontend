@@ -118,11 +118,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
             )}
           </SheetTitle>
           {activeCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-              className="text-orange-500 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-950/30">
+            <Button variant="ghost" size="sm" onClick={handleReset} className="text-warning hover:bg-warning/15">
               {t('filters.reset')}
             </Button>
           )}

@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Badge } from '~/components/ui/badge';
 import { cn } from '~/lib/utils';
-
 interface StatCardProps {
   icon: LucideIcon;
   label: string;
@@ -13,34 +12,35 @@ interface StatCardProps {
   size?: 'md' | 'sm';
   className?: string;
 }
-
 export function StatCard({ icon: Icon, label, value, to, state, size = 'md', className }: StatCardProps) {
   const classes = cn(
     'bg-muted/50 hover:bg-muted/80 flex flex-col items-center rounded-xl transition-colors',
     size === 'md' ? 'gap-1.5 p-4' : 'gap-1 p-3',
-    className,
+    className
   );
-
   const content = (
     <>
-      <Icon className="text-muted-foreground size-4" />
+      {' '}
+      <Icon className="text-muted-foreground size-4" />{' '}
       <span
         className={cn(
           'text-muted-foreground font-medium tracking-wider uppercase',
-          size === 'md' ? 'text-xs' : 'text-[11px]',
+          size === 'md' ? 'text-xs' : 'text-[11px]'
         )}>
-        {label}
-      </span>
+        {' '}
+        {label}{' '}
+      </span>{' '}
       <Badge variant="secondary" className={cn('font-mono', size === 'md' && 'text-base')}>
-        {value}
-      </Badge>
+        {' '}
+        {value}{' '}
+      </Badge>{' '}
     </>
   );
-
   if (to) {
     return (
       <Link to={to} state={state} className={classes}>
-        {content}
+        {' '}
+        {content}{' '}
       </Link>
     );
   }

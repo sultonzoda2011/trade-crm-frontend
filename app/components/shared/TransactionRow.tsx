@@ -13,7 +13,8 @@ interface TransactionRowProps extends ComponentProps<typeof ListLink> {
 }
 
 export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProps }: TransactionRowProps) {
-  const defaultSubtitle = showDebtor && tx.debtor ? `${tx.debtor.name} · ${formatDate(tx.createdAt, true)}` : formatDate(tx.createdAt, true);
+  const defaultSubtitle =
+    showDebtor && tx.debtor ? `${tx.debtor.name} · ${formatDate(tx.createdAt, true)}` : formatDate(tx.createdAt, true);
 
   return (
     <ListLink {...linkProps} className="py-3">
@@ -28,7 +29,11 @@ export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProp
         <p className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</p>
         {tx.remainingAmount > 0 && (
           <p className="text-warning font-mono text-xs">
-            {t('remaining', { ns: 'transactions', defaultValue: 'Остаток' })}: {fmtTJS(tx.remainingAmount)}
+            {/* Компонент используется со страниц с разными наборами неймспейсов
+                (debtors/sellers/users/profile) — 'remaining' лежит только в
+                transactions, поэтому неймспейс фиксируем явно, а не полагаемся
+                на то, что вызывающая страница его подключила. */}
+            {t('remaining', { ns: 'transactions' })}: {fmtTJS(tx.remainingAmount)}
           </p>
         )}
       </div>

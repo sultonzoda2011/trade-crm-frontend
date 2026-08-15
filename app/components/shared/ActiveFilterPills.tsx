@@ -47,10 +47,7 @@ export function ActiveFilterPills({ filters, config, onRemove }: ActiveFilterPil
   return (
     <div className="flex flex-wrap items-center gap-1.5">
       {filters.map((filter) => (
-        <Badge
-          key={filter.key}
-          variant="secondary"
-          className="flex items-center gap-1 pr-1 text-xs font-normal">
+        <Badge key={filter.key} variant="secondary" className="flex items-center gap-1 pr-1 text-xs font-normal">
           <span>{getFilterLabel(filter, config)}</span>
           <Button
             variant="ghost"

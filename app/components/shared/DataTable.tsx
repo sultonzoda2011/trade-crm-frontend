@@ -30,7 +30,7 @@ interface DataTableProps<TData> {
   limit?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
-  onlimitChange?: (size: number) => void;
+  onLimitChange?: (size: number) => void;
   getRowClassName?: (row: Row<TData>) => string;
   onRowClick?: (row: Row<TData>) => void;
 }
@@ -50,26 +50,26 @@ function PageControls({
   limit,
   totalPages,
   onPageChange,
-  onlimitChange,
+  onLimitChange,
   t,
 }: {
   page: number;
   limit: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  onlimitChange: (size: number) => void;
+  onLimitChange: (size: number) => void;
   t: (key: string) => string;
 }) {
   const pages = getpages(page, totalPages || 1);
 
   return (
-    <div className="flex w-full flex-row items-center justify-between gap-2 overflow-x-auto px-3 py-2">
+    <div className="flex w-full flex-row items-center justify-between gap-2 px-3 py-2">
       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-sm">
         <span className="hidden sm:inline">{t('table.list')}</span>
         <CustomSelect
           value={limit}
           options={[10, 20, 50].map((size) => ({ value: size, label: size.toString() }))}
-          onChange={(v) => onlimitChange(Number(v))}
+          onChange={(v) => onLimitChange(Number(v))}
           className="w-[70px]"
           isClearable={false}
         />
@@ -78,41 +78,45 @@ function PageControls({
         <PaginationContent className="flex-nowrap gap-0.5">
           <PaginationItem>
             <Tooltip>
-              <TooltipTrigger render={
-                <PaginationPrevious
-                  onClick={() => onPageChange(Math.max(1, page - 1))}
-                  text=""
-                  className={cn('size-8', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
-                />
-              } />
+              <TooltipTrigger
+                render={
+                  <PaginationPrevious
+                    onClick={() => onPageChange(Math.max(1, page - 1))}
+                    text=""
+                    className={cn('size-8', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+                  />
+                }
+              />
               <TooltipContent side="top">{t('table.previousPage')}</TooltipContent>
             </Tooltip>
           </PaginationItem>
-          {pages.map((page, i) =>
-            page === 'ellipsis' ? (
+          {pages.map((pageNumber, i) =>
+            pageNumber === 'ellipsis' ? (
               <PaginationItem key={`e-${i}`}>
                 <PaginationEllipsis />
               </PaginationItem>
             ) : (
-              <PaginationItem key={page}>
+              <PaginationItem key={pageNumber}>
                 <PaginationLink
-                  isActive={page === page}
-                  onClick={() => onPageChange(page)}
+                  isActive={pageNumber === page}
+                  onClick={() => onPageChange(pageNumber)}
                   className="size-8 cursor-pointer tabular-nums">
-                  {page}
+                  {pageNumber}
                 </PaginationLink>
               </PaginationItem>
             )
           )}
           <PaginationItem>
             <Tooltip>
-              <TooltipTrigger render={
-                <PaginationNext
-                  onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-                  text=""
-                  className={cn('size-8', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
-                />
-              } />
+              <TooltipTrigger
+                render={
+                  <PaginationNext
+                    onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+                    text=""
+                    className={cn('size-8', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+                  />
+                }
+              />
               <TooltipContent side="top">{t('table.nextPage')}</TooltipContent>
             </Tooltip>
           </PaginationItem>
@@ -133,7 +137,7 @@ export function DataTable<TData>({
   limit = 10,
   totalPages = 1,
   onPageChange,
-  onlimitChange,
+  onLimitChange,
   getRowClassName,
   onRowClick,
 }: DataTableProps<TData>) {
@@ -156,10 +160,12 @@ export function DataTable<TData>({
                     <TableHead
                       key={header.id}
                       className={cn(
-                        index === 0 && pinFirstColumn && 'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
+                        index === 0 &&
+                          pinFirstColumn &&
+                          'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                         index === headerGroup.headers.length - 1 &&
                           pinLastColumn &&
-                          'bg-card sticky right-0 z-10 w-[80px] min-w-[80px] border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
+                          'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
                       )}>
                       {flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
@@ -180,9 +186,11 @@ export function DataTable<TData>({
                         <TableCell
                           key={colIndex}
                           className={cn(
-                            isFirst && pinFirstColumn && 'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
+                            isFirst &&
+                              pinFirstColumn &&
+                              'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                             isLastPinned &&
-                              'bg-card sticky right-0 z-10 w-[80px] min-w-[80px] border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
+                              'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
                           )}>
                           {isLastPinned ? (
                             <Skeleton className="mx-auto h-7 w-7 rounded-md" />
@@ -199,7 +207,7 @@ export function DataTable<TData>({
                   <TableCell colSpan={visibleColumns.length}>
                     <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
                       <AlertCircle className="text-destructive h-8 w-8" />
-                      <p className="text-sm">{t('table.error', { defaultValue: 'Ошибка загрузки данных' })}</p>
+                      <p className="text-sm">{t('table.error')}</p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -224,7 +232,7 @@ export function DataTable<TData>({
                             'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                           index === row.getVisibleCells().length - 1 &&
                             pinLastColumn &&
-                            'bg-card sticky right-0 z-10 w-[80px] min-w-[80px] border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
+                            'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
                         )}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
@@ -236,13 +244,13 @@ export function DataTable<TData>({
           </UITable>
         </ScrollArea>
       </div>
-      {onPageChange && onlimitChange && (
+      {onPageChange && onLimitChange && (
         <PageControls
           page={page}
           limit={limit}
           totalPages={totalPages}
           onPageChange={onPageChange}
-          onlimitChange={onlimitChange}
+          onLimitChange={onLimitChange}
           t={t}
         />
       )}

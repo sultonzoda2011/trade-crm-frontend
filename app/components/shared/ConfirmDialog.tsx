@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -66,7 +65,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-6 p-6 sm:max-w-[400px]">
+      <DialogContent className="gap-6 p-6 sm:max-w-100">
         <div className="flex flex-col items-center gap-4 text-center">
           {/* Иконка с красивым фоном */}
           <div className={cn('flex h-14 w-14 items-center justify-center rounded-full', config.color)}>

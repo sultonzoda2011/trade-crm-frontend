@@ -1,10 +1,10 @@
 import dayjs from 'dayjs';
 import flatpickr from 'flatpickr';
 import { Russian } from 'flatpickr/dist/l10n/ru.js';
-import type { Instance } from 'flatpickr/dist/types/instance';
 import { CalendarIcon, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useFlatpickr } from '~/hooks/useFlatpickr';
 import { Label } from '~/components/ui/label';
 import { toDate } from '~/lib/date';
 import { cn } from '~/lib/utils';
@@ -73,29 +73,17 @@ export function DateInputField({
   className,
 }: DateInputFieldProps) {
   const { i18n } = useTranslation();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const fpRef = useRef<Instance | null>(null);
-
-  // Initialize flatpickr once
-  useEffect(() => {
-    if (!inputRef.current) return;
-
-    const fp = flatpickr(inputRef.current, {
-      locale: getLocale(i18n.language),
-      dateFormat: 'd.m.Y',
-      defaultDate: toDate(value) ?? undefined,
-      minDate: minDate ?? undefined,
-      maxDate: maxDate ?? undefined,
-      disableMobile: true,
-      allowInput: false,
-      onChange: ([date]) => onChange(date ? dayjs(date).format('YYYY-MM-DD') : null),
-      onClose: () => onBlur?.(),
-    });
-
-    fpRef.current = Array.isArray(fp) ? fp[0] : fp;
-    return () => fpRef.current?.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { inputRef, fpRef } = useFlatpickr({
+    locale: getLocale(i18n.language),
+    dateFormat: 'd.m.Y',
+    defaultDate: toDate(value) ?? undefined,
+    minDate: minDate ?? undefined,
+    maxDate: maxDate ?? undefined,
+    disableMobile: true,
+    allowInput: false,
+    onChange: ([date]) => onChange(date ? dayjs(date).format('YYYY-MM-DD') : null),
+    onClose: () => onBlur?.(),
+  });
 
   // Sync locale when language changes
   useEffect(() => {
