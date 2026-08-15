@@ -1,10 +1,8 @@
-import { useQueryClient } from '@tanstack/react-query';
 import Cookies from 'js-cookie';
 import { Check, ChevronDown, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { authApi } from '~/api/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   DropdownMenu,
@@ -16,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { ROLE_CONFIG } from '~/config/enumOptions';
-import { getClientUser } from '~/lib/auth-utils';
+import { getClientUser, removeUserCookie } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -26,7 +24,6 @@ const LANGUAGES = [
 
 export function UserNav() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { t } = useTranslation('auth');
   const { t: tc, i18n } = useTranslation('common');
   const { theme, setTheme, systemTheme } = useTheme();
@@ -40,13 +37,8 @@ export function UserNav() {
   };
 
   const handleLogout = () => {
-    authApi
-      .logout()
-      .catch(() => {}) // httpOnly cookie отправляется автоматически, сервер его отзывает
-      .finally(() => {
-        queryClient.removeQueries({ queryKey: ['user-me'] });
-        navigate('/login');
-      });
+     
+        (removeUserCookie(), navigate('/login'));
   };
 
   const initials = userInfo?.name
