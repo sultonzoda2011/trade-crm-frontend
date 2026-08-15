@@ -5,10 +5,11 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
-import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
 import { Badge } from '~/components/ui/badge';
@@ -40,12 +41,11 @@ export default function ProductDetailPage() {
 
   if (!product) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/products')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/products')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -76,7 +76,7 @@ export default function ProductDetailPage() {
               )}
               {isLowStock && (
                 <Badge variant="destructive" className="font-normal">
-                  {t('lowStock', { defaultValue: 'Мало на складе' })}
+                  {t('lowStock')}
                 </Badge>
               )}
             </>
@@ -122,20 +122,20 @@ export default function ProductDetailPage() {
                 value={
                   <span className="flex items-center gap-2">
                     <span className={isLowStock ? 'text-destructive font-semibold' : undefined}>
-                      {product.quantity} {t(`unit.${product.unit}`, { defaultValue: product.unit })}
+                      {product.quantity} {t(`unit.${product.unit}`)}
                     </span>
                     {isLowStock && (
                       <Badge variant="destructive" className="text-xs font-normal">
-                        {t('lowStock', { defaultValue: 'Мало на складе' })}
+                        {t('lowStock')}
                       </Badge>
                     )}
                   </span>
                 }
               />
-              <InfoItem label={t('fields.unit')} value={t(`unit.${product.unit}`, { defaultValue: product.unit })} />
+              <InfoItem label={t('fields.unit')} value={t(`unit.${product.unit}`)} />
               <InfoItem
                 label={t('fields.lowStockThreshold')}
-                value={`${product.lowStockThreshold} ${t(`unit.${product.unit}`, { defaultValue: product.unit })}`}
+                value={`${product.lowStockThreshold} ${t(`unit.${product.unit}`)}`}
               />
               <InfoItem label={t('fields.category')} value={product.category?.name ?? '—'} />
               <InfoItem
@@ -167,18 +167,10 @@ export default function ProductDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <EntityCard
-            title={t('fields.market')}
-            fullName={product.market?.name ?? '—'}
-            subInfo={product.market?.address}
-            imagePath={product.market?.image ?? undefined}
-            viewTo={`/markets/${product.marketId}`}
-            viewLabel={t('actions.view')}
-            viewState={marketState}
-          />
+          <MarketCard market={product.market!} t={t} viewState={marketState} />
 
           <QuickActions
-            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            title={t('quickActions')}
             actions={[
               ...(can(Action.PRODUCTS_EDIT)
                 ? [

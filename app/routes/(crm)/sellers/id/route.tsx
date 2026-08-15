@@ -8,9 +8,10 @@ import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditSellerModal } from '~/components/modals/EditSellerModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
@@ -22,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import { useSellersModals } from '../store';
+import { useSellersModals } from '~/routes/(crm)/sellers/store';
 
 export default function SellerDetailPage() {
   const { t } = useTranslation(['sellers', 'common']);
@@ -55,12 +56,11 @@ export default function SellerDetailPage() {
 
   if (!seller) {
     return (
-      <div className="flex h-100 flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/sellers')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/sellers')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -122,13 +122,13 @@ export default function SellerDetailPage() {
           </Panel>
 
           <Panel
-            title={t('transactionsHistory', { defaultValue: 'Транзакции' })}
+            title={t('transactionsHistory')}
             actions={
               transactions.length > 0 ? (
                 <PanelViewAll
                   to="/transactions"
                   state={{ fromSellerId: seller.id, fromSellerName: seller.name }}
-                  label={t('all', { ns: 'common' })}
+                  label={t('filters.all', { ns: 'common' })}
                   count={totalTx}
                 />
               ) : undefined
@@ -136,9 +136,7 @@ export default function SellerDetailPage() {
             {isTxLoading ? (
               <SkeletonList count={3} />
             ) : transactions.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">
-                {t('noTransactions', { defaultValue: 'Нет транзакций' })}
-              </p>
+              <p className="text-muted-foreground py-6 text-center text-sm">{t('noTransactions')}</p>
             ) : (
               <div className="divide-border divide-y">
                 {transactions.map((tx) => (
@@ -157,25 +155,15 @@ export default function SellerDetailPage() {
 
         <div className="space-y-6">
           {seller.market && (
-            <Panel title={t('fields.market')}>
-              <div className="space-y-4">
-                <InfoItem
-                  label={t('fields.name')}
-                  value={
-                    <InfoLink
-                      to={`/markets/${seller.market.id}`}
-                      state={{ fromPath: location.pathname, fromName: seller.name }}>
-                      {seller.market.name}
-                    </InfoLink>
-                  }
-                />
-                {seller.market.address && <InfoItem label={t('fields.address')} value={seller.market.address} />}
-              </div>
-            </Panel>
+            <MarketCard
+              market={seller.market}
+              t={t}
+              viewState={{ fromPath: location.pathname, fromName: seller.name }}
+            />
           )}
 
           <QuickActions
-            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            title={t('quickActions')}
             actions={[
               ...(can(Action.SELLERS_EDIT)
                 ? [
@@ -189,7 +177,7 @@ export default function SellerDetailPage() {
                 : []),
               {
                 icon: ReceiptText,
-                label: t('transactionsHistory', { defaultValue: 'Транзакции' }),
+                label: t('transactionsHistory'),
                 render: <Link to="/transactions" state={{ fromSellerId: seller.id, fromSellerName: seller.name }} />,
               },
               ...(seller.market

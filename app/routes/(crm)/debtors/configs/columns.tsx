@@ -2,14 +2,13 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
+import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import type { Debtor } from '~/types/debtors';
-import { useDebtorsModals } from '../store';
 
 function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
@@ -18,50 +17,28 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const { can } = useCan();
 
   return (
-    <div className="flex justify-end gap-1">
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              render={<Link to={`/debtors/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
-              <Eye className="h-4 w-4" />
-            </Button>
-          }
-        />
-        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
-      </Tooltip>
+    <RowActionsCell>
+      <IconActionButton
+        icon={<Eye className="h-4 w-4" />}
+        label={t('actions.view')}
+        render={<Link to={`/debtors/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
+      />
       {can(Action.DEBTORS_EDIT) && (
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editModal.open(row)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Pencil className="h-4 w-4" />}
+          label={t('actions.edit')}
+          onClick={() => editModal.open(row)}
+        />
       )}
       {can(Action.DEBTORS_DELETE) && (
-        <Tooltip>
-          <TooltipTrigger
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-                onClick={() => deleteModal.open(row.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            }
-          />
-          <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Trash2 className="h-4 w-4" />}
+          label={t('actions.delete')}
+          danger
+          onClick={() => deleteModal.open(row.id)}
+        />
       )}
-    </div>
+    </RowActionsCell>
   );
 }
 
@@ -74,8 +51,15 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
       enableHiding: false,
       cell: (info) => <UserAvatar fullName={info.row.original.name} subInfo={info.row.original.phone} />,
     }),
+
+    columnHelper.accessor((row: any) => row.totalDebtAmount ?? 0, {
+      id: 'totalDebtAmount',
+      header: t('totalDebtAmount'),
+      cell: (info) => <span className="font-mono text-sm">{fmtTJS(info.getValue())}</span>,
+    }),
     columnHelper.accessor('market.name', {
-      header: t('fields.marketAddress'),
+      id: 'market.name',
+      header: t('fields.market'),
       cell: (info) => {
         const market = info.row.original.market;
         return (
@@ -87,6 +71,11 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
         );
       },
     }),
+    columnHelper.accessor('_count.transactions', {
+      id: '_count.transactions',
+      header: t('fields.transactions'),
+      cell: (info) => <span className="text-sm">{info.getValue().toLocaleString()}</span>,
+    }),
     columnHelper.accessor('createdAt', {
       header: t('fields.createdAt'),
       cell: (info) => <span className="text-sm">{formatDate(info.getValue())}</span>,
@@ -95,16 +84,6 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Debtor, any>[] =>
       header: t('fields.updatedAt'),
       cell: (info) => <span className="text-sm">{formatDate(info.getValue())}</span>,
     }),
-    columnHelper.accessor('_count.transactions', {
-      header: t('fields.transactions'),
-      cell: (info) => <span className="text-sm">{info.getValue().toLocaleString()}</span>,
-    }),
-    columnHelper.accessor((row: any) => row.totalDebtAmount ?? 0, {
-      id: 'totalDebtAmount',
-      header: t('totalDebtAmount'),
-      cell: (info) => <span className="font-mono text-sm">{fmtTJS(info.getValue())}</span>,
-    }),
-
     columnHelper.display({
       id: 'actions',
       enableHiding: false,

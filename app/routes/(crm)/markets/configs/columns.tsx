@@ -3,15 +3,13 @@ import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { UserAvatar } from '~/components/shared/UserAvatar';
+import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
-import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import type { Market } from '~/types/markets';
-import { useMarketsModals } from '../store';
+import { useMarketsModals } from '~/routes/(crm)/markets/store';
 
 function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const deleteModal = useMarketsModals((s) => s.delete);
@@ -20,48 +18,28 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const { can } = useCan();
 
   return (
-    <div className="flex justify-end gap-1">
-      <Tooltip>
-        <TooltipTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            render={<Link to={`/markets/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
-            <Eye className="h-4 w-4" />
-          </Button>
-        } />
-        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
-      </Tooltip>
+    <RowActionsCell>
+      <IconActionButton
+        icon={<Eye className="h-4 w-4" />}
+        label={t('actions.view')}
+        render={<Link to={`/markets/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
+      />
       {can(Action.MARKETS_EDIT) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => editModal.open(row)}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Pencil className="h-4 w-4" />}
+          label={t('actions.edit')}
+          onClick={() => editModal.open(row)}
+        />
       )}
       {can(Action.MARKETS_DELETE) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-              onClick={() => deleteModal.open(row.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Trash2 className="h-4 w-4" />}
+          label={t('actions.delete')}
+          danger
+          onClick={() => deleteModal.open(row.id)}
+        />
       )}
-    </div>
+    </RowActionsCell>
   );
 }
 
@@ -81,6 +59,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
       ),
     }),
     columnHelper.accessor('owner.name', {
+      id: 'owner.name',
       header: t('fields.owner', 'Владелец'),
       cell: (info) => (
         <div className="flex flex-col gap-0.5">
@@ -91,6 +70,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
     }),
 
     columnHelper.accessor('count.products', {
+      id: 'count.products',
       header: t('fields.products', 'Товары'),
       cell: (info) => (
         <Badge variant="secondary" className="font-mono">
@@ -99,6 +79,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
       ),
     }),
     columnHelper.accessor('count.debtors', {
+      id: 'count.debtors',
       header: t('fields.debtors', 'Должники'),
       cell: (info) => (
         <Badge variant="secondary" className="font-mono">
@@ -107,6 +88,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
       ),
     }),
     columnHelper.accessor('count.transactions', {
+      id: 'count.transactions',
       header: t('fields.transactions', 'Транзакции'),
       cell: (info) => (
         <Badge variant="secondary" className="font-mono">

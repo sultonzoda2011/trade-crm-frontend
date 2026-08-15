@@ -9,9 +9,10 @@ import { usersApi } from '~/api/users';
 import { Panel } from '~/components/layout/Panel';
 import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { ListLink } from '~/components/shared/ListLink';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
@@ -27,7 +28,7 @@ import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import { Role } from '~/types/common';
-import { useUsersModals } from '../store';
+import { useUsersModals } from '~/routes/(crm)/users/store';
 
 export default function UserDetailPage() {
   const { t } = useTranslation(['users', 'common']);
@@ -71,12 +72,11 @@ export default function UserDetailPage() {
 
   if (!user) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/users')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/users')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -180,27 +180,11 @@ export default function UserDetailPage() {
           )}
 
           {!ownedMarkets.length && user.market && (
-            <Panel title={t('fields.market')}>
-              <div className="space-y-4">
-                <InfoItem
-                  label={t('fields.name')}
-                  value={
-                    <span className="flex items-center gap-2">
-                      <Avatar size="sm" className="shrink-0">
-                        {user.market.image ? <AvatarImage src={user.market.image} alt={user.market.name} /> : null}
-                        <AvatarFallback>{user.market.name.charAt(0).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <InfoLink
-                        to={`/markets/${user.market.id}`}
-                        state={{ fromPath: location.pathname, fromName: user.name }}>
-                        {user.market.name}
-                      </InfoLink>
-                    </span>
-                  }
-                />
-                {user.market.address && <InfoItem label={t('fields.address')} value={user.market.address} />}
-              </div>
-            </Panel>
+            <MarketCard
+              market={user.market}
+              t={t}
+              viewState={{ fromPath: location.pathname, fromName: user.name }}
+            />
           )}
 
           {userTransactions.length > 0 && (
@@ -233,7 +217,7 @@ export default function UserDetailPage() {
           )}
 
           <QuickActions
-            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            title={t('quickActions')}
             actions={[
               ...(can(Action.USERS_EDIT)
                 ? [
@@ -247,12 +231,12 @@ export default function UserDetailPage() {
                 : []),
               {
                 icon: ReceiptText,
-                label: t('transactionsHistory', { defaultValue: 'Транзакции' }),
+                label: t('transactionsHistory'),
                 render: <Link to="/transactions" />,
               },
               {
                 icon: Store,
-                label: t('viewMarkets', { defaultValue: 'Рынки' }),
+                label: t('viewMarkets'),
                 render: <Link to="/markets" />,
               },
             ]}

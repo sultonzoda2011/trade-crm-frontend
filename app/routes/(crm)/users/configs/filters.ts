@@ -1,18 +1,15 @@
 import type { TFunction } from 'i18next';
-import { getRoleOptions } from '~/config/enumOptions';
+import { getRoleFilterOptions } from '~/config/enumOptions';
 import type { FilterConfig } from '~/types/filters';
 
-export const getUserFilters = (
-  t: TFunction,
-  marketOptions?: { value: unknown; label: string }[]
-): FilterConfig[] => {
+export const getUserFilters = (t: TFunction, marketOptions?: { value: unknown; label: string }[]): FilterConfig[] => {
   const config: FilterConfig[] = [
     {
       type: 'select',
       key: 'role',
       label: t('fields.role'),
       placeholder: t('filters.all'),
-      options: getRoleOptions(t),
+      options: getRoleFilterOptions(t),
     },
   ];
 
@@ -59,7 +56,7 @@ export const getUserFilters = (
         { value: 'asc', label: t('filters.asc') },
         { value: 'desc', label: t('filters.desc') },
       ],
-    },
+    }
   );
 
   return config;

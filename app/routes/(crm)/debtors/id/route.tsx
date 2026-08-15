@@ -8,9 +8,10 @@ import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
@@ -20,7 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useDebtorsModals } from '../store';
+import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 
 export default function DebtorDetailPage() {
   const { t } = useTranslation(['debtors', 'transactions', 'common']);
@@ -49,19 +50,18 @@ export default function DebtorDetailPage() {
 
   const totalDebt = useMemo(
     () => transactions.reduce((sum, tx) => sum + (tx.type === 'DEBT' ? tx.remainingAmount : 0), 0),
-    [transactions],
+    [transactions]
   );
 
   if (isLoading) return <ByIdSkeleton />;
 
   if (!debtor) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/debtors')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/debtors')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -70,7 +70,10 @@ export default function DebtorDetailPage() {
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('navigation.debtors', { ns: 'common' }) },
+          {
+            link: location.state?.fromPath,
+            label: location.state?.fromName || t('navigation.debtors', { ns: 'common' }),
+          },
           { label: debtor.name },
         ]}
       />
@@ -95,7 +98,7 @@ export default function DebtorDetailPage() {
                 </Tooltip>
               )}
               <div className="text-right">
-                <p className="text-muted-foreground text-xs">{t('totalDebt', { defaultValue: 'Текущий долг' })}</p>
+                <p className="text-muted-foreground text-xs">{t('totalDebt')}</p>
                 <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
                   {fmtTJS(totalDebt)}
                 </p>
@@ -117,13 +120,11 @@ export default function DebtorDetailPage() {
             </div>
           </Panel>
 
-          <Panel title={t('transactionsHistory', { defaultValue: 'История транзакций' })}>
+          <Panel title={t('transactionsHistory')}>
             {isTxLoading ? (
               <SkeletonList count={3} />
             ) : transactions.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">
-                {t('noTransactions', { defaultValue: 'Пока нет транзакций' })}
-              </p>
+              <p className="text-muted-foreground py-6 text-center text-sm">{t('noTransactions')}</p>
             ) : (
               <div className="divide-border divide-y">
                 {transactions.map((tx) => (
@@ -138,7 +139,10 @@ export default function DebtorDetailPage() {
                       <>
                         {formatDate(tx.createdAt, true)}
                         {tx.dueDate && (
-                          <> · {t('fields.dueDate', { ns: 'transactions' })}: {formatDate(tx.dueDate)}</>
+                          <>
+                            {' '}
+                            · {t('fields.dueDate', { ns: 'transactions' })}: {formatDate(tx.dueDate)}
+                          </>
                         )}
                       </>
                     }
@@ -151,23 +155,15 @@ export default function DebtorDetailPage() {
 
         <div className="space-y-6">
           {debtor.market && (
-            <Panel title={t('fields.market')}>
-              <div className="space-y-4">
-                <InfoItem
-                  label={t('fields.name')}
-                  value={
-                    <InfoLink to={`/markets/${debtor.market.id}`} state={{ fromPath: location.pathname, fromName: debtor.name }}>
-                      {debtor.market.name}
-                    </InfoLink>
-                  }
-                />
-                {debtor.market.address && <InfoItem label={t('fields.address')} value={debtor.market.address} />}
-              </div>
-            </Panel>
+            <MarketCard
+              market={debtor.market}
+              t={t}
+              viewState={{ fromPath: location.pathname, fromName: debtor.name }}
+            />
           )}
 
           <QuickActions
-            title={t('quickActions', { defaultValue: 'Быстрые действия' })}
+            title={t('quickActions')}
             actions={[
               ...(can(Action.DEBTORS_EDIT)
                 ? [
@@ -181,7 +177,7 @@ export default function DebtorDetailPage() {
                 : []),
               {
                 icon: ReceiptText,
-                label: t('transactionsHistory', { defaultValue: 'Транзакции должника' }),
+                label: t('transactionsHistory'),
                 render: <Link to="/transactions" state={{ fromDebtorId: debtor.id, fromDebtorName: debtor.name }} />,
               },
               ...(debtor.market

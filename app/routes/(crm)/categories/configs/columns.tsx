@@ -3,14 +3,13 @@ import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { UserAvatar } from '~/components/shared/UserAvatar';
+import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import type { Category, CategoryDetail } from '~/types/products';
-import { useCategoriesModals } from '../store';
+import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 
 function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
   const deleteModal = useCategoriesModals((s) => s.delete);
@@ -19,48 +18,28 @@ function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
   const { can } = useCan();
 
   return (
-    <div className="flex justify-end gap-1">
-      <Tooltip>
-        <TooltipTrigger render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            render={<Link to={`/categories/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}>
-            <Eye className="h-4 w-4" />
-          </Button>
-        } />
-        <TooltipContent side="bottom">{t('actions.view')}</TooltipContent>
-      </Tooltip>
+    <RowActionsCell>
+      <IconActionButton
+        icon={<Eye className="h-4 w-4" />}
+        label={t('actions.view')}
+        render={<Link to={`/categories/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
+      />
       {can(Action.CATEGORIES_MANAGE) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => editModal.open(row as unknown as CategoryDetail)}>
-              <Pencil className="h-4 w-4" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Pencil className="h-4 w-4" />}
+          label={t('actions.edit')}
+          onClick={() => editModal.open(row as unknown as CategoryDetail)}
+        />
       )}
       {can(Action.CATEGORIES_MANAGE) && (
-        <Tooltip>
-          <TooltipTrigger render={
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-destructive hover:bg-destructive/10 hover:text-destructive h-8 w-8"
-              onClick={() => deleteModal.open(row.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          } />
-          <TooltipContent side="bottom">{t('actions.delete')}</TooltipContent>
-        </Tooltip>
+        <IconActionButton
+          icon={<Trash2 className="h-4 w-4" />}
+          label={t('actions.delete')}
+          danger
+          onClick={() => deleteModal.open(row.id)}
+        />
       )}
-    </div>
+    </RowActionsCell>
   );
 }
 
@@ -75,13 +54,10 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Category, any>[] 
     }),
     columnHelper.accessor('description', {
       header: t('fields.description'),
-      cell: (info) => (
-        <div className="w-[180px] truncate text-sm text-muted-foreground">
-          {info.getValue() ?? '—'}
-        </div>
-      ),
+      cell: (info) => <div className="text-muted-foreground w-[180px] truncate text-sm">{info.getValue() ?? '—'}</div>,
     }),
     columnHelper.accessor('_count.products', {
+      id: '_count.products',
       header: t('fields.productsCount'),
       cell: (info) => (
         <Badge variant="secondary" className="font-mono">

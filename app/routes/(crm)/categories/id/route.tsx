@@ -9,14 +9,14 @@ import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
 import { ListLink } from '~/components/shared/ListLink';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { StatCard } from '~/components/shared/StatCard';
-import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
@@ -24,7 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useCategoriesModals } from '../store';
+import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 
 export default function CategoryDetailPage() {
   const { t } = useTranslation(['categories', 'common']);
@@ -54,7 +54,7 @@ export default function CategoryDetailPage() {
 
   const { data: productsResponse } = useQuery({
     queryKey: ['category-products', id],
-    queryFn: () => productsApi.getAll(1, 5, {}, [{ key: 'categoryId', value: id! }]),
+    queryFn: () => productsApi.getAll(1, 50, {}, [{ key: 'categoryId', value: id! }]),
     enabled: !!id,
     staleTime: 30_000,
   });
@@ -65,12 +65,11 @@ export default function CategoryDetailPage() {
 
   if (!category) {
     return (
-      <div className="flex h-100 flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/categories')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/categories')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -146,18 +145,6 @@ export default function CategoryDetailPage() {
             </div>
           </Panel>
 
-          <Panel title={t('statistics')}>
-            <div className="grid grid-cols-3 gap-4">
-              <StatCard
-                icon={Package}
-                label={t('fields.productsCount')}
-                value={category._count.products}
-                to="/products"
-                state={filterState}
-              />
-            </div>
-          </Panel>
-
           {categoryProducts.length > 0 && (
             <Panel
               title={t('fields.productsCount')}
@@ -169,9 +156,9 @@ export default function CategoryDetailPage() {
                   count={category._count.products}
                 />
               }>
-              <div className="divide-border divide-y">
+              <div className="scrollbar-thin divide-border max-h-64 divide-y overflow-x-hidden overflow-y-auto">
                 {categoryProducts.map((product) => (
-                  <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-2.5">
+                  <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1.5">
                     <div className="flex min-w-0 items-center gap-2.5">
                       <Avatar size="sm" className="shrink-0">
                         {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
@@ -196,25 +183,7 @@ export default function CategoryDetailPage() {
         </div>
 
         <div className="space-y-6">
-          <Panel title={t('fields.market')}>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="size-9 shrink-0 rounded-lg">
-                  {market?.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
-                  <AvatarFallback className="bg-muted rounded-lg">
-                    {(market?.name ?? '?').charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold">{market?.name ?? category.marketId}</p>
-                  {market?.address && <p className="text-muted-foreground truncate text-xs">{market.address}</p>}
-                </div>
-              </div>
-              <InfoLink to={`/markets/${category.marketId}`} state={listState}>
-                {t('actions.view')}
-              </InfoLink>
-            </div>
-          </Panel>
+          {market && <MarketCard market={market} t={t} viewState={listState} />}
 
           <QuickActions
             title={t('quickActions')}

@@ -10,87 +10,81 @@ import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditMarketModal } from '~/components/modals/EditMarketModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
-import { EmptyState } from '~/components/shared/EmptyState';
 import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { ListLink } from '~/components/shared/ListLink';
-import { PanelViewAll } from '~/components/shared/PanelViewAll';
+import { MarketEntityTabs } from '~/components/shared/MarketEntityTabs';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useMarketsModals } from '../store';
-
+import { Role } from '~/types/common';
+import { useMarketsModals } from '~/routes/(crm)/markets/store';
 export default function MarketDetailPage() {
   const { t } = useTranslation(['markets', 'common']);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { can } = useCan();
+  const { can, user } = useCan();
   const editModal = useMarketsModals((s) => s.edit);
-
   const { data: response, isLoading } = useQuery({
     queryKey: ['market', id],
     queryFn: () => marketsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
   });
-
   const market = response?.data;
-
+  const isOwnMarket = !!user?.marketId && user.marketId === id;
+  // Список-эндпоинты всегда возвращают данные маркета из JWT, поэтому превью
+  // корректны только для своего маркета. Для чужих рынков доступен только
+  // сотрудники (market.users из detail-ответа) и счётчики (market.count).
   const { data: marketProductsResponse } = useQuery({
-    queryKey: ['market-products-preview'],
+    queryKey: ['products', 'market-preview', id],
     queryFn: () => productsApi.getAll(1, 100),
-    enabled: !!id,
+    enabled: !!id && isOwnMarket,
     staleTime: 30_000,
   });
-
   const { data: marketDebtorsResponse } = useQuery({
-    queryKey: ['market-debtors-preview'],
+    queryKey: ['debtors', 'market-preview', id],
     queryFn: () => debtorsApi.getAll(1, 100),
-    enabled: !!id,
+    enabled: !!id && isOwnMarket,
     staleTime: 30_000,
   });
-
   const { data: marketTransactionsResponse } = useQuery({
-    queryKey: ['market-transactions-preview'],
+    queryKey: ['transactions', 'market-preview', id],
     queryFn: () => transactionsApi.getAll(1, 100),
-    enabled: !!id,
+    enabled: !!id && isOwnMarket,
     staleTime: 30_000,
   });
-
   const marketProducts = useMemo(() => marketProductsResponse?.data?.data ?? [], [marketProductsResponse]);
   const marketDebtors = useMemo(() => marketDebtorsResponse?.data?.data ?? [], [marketDebtorsResponse]);
   const marketTransactions = useMemo(() => marketTransactionsResponse?.data?.data ?? [], [marketTransactionsResponse]);
-
   if (isLoading) return <ByIdSkeleton />;
-
   if (!market) {
     return (
-      <div className="flex h-100 flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/markets')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/markets')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
-
   const listState = { fromPath: location.pathname, fromName: market.name };
   const filterState = { fromMarketId: market.id, fromMarketName: market.name };
-
   return (
     <div className="flex flex-1 flex-col space-y-4 pb-6">
+      {' '}
       <Panel className="p-4">
+        {' '}
         <DetailHeader
           name={market.name}
           subtitle={market.address}
@@ -98,20 +92,22 @@ export default function MarketDetailPage() {
           actions={
             can(Action.MARKETS_EDIT) ? (
               <Tooltip>
+                {' '}
                 <TooltipTrigger
                   render={
                     <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(market)}>
-                      <Pencil className="size-3.5" />
-                      <span className="hidden sm:inline">{t('actions.edit')}</span>
+                      {' '}
+                      <Pencil className="size-3.5" /> <span className="hidden sm:inline">{t('actions.edit')}</span>{' '}
                     </Button>
                   }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
+                />{' '}
+                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>{' '}
               </Tooltip>
             ) : undefined
           }
-        />
+        />{' '}
         <div className="border-border mt-3 grid grid-cols-3 gap-2 border-t pt-3">
+          {' '}
           <StatCard
             size="sm"
             icon={Package}
@@ -119,7 +115,7 @@ export default function MarketDetailPage() {
             value={market.count.products}
             to="/products"
             state={filterState}
-          />
+          />{' '}
           <StatCard
             size="sm"
             icon={Users}
@@ -127,7 +123,7 @@ export default function MarketDetailPage() {
             value={market.count.debtors}
             to="/debtors"
             state={filterState}
-          />
+          />{' '}
           <StatCard
             size="sm"
             icon={ReceiptText}
@@ -135,199 +131,178 @@ export default function MarketDetailPage() {
             value={market.count.transactions}
             to="/transactions"
             state={filterState}
-          />
-        </div>
-      </Panel>
-
+          />{' '}
+        </div>{' '}
+      </Panel>{' '}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        {' '}
+        <div className="min-w-0 space-y-4 lg:col-span-2">
+          {' '}
           <Panel>
+            {' '}
             <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-2">
+              {' '}
               <InfoItem
                 label={t('fields.name')}
                 value={
                   <span className="flex items-center gap-2">
+                    {' '}
                     <Avatar size="sm" className="shrink-0">
-                      {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
-                      <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="truncate">{market.name}</span>
+                      {' '}
+                      {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}{' '}
+                      <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>{' '}
+                    </Avatar>{' '}
+                    <span className="truncate">{market.name}</span>{' '}
                   </span>
                 }
-              />
-              <InfoItem label={t('fields.address')} value={market.address} />
+              />{' '}
+              <InfoItem label={t('fields.address')} value={market.address} />{' '}
               <InfoItem
                 label={t('fields.owner')}
                 value={
                   <span className="flex items-center gap-2">
+                    {' '}
                     <Avatar size="sm" className="shrink-0">
-                      {market.owner.image ? <AvatarImage src={market.owner.image} alt={market.owner.name} /> : null}
-                      <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                      {' '}
+                      {market.owner.image ? (
+                        <AvatarImage src={market.owner.image} alt={market.owner.name} />
+                      ) : null}{' '}
+                      <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>{' '}
+                    </Avatar>{' '}
                     <InfoLink to={`/users/${market.ownerId}`} state={listState}>
-                      {market.owner.name}
-                    </InfoLink>
+                      {' '}
+                      {market.owner.name}{' '}
+                    </InfoLink>{' '}
                   </span>
                 }
-              />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />
-              <InfoItem label={t('fields.updatedAt')} value={formatDate(market.updatedAt, true)} />
-            </div>
-          </Panel>
-
+              />{' '}
+              <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />{' '}
+              <InfoItem label={t('fields.updatedAt')} value={formatDate(market.updatedAt, true)} />{' '}
+            </div>{' '}
+          </Panel>{' '}
           <Panel>
-            <Tabs defaultValue="employees">
-              <TabsList className="w-full">
-                <TabsTrigger value="employees" className="flex-1">
-                  {t('fields.employees')}
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    {market.users.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="products" className="flex-1">
-                  {t('fields.products')}
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    {market.count.products}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="debtors" className="flex-1">
-                  {t('fields.debtors')}
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    {market.count.debtors}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="transactions" className="flex-1">
-                  {t('fields.transactions')}
-                  <Badge variant="secondary" className="text-xs font-normal">
-                    {market.count.transactions}
-                  </Badge>
-                </TabsTrigger>
-              </TabsList>
-
-              <div className="mt-3">
-                <TabsContent value="employees">
-                  {market.users.length === 0 ? (
-                    <EmptyState
-                      className="py-10"
-                      message={t('noEmployees', { defaultValue: 'Пока нет сотрудников' })}
-                    />
-                  ) : (
-                    <div className="scrollbar-thin max-h-80 overflow-y-auto">
-                      {market.users.map((employee) => (
-                        <ListLink
-                          key={employee.id}
-                          to={employee.role === 'SELLER' ? `/sellers/${employee.id}` : `/users/${employee.id}`}
-                          state={listState}
-                          className="py-2">
-                          <UserAvatar
-                            fullName={employee.name}
-                            subInfo={employee.email}
-                            imagePath={employee.image ?? undefined}
-                          />
-                          <Badge variant="secondary" className="text-xs font-normal">
-                            {t(`role.${employee.role.toLocaleLowerCase()}`)}
-                          </Badge>
-                        </ListLink>
-                      ))}
-                    </div>
-                  )}
-                  {market.users.length > 0 && (
-                    <div className="border-border mt-2 flex justify-end border-t pt-2">
-                      <PanelViewAll to="/users" state={filterState} label={t('viewAll')} count={market.users.length} />
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="products">
-                  {marketProducts.length === 0 ? (
-                    <EmptyState className="py-10" message={t('noProducts', { defaultValue: 'Пока нет товаров' })} />
-                  ) : (
-                    <div className="divide-border scrollbar-thin max-h-80 divide-y overflow-y-auto">
-                      {marketProducts.map((product) => (
-                        <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1.5">
-                          <span className="truncate text-sm font-medium">{product.name}</span>
-                          <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>
-                        </ListLink>
-                      ))}
-                    </div>
-                  )}
-                  {marketProducts.length > 0 && (
-                    <div className="border-border mt-2 flex justify-end border-t pt-2">
-                      <PanelViewAll
-                        to="/products"
-                        state={filterState}
-                        label={t('viewAll')}
-                        count={market.count.products}
-                      />
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="debtors">
-                  {marketDebtors.length === 0 ? (
-                    <EmptyState className="py-10" message={t('noDebtors', { defaultValue: 'Пока нет должников' })} />
-                  ) : (
-                    <div className="divide-border scrollbar-thin max-h-80 divide-y overflow-y-auto">
-                      {marketDebtors.map((debtor) => (
-                        <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={listState} className="py-1.5">
-                          <span className="truncate text-sm font-medium">{debtor.name}</span>
-                          <span className="text-muted-foreground text-xs">{debtor.phone}</span>
-                        </ListLink>
-                      ))}
-                    </div>
-                  )}
-                  {marketDebtors.length > 0 && (
-                    <div className="border-border mt-2 flex justify-end border-t pt-2">
-                      <PanelViewAll
-                        to="/debtors"
-                        state={filterState}
-                        label={t('viewAll')}
-                        count={market.count.debtors}
-                      />
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="transactions">
-                  {marketTransactions.length === 0 ? (
-                    <EmptyState
-                      className="py-10"
-                      message={t('noTransactions', { defaultValue: 'Пока нет транзакций' })}
-                    />
-                  ) : (
-                    <div className="divide-border scrollbar-thin max-h-80 divide-y overflow-y-auto">
-                      {marketTransactions.map((tx) => (
-                        <ListLink key={tx.id} to={`/transactions/${tx.id}`} state={listState} className="py-1.5">
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">#{tx.id.slice(0, 8)}</p>
-                            <p className="text-muted-foreground text-xs">
-                              {tx.type === 'DEBT'
-                                ? t('type.DEBT', { ns: 'transactions' })
-                                : t('type.SALE', { ns: 'transactions' })}
-                            </p>
-                          </div>
-                          <span className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</span>
-                        </ListLink>
-                      ))}
-                    </div>
-                  )}
-                  {marketTransactions.length > 0 && (
-                    <div className="border-border mt-2 flex justify-end border-t pt-2">
-                      <PanelViewAll
-                        to="/transactions"
-                        state={filterState}
-                        label={t('viewAll')}
-                        count={market.count.transactions}
-                      />
-                    </div>
-                  )}
-                </TabsContent>
-              </div>
-            </Tabs>
-          </Panel>
-        </div>
-
-        <div className="space-y-4">
+            {' '}
+            <MarketEntityTabs
+              defaultValue="employees"
+              maxHeightClass="max-h-80"
+              emptyClassName="py-10"
+              contentClassName="mt-3"
+              viewAllClassName="mt-2 flex justify-end border-t pt-2"
+              tabs={[
+                {
+                  value: 'employees',
+                  label: t('fields.employees'),
+                  count: market.users.length,
+                  isEmpty: market.users.length === 0,
+                  emptyMessage: t('noEmployees'),
+                  rows: market.users.map((employee) => (
+                    <ListLink
+                      key={employee.id}
+                      to={employee.role === Role.Seller ? `/sellers/${employee.id}` : `/users/${employee.id}`}
+                      state={listState}
+                      className="py-2">
+                      {' '}
+                      <UserAvatar
+                        fullName={employee.name}
+                        subInfo={employee.email}
+                        imagePath={employee.image ?? undefined}
+                      />{' '}
+                      <Badge variant="secondary" className="text-xs font-normal">
+                        {' '}
+                        {t(`role.${employee.role.toLowerCase()}`)}{' '}
+                      </Badge>{' '}
+                    </ListLink>
+                  )),
+                  viewAll: { to: '/users', state: listState, label: t('viewAll'), count: market.users.length },
+                },
+                ...(isOwnMarket
+                  ? [
+                      {
+                        value: 'products',
+                        label: t('fields.products'),
+                        count: market.count.products,
+                        badgeClassName: 'bg-primary/10 text-primary',
+                        isEmpty: marketProducts.length === 0,
+                        emptyMessage: t('noProducts'),
+                        rows: marketProducts.map((product) => (
+                          <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1">
+                            {' '}
+                            <div className="min-w-0">
+                              {' '}
+                              <p className="truncate text-sm font-medium">{product.name}</p>{' '}
+                              {product.category && (
+                                <p className="text-muted-foreground truncate text-xs">{product.category.name}</p>
+                              )}{' '}
+                            </div>{' '}
+                            <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>{' '}
+                          </ListLink>
+                        )),
+                        viewAll: {
+                          to: '/products',
+                          state: filterState,
+                          label: t('viewAll'),
+                          count: market.count.products,
+                        },
+                      },
+                      {
+                        value: 'debtors',
+                        label: t('fields.debtors'),
+                        count: market.count.debtors,
+                        badgeClassName: 'bg-warning/15 text-warning',
+                        isEmpty: marketDebtors.length === 0,
+                        emptyMessage: t('noDebtors'),
+                        rows: marketDebtors.map((debtor) => (
+                          <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={listState} className="py-1.5">
+                            {' '}
+                            <span className="truncate text-sm font-medium">{debtor.name}</span>{' '}
+                            <span className="text-muted-foreground text-xs">{debtor.phone}</span>{' '}
+                          </ListLink>
+                        )),
+                        viewAll: {
+                          to: '/debtors',
+                          state: filterState,
+                          label: t('viewAll'),
+                          count: market.count.debtors,
+                        },
+                      },
+                      {
+                        value: 'transactions',
+                        label: t('fields.transactions'),
+                        count: market.count.transactions,
+                        badgeClassName: 'bg-chart-5/15 text-chart-5',
+                        isEmpty: marketTransactions.length === 0,
+                        emptyMessage: t('noTransactions'),
+                        rows: marketTransactions.map((tx) => (
+                          <ListLink key={tx.id} to={`/transactions/${tx.id}`} state={listState} className="py-1.5">
+                            {' '}
+                            <div className="min-w-0">
+                              {' '}
+                              <p className="truncate text-sm font-medium">#{tx.id.slice(0, 8)}</p>{' '}
+                              <p className="text-muted-foreground text-xs">
+                                {' '}
+                                {tx.type === 'DEBT'
+                                  ? t('type.DEBT', { ns: 'transactions' })
+                                  : t('type.SALE', { ns: 'transactions' })}{' '}
+                              </p>{' '}
+                            </div>{' '}
+                            <span className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</span>{' '}
+                          </ListLink>
+                        )),
+                        viewAll: {
+                          to: '/transactions',
+                          state: filterState,
+                          label: t('viewAll'),
+                          count: market.count.transactions,
+                        },
+                      },
+                    ]
+                  : []),
+              ]}
+            />{' '}
+          </Panel>{' '}
+        </div>{' '}
+        <div className="min-w-0 space-y-4">
+          {' '}
           <EntityCard
             title={t('fields.owner')}
             fullName={market.owner.name}
@@ -336,8 +311,7 @@ export default function MarketDetailPage() {
             viewTo={`/users/${market.ownerId}`}
             viewLabel={t('actions.view')}
             viewState={{ fromPath: location.pathname, fromName: t('title') }}
-          />
-
+          />{' '}
           <QuickActions
             title={t('quickActions')}
             actions={[
@@ -351,27 +325,18 @@ export default function MarketDetailPage() {
                     },
                   ]
                 : []),
-              {
-                icon: Package,
-                label: t('viewProducts'),
-                render: <Link to="/products" state={filterState} />,
-              },
-              {
-                icon: Users,
-                label: t('viewDebtors'),
-                render: <Link to="/debtors" state={filterState} />,
-              },
+              { icon: Package, label: t('viewProducts'), render: <Link to="/products" state={filterState} /> },
+              { icon: Users, label: t('viewDebtors'), render: <Link to="/debtors" state={filterState} /> },
               {
                 icon: ReceiptText,
                 label: t('viewTransactions'),
                 render: <Link to="/transactions" state={filterState} />,
               },
             ]}
-          />
-        </div>
-      </div>
-
-      <EditMarketModal />
+          />{' '}
+        </div>{' '}
+      </div>{' '}
+      <EditMarketModal />{' '}
     </div>
   );
 }

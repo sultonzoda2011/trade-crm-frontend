@@ -70,8 +70,7 @@ export default function CreateProductPage() {
       void queryClient.invalidateQueries({ queryKey: ['products'] });
       navigate('/products');
     },
-    onError: () => {
-    },
+    onError: () => {},
   });
 
   function onSubmit(data: CreateProductSchema) {
@@ -89,7 +88,7 @@ export default function CreateProductPage() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t('create')}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('create')}</h1>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate('/products')}>
             {t('actions.cancel')}
@@ -101,7 +100,7 @@ export default function CreateProductPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[3.5fr_6.5fr] items-start">
+      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[3.5fr_6.5fr]">
         <Panel className="p-4">
           <FormFileInput
             control={control}
@@ -116,7 +115,13 @@ export default function CreateProductPage() {
         <Panel className="p-6">
           <form id="create-product-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
+              <FormInput
+                control={control}
+                name="name"
+                label={t('fields.name')}
+                placeholder={t('fields.name')}
+                required
+              />
               <FormCustomSelect
                 control={control}
                 name="categoryId"

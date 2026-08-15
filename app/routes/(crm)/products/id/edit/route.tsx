@@ -8,6 +8,7 @@ import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
@@ -97,12 +98,11 @@ export default function EditProductPage() {
 
   if (!product) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center space-y-4">
-        <p className="text-muted-foreground">{t('notFound')}</p>
-        <Button variant="outline" onClick={() => navigate('/products')}>
-          {t('actions.back', { ns: 'common' })}
-        </Button>
-      </div>
+      <NotFoundBlock
+        label={t('notFound')}
+        onBack={() => navigate('/products')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
     );
   }
 
@@ -118,7 +118,7 @@ export default function EditProductPage() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">{t('actions.edit')}</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('actions.edit')}</h1>
         <div className="flex gap-3">
           <Button variant="outline" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
@@ -130,7 +130,7 @@ export default function EditProductPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-[3.5fr_6.5fr] items-start">
+      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[3.5fr_6.5fr]">
         <Panel className="p-4">
           <FormFileInput
             control={control}
@@ -145,15 +145,21 @@ export default function EditProductPage() {
         <Panel className="p-6">
           <form id="edit-product-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-            <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
-            <FormCustomSelect
-              control={control}
-              name="categoryId"
-              label={t('fields.category')}
-              placeholder={t('fields.category')}
-              options={categoryOptions}
-              isClearable
-            />
+              <FormInput
+                control={control}
+                name="name"
+                label={t('fields.name')}
+                placeholder={t('fields.name')}
+                required
+              />
+              <FormCustomSelect
+                control={control}
+                name="categoryId"
+                label={t('fields.category')}
+                placeholder={t('fields.category')}
+                options={categoryOptions}
+                isClearable
+              />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <FormInput
