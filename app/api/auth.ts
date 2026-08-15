@@ -8,7 +8,8 @@ export const authApi = {
     return data;
   },
 
-  logout: async (refreshToken: string): Promise<void> => {
-    await apiClient.post('/auth/logout', { refreshToken });
+  // refreshToken передаётся автоматически как httpOnly cookie браузером
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
   },
 };

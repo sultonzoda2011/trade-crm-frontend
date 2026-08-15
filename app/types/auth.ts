@@ -1,9 +1,13 @@
-import type { ApiResponse } from './common';
-import type { User } from './users';
-
+import type { ApiResponse, Role } from '~/types/common';
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: Role;
+  marketId: string;
+}
 export interface Login {
   accessToken: string;
-  refreshToken: string;
   user: User;
 }
 

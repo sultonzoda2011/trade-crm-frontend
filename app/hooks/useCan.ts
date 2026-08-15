@@ -1,5 +1,5 @@
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
-import { getUserFromToken } from '~/lib/auth-utils';
+import { getClientUser } from '~/lib/auth-utils';
 import { Role } from '~/types/common';
 
 export type Permission = Role | Role[] | Action | Action[];
@@ -8,7 +8,7 @@ export type Permission = Role | Role[] | Action | Action[];
  * Хук для проверки прав доступа в UI (кнопки, вкладки и т.д.)
  */
 export function useCan() {
-  const user = getUserFromToken();
+  const user = getClientUser();
   const userRole = user?.role;
 
   /**

@@ -11,17 +11,21 @@ import {
   ScrollRestoration,
   useLoaderData,
   useNavigation,
+  useNavigate,
 } from 'react-router';
 
 import type { Route } from '.react-router/types/app/+types/root';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
+import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '~/components/theme-provider';
+import ErrorPage from '~/components/shared/ErrorPage';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { getQueryClient } from '~/lib/query-client';
-import { useIsMobile } from './hooks/use-mobile';
+import { setNavigate } from '~/lib/navigation';
+import { useIsMobile } from '~/hooks/use-mobile';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -55,12 +59,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
   const data = useLoaderData<typeof clientLoader>();
   const locale = data?.locale ?? 'ru';
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (i18next.isInitialized) {
       i18next.changeLanguage(locale);
     }
   }, [locale]);
+
+  useEffect(() => {
+    setNavigate(navigate);
+  }, [navigate]);
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -169,22 +178,37 @@ export default function App() {
 const DevTools = lazy(() => import('@tanstack/react-query-devtools').then((m) => ({ default: m.ReactQueryDevtools })));
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
+  const { t } = useTranslation();
+  let code = '500';
+  let title = t('errors.unknown');
+  let description = t('errors.unknown');
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error';
-    details = error.status === 404 ? 'The requested page could not be found.' : error.statusText || details;
+    code = String(error.status);
+    if (error.status === 404) {
+      title = t('errors.notFound');
+      description = '';
+    } else {
+      title = t('errors.unknown');
+      description = error.statusText || description;
+    }
   } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
+    description = error.message;
     stack = error.stack;
   }
 
   return (
     <main className="container mx-auto p-4 pt-16">
-      <h1>{message}</h1>
-      <p>{details}</p>
+      <ErrorPage
+        code={code}
+        icon="file"
+        titleKey="errors.unknown"
+        descriptionKey=""
+        backHomeKey="pages.notFound.backHome"
+        title={title}
+        description={description}
+      />
       {stack && (
         <pre className="w-full overflow-x-auto p-4">
           <code>{stack}</code>

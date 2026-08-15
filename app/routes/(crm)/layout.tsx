@@ -1,14 +1,25 @@
-import { Outlet } from 'react-router';
+import { Outlet, redirect } from 'react-router';
 import Header from '~/components/layout/Header';
 import { AppSidebar } from '~/components/layout/Sidebar';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { SidebarProvider } from '~/components/ui/sidebar';
-import { requireAuth } from '~/lib/auth-utils';
+import { canAccess } from '~/config/permissions';
+import { getClientUser } from '~/lib/auth-utils';
 import type { Route } from './+types/layout';
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  const result = requireAuth(request);
-  return result || {};
+  // В SPA-режиме request.headers не содержит Cookie — читаем document.cookie напрямую
+  const user = getClientUser();
+  if (!user) {
+    const url = new URL(request.url);
+    const params = new URLSearchParams();
+    params.set('redirectTo', url.pathname);
+    return redirect(`/login?${params.toString()}`);
+  }
+  if (!canAccess(user.role, new URL(request.url).pathname)) {
+    return redirect('/403');
+  }
+  return { user };
 }
 
 export default function CrmLayout() {
