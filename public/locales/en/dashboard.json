@@ -1,24 +1,112 @@
 {
   "title": "Dashboard",
-  "stats": {
-    "totalMarkets": "Markets",
-    "totalUsers": "Users",
-    "totalDebtors": "Debtors",
-    "activeDebts": "Active debts",
-    "totalDebtAmount": "Total debt",
-    "totalSaleAmount": "Total sales",
-    "todayTransactions": "Transactions today"
+  "tabs": {
+    "overview": "Overview",
+    "inventory": "Inventory",
+    "products": "Products",
+    "sellers": "Sellers"
   },
-  "recentTransactions": "Recent transactions",
-  "topDebtors": "Top debtors",
-  "revenueTrend": "Revenue trend (last 30 days)",
+  "revenueTrend": "Revenue trend",
   "paymentTypes": "Payment type distribution",
-  "overdueAlerts": "Overdue debts",
-  "activeOverdueDebts": "Debtors with overdue payments",
-  "totalOverdue": "Total overdue amount",
   "sellersReport": "Sellers report",
+  "stockSummary": "Stock summary",
+  "allMarkets": "All markets",
+  "allSellers": "All sellers",
+  "seller": "Seller",
   "viewAll": "View all",
   "empty": "No data",
+  "loadError": "Failed to load data",
+  "charts": {
+    "revenue": "Revenue",
+    "transactions": "Transactions"
+  },
+  "comparison": {
+    "vsPrevious": "vs previous period",
+    "unchanged": "no change",
+    "noBaseline": "nothing to compare to"
+  },
+  "metrics": {
+    "revenue": "Net revenue",
+    "revenueHint": "{{sales}} sales · {{debts}} on credit",
+    "transactions": "Transactions",
+    "transactionsHint": "{{sales}} sales · {{debts}} debts",
+    "averageCheck": "Average check",
+    "unitsSold": "{{count}} units sold",
+    "returns": "Returns",
+    "returnsHint": "{{percent}}% of sales",
+    "discounts": "Discounts"
+  },
+  "debts": {
+    "title": "Debts",
+    "debtors": "debtors: {{count}}",
+    "overdue": "Overdue: {{count}}",
+    "dueSoon": "Due soon: {{count}}",
+    "outstanding": "Total outstanding",
+    "collected": "Collected this period",
+    "whoToCall": "Who to call first"
+  },
+  "returns": {
+    "title": "Returns",
+    "amount": "Refunded amount",
+    "rate": "Return rate",
+    "units": "Units returned",
+    "unitsBack": "{{count}} returned",
+    "topProducts": "Most returned products"
+  },
+  "inventory": {
+    "title": "Inventory health",
+    "total": "Total products",
+    "toOrder": "To reorder",
+    "healthy": "Healthy",
+    "stockValue": "Stock value",
+    "frozenValue": "Frozen in slow stock"
+  },
+  "reorder": {
+    "title": "What to reorder",
+    "empty": "Nothing to reorder",
+    "inStock": "{{count}} in stock",
+    "daysLeft": "{{days}} days left",
+    "noVelocity": "no sales velocity"
+  },
+  "products": {
+    "topByRevenue": "Top by revenue",
+    "topByUnits": "Top by units",
+    "netUnits": "{{count}} units",
+    "returned": "returned"
+  },
+  "categories": {
+    "title": "Categories",
+    "empty": "No category sales",
+    "uncategorized": "Uncategorized"
+  },
+  "insights": {
+    "title": "Needs attention",
+    "open": "Open",
+    "allClear": "Nothing urgent",
+    "inventory": {
+      "outOfStock": "Out of stock: {{count}} products. E.g. {{example}}",
+      "critical": "{{count}} products critically low. {{example}} — {{days}} days left",
+      "runningOut": "{{count}} products will run out within {{days}} days",
+      "slowMoving": "{{count}} products barely sell: over {{days}} days of stock",
+      "noSales": "{{count}} products had no sales this period",
+      "reorderList": "{{count}} products need reordering"
+    },
+    "sales": {
+      "none": "No sales this period",
+      "declining": "Revenue down {{percent}}% — was {{previous}}",
+      "growing": "Revenue up {{percent}}% — was {{previous}}"
+    },
+    "debts": {
+      "overdue": "{{count}} overdue debts worth {{amount}}",
+      "dueSoon": "{{count}} debts worth {{amount}} due within {{days}} days",
+      "noCollection": "No payments collected this period, yet {{amount}} is outstanding across {{debtors}} debtors"
+    },
+    "returns": {
+      "highRate": "Returns are {{percent}}% of sales — {{amount}}",
+      "problemProduct": "{{name}}: {{units}} units returned, {{percent}}% of its sales",
+      "growing": "Returns up {{percent}}% vs previous period"
+    }
+  },
   "table": {
     "seller": "Seller",
     "salesCount": "Sales",
@@ -30,11 +118,6 @@
   },
   "period": {
     "from": "From",
-    "to": "To",
-    "today": "Today",
-    "week": "Week",
-    "month": "Month",
-    "year": "Year"
-  },
-  "seller": "Seller"
+    "to": "To"
+  }
 }

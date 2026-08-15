@@ -20,6 +20,8 @@
     "updatedAt": "Санаи навсозӣ",
     "employees": "Кормандон"
   },
+  "hasUsers": "Корбар дорад",
+  "hasProducts": "Мол дорад",
   "statistics": "Омор",
   "quickActions": "Амалҳои зуд",
   "viewProducts": "Молҳои бозор",
@@ -43,5 +45,8 @@
   "filters": {
     "search": "Ҷустуҷӯи бозорҳо"
   },
-  "noEmployees": "Ҳанӯз корманд нест"
+  "noEmployees": "Ҳанӯз корманд нест",
+  "noProducts": "Ҳанӯз мол нест",
+  "noDebtors": "Ҳанӯз қарздор нест",
+  "noTransactions": "Ҳанӯз транзаксия нест"
 }

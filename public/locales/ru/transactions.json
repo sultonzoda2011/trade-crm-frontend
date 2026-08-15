@@ -26,7 +26,8 @@
     "ACTIVE": "Активна",
     "PARTIAL": "Частично",
     "PAID": "Оплачена",
-    "REFUNDED": "Возвращена"
+    "REFUNDED": "Возвращена",
+    "PARTIALLY_REFUNDED": "Частичный возврат"
   },
   "fields": {
     "id": "ID",
@@ -62,6 +63,61 @@
   "refund": "Оформить возврат",
   "refundSuccess": "Возврат успешно оформлен",
   "refundError": "Ошибка при оформлении возврата",
+  "refundConfirmTitle": "Возврат транзакции",
+  "refundConfirmDescription": "Действие необратимо. Продолжить?",
+  "refundModal": {
+    "title": "Возврат товара",
+    "description": "Укажите, сколько единиц возвращается по каждой позиции. Товар вернётся на склад, сумма продажи будет пересчитана.",
+    "mode": "Что возвращаем",
+    "modeAll": "Всю оставшуюся часть",
+    "modePartial": "Выбранные позиции",
+    "allHint": "Будут возвращены все единицы, которые ещё не возвращены.",
+    "columns": {
+      "product": "Товар",
+      "sold": "Продано",
+      "alreadyRefunded": "Уже возвращено",
+      "refundable": "Можно вернуть",
+      "toRefund": "К возврату"
+    },
+    "reason": "Причина возврата",
+    "reasonPlaceholder": "Например: брак, не подошёл размер",
+    "refundTotal": "Сумма возврата",
+    "submit": "Оформить возврат",
+    "nothingSelected": "Выберите хотя бы одну позицию",
+    "nothingRefundable": "По этой транзакции нечего возвращать",
+    "exceedsRefundable": "Больше, чем можно вернуть: максимум {{max}}",
+    "notPositive": "Количество должно быть больше нуля"
+  },
+  "detail": {
+    "summary": "Итоги по транзакции",
+    "timeline": "Хронология",
+    "refundHistory": "История возвратов",
+    "originalSale": "Исходная продажа",
+    "refundOfHint": "Это возврат по продаже #{{id}}",
+    "noRefunds": "Возвратов не было",
+    "openTransaction": "Открыть транзакцию",
+    "timelineEvent": {
+      "SALE": "Продажа",
+      "DEBT": "Долг выдан",
+      "PAYMENT": "Оплата",
+      "REFUND": "Возврат"
+    },
+    "actor": "Провёл: {{name}}",
+    "actorUnknown": "Автор неизвестен"
+  },
+  "summary": {
+    "totalAmount": "Сумма продажи",
+    "discountAmount": "Скидка",
+    "paidAmount": "Оплачено",
+    "remainingAmount": "Остаток к оплате",
+    "refundedAmount": "Возвращено",
+    "netAmount": "Чистая сумма"
+  },
+  "fieldsRefund": {
+    "refundedQuantity": "Возвращено",
+    "refundableQuantity": "Доступно к возврату"
+  },
+  "remaining": "Остаток",
   "stockError": "Недостаточно товара на складе",
   "inStock": "На складе"
 }

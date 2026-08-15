@@ -2,6 +2,8 @@
   "title": "Қарздорҳо",
   "create": "Эҷод кардан",
   "notFound": "Қарздор ёфт нашуд",
+  "hasActiveDebts": "Қарзи фаъол дорад",
+  "totalDebtAmount": "Маблағи умумии қарз",
   "fields": {
     "createdAt": "Санаи эҷод",
     "updatedAt": "Санаи навсозӣ",
@@ -13,5 +15,40 @@
   "totalDebt": "Қарзи ҷорӣ",
   "transactionsHistory": "Таърихи амалиётҳо",
   "noTransactions": "Ҳанӯз амалиёт нест",
-  "quickActions": "Амалҳои зуд"
+  "quickActions": "Амалҳои зуд",
+  "risk": {
+    "title": "Хатари барнагардонидан",
+    "whyTitle": "Чаро ин хатар",
+    "HIGH": "Хатари баланд",
+    "MEDIUM": "Хатари миёна",
+    "LOW": "Хатари паст"
+  },
+  "riskFactors": {
+    "overdueShare.majority": "Қисми зиёди қарз мӯҳлаташ гузаштааст",
+    "overdueShare.some": "Қисми қарз мӯҳлаташ гузаштааст",
+    "daysOverdue.over30": "Аз 30 рӯз зиёд мӯҳлат гузаштааст",
+    "daysOverdue.upTo30": "То 30 рӯз мӯҳлат гузаштааст",
+    "daysOverdue.upTo7": "Мӯҳлат каме гузаштааст",
+    "size.farAboveAverage": "Қарз аз миёнаи бозор хеле зиёд аст",
+    "size.aboveAverage": "Қарз аз миёнаи бозор зиёд аст",
+    "repayment.low": "Камтар аз сеяки гирифтаашро бармегардонад",
+    "repayment.partial": "Камтар аз нимаи гирифтаашро бармегардонад",
+    "activity.noPayments": "Ҳеҷ гоҳ пардохт накардааст",
+    "activity.stale": "Кайҳо боз пардохт накардааст",
+    "score": "Ҳисоби хатар: {{count}} аз 13",
+    "maxScore": "ҳадди аксар"
+  },
+  "profile": {
+    "activeDebtCount": "Қарзҳои фаъол",
+    "overdueAmount": "Мӯҳлат гузашта",
+    "overdueCount": "Қарзҳои мӯҳлатгузашта",
+    "totalIssued": "Ҳамагӣ дода шуд",
+    "totalCollected": "Бо пардохт ҷамъ шуд",
+    "repaymentRate": "Ҳиссаи бозгашт",
+    "maxDaysOverdue": "Мӯҳлати аз ҳама зиёд гузашта",
+    "daysSinceLastPayment": "Рӯзҳо бе пардохт",
+    "lastPaymentAt": "Пардохти охирин",
+    "nextDueDate": "Мӯҳлати навбатӣ",
+    "never": "набуд"
+  }
 }

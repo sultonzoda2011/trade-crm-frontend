@@ -38,7 +38,11 @@
   },
   "filters": {
     "search": "Search products",
-    "category": "Category"
+    "category": "Category",
+    "health": "Health",
+    "reorderPriority": "Reorder urgency",
+    "needsReorder": "Needs reordering",
+    "period": "Metrics period"
   },
   "unit": {
     "PCS": "pcs",
@@ -47,5 +51,37 @@
     "M": "m",
     "BOX": "box"
   },
-  "lowStock": "Low stock"
+  "lowStock": "Low stock",
+  "health": {
+    "OUT_OF_STOCK": "Out of stock",
+    "CRITICAL": "Critically low",
+    "LOW_STOCK": "Low stock",
+    "HIGH_RETURNS": "High returns",
+    "NO_SALES": "No sales",
+    "SLOW_MOVING": "Slow moving",
+    "HEALTHY": "Healthy"
+  },
+  "reorderPriority": {
+    "OUT_OF_STOCK": "Out of stock",
+    "CRITICAL": "Reorder now",
+    "WARNING": "Reorder soon",
+    "OK": "Stock is fine",
+    "NOT_NEEDED": "No reorder needed"
+  },
+  "metrics": {
+    "title": "Sales for the period",
+    "unitsSold": "Units sold",
+    "refundedUnits": "Units returned",
+    "netUnitsSold": "Units sold net of returns",
+    "revenue": "Revenue for the period",
+    "returnRate": "Return rate",
+    "transactionCount": "Transactions",
+    "avgDailySales": "Units per day",
+    "daysOfStock": "Days of stock",
+    "recommendedQuantity": "Recommended order",
+    "noVelocity": "no sales in the period",
+    "daysUnit": "{{count}} days",
+    "reorderHint": "Up to {{days}} days of cover",
+    "allTime": "All time"
+  }
 }

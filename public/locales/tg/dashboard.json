@@ -1,24 +1,112 @@
 {
   "title": "Дашборд",
-  "stats": {
-    "totalMarkets": "Бозорҳо",
-    "totalUsers": "Корбарон",
-    "totalDebtors": "Қарздорон",
-    "activeDebts": "Қарзҳои фаъол",
-    "totalDebtAmount": "Маблағи қарз",
-    "totalSaleAmount": "Фурӯши умумӣ",
-    "todayTransactions": "Амалиётҳои имрӯз"
+  "tabs": {
+    "overview": "Умумӣ",
+    "inventory": "Анбор",
+    "products": "Маҳсулотҳо",
+    "sellers": "Фурӯшандагон"
   },
-  "recentTransactions": "Амалиётҳои охирин",
-  "topDebtors": "Қарздорони калон",
-  "revenueTrend": "Тренди даромад (30 рӯзи охирин)",
+  "revenueTrend": "Тренди даромад",
   "paymentTypes": "Тақсимоти усули пардохт",
-  "overdueAlerts": "Қарзҳои қадҳи ҳақ",
-  "activeOverdueDebts": "Қарздорон бо пардохтҳои қадҳи ҳақ",
-  "totalOverdue": "Маблағи қарзҳои қадҳи ҳақ",
   "sellersReport": "Ҳисоботи фурӯшандагон",
+  "stockSummary": "Хулосаи анбор",
+  "allMarkets": "Ҳамаи бозорҳо",
+  "allSellers": "Ҳамаи фурӯшандагон",
+  "seller": "Фурӯшанда",
   "viewAll": "Ҳамаро дидан",
   "empty": "Маълумот нест",
+  "loadError": "Маълумот бор карда нашуд",
+  "charts": {
+    "revenue": "Даромад",
+    "transactions": "Транзаксияҳо"
+  },
+  "comparison": {
+    "vsPrevious": "нисбат ба давраи гузашта",
+    "unchanged": "бе тағйирот",
+    "noBaseline": "барои муқоиса маълумот нест"
+  },
+  "metrics": {
+    "revenue": "Даромади холис",
+    "revenueHint": "Фурӯш {{sales}} · ба қарз {{debts}}",
+    "transactions": "Транзаксияҳо",
+    "transactionsHint": "Фурӯш {{sales}} · қарз {{debts}}",
+    "averageCheck": "Чеки миёна",
+    "unitsSold": "{{count}} дона фурӯхта шуд",
+    "returns": "Бозгардонидан",
+    "returnsHint": "{{percent}}% аз фурӯш",
+    "discounts": "Тахфифҳо"
+  },
+  "debts": {
+    "title": "Қарзҳо",
+    "debtors": "қарздорон: {{count}}",
+    "overdue": "Мӯҳлат гузашт: {{count}}",
+    "dueSoon": "Мӯҳлат наздик: {{count}}",
+    "outstanding": "Ҳамагӣ пардохтнашуда",
+    "collected": "Дар давра ҷамъоварӣ шуд",
+    "whoToCall": "Аввал ба кӣ занг занем"
+  },
+  "returns": {
+    "title": "Бозгардонидан",
+    "amount": "Маблағи бозгардонида",
+    "rate": "Ҳиссаи бозгардонида",
+    "units": "Дона бозгардонида шуд",
+    "unitsBack": "{{count}} дона баргардонида шуд",
+    "topProducts": "Бештар баргардонида мешаванд"
+  },
+  "inventory": {
+    "title": "Ҳолати анбор",
+    "total": "Ҳамагӣ молҳо",
+    "toOrder": "Вақти фармоиш",
+    "healthy": "Дар меъёр",
+    "stockValue": "Арзиши захира",
+    "frozenValue": "Дар моли ҳаракатнокарда"
+  },
+  "reorder": {
+    "title": "Чиро фармоиш додан",
+    "empty": "Барои фармоиш чизе нест",
+    "inStock": "дар анбор {{count}}",
+    "daysLeft": "барои {{days}} рӯз мерасад",
+    "noVelocity": "фурӯш нест"
+  },
+  "products": {
+    "topByRevenue": "Пешсафон аз рӯи даромад",
+    "topByUnits": "Пешсафон аз рӯи миқдор",
+    "netUnits": "{{count}} дона",
+    "returned": "баргардонида"
+  },
+  "categories": {
+    "title": "Категорияҳо",
+    "empty": "Аз рӯи категорияҳо фурӯш нест",
+    "uncategorized": "Бе категория"
+  },
+  "insights": {
+    "title": "Ба чӣ диққат додан",
+    "open": "Кушодан",
+    "allClear": "Кори таъҷилӣ нест",
+    "inventory": {
+      "outOfStock": "Тамом шуд: {{count}} мол. Масалан: {{example}}",
+      "critical": "{{count}} мол захираи критикӣ дорад. {{example}} — барои {{days}} рӯз мерасад",
+      "runningOut": "{{count}} мол дар {{days}} рӯз тамом мешавад",
+      "slowMoving": "{{count}} мол қариб фурӯхта намешавад: захира зиёда аз {{days}} рӯз",
+      "noSales": "{{count}} мол дар ин давра фурӯхта нашуд",
+      "reorderList": "{{count}} молро фармоиш додан лозим аст"
+    },
+    "sales": {
+      "none": "Дар ин давра ягон фурӯш нест",
+      "declining": "Даромад {{percent}}% паст шуд — буд {{previous}}",
+      "growing": "Даромад {{percent}}% боло рафт — буд {{previous}}"
+    },
+    "debts": {
+      "overdue": "{{count}} қарз ба маблағи {{amount}} мӯҳлаташ гузаштааст",
+      "dueSoon": "{{count}} қарз ба маблағи {{amount}} дар {{days}} рӯзи оянда пӯшида шавад",
+      "noCollection": "Дар ин давра ягон пардохт ҷамъ нашуд, вале {{amount}} аз {{debtors}} қарздор пардохтнашуда мондааст"
+    },
+    "returns": {
+      "highRate": "Бозгардонидан — {{percent}}% фурӯш, ин {{amount}}",
+      "problemProduct": "{{name}}: {{units}} дона баргардонида шуд, ин {{percent}}% фурӯши он",
+      "growing": "Бозгардонидан нисбат ба давраи гузашта {{percent}}% зиёд шуд"
+    }
+  },
   "table": {
     "seller": "Фурӯшанда",
     "salesCount": "Фурӯшҳо",

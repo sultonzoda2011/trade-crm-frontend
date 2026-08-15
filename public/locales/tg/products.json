@@ -38,7 +38,11 @@
   },
   "filters": {
     "search": "Ҷустуҷӯи молҳо",
-    "category": "Категория"
+    "category": "Категория",
+    "health": "Ҳолат",
+    "reorderPriority": "Таъҷилии фармоиш",
+    "needsReorder": "Фармоиш лозим аст",
+    "period": "Давраи ҳисоб"
   },
   "unit": {
     "PCS": "дона",
@@ -47,5 +51,37 @@
     "M": "м",
     "BOX": "қуттӣ"
   },
-  "lowStock": "Дар анбор кам"
+  "lowStock": "Дар анбор кам",
+  "health": {
+    "OUT_OF_STOCK": "Мавҷуд нест",
+    "CRITICAL": "Захираи критикӣ",
+    "LOW_STOCK": "Дар анбор кам",
+    "HIGH_RETURNS": "Бозгардонидан зиёд",
+    "NO_SALES": "Фурӯш нест",
+    "SLOW_MOVING": "Суст фурӯхта мешавад",
+    "HEALTHY": "Дар меъёр"
+  },
+  "reorderPriority": {
+    "OUT_OF_STOCK": "Тамом шуд",
+    "CRITICAL": "Фавран фармоиш диҳед",
+    "WARNING": "Ба зудӣ фармоиш диҳед",
+    "OK": "Захира кифоя аст",
+    "NOT_NEEDED": "Фармоиш лозим нест"
+  },
+  "metrics": {
+    "title": "Фурӯш дар давра",
+    "unitsSold": "Фурӯхта шуд",
+    "refundedUnits": "Баргардонида шуд",
+    "netUnitsSold": "Фурӯш бе бозгардонидан",
+    "revenue": "Даромади давра",
+    "returnRate": "Ҳиссаи бозгардонида",
+    "transactionCount": "Транзаксияҳо",
+    "avgDailySales": "Фурӯш дар як рӯз",
+    "daysOfStock": "Захира бо рӯз",
+    "recommendedQuantity": "Тавсия барои фармоиш",
+    "noVelocity": "дар давра фурӯш нест",
+    "daysUnit": "{{count}} рӯз",
+    "reorderHint": "То захираи {{days}} рӯз",
+    "allTime": "Дар тамоми давр"
+  }
 }

@@ -1,24 +1,112 @@
 {
   "title": "Дашборд",
-  "stats": {
-    "totalMarkets": "Рынки",
-    "totalUsers": "Пользователи",
-    "totalDebtors": "Должники",
-    "activeDebts": "Активные долги",
-    "totalDebtAmount": "Сумма долгов",
-    "totalSaleAmount": "Продажи всего",
-    "todayTransactions": "Транзакций сегодня"
+  "tabs": {
+    "overview": "Обзор",
+    "inventory": "Склад",
+    "products": "Товары",
+    "sellers": "Продавцы"
   },
-  "recentTransactions": "Последние транзакции",
-  "topDebtors": "Крупнейшие должники",
-  "revenueTrend": "Тренд доходов (последние 30 дней)",
+  "revenueTrend": "Тренд доходов",
   "paymentTypes": "Распределение способов платежа",
-  "overdueAlerts": "Просроченные долги",
-  "activeOverdueDebts": "Должники с просроченными платежами",
-  "totalOverdue": "Сумма просроченных долгов",
   "sellersReport": "Отчёт по продавцам",
+  "stockSummary": "Сводка по складу",
+  "allMarkets": "Все рынки",
+  "allSellers": "Все продавцы",
+  "seller": "Продавец",
   "viewAll": "Смотреть все",
   "empty": "Нет данных",
+  "loadError": "Не удалось загрузить данные",
+  "charts": {
+    "revenue": "Доход",
+    "transactions": "Транзакции"
+  },
+  "comparison": {
+    "vsPrevious": "к прошлому периоду",
+    "unchanged": "без изменений",
+    "noBaseline": "не с чем сравнить"
+  },
+  "metrics": {
+    "revenue": "Чистая выручка",
+    "revenueHint": "Продажи {{sales}} · в долг {{debts}}",
+    "transactions": "Транзакции",
+    "transactionsHint": "Продаж {{sales}} · долгов {{debts}}",
+    "averageCheck": "Средний чек",
+    "unitsSold": "Продано {{count}} шт.",
+    "returns": "Возвраты",
+    "returnsHint": "{{percent}}% от продаж",
+    "discounts": "Скидки"
+  },
+  "debts": {
+    "title": "Долги",
+    "debtors": "должников: {{count}}",
+    "overdue": "Просрочено: {{count}}",
+    "dueSoon": "Срок подходит: {{count}}",
+    "outstanding": "Не оплачено всего",
+    "collected": "Собрано за период",
+    "whoToCall": "Кому звонить первым"
+  },
+  "returns": {
+    "title": "Возвраты",
+    "amount": "Сумма возвратов",
+    "rate": "Доля возвратов",
+    "units": "Единиц возвращено",
+    "unitsBack": "вернули {{count}} шт.",
+    "topProducts": "Чаще всего возвращают"
+  },
+  "inventory": {
+    "title": "Состояние склада",
+    "total": "Всего товаров",
+    "toOrder": "Пора заказать",
+    "healthy": "В норме",
+    "stockValue": "Стоимость запаса",
+    "frozenValue": "Заморожено в неликвиде"
+  },
+  "reorder": {
+    "title": "Что заказать",
+    "empty": "Заказывать нечего",
+    "inStock": "на складе {{count}}",
+    "daysLeft": "хватит на {{days}} дн.",
+    "noVelocity": "нет продаж"
+  },
+  "products": {
+    "topByRevenue": "Лидеры по выручке",
+    "topByUnits": "Лидеры по количеству",
+    "netUnits": "{{count}} шт.",
+    "returned": "возврат"
+  },
+  "categories": {
+    "title": "Категории",
+    "empty": "Нет продаж по категориям",
+    "uncategorized": "Без категории"
+  },
+  "insights": {
+    "title": "Что требует внимания",
+    "open": "Открыть",
+    "allClear": "Срочных задач нет",
+    "inventory": {
+      "outOfStock": "Закончилось товаров: {{count}}. Например: {{example}}",
+      "critical": "Критический запас у {{count}} товаров. {{example}} — хватит на {{days}} дн.",
+      "runningOut": "{{count}} товаров закончатся в течение {{days}} дней",
+      "slowMoving": "{{count}} товаров почти не продаются: запаса больше чем на {{days}} дней",
+      "noSales": "{{count}} товаров не продавались за период",
+      "reorderList": "Пора заказать {{count}} товаров"
+    },
+    "sales": {
+      "none": "За период нет ни одной продажи",
+      "declining": "Выручка упала на {{percent}}% — было {{previous}}",
+      "growing": "Выручка выросла на {{percent}}% — было {{previous}}"
+    },
+    "debts": {
+      "overdue": "Просрочено {{count}} долгов на {{amount}}",
+      "dueSoon": "{{count}} долгов на {{amount}} нужно закрыть в ближайшие {{days}} дн.",
+      "noCollection": "За период не собрано ни одного платежа, при этом не оплачено {{amount}} у {{debtors}} должников"
+    },
+    "returns": {
+      "highRate": "Возвраты — {{percent}}% продаж, это {{amount}}",
+      "problemProduct": "{{name}}: вернули {{units}} шт., это {{percent}}% продаж",
+      "growing": "Возвраты выросли на {{percent}}% к прошлому периоду"
+    }
+  },
   "table": {
     "seller": "Продавец",
     "salesCount": "Продаж",
@@ -30,11 +118,6 @@
   },
   "period": {
     "from": "С",
-    "to": "По",
-    "today": "Сегодня",
-    "week": "Неделя",
-    "month": "Месяц",
-    "year": "Год"
-  },
-  "seller": "Продавец"
+    "to": "По"
+  }
 }

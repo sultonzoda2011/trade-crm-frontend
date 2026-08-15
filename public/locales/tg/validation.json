@@ -19,5 +19,8 @@
   "itemProductRequired": "Молро интихоб кунед",
   "itemsRequired": "Ҳадди аққал як мол илова кунед",
   "dueDateRequired": "Барои намуди «Қарз» ҳатмӣ",
-  "debtorRequired": "Қарздорро интихоб кунед"
+  "debtorRequired": "Қарздорро интихоб кунед",
+  "stockExceeded": "Аз захира зиёд (дастрас {{count}})",
+  "stockUnavailable": "Захираи мол дастрас нест",
+  "paymentTypeMismatch": "Намуди пардохт барои ин намуди муомилот мувофиқ нест"
 }

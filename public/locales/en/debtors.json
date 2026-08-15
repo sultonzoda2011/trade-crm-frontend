@@ -15,5 +15,40 @@
   "totalDebt": "Current debt",
   "transactionsHistory": "Transaction history",
   "noTransactions": "No transactions yet",
-  "quickActions": "Quick Actions"
+  "quickActions": "Quick Actions",
+  "risk": {
+    "title": "Repayment risk",
+    "whyTitle": "Why this risk",
+    "HIGH": "High risk",
+    "MEDIUM": "Medium risk",
+    "LOW": "Low risk"
+  },
+  "riskFactors": {
+    "overdueShare.majority": "Most of the debt is overdue",
+    "overdueShare.some": "Part of the debt is overdue",
+    "daysOverdue.over30": "Over 30 days overdue",
+    "daysOverdue.upTo30": "Up to 30 days overdue",
+    "daysOverdue.upTo7": "Slightly overdue",
+    "size.farAboveAverage": "Debt far above the market average",
+    "size.aboveAverage": "Debt above the market average",
+    "repayment.low": "Repays less than a third of what is lent",
+    "repayment.partial": "Repays less than half of what is lent",
+    "activity.noPayments": "Has never made a payment",
+    "activity.stale": "No payments for a long time",
+    "score": "Risk score: {{count}} of 13",
+    "maxScore": "max"
+  },
+  "profile": {
+    "activeDebtCount": "Active debts",
+    "overdueAmount": "Overdue",
+    "overdueCount": "Overdue debts",
+    "totalIssued": "Total lent",
+    "totalCollected": "Total collected",
+    "repaymentRate": "Repayment rate",
+    "maxDaysOverdue": "Longest overdue",
+    "daysSinceLastPayment": "Days since last payment",
+    "lastPaymentAt": "Last payment",
+    "nextDueDate": "Next due date",
+    "never": "never"
+  }
 }

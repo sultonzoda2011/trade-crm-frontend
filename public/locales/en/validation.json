@@ -19,5 +19,8 @@
   "itemProductRequired": "Select product",
   "itemsRequired": "Add at least one item",
   "dueDateRequired": "Required for DEBT type",
-  "debtorRequired": "Debtor is required"
+  "debtorRequired": "Debtor is required",
+  "stockExceeded": "Exceeds stock ({{count}} available)",
+  "stockUnavailable": "Product stock is unavailable",
+  "paymentTypeMismatch": "Payment type is not allowed for this transaction type"
 }

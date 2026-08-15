@@ -38,7 +38,11 @@
   },
   "filters": {
     "search": "Поиск по товарам",
-    "category": "Категория"
+    "category": "Категория",
+    "health": "Состояние",
+    "reorderPriority": "Срочность закупки",
+    "needsReorder": "Нужно заказать",
+    "period": "Период расчёта"
   },
   "unit": {
     "PCS": "шт",
@@ -47,5 +51,37 @@
     "M": "м",
     "BOX": "кор"
   },
-  "lowStock": "Мало на складе"
+  "lowStock": "Мало на складе",
+  "health": {
+    "OUT_OF_STOCK": "Нет в наличии",
+    "CRITICAL": "Критический остаток",
+    "LOW_STOCK": "Мало на складе",
+    "HIGH_RETURNS": "Много возвратов",
+    "NO_SALES": "Нет продаж",
+    "SLOW_MOVING": "Плохо продаётся",
+    "HEALTHY": "В норме"
+  },
+  "reorderPriority": {
+    "OUT_OF_STOCK": "Закончился",
+    "CRITICAL": "Заказать срочно",
+    "WARNING": "Заказать скоро",
+    "OK": "Запаса хватает",
+    "NOT_NEEDED": "Заказывать не нужно"
+  },
+  "metrics": {
+    "title": "Продажи за период",
+    "unitsSold": "Продано",
+    "refundedUnits": "Возвращено",
+    "netUnitsSold": "Продано за вычетом возвратов",
+    "revenue": "Выручка за период",
+    "returnRate": "Доля возвратов",
+    "transactionCount": "Транзакций",
+    "avgDailySales": "Продаж в день",
+    "daysOfStock": "Запас в днях",
+    "recommendedQuantity": "Рекомендуем заказать",
+    "noVelocity": "нет продаж за период",
+    "daysUnit": "{{count}} дн.",
+    "reorderHint": "До запаса на {{days}} дней",
+    "allTime": "За всё время"
+  }
 }

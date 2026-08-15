@@ -45,5 +45,8 @@
   "filters": {
     "search": "Search markets"
   },
-  "noEmployees": "No employees yet"
+  "noEmployees": "No employees yet",
+  "noProducts": "No products yet",
+  "noDebtors": "No debtors yet",
+  "noTransactions": "No transactions yet"
 }

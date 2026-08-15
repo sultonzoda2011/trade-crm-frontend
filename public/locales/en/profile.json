@@ -25,6 +25,9 @@
     "transactions": "Transactions"
   },
   "noMarket": "No market assigned",
+  "noProducts": "No products yet",
+  "noDebtors": "No debtors yet",
+  "noTransactions": "No transactions yet",
   "viewAll": "All",
   "viewProducts": "All products",
   "viewDebtors": "All debtors",
@@ -39,5 +42,6 @@
   "updateSuccess": "Profile updated",
   "updateError": "Failed to update profile",
   "passwordSuccess": "Password changed",
-  "passwordError": "Failed to change password"
+  "passwordError": "Failed to change password",
+  "loadError": "Failed to load profile"
 }

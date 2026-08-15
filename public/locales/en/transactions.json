@@ -26,7 +26,8 @@
     "ACTIVE": "Active",
     "PARTIAL": "Partial",
     "PAID": "Paid",
-    "REFUNDED": "Refunded"
+    "REFUNDED": "Refunded",
+    "PARTIALLY_REFUNDED": "Partially refunded"
   },
   "fields": {
     "id": "ID",
@@ -62,7 +63,61 @@
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",
   "refundError": "Failed to create refund",
+  "refundConfirmTitle": "Refund transaction",
+  "refundConfirmDescription": "This action cannot be undone. Continue?",
+  "refundModal": {
+    "title": "Return items",
+    "description": "Choose how many units to return per line. Stock is restored and the sale total is recalculated.",
+    "mode": "What to return",
+    "modeAll": "Everything still refundable",
+    "modePartial": "Selected lines",
+    "allHint": "Every unit that has not been returned yet will be refunded.",
+    "columns": {
+      "product": "Product",
+      "sold": "Sold",
+      "alreadyRefunded": "Already returned",
+      "refundable": "Refundable",
+      "toRefund": "To return"
+    },
+    "reason": "Refund reason",
+    "reasonPlaceholder": "For example: defective, wrong size",
+    "refundTotal": "Refund total",
+    "submit": "Create refund",
+    "nothingSelected": "Select at least one line",
+    "nothingRefundable": "Nothing left to return on this transaction",
+    "exceedsRefundable": "More than refundable: max {{max}}",
+    "notPositive": "Quantity must be greater than zero"
+  },
+  "detail": {
+    "summary": "Transaction summary",
+    "timeline": "Timeline",
+    "refundHistory": "Refund history",
+    "originalSale": "Original sale",
+    "refundOfHint": "This is a refund of sale #{{id}}",
+    "noRefunds": "No refunds yet",
+    "openTransaction": "Open transaction",
+    "timelineEvent": {
+      "SALE": "Sale",
+      "DEBT": "Debt issued",
+      "PAYMENT": "Payment",
+      "REFUND": "Refund"
+    },
+    "actor": "By: {{name}}",
+    "actorUnknown": "Unknown author"
+  },
+  "summary": {
+    "totalAmount": "Sale amount",
+    "discountAmount": "Discount",
+    "paidAmount": "Paid",
+    "remainingAmount": "Remaining",
+    "refundedAmount": "Refunded",
+    "netAmount": "Net amount"
+  },
+  "fieldsRefund": {
+    "refundedQuantity": "Returned",
+    "refundableQuantity": "Refundable"
+  },
+  "remaining": "Remaining",
   "stockError": "Not enough stock available",
   "inStock": "In stock"
 }
- 

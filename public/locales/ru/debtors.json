@@ -15,5 +15,40 @@
   },
   "navigation": {
     "debtors": "Должники"
+  },
+  "risk": {
+    "title": "Риск невозврата",
+    "whyTitle": "Почему такой риск",
+    "HIGH": "Высокий риск",
+    "MEDIUM": "Средний риск",
+    "LOW": "Низкий риск"
+  },
+  "riskFactors": {
+    "overdueShare.majority": "Большая часть долга просрочена",
+    "overdueShare.some": "Часть долга просрочена",
+    "daysOverdue.over30": "Просрочка больше 30 дней",
+    "daysOverdue.upTo30": "Просрочка до 30 дней",
+    "daysOverdue.upTo7": "Небольшая просрочка",
+    "size.farAboveAverage": "Долг намного больше среднего по рынку",
+    "size.aboveAverage": "Долг выше среднего по рынку",
+    "repayment.low": "Возвращает меньше трети взятых сумм",
+    "repayment.partial": "Возвращает меньше половины взятых сумм",
+    "activity.noPayments": "Ни разу не платил",
+    "activity.stale": "Давно не было платежей",
+    "score": "Риск-счёт: {{count}} из 13",
+    "maxScore": "максимум"
+  },
+  "profile": {
+    "activeDebtCount": "Активных долгов",
+    "overdueAmount": "Просрочено",
+    "overdueCount": "Просроченных долгов",
+    "totalIssued": "Выдано всего",
+    "totalCollected": "Собрано платежами",
+    "repaymentRate": "Доля возврата",
+    "maxDaysOverdue": "Максимальная просрочка",
+    "daysSinceLastPayment": "Дней без платежа",
+    "lastPaymentAt": "Последний платёж",
+    "nextDueDate": "Следующий срок",
+    "never": "не было"
   }
 }

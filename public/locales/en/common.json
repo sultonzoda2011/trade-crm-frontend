@@ -104,13 +104,14 @@
     "approveDescription": "Are you sure you want to approve the payroll calculation ?",
     "confirm": "Confirmation",
     "areYouSure": "Are you sure you want to delete?",
-    "deleteDescription": "This action is irreversible. The student will be permanently removed from the system.",
+    "deleteDescription": "This action is irreversible. The user will be permanently removed from the system.",
     "deleteSuccess": "Deleted",
     "deleteError": "Error while deleting",
     "add": "Add",
     "settings": "Settings",
     "exclude": "Exclude",
     "back": "Back",
+    "retry": "Retry",
     "activate": "Activate",
     "toggleTheme": "Toggle theme",
     "collapse": "Collapse",
@@ -177,5 +178,23 @@
     "theme": "Theme",
     "language": "Language",
     "profile": "Profile"
+  },
+  "pages": {
+    "notFound": {
+      "title": "Page not found",
+      "description": "This page doesn't exist or has been moved.",
+      "backHome": "Back to home"
+    },
+    "forbidden": {
+      "title": "Access denied",
+      "description": "You don't have permission to view this page.",
+      "backHome": "Back to home"
+    }
+  },
+  "period": {
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year"
   }
 }

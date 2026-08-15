@@ -25,6 +25,9 @@
     "transactions": "Амалиётҳо"
   },
   "noMarket": "Бозор таъин нашудааст",
+  "noProducts": "Ҳоло молҳо нестанд",
+  "noDebtors": "Ҳоло қарздорон нестанд",
+  "noTransactions": "Ҳоло амалиётҳо нестанд",
   "viewAll": "Ҳама",
   "viewProducts": "Ҳамаи молҳо",
   "viewDebtors": "Ҳамаи қарздорон",
@@ -39,5 +42,6 @@
   "updateSuccess": "Профил нав карда шуд",
   "updateError": "Нав кардани профил муяссар нашуд",
   "passwordSuccess": "Рамз иваз карда шуд",
-  "passwordError": "Иваз кардани рамз муяссар нашуд"
+  "passwordError": "Иваз кардани рамз муяссар нашуд",
+  "loadError": "Профил бор карда нашуд"
 }

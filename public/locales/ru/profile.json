@@ -25,6 +25,9 @@
     "transactions": "Сделки"
   },
   "noMarket": "Рынок не назначен",
+  "noProducts": "Пока нет товаров",
+  "noDebtors": "Пока нет должников",
+  "noTransactions": "Пока нет сделок",
   "viewAll": "Все",
   "viewProducts": "Все товары",
   "viewDebtors": "Все должники",
@@ -39,5 +42,6 @@
   "updateSuccess": "Профиль обновлён",
   "updateError": "Не удалось обновить профиль",
   "passwordSuccess": "Пароль изменён",
-  "passwordError": "Не удалось изменить пароль"
+  "passwordError": "Не удалось изменить пароль",
+  "loadError": "Не удалось загрузить профиль"
 }

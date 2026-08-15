@@ -19,5 +19,8 @@
   "itemProductRequired": "Выберите товар",
   "itemsRequired": "Добавьте хотя бы один товар",
   "dueDateRequired": "Обязательное поле для типа «В долг»",
-  "debtorRequired": "Выберите должника"
+  "debtorRequired": "Выберите должника",
+  "stockExceeded": "Превышает остаток (доступно {{count}})",
+  "stockUnavailable": "Товар недоступен для проверки остатка",
+  "paymentTypeMismatch": "Тип оплаты не подходит для данного типа сделки"
 }
