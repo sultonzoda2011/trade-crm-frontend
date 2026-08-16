@@ -137,6 +137,7 @@ export default function CreateProductPage() {
                 control={control}
                 name="price"
                 type="number"
+                inputMode="decimal"
                 label={t('fields.price')}
                 placeholder={t('fields.price')}
                 required
@@ -145,6 +146,7 @@ export default function CreateProductPage() {
                 control={control}
                 name="quantity"
                 type="number"
+                inputMode="decimal"
                 label={t('fields.quantity')}
                 placeholder={t('fields.quantity')}
                 required
@@ -156,6 +158,7 @@ export default function CreateProductPage() {
                 control={control}
                 name="lowStockThreshold"
                 type="number"
+                inputMode="numeric"
                 label={t('fields.lowStockThreshold')}
                 placeholder={t('fields.lowStockThreshold')}
               />
