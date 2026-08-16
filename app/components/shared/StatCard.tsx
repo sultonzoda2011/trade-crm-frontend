@@ -14,25 +14,28 @@ interface StatCardProps {
 }
 export function StatCard({ icon: Icon, label, value, to, state, size = 'md', className }: StatCardProps) {
   const classes = cn(
-    'bg-muted/50 hover:bg-muted/80 flex flex-col items-center rounded-xl transition-colors',
+    // min-w-0: карточка почти всегда лежит в grid/flex-контейнере (StatRow и т.п.) —
+    // без него содержимое (длинный лейбл или крупная сумма) может распирать
+    // родительскую ячейку и вылезать за её границы вместо того чтобы аккуратно
+    // обрезаться многоточием внутри своей же карточки.
+    'bg-muted/50 hover:bg-muted/80 flex min-w-0 flex-col items-center rounded-xl transition-colors',
     size === 'md' ? 'gap-1.5 p-4' : 'gap-1 p-3',
     className
   );
   const content = (
     <>
       {' '}
-      <Icon className="text-muted-foreground size-4" />{' '}
+      <Icon className="text-muted-foreground size-4 shrink-0" />{' '}
       <span
         className={cn(
-          'text-muted-foreground font-medium tracking-wider uppercase',
+          'text-muted-foreground w-full truncate text-center font-medium tracking-wider uppercase',
           size === 'md' ? 'text-xs' : 'text-[11px]'
         )}>
         {' '}
         {label}{' '}
       </span>{' '}
-      <Badge variant="secondary" className={cn('font-mono', size === 'md' && 'text-base')}>
-        {' '}
-        {value}{' '}
+      <Badge variant="secondary" className={cn('max-w-full font-mono', size === 'md' && 'text-base')}>
+        <span className="truncate">{value}</span>
       </Badge>{' '}
     </>
   );
