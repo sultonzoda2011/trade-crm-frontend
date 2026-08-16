@@ -201,7 +201,7 @@ export default function CreateTransactionPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-6 pb-24 md:pb-8">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
@@ -215,7 +215,13 @@ export default function CreateTransactionPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t('create')}</h1>
           <p className="text-muted-foreground text-sm">{t('createSubtitle')}</p>
         </div>
-        <div className="flex gap-3">
+        {/*
+         * На телефоне это же действие продублировано в sticky-панели снизу
+         * (форма длинная, скроллить наверх к кнопке после заполнения — плохой UX).
+         * Здесь оставляем только для md+, где форма умещается в 2 колонки и
+         * кнопка сверху всегда в поле зрения.
+         */}
+        <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate('/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
@@ -274,6 +280,7 @@ export default function CreateTransactionPage() {
                         label={t('fields.quantity')}
                         name={`items.${index}.quantity`}
                         type="number"
+                        inputMode="decimal"
                         min={1}
                         placeholder={t('fields.quantity')}
                         required
@@ -283,6 +290,7 @@ export default function CreateTransactionPage() {
                         label={t('fields.discount')}
                         name={`items.${index}.discount`}
                         type="number"
+                        inputMode="decimal"
                         min={0}
                         placeholder={t('fields.discount')}
                       />
@@ -425,6 +433,33 @@ export default function CreateTransactionPage() {
           </Panel>
         </div>
       </form>
+
+      {/*
+       * Мобильная sticky-панель: итог + Cancel/Create всегда доступны, форма
+       * может быть длинной (несколько позиций товара), скроллить к кнопке
+       * наверх — плохой UX. pb учитывает safe-area (жестовая навигация Android).
+       */}
+      <div
+        className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+        <div className="mb-2 flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">{t('fields.totalAmount')}</span>
+          <span className="font-mono text-base font-semibold">{fmtTJS(calculatedTotal)}</span>
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => navigate('/transactions')}>
+            {t('actions.cancel', { ns: 'common' })}
+          </Button>
+          <Button
+            type="submit"
+            form="create-transaction-page-form"
+            className="flex-1"
+            disabled={isPending || !formState.isValid}>
+            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
+            {t('actions.create', { ns: 'common' })}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
