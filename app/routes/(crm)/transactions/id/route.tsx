@@ -102,45 +102,49 @@ export default function TransactionDetailPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="text-right">
+          {/* На узких экранах сумма остатка и кнопки не помещаются в один ряд —
+              переносим кнопки на новую строку и даём им растягиваться. */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="text-left sm:text-right">
               <p className="text-muted-foreground text-2xs">{t('fields.remainingAmount')}</p>
               <p className="text-warning font-mono text-base font-bold">{fmtTJS(transaction.remainingAmount)}</p>
             </div>
-            {can(Action.TRANSACTIONS_EDIT) && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      size="sm"
-                      onClick={() => payModal.open(transaction)}
-                      className="gap-2"
-                      disabled={transaction.remainingAmount <= 0}>
-                      <CreditCard className="size-4" />
-                      {t('pay')}
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('pay')}</TooltipContent>
-              </Tooltip>
-            )}
-            {canRefund && (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive hover:bg-destructive/10 gap-2"
-                      onClick={() => refundModal.open(transaction)}>
-                      <Undo2 className="size-4" />
-                      {t('refund')}
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('refund')}</TooltipContent>
-              </Tooltip>
-            )}
+            <div className="flex flex-1 flex-wrap justify-end gap-2 sm:flex-none">
+              {can(Action.TRANSACTIONS_EDIT) && (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        size="sm"
+                        onClick={() => payModal.open(transaction)}
+                        className="gap-2"
+                        disabled={transaction.remainingAmount <= 0}>
+                        <CreditCard className="size-4" />
+                        {t('pay')}
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="bottom">{t('pay')}</TooltipContent>
+                </Tooltip>
+              )}
+              {canRefund && (
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10 gap-2"
+                        onClick={() => refundModal.open(transaction)}>
+                        <Undo2 className="size-4" />
+                        {t('refund')}
+                      </Button>
+                    }
+                  />
+                  <TooltipContent side="bottom">{t('refund')}</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </div>
         </div>
       </Panel>

@@ -64,7 +64,12 @@ export function FileInputField({
   const hasPreview = Boolean(previewUrl);
   const showAsImage = hasPreview && acceptsImages(accept);
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
-  const compactSizeClass = size === 'compact' ? (aspectRatio === 'square' ? 'aspect-square' : 'h-20') : aspectClass;
+  // В компактном режиме квадратный превью используется как аватар — без
+  // ограничения ширины он растягивается на всю ширину родителя (например,
+  // на мобильном, где grid-колонки ещё не разделены по sm:) и превращается
+  // в огромный квадрат вместо небольшой миниатюры.
+  const compactSizeClass =
+    size === 'compact' ? (aspectRatio === 'square' ? 'aspect-square w-28' : 'h-20') : aspectClass;
 
   const fileName = value instanceof File ? value.name : typeof value === 'string' ? value.split('/').pop() : null;
 

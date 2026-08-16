@@ -50,8 +50,11 @@ export function MarketEntityTabs({
     <Tabs defaultValue={defaultValue} value={value} onValueChange={onValueChange}>
       <TabsList className="w-full">
         {tabs.map((tab) => (
-          <TabsTrigger key={tab.value} value={tab.value} className="min-w-0 flex-1">
-            <span className="truncate">{tab.label}</span>
+          // На узких экранах вкладки должны прокручиваться горизонтально с
+          // шириной по контенту — иначе 4 вкладки в ряд сжимаются до "C... 3".
+          // На sm+ хватает места, чтобы растянуть их равномерно.
+          <TabsTrigger key={tab.value} value={tab.value} className="sm:min-w-0 sm:flex-1">
+            <span>{tab.label}</span>
             <Badge variant="secondary" className={cn('shrink-0 text-xs font-normal', tab.badgeClassName)}>
               {tab.count}
             </Badge>
