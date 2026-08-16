@@ -59,6 +59,7 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <CustomInput
             type="number"
+            inputMode="decimal"
             placeholder={field.placeholderFrom ?? t('filters.from')}
             value={getValue(draft, field.keyFrom)}
             onChange={(e) => onChange(field.keyFrom, e.target.value)}
@@ -66,6 +67,7 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
           <span className="text-muted-foreground hidden text-sm sm:block">—</span>
           <CustomInput
             type="number"
+            inputMode="decimal"
             placeholder={field.placeholderTo ?? t('filters.to')}
             value={getValue(draft, field.keyTo)}
             onChange={(e) => onChange(field.keyTo, e.target.value)}
