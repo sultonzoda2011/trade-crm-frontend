@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { Panel } from '~/components/layout/Panel';
+import { StatRow } from '~/components/shared/StatRow';
 import { fmtTJS } from '~/lib/format';
 import type { PaymentTypeDistribution } from '~/types/dashboard';
 
@@ -86,7 +87,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
         </ResponsiveContainer>
       </div>
 
-      <div className="border-border mt-4 grid grid-cols-3 gap-2 border-t pt-4">
+      <StatRow className="border-border mt-4 border-t pt-4">
         {formattedData.map((item) => (
           <div key={item.type} className="text-center">
             <p className="text-xs font-medium">{item.label}</p>
@@ -94,7 +95,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
             <p className="text-muted-foreground text-xs">{item.percentage.toFixed(1)}%</p>
           </div>
         ))}
-      </div>
+      </StatRow>
     </Panel>
   );
 }
