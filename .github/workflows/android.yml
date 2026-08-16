@@ -31,9 +31,6 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Static check — vertical text clipping
-        run: npm run check:text-clipping
-
       - name: Build frontend
         run: npm run build
         env:

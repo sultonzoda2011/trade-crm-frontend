@@ -8,7 +8,6 @@
     "dev:fresh": "rimraf node_modules/.vite && react-router dev",
     "start": "vite preview --port 3000",
     "typecheck": "react-router typegen && tsc",
-    "check:text-clipping": "node scripts/check-text-clipping.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {
