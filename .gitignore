@@ -7,7 +7,6 @@
 /build/
 .claude/settings.local.json
 .kilo/
-# Capacitor
 /android/
 /ios/
 /capacitor-cache/
