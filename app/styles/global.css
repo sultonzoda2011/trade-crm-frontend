@@ -6,6 +6,21 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
+ * hover: срабатывает только там, где есть настоящий hover-указатель (мышь/трекпад).
+ * По умолчанию Tailwind триггерит hover: по чистому :hover, из-за чего на тач-экранах
+ * (телефон в Capacitor-обёртке) после тапа стили "залипают" до следующего тапа мимо.
+ * Переопределяем один раз глобально — это чинит все hover: классы во всех 104
+ * компонентах сразу, без правки каждого файла отдельно.
+ */
+@custom-variant hover {
+  @media (hover: hover) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+/*
  * Статические токены, не зависящие от :root/.dark (шрифты, доп. размеры текста).
  * Цвета/радиусы/тени объявлены один раз ниже, во втором @theme inline —
  * раньше здесь было ДВА конфликтующих блока: --radius-sm/md/lg/xl считались
@@ -17,9 +32,57 @@
     'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
 
-  /* Smallest legal text size — use instead of text-[9px]/text-[10px] */
+  /*
+   * Единая типографическая шкала. Раньше по компонентам были точечные
+   * text-[11px]/text-[13px]/text-[0.8rem] и т.п. — теперь одна шкала на весь
+   * проект (text-2xs...text-3xl), новые точечные размеры добавлять сюда,
+   * а не через text-[Npx] в разметке.
+   */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.875rem;
+  --text-3xl--line-height: 2.25rem;
+}
+/* Радиусы уже покрыты готовой шкалой --radius-sm/md/lg/xl/2xl/3xl/4xl ниже
+ * в этом файле (используется, например, в app/components/ui/button.tsx) —
+ * отдельную шкалу заводить не нужно. */
+
+/*
+ * Touch-таргеты: на устройствах без точного указателя (палец, не мышь) увеличиваем
+ * минимальную область тапа интерактивных элементов до 44px (Apple HIG / Material
+ * рекомендация), не трогая визуальные размеры на десктопе. Работает по data-slot,
+ * который уже проставлен во всех компонентах ui-кита — правка одним местом.
+ */
+@media (pointer: coarse) {
+  [data-slot='button'],
+  [data-slot='select-trigger'],
+  [data-slot='input'],
+  [data-slot='textarea'],
+  [data-slot='switch'],
+  [data-slot='radio'],
+  [data-slot='sidebar-menu-button'],
+  [data-slot='dropdown-menu-item'],
+  [data-slot='select-item'],
+  [data-slot='tabs-trigger'] {
+    min-height: 2.75rem; /* 44px */
+  }
+
+  [data-slot='checkbox'] {
+    min-height: 1.375rem;
+    min-width: 1.375rem;
+  }
 }
 
 :root {
