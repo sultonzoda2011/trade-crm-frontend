@@ -3,6 +3,7 @@ import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { EmptyState } from '~/components/shared/EmptyState';
+import { useIsMobile } from '~/hooks/use-mobile';
 import {
   Pagination,
   PaginationContent,
@@ -143,6 +144,89 @@ export function DataTable<TData>({
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const visibleColumns = table.getVisibleLeafColumns();
+  const isMobile = useIsMobile();
+
+  // Первая колонка обычно чекбокс/аватар без заголовка, последняя — действия
+  // (пиновая, pinLastColumn) — их в карточке не показываем отдельной строкой,
+  // они уже есть как заголовок карточки/кнопка действий.
+  const cardColumns = visibleColumns.filter((col) => {
+    const header = col.columnDef.header;
+    return typeof header === 'string' ? header.trim().length > 0 : true;
+  });
+
+  if (isMobile) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-2">
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto transition-opacity duration-200',
+            isFetching && !isLoading && 'pointer-events-none opacity-60'
+          )}>
+          {isLoading ? (
+            Array.from({ length: Math.min(limit, 6) }).map((_, i) => (
+              <Skeleton key={i} className="h-24 w-full shrink-0 rounded-xl" />
+            ))
+          ) : isError ? (
+            <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
+              <AlertCircle className="text-destructive h-8 w-8" />
+              <p className="text-sm">{t('table.error')}</p>
+            </div>
+          ) : table.getRowModel().rows.length === 0 ? (
+            <EmptyState />
+          ) : (
+            table.getRowModel().rows.map((row) => {
+              const cells = row.getVisibleCells().filter((cell) => cardColumns.includes(cell.column));
+              const lastCell = pinLastColumn ? row.getVisibleCells().at(-1) : undefined;
+              return (
+                <div
+                  key={row.id}
+                  onClick={() => onRowClick?.(row)}
+                  className={cn(
+                    'bg-card min-h-11 shrink-0 space-y-2 rounded-xl border p-3',
+                    onRowClick && 'cursor-pointer active:bg-muted/50',
+                    getRowClassName?.(row)
+                  )}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1 space-y-1.5">
+                      {cells
+                        .filter((cell) => !(lastCell && cell.id === lastCell.id))
+                        .map((cell) => {
+                          const header = cell.column.columnDef.header;
+                          const label = typeof header === 'string' ? header : undefined;
+                          return (
+                            <div key={cell.id} className="flex items-baseline justify-between gap-3 text-sm">
+                              {label && <span className="text-muted-foreground shrink-0 text-xs">{label}</span>}
+                              <span className="min-w-0 truncate text-right">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </span>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    {lastCell && (
+                      <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                        {flexRender(lastCell.column.columnDef.cell, lastCell.getContext())}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+        {onPageChange && onLimitChange && (
+          <PageControls
+            page={page}
+            limit={limit}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+            onLimitChange={onLimitChange}
+            t={t}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
