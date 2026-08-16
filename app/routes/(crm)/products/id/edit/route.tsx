@@ -9,6 +9,7 @@ import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { FormGrid } from '~/components/shared/FormGrid';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
@@ -144,7 +145,7 @@ export default function EditProductPage() {
 
         <Panel className="p-6">
           <form id="edit-product-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <FormGrid>
               <FormInput
                 control={control}
                 name="name"
@@ -160,8 +161,8 @@ export default function EditProductPage() {
                 options={categoryOptions}
                 isClearable
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            </FormGrid>
+            <FormGrid>
               <FormInput
                 control={control}
                 name="price"
@@ -178,8 +179,8 @@ export default function EditProductPage() {
                 placeholder={t('fields.quantity')}
                 required
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            </FormGrid>
+            <FormGrid>
               <FormCustomSelect control={control} name="unit" label={t('fields.unit')} options={unitOptions} />
               <FormInput
                 control={control}
@@ -188,7 +189,7 @@ export default function EditProductPage() {
                 label={t('fields.lowStockThreshold')}
                 placeholder={t('fields.lowStockThreshold')}
               />
-            </div>
+            </FormGrid>
             <FormTextarea
               control={control}
               name="description"
