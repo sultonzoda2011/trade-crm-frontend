@@ -86,6 +86,7 @@ export function CreatePaymentModal() {
           control={control}
           name="amount"
           type="number"
+          inputMode="decimal"
           label={t('fields.amount')}
           placeholder={t('fields.amount')}
           required
