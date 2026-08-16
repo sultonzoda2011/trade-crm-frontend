@@ -13,6 +13,7 @@ import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { Panel } from '~/components/layout/Panel';
+import { FormGrid } from '~/components/shared/FormGrid';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { createProductSchema, type CreateProductSchema } from '~/validations/product';
@@ -114,7 +115,7 @@ export default function CreateProductPage() {
 
         <Panel className="p-6">
           <form id="create-product-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <FormGrid>
               <FormInput
                 control={control}
                 name="name"
@@ -130,8 +131,8 @@ export default function CreateProductPage() {
                 options={categoryOptions}
                 isClearable
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            </FormGrid>
+            <FormGrid>
               <FormInput
                 control={control}
                 name="price"
@@ -148,8 +149,8 @@ export default function CreateProductPage() {
                 placeholder={t('fields.quantity')}
                 required
               />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
+            </FormGrid>
+            <FormGrid>
               <FormCustomSelect control={control} name="unit" label={t('fields.unit')} options={unitOptions} />
               <FormInput
                 control={control}
@@ -158,7 +159,7 @@ export default function CreateProductPage() {
                 label={t('fields.lowStockThreshold')}
                 placeholder={t('fields.lowStockThreshold')}
               />
-            </div>
+            </FormGrid>
             <FormTextarea
               control={control}
               name="description"
