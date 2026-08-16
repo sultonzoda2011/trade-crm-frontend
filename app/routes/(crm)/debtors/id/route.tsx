@@ -84,6 +84,12 @@ export default function DebtorDetailPage() {
           subtitle={debtor.phone}
           actions={
             <>
+              <div className="text-left sm:text-right">
+                <p className="text-muted-foreground text-xs">{t('totalDebt')}</p>
+                <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
+                  {fmtTJS(totalDebt)}
+                </p>
+              </div>
               {can(Action.DEBTORS_EDIT) && (
                 <Tooltip>
                   <TooltipTrigger
@@ -97,12 +103,6 @@ export default function DebtorDetailPage() {
                   <TooltipContent side="bottom">{t('actions.edit', { ns: 'common' })}</TooltipContent>
                 </Tooltip>
               )}
-              <div className="text-right">
-                <p className="text-muted-foreground text-xs">{t('totalDebt')}</p>
-                <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
-                  {fmtTJS(totalDebt)}
-                </p>
-              </div>
             </>
           }
         />

@@ -108,7 +108,7 @@ export default function EditProductPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-6 pb-24 md:pb-8">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard'), link: '/' },
@@ -120,7 +120,8 @@ export default function EditProductPage() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{t('actions.edit')}</h1>
-        <div className="flex gap-3">
+        {/* На телефоне действия продублированы в sticky-панели снизу, здесь только для md+. */}
+        <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
           </Button>
@@ -202,6 +203,20 @@ export default function EditProductPage() {
             />
           </form>
         </Panel>
+      </div>
+
+      <div
+        className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => navigate(`/products/${id}`)}>
+            {t('actions.cancel')}
+          </Button>
+          <Button type="submit" form="edit-product-page-form" className="flex-1" disabled={isPending}>
+            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
+            {t('actions.save')}
+          </Button>
+        </div>
       </div>
     </div>
   );

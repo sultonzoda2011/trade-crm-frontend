@@ -13,23 +13,25 @@ interface DetailHeaderProps {
 
 export function DetailHeader({ name, subtitle, image, badges, actions, className }: DetailHeaderProps) {
   return (
-    <div className={cn('flex items-center justify-between gap-5', className)}>
-      <div className="flex min-w-0 items-center gap-5">
-        <Avatar className="size-16 shrink-0 rounded-xl">
+    <div className={cn('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5', className)}>
+      <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+        <Avatar className="size-12 shrink-0 rounded-xl sm:size-16">
           {image ? <AvatarImage src={image} alt={name} className="object-cover" /> : null}
-          <AvatarFallback className="bg-muted rounded-xl text-2xl font-semibold">
+          <AvatarFallback className="bg-muted rounded-xl text-xl font-semibold sm:text-2xl">
             {name.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div className="flex min-w-0 flex-col gap-1.5">
-          <div className="flex items-center gap-3">
-            <h1 className="truncate text-2xl font-bold tracking-tight">{name}</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">{name}</h1>
             {badges}
           </div>
           {subtitle && <p className="text-muted-foreground truncate text-sm">{subtitle}</p>}
         </div>
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-4">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-3 sm:shrink-0 sm:flex-nowrap sm:gap-4">{actions}</div>
+      )}
     </div>
   );
 }

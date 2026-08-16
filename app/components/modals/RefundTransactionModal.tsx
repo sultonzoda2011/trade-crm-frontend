@@ -117,19 +117,20 @@ export function RefundTransactionModal() {
       title={t('refundModal.title')}
       className="sm:max-w-2xl"
       footer={
-        <div className="flex w-full items-center justify-between gap-3">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm">
             <span className="text-muted-foreground">{t('refundModal.refundTotal')}: </span>
             <span className="text-destructive font-mono font-bold">{fmtTJS(refundTotal)}</span>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={refundModal.close}>
+            <Button variant="outline" className="flex-1 sm:flex-initial" onClick={refundModal.close}>
               {t('actions.cancel', { ns: 'common' })}
             </Button>
             <Button
               type="submit"
               form="refund-transaction-form"
               variant="destructive"
+              className="flex-1 sm:flex-initial"
               disabled={isPending || refundableItems.length === 0}>
               {t('refundModal.submit')}
             </Button>
