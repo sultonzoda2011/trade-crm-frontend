@@ -191,6 +191,15 @@ export function DataTable<TData>({
                       {cells
                         .filter((cell) => !(lastCell && cell.id === lastCell.id))
                         .map((cell) => {
+                          // Для колонок-аксессоров с пустым значением (например,
+                          // "Должник" у сделки без должника) не показываем строку
+                          // вовсе — иначе на карточке остаётся лейбл без значения,
+                          // который выглядит как незаполненные/битые данные.
+                          const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
+                          if (accessorKey) {
+                            const raw = cell.getValue();
+                            if (raw === null || raw === undefined || raw === '') return null;
+                          }
                           const header = cell.column.columnDef.header;
                           const label = typeof header === 'string' ? header : undefined;
                           return (

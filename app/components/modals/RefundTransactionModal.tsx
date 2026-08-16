@@ -163,7 +163,54 @@ export function RefundTransactionModal() {
             )}
           />
 
-          <div className="overflow-x-auto rounded-lg border">
+          {/* Таблица не помещается по ширине на телефоне (5 колонок) — под md
+              показываем те же данные карточками, таблица остаётся с md. */}
+          <div className="space-y-2 md:hidden">
+            {refundableItems.map((item, index) => (
+              <div key={item.id} className="space-y-2 rounded-lg border p-3">
+                <p className="text-sm font-medium">{item.productName || item.product?.name}</p>
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div>
+                    <p className="text-muted-foreground">{t('refundModal.columns.sold')}</p>
+                    <p className="font-mono font-semibold">{item.quantity}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">{t('refundModal.columns.alreadyRefunded')}</p>
+                    <p className="text-muted-foreground font-mono font-semibold">{item.refundedQuantity}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">{t('refundModal.columns.refundable')}</p>
+                    <p className="text-success font-mono font-semibold">{item.refundableQuantity}</p>
+                  </div>
+                </div>
+                {mode === 'PARTIAL' && (
+                  <Controller
+                    control={control}
+                    name={`items.${index}.quantity`}
+                    render={({ field, fieldState }) => (
+                      <div className="flex flex-col gap-1">
+                        <Label className="text-xs">{t('refundModal.columns.toRefund')}</Label>
+                        <CustomInput
+                          type="number"
+                          inputMode="numeric"
+                          min={0}
+                          max={item.refundableQuantity}
+                          aria-invalid={!!fieldState.error}
+                          aria-label={`${item.productName} — ${t('refundModal.columns.toRefund')}`}
+                          {...field}
+                          value={field.value ?? ''}
+                          onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
+                        />
+                        {fieldState.error && <p className="text-destructive text-2xs">{fieldState.error.message}</p>}
+                      </div>
+                    )}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto rounded-lg border md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-muted-foreground bg-sidebar border-b text-xs uppercase">
                 <tr>
