@@ -19,6 +19,7 @@ import { ListLink } from '~/components/shared/ListLink';
 import { MarketEntityTabs, type EntityTab } from '~/components/shared/MarketEntityTabs';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
+import { StatRow } from '~/components/shared/StatRow';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -271,7 +272,7 @@ export default function ProfilePage() {
                   subInfo={market.owner.email}
                   imagePath={market.owner.image ?? undefined}
                 />
-                <div className="grid grid-cols-3 gap-3">
+                <StatRow>
                   <StatCard
                     size="sm"
                     icon={Package}
@@ -296,7 +297,7 @@ export default function ProfilePage() {
                     to="/transactions"
                     state={fromState}
                   />
-                </div>
+                </StatRow>
                 <Button
                   variant="outline"
                   className="w-full"
