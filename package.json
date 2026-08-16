@@ -7,7 +7,9 @@
     "dev": "react-router dev",
     "dev:fresh": "rimraf node_modules/.vite && react-router dev",
     "start": "vite preview --port 3000",
-    "typecheck": "react-router typegen && tsc"
+    "typecheck": "react-router typegen && tsc",
+    "check:text-clipping": "node scripts/check-text-clipping.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -57,7 +59,9 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.5.0",
+    "@playwright/test": "^1.62.1",
     "@react-router/dev": "7.13.2",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/devtools-vite": "^0.7.0",
