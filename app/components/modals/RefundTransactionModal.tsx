@@ -195,6 +195,7 @@ export function RefundTransactionModal() {
                             <div className="flex flex-col items-end gap-1">
                               <CustomInput
                                 type="number"
+                                inputMode="numeric"
                                 min={0}
                                 max={item.refundableQuantity}
                                 className="w-24 text-right"
