@@ -26,6 +26,8 @@ import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { getQueryClient } from '~/lib/query-client';
 import { setNavigate } from '~/lib/navigation';
 import { useIsMobile } from '~/hooks/use-mobile';
+import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
+import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -76,7 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <title>Trade CRM</title>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <Meta />
         <Links />
       </head>
@@ -84,6 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Splash locale={locale} />
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
+            <CapacitorBridge />
             <NavigationProgress />
             <TooltipProvider>{children}</TooltipProvider>
             <ToasterProvider />
@@ -169,6 +172,13 @@ function ToasterProvider() {
       position={isMobile ? 'top-center' : 'bottom-right'}
     />
   );
+}
+
+function CapacitorBridge() {
+  const { resolvedTheme } = useTheme();
+  useCapacitorBackButton();
+  useCapacitorStatusBar(resolvedTheme);
+  return null;
 }
 
 export default function App() {
