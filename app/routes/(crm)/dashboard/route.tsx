@@ -8,11 +8,10 @@ import {
   ShoppingCart,
   Undo2,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useOutletContext } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
-import { sellersApi } from '~/api/sellers';
 import { CategoryPerformance } from '~/components/dashboard/CategoryPerformance';
 import { InsightList } from '~/components/dashboard/InsightList';
 import { InventoryHealth, ReorderList } from '~/components/dashboard/InventoryHealth';
@@ -22,15 +21,12 @@ import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistribu
 import { ReturnsPanel } from '~/components/dashboard/ReturnsPanel';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
-import { CustomSelect } from '~/components/shared/CustomSelect';
 import { Button } from '~/components/ui/button';
-import { Label } from '~/components/ui/label';
 import { Skeleton } from '~/components/ui/skeleton';
-import { PERIOD_OPTIONS } from '~/config/period';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { mapToOptions } from '~/lib/mapToOptions';
 import type { ProductLeaderRow } from '~/types/dashboard';
+import type { DashboardFilters } from './layout';
 
 /**
  * Топ товаров периода: чистые единицы и чистая выручка, уже за вычетом
@@ -88,19 +84,7 @@ function TopProducts({ products, title }: { products: ProductLeaderRow[]; title:
 export default function DashboardRoute() {
   const { t } = useTranslation(['dashboard', 'common']);
   const { user } = useCan();
-  const [period, setPeriod] = useState('month');
-  const [sellerId, setSellerId] = useState<string | undefined>(undefined);
-
-  const { data: sellersResponse } = useQuery({
-    queryKey: ['sellers', 'list'],
-    queryFn: () => sellersApi.getAll(1, 100, {}, []),
-    staleTime: 60_000,
-  });
-
-  const sellerOptions = useMemo(
-    () => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'),
-    [sellersResponse]
-  );
+  const { period, sellerId } = useOutletContext<DashboardFilters>();
 
   const params = useMemo(() => {
     const p: DashboardParams = {};
@@ -150,36 +134,12 @@ export default function DashboardRoute() {
 
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t('title')}</h1>
-          {/* Какой именно отрезок сейчас на экране — иначе сравнение «с прошлым
-              периодом» невозможно прочитать однозначно. */}
-          <p className="text-muted-foreground text-xs">
-            {formatDate(range.current.gte)} — {formatDate(range.current.lte)}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Label className="text-xs">{t('period.from')}</Label>
-            <CustomSelect
-              options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
-              value={period}
-              onChange={(v) => setPeriod(v ? String(v) : '')}
-            />
-          </div>
-          {/* Владелец смотрит по продавцам, продавец видит только свой рынок —
-              список продавцов приходит уже отфильтрованным по market scope. */}
-          <div className="flex items-center gap-2">
-            <Label className="text-xs">{t('seller')}</Label>
-            <CustomSelect
-              options={[{ value: '', label: t('allSellers') }, ...sellerOptions]}
-              value={sellerId ?? ''}
-              onChange={(v) => setSellerId(v ? String(v) : undefined)}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Какой именно отрезок сейчас на экране — иначе сравнение «с прошлым
+          периодом» невозможно прочитать однозначно. Период/продавец уже
+          выбираются в шапке дашборда (DashboardLayout), здесь только диапазон дат. */}
+      <p className="text-muted-foreground text-xs">
+        {formatDate(range.current.gte)} — {formatDate(range.current.lte)}
+      </p>
 
       <InsightList insights={insights} />
 
