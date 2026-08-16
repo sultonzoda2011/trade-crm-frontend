@@ -13,6 +13,7 @@ import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
+import { StatRow } from '~/components/shared/StatRow';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { ListLink } from '~/components/shared/ListLink';
 import { MarketEntityTabs } from '~/components/shared/MarketEntityTabs';
@@ -149,7 +150,7 @@ export default function MyMarketPage() {
             ) : undefined
           }
         />
-        <div className="border-border mt-3 grid grid-cols-3 gap-2 border-t pt-2.5">
+        <StatRow className="border-border mt-3 border-t pt-2.5">
           <StatCard
             size="sm"
             className="bg-background/50 hover:bg-background/80"
@@ -177,7 +178,7 @@ export default function MyMarketPage() {
             to="/transactions"
             state={filterState}
           />
-        </div>
+        </StatRow>
       </Panel>
 
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
