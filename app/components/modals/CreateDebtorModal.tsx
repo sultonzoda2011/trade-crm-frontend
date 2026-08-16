@@ -60,7 +60,7 @@ export function CreateDebtorModal() {
           placeholder={t('fields.fullName')}
           required
         />
-        <FormInput control={control} name="phone" label={t('fields.phone')} placeholder={t('fields.phone')} required />
+        <FormInput control={control} name="phone" type="tel" inputMode="tel" label={t('fields.phone')} placeholder={t('fields.phone')} required />
       </form>
     </Modal>
   );
