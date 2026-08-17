@@ -35,6 +35,10 @@
     "serviceUnavailable": "Service unavailable",
     "unknown": "Unknown error ({{status}})"
   },
+  "offline": {
+    "banner": "No internet connection — showing saved data",
+    "restored": "Connection restored"
+  },
   "table": {
     "columns": "Columns",
     "columnVisibility": "Column visibility",
