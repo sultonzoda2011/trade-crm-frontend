@@ -18,7 +18,7 @@ export function StatCard({ icon: Icon, label, value, to, state, size = 'md', cla
     // без него содержимое (длинный лейбл или крупная сумма) может распирать
     // родительскую ячейку и вылезать за её границы вместо того чтобы аккуратно
     // обрезаться многоточием внутри своей же карточки.
-    'bg-muted/50 hover:bg-muted/80 flex min-w-0 flex-col items-center rounded-xl transition-colors',
+    'bg-background/50 hover:bg-background/80 flex min-w-0 flex-col items-center rounded-xl transition-colors',
     size === 'md' ? 'gap-1.5 p-4' : 'gap-1 p-3',
     className
   );
