@@ -12,7 +12,7 @@ import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { canAccess } from '~/config/permissions';
 import { useForm } from '~/hooks/useForm';
-import { getClientUser, setUserCookie, type UserInfo } from '~/lib/auth-utils';
+import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils';
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
@@ -52,8 +52,9 @@ export default function LoginPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: authApi.login,
     onSuccess: (response) => {
-      // accessToken теперь устанавливается бэкендом в httpOnly cookie — не трогаем js-cookie
-      // Сохраняем user info в не-httpOnly cookie для RBAC на клиенте
+      // Бэкенд возвращает accessToken в теле ответа — сохраняем сами
+      // и дальше отправляем как Authorization: Bearer <token>.
+      setAccessToken(response.data.accessToken);
       const user: UserInfo = {
         id: response.data.user.id,
         name: response.data.user.name,
@@ -62,7 +63,7 @@ export default function LoginPage() {
         marketId: response.data.user.marketId ?? '',
         image: null,
       };
-      setUserCookie(user);
+      setUserInfo(user);
       toast.success(t('loginSuccess'));
       const redirectTo = searchParams.get('redirectTo') || '/';
 
