@@ -1,14 +1,10 @@
 import { Role } from '~/types/common';
 
 /**
- * Приложение работает в SPA-режиме (`ssr: false`), поэтому здесь НЕТ функций,
- * читающих cookie из `Request.headers` — на клиенте такой заголовок недоступен.
- * Единственный источник личности на клиенте — не-httpOnly cookie `user`,
- * который выставляет бэкенд при login.
- *
- * `accessToken` httpOnly и из JS не читается: срок жизни
- * токена не проверяется заранее — при 401 запрос просто завершится
- * ошибкой и произойдёт редирект на `/login`.
+ * Аутентификация на Bearer-токене: бэкенд возвращает accessToken в теле
+ * ответа `/auth/login`, клиент хранит его сам (cookie `accessToken`,
+ * не-httpOnly — из JS его читает request interceptor) и отправляет дальше
+ * в заголовке `Authorization: Bearer <token>`.
  */
 
 export interface UserInfo {
@@ -20,45 +16,89 @@ export interface UserInfo {
 	image: string | null;
 }
 
-/** Имя cookie для данных пользователя (не httpOnly — доступен в JS для RBAC) */
-const USER_COOKIE = 'user';
+const TOKEN_KEY = 'accessToken';
+const USER_KEY = 'user';
+const TOKEN_MAX_AGE = 15 * 60; // 15 минут — совпадает с TTL токена
+const USER_MAX_AGE = 30 * 24 * 60 * 60; // 30 дней
 
-/** Читает user info из не-httpOnly cookie (для клиентского JS) */
-export const getUserFromCookie = (): UserInfo | null => {
+/** Флаги cookie: https → secure + strict, иначе только samesite=lax */
+const cookieFlags = (maxAge: number): string => {
+	const isProduction = typeof window !== 'undefined' && window.location.protocol === 'https:';
+	return `path=/; max-age=${maxAge}; ${isProduction ? 'secure; samesite=strict' : 'samesite=lax'}`;
+};
+
+/** Читает значение cookie по имени */
+const getCookie = (name: string): string | null => {
+	if (typeof document === 'undefined') return null;
+	const match = document.cookie.split('; ').find((c) => c.startsWith(`${name}=`));
+	if (!match) return null;
 	try {
-		const cookies = document.cookie.split('; ').reduce((acc, c) => {
-			const [k, v] = c.split('=');
-			acc[k] = decodeURIComponent(v);
-			return acc;
-		}, {} as Record<string, string>);
-		const userStr = cookies[USER_COOKIE];
-		if (!userStr) return null;
-		return JSON.parse(userStr);
+		return decodeURIComponent(match.slice(name.length + 1));
 	} catch {
 		return null;
 	}
 };
 
-/** Сохраняет user info в не-httpOnly cookie (для RBAC на клиенте) */
-export const setUserCookie = (user: UserInfo): void => {
-	const isProduction = window.location.protocol === 'https:';
-	document.cookie = `${USER_COOKIE}=${encodeURIComponent(JSON.stringify(user))}; path=/; max-age=${30 * 24 * 60 * 60}; ${isProduction ? 'secure; samesite=strict' : 'samesite=lax'}`;
+/** Удаляет cookie по имени */
+const removeCookie = (name: string): void => {
+	if (typeof document === 'undefined') return;
+	document.cookie = `${name}=; path=/; max-age=0`;
 };
 
-/** Удаляет user cookie */
-export const removeUserCookie = (): void => {
-	const isProduction = window.location.protocol === 'https:';
-	document.cookie = `${USER_COOKIE}=; path=/; max-age=0; ${isProduction ? 'secure; samesite=strict' : 'samesite=lax'}`;
+/** Сохраняет access-токен (cookie) */
+export const setAccessToken = (token: string): void => {
+	if (typeof document === 'undefined') return;
+	document.cookie = `${TOKEN_KEY}=${encodeURIComponent(token)}; ${cookieFlags(TOKEN_MAX_AGE)}`;
+};
+
+/** Читает access-токен */
+export const getAccessToken = (): string | null => {
+	return getCookie(TOKEN_KEY);
+};
+
+/** Удаляет access-токен */
+export const removeAccessToken = (): void => {
+	removeCookie(TOKEN_KEY);
+};
+
+/** Сохраняет user info (для RBAC на клиенте) */
+export const setUserInfo = (user: UserInfo): void => {
+	if (typeof document === 'undefined') return;
+	document.cookie = `${USER_KEY}=${encodeURIComponent(JSON.stringify(user))}; ${cookieFlags(USER_MAX_AGE)}`;
+};
+
+/** Читает user info из cookie */
+export const getUserInfo = (): UserInfo | null => {
+	try {
+		const raw = getCookie(USER_KEY);
+		if (!raw) return null;
+		return JSON.parse(raw);
+	} catch {
+		return null;
+	}
+};
+
+/** Удаляет user info */
+export const removeUserInfo = (): void => {
+	removeCookie(USER_KEY);
+};
+
+/** Очищает всё, что относится к сессии (токен + user info) */
+export const clearSession = (): void => {
+	removeAccessToken();
+	removeUserInfo();
 };
 
 const VALID_ROLES: Role[] = [Role.Admin, Role.Owner, Role.Seller];
 
 /**
  * Клиентская версия для проверки авторизации (используется в хуках/компонентах).
- * Читает user info из не-httpOnly cookie.
+ * Считается авторизованным, только если есть и токен, и валидный user info.
  */
 export function getClientUser(): UserInfo | null {
-	const user = getUserFromCookie();
+	const token = getAccessToken();
+	if (!token) return null;
+	const user = getUserInfo();
 	if (!user || !VALID_ROLES.includes(user.role)) {
 		return null;
 	}
