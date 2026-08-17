@@ -5,15 +5,15 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { MarketCard } from '~/components/shared/MarketCard';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { StatCard } from '~/components/shared/StatCard';
-import { Badge } from '~/components/ui/badge';
+import { StatCard } from '~/components/shared/StatCard'
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
@@ -132,7 +132,7 @@ export default function ProductDetailPage() {
                   </span>
                 }
               />
-              <InfoItem label={t('fields.unit')} value={t(`unit.${product.unit}`)} />
+
               <InfoItem
                 label={t('fields.lowStockThreshold')}
                 value={`${product.lowStockThreshold} ${t(`unit.${product.unit}`)}`}
@@ -160,9 +160,11 @@ export default function ProductDetailPage() {
           </Panel>
 
           <Panel title={t('statistics')}>
-            <div className="grid grid-cols-1 gap-4">
-              <StatCard icon={Package} label={t('fields.transactionItems')} value={product._count.transactionItems} />
-            </div>
+            <Link to={`/transactions?productId=${product.id}`}>
+              <div className="grid grid-cols-1 gap-4">
+                <StatCard icon={Package} label={t('fields.transactionItems')} value={product._count.transactionItems} />
+              </div>
+            </Link>
           </Panel>
         </div>
 
