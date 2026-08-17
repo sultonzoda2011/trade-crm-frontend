@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { ROLE_CONFIG } from '~/config/enumOptions';
-import { getClientUser, removeUserCookie } from '~/lib/auth-utils';
+import { clearSession, getClientUser } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский' },
@@ -37,8 +37,8 @@ export function UserNav() {
   };
 
   const handleLogout = () => {
-     
-        (removeUserCookie(), navigate('/login'));
+    clearSession();
+    navigate('/login');
   };
 
   const initials = userInfo?.name
