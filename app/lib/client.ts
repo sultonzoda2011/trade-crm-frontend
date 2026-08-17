@@ -3,13 +3,13 @@ import axios from 'axios';
 import i18next from 'i18next';
 import { toast } from 'sonner';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
-import { getClientUser } from '~/lib/auth-utils';
+import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
+import { redirectToLogin } from '~/lib/navigation';
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
 export const apiClient = axios.create({
   baseURL,
-  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -98,12 +98,12 @@ function canAccessApi(action: Action): boolean {
   return allowedRoles?.includes(user.role) ?? false;
 }
 
-// accessToken устанавливается бэкендом в httpOnly cookie — не трогаем js-cookie
-
 // ---------- request interceptor ----------
 apiClient.interceptors.request.use((config) => {
-  // accessToken теперь в httpOnly cookie — отправляется автоматически с withCredentials: true
-  // Не добавляем Authorization 헤더 вручную
+  const token = getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
 
   const urlPath = config.url || '';
   const method = (config.method || 'get') as Method;
@@ -132,6 +132,12 @@ apiClient.interceptors.response.use(
 
     if (!error.response) {
       toast.error(i18next.t('errors.noConnection', { ns: 'common' }));
+      return Promise.reject(error);
+    }
+
+    if (status === 401) {
+      clearSession();
+      redirectToLogin();
       return Promise.reject(error);
     }
 
