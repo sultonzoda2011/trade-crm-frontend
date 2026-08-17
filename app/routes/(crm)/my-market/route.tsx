@@ -153,7 +153,7 @@ export default function MyMarketPage() {
         <StatRow className="border-border mt-3 border-t pt-2.5">
           <StatCard
             size="sm"
-            className="bg-background/50 hover:bg-background/80"
+            
             icon={Package}
             label={t('fields.products')}
             value={market.count.products}
@@ -162,7 +162,7 @@ export default function MyMarketPage() {
           />
           <StatCard
             size="sm"
-            className="bg-background/50 hover:bg-background/80"
+            
             icon={Users}
             label={t('fields.debtors')}
             value={market.count.debtors}
@@ -172,7 +172,7 @@ export default function MyMarketPage() {
           <StatCard
             size="sm"
             icon={ReceiptText}
-            className="bg-background/50 hover:bg-background/80"
+            
             label={t('fields.transactions')}
             value={market.count.transactions}
             to="/transactions"
