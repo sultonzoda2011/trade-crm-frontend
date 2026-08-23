@@ -11,13 +11,15 @@ import { InfoLink } from '~/components/shared/InfoLink';
 import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { StatCard } from '~/components/shared/StatCard'
+import { StatCard } from '~/components/shared/StatCard';
+import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
+import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
 
@@ -77,6 +79,16 @@ export default function ProductDetailPage() {
               {isLowStock && (
                 <Badge variant="destructive" className="font-normal">
                   {t('lowStock')}
+                </Badge>
+              )}
+              {product.metrics?.health && (
+                <Badge variant="outline" className={PRODUCT_HEALTH_BADGE[product.metrics.health]}>
+                  {t(`health.${product.metrics.health}`)}
+                </Badge>
+              )}
+              {product.metrics?.reorderPriority && product.metrics.reorderPriority !== 'NOT_NEEDED' && (
+                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]}>
+                  {t(`reorderPriority.${product.metrics.reorderPriority}`)}
                 </Badge>
               )}
             </>
@@ -159,12 +171,67 @@ export default function ProductDetailPage() {
             </div>
           </Panel>
 
-          <Panel title={t('statistics')}>
-            <Link to={`/transactions?productId=${product.id}`}>
-              <div className="grid grid-cols-1 gap-4">
-                <StatCard icon={Package} label={t('fields.transactionItems')} value={product._count.transactionItems} />
-              </div>
-            </Link>
+          <Panel title={t('metrics.title')}>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <InfoItem
+                label={t('metrics.revenue')}
+                value={
+                  <span className="flex items-center gap-2">
+                    {fmtTJS(product.metrics.revenue)}
+                    <TrendBadge comparison={product.comparison.revenue} />
+                  </span>
+                }
+              />
+              <InfoItem
+                label={t('metrics.netUnitsSold')}
+                value={
+                  <span className="flex items-center gap-2">
+                    {product.metrics.netUnitsSold}
+                    <TrendBadge comparison={product.comparison.netUnitsSold} />
+                  </span>
+                }
+              />
+              <InfoItem
+                label={t('metrics.transactionCount')}
+                value={
+                  <span className="flex items-center gap-2">
+                    {product.metrics.transactionCount}
+                    <TrendBadge comparison={product.comparison.transactionCount} />
+                  </span>
+                }
+              />
+              <InfoItem label={t('metrics.refundedUnits')} value={product.metrics.refundedUnits} />
+              <InfoItem label={t('metrics.returnRate')} value={`${Math.round(product.metrics.returnRate * 100)}%`} />
+              <InfoItem label={t('metrics.avgDailySales')} value={product.metrics.avgDailySales.toFixed(1)} />
+              <InfoItem
+                label={t('metrics.daysOfStock')}
+                value={
+                  product.metrics.daysOfStockRemaining == null
+                    ? t('metrics.noVelocity')
+                    : t('metrics.daysUnit', { count: product.metrics.daysOfStockRemaining })
+                }
+              />
+              {product.metrics.recommendedQuantity > 0 && (
+                <InfoItem
+                  label={t('metrics.recommendedQuantity')}
+                  value={`${product.metrics.recommendedQuantity} ${t(`unit.${product.unit}`)}`}
+                />
+              )}
+            </div>
+          </Panel>
+
+          <Panel title={t('metrics.allTime')}>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <StatCard icon={Package} label={t('metrics.transactionCount')} value={product.sales.count} />
+              <StatCard icon={Package} label={t('metrics.netUnitsSold')} value={product.sales.unitsSold} />
+              <StatCard icon={Package} label={t('metrics.refundedUnits')} value={product.sales.refundedUnits} />
+              <StatCard
+                icon={Package}
+                label={t('metrics.revenue')}
+                value={fmtTJS(product.sales.revenue)}
+                to={`/transactions?productId=${product.id}`}
+              />
+            </div>
           </Panel>
         </div>
 
