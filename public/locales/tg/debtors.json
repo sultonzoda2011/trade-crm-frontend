@@ -49,6 +49,7 @@
     "daysSinceLastPayment": "Рӯзҳо бе пардохт",
     "lastPaymentAt": "Пардохти охирин",
     "nextDueDate": "Мӯҳлати навбатӣ",
-    "never": "набуд"
+    "never": "набуд",
+    "daysUnit": "{{count}} рӯз"
   }
 }
