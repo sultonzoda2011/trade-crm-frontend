@@ -49,6 +49,7 @@
     "daysSinceLastPayment": "Days since last payment",
     "lastPaymentAt": "Last payment",
     "nextDueDate": "Next due date",
-    "never": "never"
+    "never": "never",
+    "daysUnit": "{{count}} days"
   }
 }
