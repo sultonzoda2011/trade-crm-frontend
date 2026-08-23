@@ -13,6 +13,7 @@ import { Label } from '~/components/ui/label';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { Switch } from '~/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useIsMobile } from '~/hooks/use-mobile';
 
 interface ColumnToggleProps<TData> {
   table: Table<TData>;
@@ -20,10 +21,14 @@ interface ColumnToggleProps<TData> {
 
 export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
   const { t } = useTranslation('common');
+  const isMobile = useIsMobile();
 
   const toggleableColumns = table.getAllColumns().filter((col) => col.getCanHide());
 
-  if (toggleableColumns.length === 0) return null;
+  // На мобильном карточка уже показывает продуманный, фиксированный набор
+  // полей (mobileFields в DataTable) — понятия "показать/скрыть колонку" там
+  // нет, это десктопная механика таблицы.
+  if (isMobile || toggleableColumns.length === 0) return null;
 
   const hasHiddenColumns = toggleableColumns.some((column) => !column.getIsVisible());
   const hasVisibleColumns = toggleableColumns.some((column) => column.getIsVisible());
@@ -38,12 +43,12 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
           </Button>
         }
       />
-      <DropdownMenuContent align="end" className="w-64 p-0">
-        <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-muted-foreground text-[11px] font-semibold tracking-wider uppercase">
+      <DropdownMenuContent align="end" className="w-72 p-0">
+        <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+          <span className="text-muted-foreground text-2xs min-w-0 truncate font-semibold tracking-wider uppercase">
             {t('table.columnVisibility')}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="bg-muted/50 flex shrink-0 items-center gap-0.5 rounded-lg p-0.5">
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -101,7 +106,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
         </div>
         <DropdownMenuSeparator className="m-0" />
         <ScrollArea className="flex max-h-75 flex-col">
-          <div className="flex flex-col gap-px p-1">
+          <div className="flex flex-col gap-px p-1.5">
             {toggleableColumns.map((column) => {
               const label = typeof column.columnDef.header === 'string' ? column.columnDef.header : column.id;
 
@@ -109,11 +114,11 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                 <DropdownMenuItem
                   key={column.id}
                   closeOnClick={false}
-                  className="focus:bg-accent flex items-center justify-between gap-2 px-2 py-1.5"
+                  className="focus:bg-accent flex items-center justify-between gap-3 rounded-md px-2.5 py-2"
                   onClick={() => column.toggleVisibility(!column.getIsVisible())}>
                   <Label
                     htmlFor={`col-${column.id}`}
-                    className="flex-1 cursor-pointer text-xs font-normal capitalize"
+                    className="min-w-0 flex-1 cursor-pointer truncate text-xs font-normal capitalize"
                     onClick={(e) => e.preventDefault()}>
                     {label}
                   </Label>
@@ -123,6 +128,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                     checked={column.getIsVisible()}
                     onCheckedChange={(checked) => column.toggleVisibility(checked)}
                     onClick={(e) => e.stopPropagation()}
+                    className="shrink-0"
                   />
                 </DropdownMenuItem>
               );
