@@ -98,7 +98,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
           <Button variant="outline" className="relative gap-2">
             <Filter className="h-4 w-4" />
             {t('filters.title')}
-            {activeCount > 0 && <Badge className="h-4 min-w-4 rounded-full px-1 text-[10px]">{activeCount}</Badge>}
+            {activeCount > 0 && <Badge className="text-2xs h-4 min-w-4 rounded-full px-1">{activeCount}</Badge>}
           </Button>
         }
       />
