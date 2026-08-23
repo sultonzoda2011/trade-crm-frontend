@@ -281,6 +281,21 @@
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
   }
+
+  /*
+   * Tailwind v4 preflight ставит `appearance: button` на все <button>/
+   * input[type=button|submit|reset] (чинит border-radius в iOS Safari),
+   * но это оставляет включённым нативный OS-рендеринг кнопки. На Android
+   * WebView разные прошивки/темы (MIUI, One UI и т.п.) поверх заданной
+   * Tailwind-высоты добавляют свой padding/min-size — кнопка визуально
+   * "плывёт" по размеру независимо от места использования. Сбрасываем
+   * appearance глобально, а не точечно в button.tsx — так фикс покрывает
+   * и все сырые <button> в проекте, не только компонент Button.
+   */
+  button,
+  input:where([type='button'], [type='reset'], [type='submit']) {
+    appearance: none;
+  }
 }
 
 /* ─── Collapsible animations (Base UI uses --collapsible-panel-height) ───── */
