@@ -49,6 +49,7 @@
     "daysSinceLastPayment": "Дней без платежа",
     "lastPaymentAt": "Последний платёж",
     "nextDueDate": "Следующий срок",
-    "never": "не было"
+    "never": "не было",
+    "daysUnit": "{{count}} дн."
   }
 }
