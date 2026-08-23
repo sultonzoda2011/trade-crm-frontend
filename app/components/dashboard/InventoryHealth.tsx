@@ -29,11 +29,7 @@ export function ReorderList({ products, className }: ReorderListProps) {
       title={t('reorder.title')}
       className={cn('p-0', className)}
       actions={
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-xs"
-          render={<Link to="/products?needsReorder=true" />}>
+        <Button variant="ghost" size="sm" className="text-xs" render={<Link to="/products?needsReorder=true" />}>
           {t('viewAll')}
         </Button>
       }>
@@ -57,14 +53,10 @@ export function ReorderList({ products, className }: ReorderListProps) {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className={REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]}>
+                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]}>
                   {t(`reorderPriority.${product.metrics.reorderPriority}`, { ns: 'products' })}
                 </Badge>
-                <span className="font-mono text-sm font-semibold">
-                  +{product.metrics.recommendedQuantity}
-                </span>
+                <span className="font-mono text-sm font-semibold">+{product.metrics.recommendedQuantity}</span>
               </div>
             </Link>
           ))}
@@ -148,7 +140,7 @@ export function InventoryHealth({ inventory, className }: InventoryHealthProps) 
             to={tile.to}
             className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
             <span className={cn('font-mono text-xl font-bold', tile.className)}>{tile.count}</span>
-            <span className="text-muted-foreground text-[11px] leading-tight">
+            <span className="text-muted-foreground text-2xs leading-tight">
               {t(`health.${tile.key}`, { ns: 'products' })}
             </span>
           </Link>
@@ -165,11 +157,7 @@ export function InventoryHealth({ inventory, className }: InventoryHealthProps) 
             <PackageX className="h-3 w-3" />
             {t('inventory.frozenValue')}
           </p>
-          <p
-            className={cn(
-              'font-mono text-sm font-semibold',
-              inventory.slowMovingValue > 0 && 'text-warning'
-            )}>
+          <p className={cn('font-mono text-sm font-semibold', inventory.slowMovingValue > 0 && 'text-warning')}>
             {fmtTJS(inventory.slowMovingValue)}
           </p>
         </div>
