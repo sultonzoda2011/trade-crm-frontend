@@ -106,6 +106,11 @@ export default function DebtorsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          totalDebtAmount: 'primary',
+          'market.name': 'secondary',
+          '_count.transactions': 'secondary',
+        }}
       />
       <CreateDebtorModal />
       <EditDebtorModal />
