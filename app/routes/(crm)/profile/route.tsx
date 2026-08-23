@@ -300,11 +300,11 @@ export default function ProfilePage() {
                 </StatRow>
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className="h-9 w-full justify-between gap-2"
                   size="sm"
                   render={<Link to={`/markets/${market.id}`} state={fromState} />}>
-                  {t('goToMarket')}
-                  <ArrowUpRight className="size-3.5" />
+                  <span className="truncate">{t('goToMarket')}</span>
+                  <ArrowUpRight className="size-3.5 shrink-0" />
                 </Button>
               </div>
             </Panel>
