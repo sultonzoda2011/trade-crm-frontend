@@ -50,7 +50,8 @@
     "noData": "No data",
     "error": "Failed to load data",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "pageOf": "{{page}} of {{total}}"
   },
   "filters": {
     "title": "Filters",
