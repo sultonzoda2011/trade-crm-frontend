@@ -54,7 +54,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Category, any>[] 
     }),
     columnHelper.accessor('description', {
       header: t('fields.description'),
-      cell: (info) => <div className="text-muted-foreground w-[180px] truncate text-sm">{info.getValue() ?? '—'}</div>,
+      cell: (info) => <div className="text-muted-foreground w-50 truncate text-sm">{info.getValue() ?? '—'}</div>,
     }),
     columnHelper.accessor('_count.products', {
       id: '_count.products',
