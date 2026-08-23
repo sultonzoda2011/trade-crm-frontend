@@ -91,7 +91,7 @@ export function NavMain({ items }: NavMainProps) {
                               }>
                               <span className="truncate">{subItem.title}</span>
                               {subItem.comingSoon && (
-                                <Badge variant="secondary" className="h-4 px-1.5 text-[10px]">
+                                <Badge variant="secondary" className="text-2xs h-4 px-1.5">
                                   {t('navigation.comingSoon')}
                                 </Badge>
                               )}
@@ -128,7 +128,7 @@ export function NavMain({ items }: NavMainProps) {
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                   {item.comingSoon && (
-                    <Badge variant="outline" className="ml-auto h-4 px-1.5 text-[10px]">
+                    <Badge variant="outline" className="text-2xs ml-auto h-4 px-1.5">
                       {t('navigation.comingSoon')}
                     </Badge>
                   )}
