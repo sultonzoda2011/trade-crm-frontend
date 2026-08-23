@@ -186,6 +186,14 @@ export default function TransactionsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          totalAmount: 'primary',
+          status: 'primary',
+          type: 'secondary',
+          paymentType: 'secondary',
+          debtor: 'secondary',
+          customerName: 'secondary',
+        }}
       />
       <CreatePaymentModal />
       <ConfirmDialog
