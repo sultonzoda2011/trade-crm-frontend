@@ -34,6 +34,15 @@ interface DataTableProps<TData> {
   onLimitChange?: (size: number) => void;
   getRowClassName?: (row: Row<TData>) => string;
   onRowClick?: (row: Row<TData>) => void;
+  /**
+   * Приоритет полей в мобильной карточке (id колонки → уровень).
+   * Первая колонка (обычно имя/аватар) — уже всегда шапка карточки, сюда её
+   * добавлять не нужно. Всё, что не перечислено, на карточке не показывается
+   * (доступно на странице деталей записи). Не передан вовсе — старое
+   * поведение (показать все колонки компактным списком), чтобы не ломать
+   * таблицы, для которых приоритет ещё не расписан.
+   */
+  mobileFields?: Record<string, 'primary' | 'secondary'>;
 }
 
 function getpages(current: number, total: number): (number | 'ellipsis')[] {
@@ -53,13 +62,15 @@ function PageControls({
   onPageChange,
   onLimitChange,
   t,
+  compact,
 }: {
   page: number;
   limit: number;
   totalPages: number;
   onPageChange: (page: number) => void;
   onLimitChange: (size: number) => void;
-  t: (key: string) => string;
+  t: (key: string, opts?: Record<string, unknown>) => string;
+  compact?: boolean;
 }) {
   const pages = getpages(page, totalPages || 1);
 
@@ -91,20 +102,28 @@ function PageControls({
               <TooltipContent side="top">{t('table.previousPage')}</TooltipContent>
             </Tooltip>
           </PaginationItem>
-          {pages.map((pageNumber, i) =>
-            pageNumber === 'ellipsis' ? (
-              <PaginationItem key={`e-${i}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={pageNumber}>
-                <PaginationLink
-                  isActive={pageNumber === page}
-                  onClick={() => onPageChange(pageNumber)}
-                  className="size-8 cursor-pointer tabular-nums">
-                  {pageNumber}
-                </PaginationLink>
-              </PaginationItem>
+          {compact ? (
+            <PaginationItem>
+              <span className="text-muted-foreground px-1 text-sm tabular-nums whitespace-nowrap">
+                {t('table.pageOf', { page, total: totalPages || 1 })}
+              </span>
+            </PaginationItem>
+          ) : (
+            pages.map((pageNumber, i) =>
+              pageNumber === 'ellipsis' ? (
+                <PaginationItem key={`e-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink
+                    isActive={pageNumber === page}
+                    onClick={() => onPageChange(pageNumber)}
+                    className="size-8 cursor-pointer tabular-nums">
+                    {pageNumber}
+                  </PaginationLink>
+                </PaginationItem>
+              )
             )
           )}
           <PaginationItem>
@@ -141,6 +160,7 @@ export function DataTable<TData>({
   onLimitChange,
   getRowClassName,
   onRowClick,
+  mobileFields,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const visibleColumns = table.getVisibleLeafColumns();
@@ -177,47 +197,86 @@ export function DataTable<TData>({
             table.getRowModel().rows.map((row) => {
               const cells = row.getVisibleCells().filter((cell) => cardColumns.includes(cell.column));
               const lastCell = pinLastColumn ? row.getVisibleCells().at(-1) : undefined;
+              const bodyCells = cells.filter((cell) => !(lastCell && cell.id === lastCell.id));
+
+              // Пустые значения (напр. "Должник" у сделки без должника) не
+              // показываем вовсе — иначе на карточке остаётся лейбл без
+              // значения, который выглядит как незаполненные/битые данные.
+              const isFilled = (cell: (typeof bodyCells)[number]) => {
+                const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
+                if (!accessorKey) return true;
+                const raw = cell.getValue();
+                return !(raw === null || raw === undefined || raw === '');
+              };
+
+              // Первая колонка (обычно UserAvatar с именем) — всегда шапка
+              // карточки, не строка списка. Остальные раскладываются по
+              // приоритету: primary — крупный чип-ряд, secondary — компактная
+              // сетка 2 колонки, всё, чего нет в mobileFields — скрыто (доступно
+              // на странице деталей). mobileFields не задан вовсе — старое
+              // поведение (все колонки одним списком), чтобы не ломать таблицы,
+              // для которых приоритет ещё не расписан.
+              const [headerCell, ...restCells] = bodyCells;
+              const filledRest = restCells.filter(isFilled);
+              const primaryCells = mobileFields
+                ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'primary')
+                : [];
+              const secondaryCells = mobileFields
+                ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'secondary')
+                : filledRest;
+
               return (
                 <div
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    'bg-card min-h-11 shrink-0 space-y-2 rounded-xl border p-3',
+                    'bg-card min-h-11 shrink-0 rounded-xl border p-3',
                     onRowClick && 'cursor-pointer active:bg-muted/50',
                     getRowClassName?.(row)
                   )}>
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1 space-y-1.5">
-                      {cells
-                        .filter((cell) => !(lastCell && cell.id === lastCell.id))
-                        .map((cell) => {
-                          // Для колонок-аксессоров с пустым значением (например,
-                          // "Должник" у сделки без должника) не показываем строку
-                          // вовсе — иначе на карточке остаётся лейбл без значения,
-                          // который выглядит как незаполненные/битые данные.
-                          const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
-                          if (accessorKey) {
-                            const raw = cell.getValue();
-                            if (raw === null || raw === undefined || raw === '') return null;
-                          }
-                          const header = cell.column.columnDef.header;
-                          const label = typeof header === 'string' ? header : undefined;
-                          return (
-                            <div key={cell.id} className="flex items-baseline justify-between gap-3 text-sm">
-                              {label && <span className="text-muted-foreground shrink-0 text-xs">{label}</span>}
-                              <span className="min-w-0 truncate text-right">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </span>
-                            </div>
-                          );
-                        })}
-                    </div>
+                    {headerCell && (
+                      <div className="min-w-0 flex-1">
+                        {flexRender(headerCell.column.columnDef.cell, headerCell.getContext())}
+                      </div>
+                    )}
                     {lastCell && (
                       <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
                         {flexRender(lastCell.column.columnDef.cell, lastCell.getContext())}
                       </div>
                     )}
                   </div>
+
+                  {primaryCells.length > 0 && (
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      {primaryCells.map((cell) => (
+                        <span key={cell.id} className="min-w-0 truncate text-sm font-semibold">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {secondaryCells.length > 0 && (
+                    <div
+                      className={cn(
+                        'grid grid-cols-2 gap-x-3 gap-y-1',
+                        primaryCells.length > 0 ? 'border-border/60 mt-2 border-t pt-2' : 'mt-2'
+                      )}>
+                      {secondaryCells.map((cell) => {
+                        const header = cell.column.columnDef.header;
+                        const label = typeof header === 'string' ? header : undefined;
+                        return (
+                          <div key={cell.id} className="min-w-0">
+                            {label && <p className="text-muted-foreground truncate text-2xs">{label}</p>}
+                            <p className="truncate text-xs">
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -231,6 +290,7 @@ export function DataTable<TData>({
             onPageChange={onPageChange}
             onLimitChange={onLimitChange}
             t={t}
+            compact
           />
         )}
       </div>
