@@ -39,16 +39,18 @@ export function MetricCard({
 }: MetricCardProps) {
   const body = (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <p className="text-muted-foreground truncate text-xs font-medium tracking-wide uppercase">
-          {label}
-        </p>
-        <Icon className="text-muted-foreground size-4 shrink-0" />
+      <div className="flex items-center justify-center gap-2 sm:justify-between">
+        <p className="text-muted-foreground truncate text-xs font-medium tracking-wide uppercase">{label}</p>
+        <Icon className="text-muted-foreground hidden size-4 shrink-0 sm:block" />
       </div>
-      <p className="mt-2 truncate font-mono text-2xl font-bold">{value}</p>
-      {hint && <p className="text-muted-foreground mt-1 truncate text-xs">{hint}</p>}
+      <p className="mt-2 truncate text-center font-mono text-2xl font-bold sm:text-left">{value}</p>
+      {hint && <p className="text-muted-foreground mt-1 truncate text-center text-xs sm:text-left">{hint}</p>}
       {comparison && (
-        <ComparisonIndicator comparison={comparison} invert={invertComparison} className="mt-2" />
+        <ComparisonIndicator
+          comparison={comparison}
+          invert={invertComparison}
+          className="mt-2 justify-center sm:justify-start"
+        />
       )}
     </>
   );
