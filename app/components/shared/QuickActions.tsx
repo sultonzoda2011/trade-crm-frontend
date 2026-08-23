@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
@@ -28,13 +28,16 @@ export function QuickActions({ title, actions }: QuickActionsProps) {
           <Button
             key={key ?? i}
             variant={variant}
-            className={cn('w-full justify-start gap-2', className)}
+            className={cn('w-full justify-between gap-2', className)}
             size="sm"
             onClick={onClick}
             disabled={disabled}
             render={render}>
-            <Icon className="size-3.5" />
-            {label}
+            <span className="flex min-w-0 items-center gap-2">
+              <Icon className="size-3.5 shrink-0" />
+              <span className="truncate">{label}</span>
+            </span>
+            <ChevronRight className="text-muted-foreground size-3.5 shrink-0" />
           </Button>
         ))}
       </div>
