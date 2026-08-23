@@ -29,9 +29,13 @@ export function EntityCard({
     <Panel title={title} className={className}>
       <div className="space-y-4">
         <UserAvatar fullName={fullName} subInfo={subInfo} imagePath={imagePath} />
-        <Button variant="outline" className="w-full" size="sm" render={<Link to={viewTo} state={viewState} />}>
-          {viewLabel}
-          <ArrowUpRight className="size-3.5" />
+        <Button
+          variant="outline"
+          className="h-9 w-full justify-between gap-2"
+          size="sm"
+          render={<Link to={viewTo} state={viewState} />}>
+          <span className="truncate">{viewLabel}</span>
+          <ArrowUpRight className="size-3.5 shrink-0" />
         </Button>
       </div>
     </Panel>
