@@ -105,6 +105,9 @@ export default function SellersPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          'market.name': 'secondary',
+        }}
       />
       <CreateSellerModal />
       <EditSellerModal />
