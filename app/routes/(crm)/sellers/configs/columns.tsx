@@ -48,7 +48,13 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Seller, any>[] =>
     columnHelper.accessor('name', {
       header: t('fields.name'),
       enableHiding: false,
-      cell: (info) => <UserAvatar fullName={info.row.original.name} imagePath={info.row.original.image ?? undefined} />,
+      cell: (info) => (
+        <UserAvatar
+          fullName={info.row.original.name}
+          imagePath={info.row.original.image ?? undefined}
+          subInfo={info.row.original.email}
+        />
+      ),
     }),
     columnHelper.accessor('email', {
       header: t('fields.email'),
