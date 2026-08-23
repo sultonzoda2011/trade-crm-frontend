@@ -29,7 +29,7 @@ export function StatCard({ icon: Icon, label, value, to, state, size = 'md', cla
       <span
         className={cn(
           'text-muted-foreground w-full truncate text-center font-medium tracking-wider uppercase',
-          size === 'md' ? 'text-xs' : 'text-[11px]'
+          size === 'md' ? 'text-xs' : 'text-2xs'
         )}>
         {' '}
         {label}{' '}
