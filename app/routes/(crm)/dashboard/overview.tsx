@@ -131,31 +131,23 @@ export default function DashboardOverviewPage() {
                 <Package className="text-muted-foreground hidden h-4 w-4 sm:block" />
                 {inventory.totalProducts}
               </span>
-              <span className="text-muted-foreground truncate text-[10px] sm:text-[11px]">
-                {t('inventory.total')}
-              </span>
+              <span className="text-muted-foreground text-2xs truncate">{t('inventory.total')}</span>
             </Link>
             <Link
               to="/products?needsReorder=true"
               className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-2 transition-colors sm:p-3">
               <span className="text-warning font-mono text-sm font-bold sm:text-xl">{inventory.needsReorder}</span>
-              <span className="text-muted-foreground truncate text-[10px] sm:text-[11px]">
-                {t('inventory.toOrder')}
-              </span>
+              <span className="text-muted-foreground text-2xs truncate">{t('inventory.toOrder')}</span>
             </Link>
             <Link
               to="/products?health=HEALTHY"
               className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-2 transition-colors sm:p-3">
               <span className="text-success font-mono text-sm font-bold sm:text-xl">{inventory.healthy}</span>
-              <span className="text-muted-foreground truncate text-[10px] sm:text-[11px]">
-                {t('inventory.healthy')}
-              </span>
+              <span className="text-muted-foreground text-2xs truncate">{t('inventory.healthy')}</span>
             </Link>
             <div className="bg-muted/50 flex flex-col gap-0.5 rounded-lg p-2 sm:p-3">
               <span className="truncate font-mono text-sm font-bold sm:text-xl">{fmtTJS(sales.discountAmount)}</span>
-              <span className="text-muted-foreground truncate text-[10px] sm:text-[11px]">
-                {t('metrics.discounts')}
-              </span>
+              <span className="text-muted-foreground text-2xs truncate">{t('metrics.discounts')}</span>
             </div>
           </div>
           {!user?.marketId && (
