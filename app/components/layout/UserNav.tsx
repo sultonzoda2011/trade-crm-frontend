@@ -57,12 +57,12 @@ export function UserNav() {
         }>
         <Avatar className="h-8 w-8 border">
           {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
-          <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">{initials}</AvatarFallback>
+          <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
         </Avatar>
 
         <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
           <span className="max-w-full truncate text-sm leading-none font-semibold">{userInfo?.name}</span>
-          <span className="text-muted-foreground mt-1 text-[10px] leading-none">{roleLabel}</span>
+          <span className="text-muted-foreground text-2xs mt-1 leading-none">{roleLabel}</span>
         </div>
 
         <ChevronDown className="text-muted-foreground hidden h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
