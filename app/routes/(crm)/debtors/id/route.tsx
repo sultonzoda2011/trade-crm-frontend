@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
 import { Pencil, ReceiptText, Store } from 'lucide-react';
-import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
@@ -15,10 +14,12 @@ import { MarketCard } from '~/components/shared/MarketCard';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
+import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
+import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
@@ -47,11 +48,6 @@ export default function DebtorDetailPage() {
 
   const debtor = response?.data;
   const transactions = txResponse?.data?.data ?? [];
-
-  const totalDebt = useMemo(
-    () => transactions.reduce((sum, tx) => sum + (tx.type === 'DEBT' ? tx.remainingAmount : 0), 0),
-    [transactions]
-  );
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -82,12 +78,17 @@ export default function DebtorDetailPage() {
         <DetailHeader
           name={debtor.name}
           subtitle={debtor.phone}
+          badges={
+            <Badge variant="outline" className={DEBTOR_RISK_BADGE[debtor.risk]}>
+              {t(`risk.${debtor.risk}`)}
+            </Badge>
+          }
           actions={
             <>
               <div className="text-left sm:text-right">
                 <p className="text-muted-foreground text-xs">{t('totalDebt')}</p>
-                <p className={`font-mono text-xl font-bold ${totalDebt > 0 ? 'text-warning' : 'text-success'}`}>
-                  {fmtTJS(totalDebt)}
+                <p className={`font-mono text-xl font-bold ${debtor.totalDebtAmount > 0 ? 'text-warning' : 'text-success'}`}>
+                  {fmtTJS(debtor.totalDebtAmount)}
                 </p>
               </div>
               {can(Action.DEBTORS_EDIT) && (
@@ -119,6 +120,50 @@ export default function DebtorDetailPage() {
               <InfoItem label={t('fields.transactions')} value={debtor._count.transactions.toLocaleString()} />
             </div>
           </Panel>
+
+          <Panel title={t('totalDebtAmount')}>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <InfoItem label={t('profile.activeDebtCount')} value={debtor.activeDebtCount} />
+              <InfoItem
+                label={t('profile.overdueAmount')}
+                value={<span className={debtor.overdueAmount > 0 ? 'text-destructive' : undefined}>{fmtTJS(debtor.overdueAmount)}</span>}
+              />
+              <InfoItem label={t('profile.overdueCount')} value={debtor.overdueCount} />
+              <InfoItem label={t('profile.totalIssued')} value={fmtTJS(debtor.totalIssued)} />
+              <InfoItem label={t('profile.totalCollected')} value={fmtTJS(debtor.totalCollected)} />
+              <InfoItem label={t('profile.repaymentRate')} value={`${Math.round(debtor.repaymentRate * 100)}%`} />
+              <InfoItem
+                label={t('profile.maxDaysOverdue')}
+                value={debtor.maxDaysOverdue > 0 ? t('profile.daysUnit', { count: debtor.maxDaysOverdue }) : '—'}
+              />
+              <InfoItem
+                label={t('profile.daysSinceLastPayment')}
+                value={debtor.daysSinceLastPayment == null ? t('profile.never') : debtor.daysSinceLastPayment}
+              />
+              <InfoItem
+                label={t('profile.lastPaymentAt')}
+                value={debtor.lastPaymentAt ? formatDate(debtor.lastPaymentAt, true) : t('profile.never')}
+              />
+              {debtor.nextDueDate && (
+                <InfoItem label={t('profile.nextDueDate')} value={formatDate(debtor.nextDueDate)} />
+              )}
+            </div>
+          </Panel>
+
+          {debtor.factors.length > 0 && (
+            <Panel title={t('risk.whyTitle')}>
+              <div className="flex flex-wrap items-center gap-2">
+                {debtor.factors.map((factor) => (
+                  <Badge key={factor} variant="outline" className={DEBTOR_RISK_BADGE[debtor.risk]}>
+                    {t(`riskFactors.${factor}`)}
+                  </Badge>
+                ))}
+              </div>
+              <p className="text-muted-foreground mt-3 text-xs">
+                {t('riskFactors.score', { count: debtor.score })}
+              </p>
+            </Panel>
+          )}
 
           <Panel title={t('transactionsHistory')}>
             {isTxLoading ? (
