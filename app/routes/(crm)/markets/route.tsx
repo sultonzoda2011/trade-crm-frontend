@@ -106,6 +106,12 @@ export default function MarketsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          'count.products': 'primary',
+          'count.debtors': 'primary',
+          'count.transactions': 'primary',
+          'owner.name': 'secondary',
+        }}
       />
       <CreateMarketModal />
       <EditMarketModal />
