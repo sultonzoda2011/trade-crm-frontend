@@ -13,13 +13,13 @@ import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { StatRow } from '~/components/shared/StatRow';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { ListLink } from '~/components/shared/ListLink';
 import { MarketEntityTabs } from '~/components/shared/MarketEntityTabs';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
+import { StatRow } from '~/components/shared/StatRow';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -153,7 +153,6 @@ export default function MyMarketPage() {
         <StatRow className="border-border mt-3 border-t pt-2.5">
           <StatCard
             size="sm"
-            
             icon={Package}
             label={t('fields.products')}
             value={market.count.products}
@@ -162,7 +161,6 @@ export default function MyMarketPage() {
           />
           <StatCard
             size="sm"
-            
             icon={Users}
             label={t('fields.debtors')}
             value={market.count.debtors}
@@ -172,7 +170,6 @@ export default function MyMarketPage() {
           <StatCard
             size="sm"
             icon={ReceiptText}
-            
             label={t('fields.transactions')}
             value={market.count.transactions}
             to="/transactions"
@@ -189,7 +186,7 @@ export default function MyMarketPage() {
                 label={t('fields.owner')}
                 value={
                   <span className="flex items-center gap-2">
-                    <Avatar size="sm" className="shrink-0">
+                    <Avatar className="shrink-0">
                       {market.owner.image ? <AvatarImage src={market.owner.image} alt={market.owner.name} /> : null}
                       <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
@@ -242,16 +239,16 @@ export default function MyMarketPage() {
                     return (
                       <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1">
                         <div className="flex min-w-0 items-center gap-2.5">
-                          <Avatar size="sm" className="shrink-0">
+                          <Avatar className="shrink-0">
                             {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
                             <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{product.name}</p>
-                            <p className="text-muted-foreground truncate text-xs">
+                            <p className="text-muted-foreground truncate text-sm">
                               {product.category ? `${product.category.name} · ` : ''}
                               {sellers.length > 0
-                                ? `${t('soldCount', { count: product._count.transactionItems })} · ${sellers.map((seller) => seller.name).join(', ')}`
+                                ? `${t('soldCount', { count: product._count.transactionItems })} `
                                 : t('soldCount', { count: product._count.transactionItems })}
                             </p>
                           </div>
@@ -288,7 +285,7 @@ export default function MyMarketPage() {
                   rows: marketTransactions.map((tx) => (
                     <ListLink key={tx.id} to={`/transactions/${tx.id}`} state={listState} className="py-1.5">
                       <div className="flex min-w-0 items-center gap-2.5">
-                        <Avatar size="sm" className="shrink-0">
+                        <Avatar className="shrink-0">
                           {tx.createdBy.image ? <AvatarImage src={tx.createdBy.image} alt={tx.createdBy.name} /> : null}
                           <AvatarFallback>{tx.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
                         </Avatar>
