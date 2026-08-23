@@ -76,7 +76,6 @@ export default function CategoriesPage() {
     columns,
     data: categories,
     storageKey: 'categories-table-columns',
-    initialVisibility: { createdAt: false },
   });
 
   return (
@@ -106,6 +105,10 @@ export default function CategoriesPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          '_count.products': 'primary',
+          description: 'secondary',
+        }}
       />
       <CreateCategoryModal />
       <EditCategoryModal />
