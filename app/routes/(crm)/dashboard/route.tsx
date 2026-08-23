@@ -1,13 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  AlertTriangle,
-  ArrowRight,
-  Banknote,
-  Package,
-  Receipt,
-  ShoppingCart,
-  Undo2,
-} from 'lucide-react';
+import { AlertTriangle, ArrowRight, Banknote, Package, Receipt, ShoppingCart, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useOutletContext } from 'react-router';
@@ -55,9 +47,7 @@ function TopProducts({ products, title }: { products: ProductLeaderRow[]; title:
               to={`/products/${product.productId}`}
               className="hover:bg-muted/40 flex items-center justify-between gap-3 px-4 py-2.5 transition-colors">
               <span className="flex min-w-0 items-center gap-2.5">
-                <span className="text-muted-foreground w-4 shrink-0 font-mono text-xs">
-                  {index + 1}
-                </span>
+                <span className="text-muted-foreground w-4 shrink-0 font-mono text-xs">{index + 1}</span>
                 <span className="min-w-0">
                   <span className="block truncate text-sm font-medium">{product.productName}</span>
                   <span className="text-muted-foreground block text-xs">
@@ -70,9 +60,7 @@ function TopProducts({ products, title }: { products: ProductLeaderRow[]; title:
                   </span>
                 </span>
               </span>
-              <span className="shrink-0 font-mono text-sm font-semibold">
-                {fmtTJS(product.netRevenue)}
-              </span>
+              <span className="shrink-0 font-mono text-sm font-semibold">{fmtTJS(product.netRevenue)}</span>
             </Link>
           ))}
         </div>
@@ -209,35 +197,29 @@ export default function DashboardRoute() {
                 <Package className="text-muted-foreground h-4 w-4" />
                 {inventory.totalProducts}
               </span>
-              <span className="text-muted-foreground text-[11px]">{t('inventory.total')}</span>
+              <span className="text-muted-foreground text-2xs">{t('inventory.total')}</span>
             </Link>
             <Link
               to="/products?needsReorder=true"
               className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
-              <span className="text-warning font-mono text-xl font-bold">
-                {inventory.needsReorder}
-              </span>
-              <span className="text-muted-foreground text-[11px]">{t('inventory.toOrder')}</span>
+              <span className="text-warning font-mono text-xl font-bold">{inventory.needsReorder}</span>
+              <span className="text-muted-foreground text-2xs">{t('inventory.toOrder')}</span>
             </Link>
             <Link
               to="/products?health=HEALTHY"
               className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
               <span className="text-success font-mono text-xl font-bold">{inventory.healthy}</span>
-              <span className="text-muted-foreground text-[11px]">{t('inventory.healthy')}</span>
+              <span className="text-muted-foreground text-2xs">{t('inventory.healthy')}</span>
             </Link>
             <div className="bg-muted/50 flex flex-col gap-0.5 rounded-lg p-3">
               <span className="font-mono text-xl font-bold">{fmtTJS(sales.discountAmount)}</span>
-              <span className="text-muted-foreground text-[11px]">{t('metrics.discounts')}</span>
+              <span className="text-muted-foreground text-2xs">{t('metrics.discounts')}</span>
             </div>
           </div>
           {!user?.marketId && (
             /* ADMIN без своего рынка видит сводку по всем рынкам, поэтому
                ссылка на управление рынками имеет смысл только здесь. */
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-1 text-xs"
-              render={<Link to="/markets" />}>
+            <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/markets" />}>
               {t('allMarkets')} <ArrowRight className="h-3.5 w-3.5" />
             </Button>
           )}
