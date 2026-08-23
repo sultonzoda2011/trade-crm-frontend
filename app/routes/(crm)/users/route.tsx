@@ -116,6 +116,10 @@ export default function UsersPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          role: 'primary',
+          'market.name': 'secondary',
+        }}
       />
       <CreateUserModal />
       <EditUserModal />
