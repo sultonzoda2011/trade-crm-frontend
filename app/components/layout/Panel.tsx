@@ -12,7 +12,7 @@ export function Panel({ children, className, title, actions, ...rest }: PanelPro
   return (
     <div className={cn('bg-sidebar text-card-foreground rounded-xl')} {...rest}>
       {(title || actions) && (
-        <div className="border-border flex flex-wrap items-center justify-between gap-2 border-b px-4 py-4 sm:px-6">
+        <div className="border-border flex flex-col items-start gap-2 border-b px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6">
           {title && <h3 className="min-w-0 truncate leading-none font-semibold tracking-tight">{title}</h3>}
           {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
         </div>
