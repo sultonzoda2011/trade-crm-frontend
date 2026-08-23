@@ -168,6 +168,14 @@ export default function ProductsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        mobileFields={{
+          price: 'primary',
+          quantity: 'primary',
+          'metrics.health': 'primary',
+          'metrics.reorderPriority': 'secondary',
+          'metrics.revenue': 'secondary',
+          'category.name': 'secondary',
+        }}
       />
       <ConfirmDialog
         open={deleteModal.isOpen}
