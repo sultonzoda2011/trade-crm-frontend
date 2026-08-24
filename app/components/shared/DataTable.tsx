@@ -3,7 +3,6 @@ import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { EmptyState } from '~/components/shared/EmptyState';
-import { useIsMobile } from '~/hooks/use-mobile';
 import {
   Pagination,
   PaginationContent,
@@ -15,8 +14,9 @@ import {
 } from '~/components/ui/pagination';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { Skeleton } from '~/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table as UITable } from '~/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 
 interface DataTableProps<TData> {
@@ -82,7 +82,7 @@ function PageControls({
           value={limit}
           options={[10, 20, 50].map((size) => ({ value: size, label: size.toString() }))}
           onChange={(v) => onLimitChange(Number(v))}
-          className="w-[70px]"
+          className="w-17.5"
           isClearable={false}
         />
       </div>
@@ -104,7 +104,7 @@ function PageControls({
           </PaginationItem>
           {compact ? (
             <PaginationItem>
-              <span className="text-muted-foreground px-1 text-sm tabular-nums whitespace-nowrap">
+              <span className="text-muted-foreground px-1 text-sm whitespace-nowrap tabular-nums">
                 {t('table.pageOf', { page, total: totalPages || 1 })}
               </span>
             </PaginationItem>
@@ -230,8 +230,8 @@ export function DataTable<TData>({
                   key={row.id}
                   onClick={() => onRowClick?.(row)}
                   className={cn(
-                    'bg-card min-h-11 shrink-0 rounded-xl border p-3',
-                    onRowClick && 'cursor-pointer active:bg-muted/50',
+                    'bg-card min-h-11 shrink-0 rounded-xl border p-3 shadow-sm',
+                    onRowClick && 'active:bg-muted/50 cursor-pointer',
                     getRowClassName?.(row)
                   )}>
                   <div className="flex items-start justify-between gap-2">
@@ -268,7 +268,7 @@ export function DataTable<TData>({
                         const label = typeof header === 'string' ? header : undefined;
                         return (
                           <div key={cell.id} className="min-w-0">
-                            {label && <p className="text-muted-foreground truncate text-2xs">{label}</p>}
+                            {label && <p className="text-muted-foreground text-2xs truncate">{label}</p>}
                             <p className="truncate text-xs">
                               {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </p>
@@ -301,7 +301,7 @@ export function DataTable<TData>({
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <div
         className={cn(
-          'bg-card relative min-h-0 flex-1 overflow-hidden rounded-xl border transition-opacity duration-200',
+          'bg-card relative min-h-0 flex-1 overflow-hidden rounded-xl border shadow-sm transition-opacity duration-200',
           isFetching && !isLoading && 'pointer-events-none opacity-60'
         )}>
         <ScrollArea className="absolute inset-0">
