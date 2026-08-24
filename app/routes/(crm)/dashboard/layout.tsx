@@ -1,12 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
+import { CalendarDays } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useSearchParams } from 'react-router';
+
 import { sellersApi } from '~/api/sellers';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { Label } from '~/components/ui/label';
-import { PERIOD_OPTIONS } from '~/config/period';
+import { PERIOD_OPTIONS, type Period } from '~/config/period';
+import { getPeriodRange } from '~/lib/date';
+import { formatDate } from '~/lib/format';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { cn } from '~/lib/utils';
 
@@ -25,6 +29,7 @@ export interface DashboardFilters {
  */
 export default function DashboardLayout() {
   const { t } = useTranslation(['dashboard', 'common']);
+
   const [searchParams, setSearchParams] = useSearchParams();
 
   const period = searchParams.get('period') ?? 'month';
@@ -34,8 +39,13 @@ export default function DashboardLayout() {
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
-        if (value) next.set(key, value);
-        else next.delete(key);
+
+        if (value) {
+          next.set(key, value);
+        } else {
+          next.delete(key);
+        }
+
         return next;
       },
       { replace: true }
@@ -48,16 +58,33 @@ export default function DashboardLayout() {
     staleTime: 60_000,
   });
 
-  const sellerOptions = useMemo(
-    () => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'),
-    [sellersResponse]
-  );
+  const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
+
+  const validPeriod: Period = PERIOD_OPTIONS.some((option) => option.value === period) ? (period as Period) : 'month';
+
+  const range = useMemo(() => getPeriodRange(validPeriod), [validPeriod]);
 
   const tabs = [
-    { to: '/dashboard', label: t('tabs.overview'), end: true },
-    { to: '/dashboard/inventory', label: t('tabs.inventory'), end: false },
-    { to: '/dashboard/products', label: t('tabs.products'), end: false },
-    { to: '/dashboard/sellers', label: t('tabs.sellers'), end: false },
+    {
+      to: '/dashboard',
+      label: t('tabs.overview'),
+      end: true,
+    },
+    {
+      to: '/dashboard/inventory',
+      label: t('tabs.inventory'),
+      end: false,
+    },
+    {
+      to: '/dashboard/products',
+      label: t('tabs.products'),
+      end: false,
+    },
+    {
+      to: '/dashboard/sellers',
+      label: t('tabs.sellers'),
+      end: false,
+    },
   ];
 
   return (
@@ -68,20 +95,40 @@ export default function DashboardLayout() {
           <>
             <div className="flex items-center gap-2">
               <Label className="text-xs">{t('period.from')}</Label>
+
               <CustomSelect
-                options={PERIOD_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) }))}
+                options={PERIOD_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: t(option.labelKey),
+                }))}
                 value={period}
-                onChange={(v) => updateParam('period', v ? String(v) : '')}
+                onChange={(value) => updateParam('period', value ? String(value) : '')}
               />
             </div>
+
             <div className="flex items-center gap-2">
               <Label className="text-xs">{t('seller')}</Label>
+
               <CustomSelect
-                options={[{ value: '', label: t('allSellers') }, ...sellerOptions]}
+                options={[
+                  {
+                    value: '',
+                    label: t('allSellers'),
+                  },
+                  ...sellerOptions,
+                ]}
                 value={sellerId ?? ''}
-                onChange={(v) => updateParam('sellerId', v ? String(v) : '')}
+                onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
               />
             </div>
+
+            <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
+              <CalendarDays className="size-3.5 shrink-0" />
+
+              {formatDate(range.from.toDate())}
+
+              {range.to ? ` - ${formatDate(range.to.toDate())}` : ''}
+            </span>
           </>
         }
       />
@@ -92,7 +139,10 @@ export default function DashboardLayout() {
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}
-            to={{ pathname: tab.to, search: searchParams.toString() }}
+            to={{
+              pathname: tab.to,
+              search: searchParams.toString(),
+            }}
             end={tab.end}
             className={({ isActive }) =>
               cn(

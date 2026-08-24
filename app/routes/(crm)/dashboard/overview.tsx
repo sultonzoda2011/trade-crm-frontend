@@ -13,7 +13,7 @@ import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { useCan } from '~/hooks/useCan';
-import { fmtTJS, formatDate } from '~/lib/format';
+import { fmtTJS } from '~/lib/format';
 import type { DashboardFilters } from './layout';
 
 export default function DashboardOverviewPage() {
@@ -65,16 +65,10 @@ export default function DashboardOverviewPage() {
     );
   }
 
-  const { sales, debts, returns, inventory, insights, period: range } = overview;
+  const { sales, debts, returns, inventory, insights } = overview;
 
   return (
     <div className="space-y-6">
-      {/* Какой именно отрезок сейчас на экране — иначе сравнение «с прошлым
-          периодом» невозможно прочитать однозначно. */}
-      <p className="text-muted-foreground -mt-3 text-xs">
-        {formatDate(range.current.gte)} — {formatDate(range.current.lte)}
-      </p>
-
       <InsightList insights={insights} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
