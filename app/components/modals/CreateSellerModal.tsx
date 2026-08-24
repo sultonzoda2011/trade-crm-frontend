@@ -7,6 +7,7 @@ import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
@@ -48,7 +49,7 @@ export function CreateSellerModal() {
   function onSubmit(data: CreateSellerSchema) {
     mutate(data);
   }
-
+  const isMobile = useIsMobile();
   return (
     <Modal
       open={createModal.isOpen}
@@ -69,10 +70,11 @@ export function CreateSellerModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('common:fields.image')}
+            label={!isMobile ? t('common:fields.image') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"
+            size="compact"            className="m-auto"
+
           />
           <div className="space-y-4">
             <FormInput
