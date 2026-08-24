@@ -134,7 +134,7 @@ export function DateInputField({
           aria-invalid={!!error}
           className={cn(
             // mirrors shadcn Input styles
-            'border-border h-8 w-full cursor-pointer rounded-lg border bg-transparent px-2.5 py-1 pr-16 text-sm',
+            'border-border h-8 w-full cursor-pointer rounded-lg border bg-background px-2.5 py-1 pr-16 text-sm',
             'placeholder:text-muted-foreground transition-colors outline-none',
             'focus:border-ring focus:ring-ring/50 focus:ring-3',
             'aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-3',
