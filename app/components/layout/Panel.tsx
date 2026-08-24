@@ -10,7 +10,7 @@ interface PanelProps extends ComponentProps<'div'> {
 
 export function Panel({ children, className, title, actions, ...rest }: PanelProps) {
   return (
-    <div className={cn('bg-sidebar text-card-foreground rounded-xl')} {...rest}>
+    <div className={cn('bg-card text-card-foreground ring-foreground/10 rounded-xl shadow-sm ring-1')} {...rest}>
       {(title || actions) && (
         <div className="border-border flex flex-col items-start gap-2 border-b px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6">
           {title && <h3 className="min-w-0 truncate leading-none font-semibold tracking-tight">{title}</h3>}
