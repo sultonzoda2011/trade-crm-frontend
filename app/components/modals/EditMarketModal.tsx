@@ -11,6 +11,7 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
@@ -79,6 +80,7 @@ export function EditMarketModal() {
   function onSubmit(data: UpdateMarketSchema) {
     mutate(data);
   }
+  const isMobile = useIsMobile();
 
   return (
     <Modal
@@ -100,10 +102,11 @@ export function EditMarketModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('common:fields.image')}
+            label={!isMobile ? t('common:fields.image') : undefined}
             accept="image/*"
             aspectRatio="square"
             size="compact"
+            className="m-auto sm:m-0"
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
