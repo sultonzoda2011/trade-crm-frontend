@@ -8,6 +8,7 @@ import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { useProfileModals } from '~/routes/(crm)/profile/store';
@@ -57,6 +58,7 @@ export function EditProfileModal() {
   function onSubmit(data: UpdateProfileSchema) {
     mutate(data);
   }
+  const isMobile = useIsMobile();
 
   return (
     <Modal
@@ -78,10 +80,11 @@ export function EditProfileModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('avatar')}
+            label={!isMobile ? t('avatar') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"
+            size="compact"            className="m-auto"
+
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
