@@ -108,7 +108,7 @@ export function FileInputField({
         // ── Simple variant ────────────────────────────────────────────────
         <div
           className={cn(
-            'flex h-8 w-full items-center gap-2 rounded-lg border bg-transparent px-2.5 text-sm transition-colors',
+            'flex h-8 w-full items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors',
             'dark:bg-input/30',
             error ? 'border-destructive' : 'border-border',
             !value && 'hover:bg-muted/40 cursor-pointer'
