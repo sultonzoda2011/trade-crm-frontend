@@ -9,6 +9,7 @@ import { Button } from '~/components/ui/button';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { useCategoriesModals } from '~/routes/(crm)/categories/store';
@@ -52,6 +53,7 @@ export function EditCategoryModal() {
   function onSubmit(data: UpdateCategorySchema) {
     mutate(data);
   }
+  const isMobile = useIsMobile();
 
   return (
     <Modal
@@ -73,10 +75,11 @@ export function EditCategoryModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('common:fields.image')}
+            label={!isMobile ? t('common:fields.image') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"
+            size="compact"            className="m-auto"
+
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
