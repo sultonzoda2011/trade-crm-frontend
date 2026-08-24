@@ -10,6 +10,7 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { getRoleOptions } from '~/config/enumOptions';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { useUsersModals } from '~/routes/(crm)/users/store';
@@ -63,6 +64,7 @@ export function EditUserModal() {
   function onSubmit(data: UpdateUserSchema) {
     mutate(data);
   }
+  const isMobile = useIsMobile();
 
   return (
     <Modal
@@ -81,14 +83,29 @@ export function EditUserModal() {
       }>
       <form id="edit-user-form" onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
-          <FormFileInput
-            control={control}
-            name="image"
-            label={t('common:fields.image')}
-            accept="image/*"
-            aspectRatio="square"
-            size="compact"
-          />
+          <div className={`${isMobile ? 'flex items-center justify-center' : ''} space-y-4`}>
+            <FormFileInput
+              control={control}
+              name="image"
+              label={!isMobile ? t('common:fields.image') : undefined}
+              accept="image/*"
+              aspectRatio="square"
+              size="compact"
+              className="m-auto sm:m-0"
+            />
+
+            {!isMobile && (
+              <FormCustomSelect
+                control={control}
+                name="role"
+                label={t('fields.role')}
+                options={roleOptions}
+                placeholder={t('fields.role')}
+                required
+                className="mt-0.75"
+              />
+            )}
+          </div>
           <div className="space-y-4">
             <FormInput
               control={control}
@@ -112,14 +129,16 @@ export function EditUserModal() {
               label={t('fields.password')}
               placeholder={t('fields.password')}
             />
-            <FormCustomSelect
-              control={control}
-              name="role"
-              label={t('fields.role')}
-              options={roleOptions}
-              placeholder={t('fields.role')}
-              required
-            />
+            {isMobile && (
+              <FormCustomSelect
+                control={control}
+                name="role"
+                label={t('fields.role')}
+                options={roleOptions}
+                placeholder={t('fields.role')}
+                required
+              />
+            )}
           </div>
         </div>
       </form>
