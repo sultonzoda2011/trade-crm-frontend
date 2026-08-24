@@ -9,6 +9,7 @@ import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { mapToOptions } from '~/lib/mapToOptions';
@@ -65,6 +66,7 @@ export function CreateMarketModal() {
   function onSubmit(data: CreateMarketSchema) {
     mutate(data);
   }
+  const isMobile = useIsMobile();
 
   return (
     <Modal
@@ -86,10 +88,11 @@ export function CreateMarketModal() {
           <FormFileInput
             control={control}
             name="image"
-            label={t('common:fields.image')}
+            label={!isMobile ? t('common:fields.image') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"
+            size="compact"            className="m-auto"
+
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
