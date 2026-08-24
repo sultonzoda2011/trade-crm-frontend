@@ -76,7 +76,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
               labelLine={false}
               label={({ percent = 0 }) => `${(percent * 100).toFixed(0)}%`}
               outerRadius={80}
-              fill="#8884d8"
+              fill="var(--chart-1)"
               dataKey="amount">
               {formattedData.map((entry) => (
                 <Cell key={entry.type} fill={CHART_COLORS[entry.type]} />
