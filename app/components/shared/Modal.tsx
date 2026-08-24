@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '~/components/ui/sheet';
+import { Sheet, SheetFooter, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 
@@ -32,7 +32,7 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={(o) => !o && onClose()} modal={false}>
-        <SheetContent side="bottom" className={cn('max-h-[88vh] rounded-t-xl', className)}>
+        <DialogContent className={cn('max-h-[88vh] rounded-t-xl', className)}>
           <SheetHeader className="pb-0">
             <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
@@ -40,7 +40,7 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
           <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto px-4">{children}</div>
 
           {footer && <SheetFooter className="pt-0">{footer}</SheetFooter>}
-        </SheetContent>
+        </DialogContent>
       </Sheet>
     );
   }
