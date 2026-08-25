@@ -16,6 +16,8 @@
   "fileMustBeImage": "File must be an image",
   "quantityMin": "Minimum 1",
   "discountMin": "Minimum 0",
+  "markupMin": "Minimum 0",
+  "sellerCreditExceedsBalance": "Amount exceeds current balance",
   "itemProductRequired": "Select product",
   "itemsRequired": "Add at least one item",
   "dueDateRequired": "Required for DEBT type",
