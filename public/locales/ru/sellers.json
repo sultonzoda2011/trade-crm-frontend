@@ -12,6 +12,19 @@
   "transactionsHistory": "История транзакций",
   "viewMarkets": "Рынок продавца",
   "noTransactions": "Пока нет транзакций",
+  "markupBalance": "Баланс по надбавкам",
+  "earned": "Накоплено",
+  "refunded": "Откачено возвратами",
+  "paidOut": "Уже выдано",
+  "balance": "К выдаче",
+  "payout": "Выдать",
+  "payoutModalTitle": "Выдать надбавку",
+  "payoutHint": "Можно выдать всю сумму или часть — остаток продолжит копиться.",
+  "payoutSuccess": "Выплата зафиксирована",
+  "payoutError": "Не удалось зафиксировать выплату",
+  "creditsHistory": "История выплат",
+  "noCredits": "Выплат пока не было",
+  "noBalance": "Надбавок пока нет",
   "navigation": {
     "sellers": "Продавцы"
   }
