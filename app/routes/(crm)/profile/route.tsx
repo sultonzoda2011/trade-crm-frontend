@@ -8,9 +8,9 @@ import { marketsApi } from '~/api/markets';
 import { productsApi } from '~/api/products';
 import { profileApi } from '~/api/profile';
 import { transactionsApi } from '~/api/transactions';
+import { Panel } from '~/components/layout/Panel';
 import { ChangePasswordModal } from '~/components/modals/ChangePasswordModal';
 import { EditProfileModal } from '~/components/modals/EditProfileModal';
-import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
@@ -128,9 +128,7 @@ export default function ProfilePage() {
             </Avatar>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{product.name}</p>
-              {product.category && (
-                <p className="text-muted-foreground truncate text-xs">{product.category.name}</p>
-              )}
+              {product.category && <p className="text-muted-foreground truncate text-xs">{product.category.name}</p>}
             </div>
           </div>
           <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>
@@ -197,18 +195,7 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="min-w-0 space-y-6 lg:col-span-2">
           <Panel className="p-6">
-            <DetailHeader
-              name={profile.name}
-              subtitle={profile.email}
-              image={profile.image}
-              badges={roleBadge}
-              actions={
-                <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(profile)}>
-                  <Pencil className="size-3.5" />
-                  <span className="hidden sm:inline">{t('editProfile')}</span>
-                </Button>
-              }
-            />
+            <DetailHeader name={profile.name} subtitle={profile.email} image={profile.image} badges={roleBadge} />
           </Panel>
 
           <Panel title={t('sections.profile')}>
