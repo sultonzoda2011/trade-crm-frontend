@@ -107,6 +107,7 @@ export default function CategoriesPage() {
         onLimitChange={setLimit}
         mobileFields={{
           '_count.products': 'primary',
+          created: 'primary',
           description: 'secondary',
         }}
       />
