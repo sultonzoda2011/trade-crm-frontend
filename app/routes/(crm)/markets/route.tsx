@@ -76,7 +76,7 @@ export default function MarketsPage() {
     columns,
     data: markets,
     storageKey: 'markets-table-columns',
-    initialVisibility: { 'owner.name': false, 'count.debtors': false, 'count.transactions': false, createdAt: false },
+    initialVisibility: { 'count.transactions': false, createdAt: false },
   });
 
   return (
