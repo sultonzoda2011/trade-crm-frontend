@@ -2,14 +2,14 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
-import { UserAvatar } from '~/components/shared/UserAvatar';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import type { Market } from '~/types/markets';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
+import type { Market } from '~/types/markets';
 
 function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const deleteModal = useMarketsModals((s) => s.delete);
@@ -58,16 +58,6 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
         />
       ),
     }),
-    columnHelper.accessor('owner.name', {
-      id: 'owner.name',
-      header: t('fields.owner', 'Владелец'),
-      cell: (info) => (
-        <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium">{info.getValue()}</span>
-          <span className="text-muted-foreground text-2xs">{info.row.original.owner.email}</span>
-        </div>
-      ),
-    }),
 
     columnHelper.accessor('count.products', {
       id: 'count.products',
@@ -87,6 +77,18 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Market, any>[] =>
         </Badge>
       ),
     }),
+    columnHelper.accessor('owner.name', {
+      id: 'owner.name',
+      header: t('fields.owner', 'Владелец'),
+      cell: (info) => (
+        <UserAvatar
+          fullName={info.row.original.owner.name}
+          imagePath={info.row.original.owner.image ?? undefined}
+          subInfo={info.row.original.owner.email}
+        />
+      ),
+    }),
+
     columnHelper.accessor('count.transactions', {
       id: 'count.transactions',
       header: t('fields.transactions', 'Транзакции'),
