@@ -42,6 +42,12 @@ export const createTransactionItemSchema = (t: TFunction, stockMap?: StockMap) =
         .refine((v) => v == null || v === '' || (Number(v) >= 0 && Number.isFinite(Number(v))), {
           message: t('discountMin', { ns: 'validation' }),
         }),
+      markup: z
+        .union([z.string(), z.number(), z.null()])
+        .optional()
+        .refine((v) => v == null || v === '' || (Number(v) >= 0 && Number.isFinite(Number(v))), {
+          message: t('markupMin', { ns: 'validation' }),
+        }),
     })
     .superRefine((item, ctx) => {
       if (!item.productId || !stockMap) return;
