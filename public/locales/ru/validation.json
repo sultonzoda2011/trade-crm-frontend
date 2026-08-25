@@ -16,6 +16,8 @@
   "fileMustBeImage": "Файл должен быть изображением",
   "quantityMin": "Минимум 1",
   "discountMin": "Минимум 0",
+  "markupMin": "Минимум 0",
+  "sellerCreditExceedsBalance": "Сумма превышает текущий баланс",
   "itemProductRequired": "Выберите товар",
   "itemsRequired": "Добавьте хотя бы один товар",
   "dueDateRequired": "Обязательное поле для типа «В долг»",

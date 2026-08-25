@@ -16,6 +16,8 @@
   "fileMustBeImage": "Файл бояд тасвир бошад",
   "quantityMin": "Ҳадди аққал 1",
   "discountMin": "Ҳадди аққал 0",
+  "markupMin": "Ҳадди аққал 0",
+  "sellerCreditExceedsBalance": "Маблағ аз баланси ҷорӣ зиёд аст",
   "itemProductRequired": "Молро интихоб кунед",
   "itemsRequired": "Ҳадди аққал як мол илова кунед",
   "dueDateRequired": "Барои намуди «Қарз» ҳатмӣ",
