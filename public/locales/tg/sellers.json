@@ -12,6 +12,19 @@
   "transactionsHistory": "Таърихи амалиётҳо",
   "viewMarkets": "Бозори фурӯшанда",
   "noTransactions": "Ҳанӯз амалиёте нест",
+  "markupBalance": "Балансн иловагӣ",
+  "earned": "Ҷамъ шуд",
+  "refunded": "Бо баргардонидан кам шуд",
+  "paidOut": "Аллакай дода шуд",
+  "balance": "Барои додан",
+  "payout": "Додан",
+  "payoutModalTitle": "Додани иловагӣ",
+  "payoutHint": "Метавонед тамоми маблағ ё як қисми онро диҳед — боқимонда ҷамъ шуданро идома медиҳад.",
+  "payoutSuccess": "Пардохт сабт шуд",
+  "payoutError": "Пардохтро сабт кардан нашуд",
+  "creditsHistory": "Таърихи пардохтҳо",
+  "noCredits": "Ҳанӯз пардохте нест",
+  "noBalance": "Ҳанӯз иловагӣ нест",
   "navigation": {
     "sellers": "Фурӯшандагон"
   }
