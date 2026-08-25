@@ -12,6 +12,8 @@ export interface TransactionItem {
   quantity: number;
   price: number;
   discount: number;
+  /** Надбавка сверху цены — противоположность discount. Копится в баланс продавца. */
+  markup: number;
   totalPrice: number;
   /** Units of this line already returned. Single source of truth for refunds. */
   refundedQuantity: number;
@@ -50,6 +52,7 @@ export interface Transaction {
   paymentType: PaymentType;
   totalAmount: number;
   discountAmount: number;
+  markupAmount: number;
   remainingAmount: number;
   status: TransactionStatus;
   dueDate: string | null;
@@ -63,11 +66,12 @@ export interface Transaction {
 }
 
 // Цена всегда берётся сервером из карточки товара — с фронта она не отправляется,
-// только скидка на позицию (если она разрешена бизнес-процессом).
+// только скидка и надбавка на позицию (если это разрешено бизнес-процессом).
 export interface CreateTransactionItemRequest {
   productId: string;
   quantity: number;
   discount?: number;
+  markup?: number;
 }
 export interface CreateTransactionRequest {
   debtorId?: string;
