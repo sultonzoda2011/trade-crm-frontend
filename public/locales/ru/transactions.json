@@ -94,7 +94,7 @@
     "timeline": "Хронология",
     "refundHistory": "История возвратов",
     "originalSale": "Исходная продажа",
-    "refundOfHint": "Это возврат по продаже #{{id}}",
+    "refundOfHint": "Это возврат по исходной продаже",
     "noRefunds": "Возвратов не было",
     "openTransaction": "Открыть транзакцию",
     "timelineEvent": {

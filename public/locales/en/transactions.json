@@ -94,7 +94,7 @@
     "timeline": "Timeline",
     "refundHistory": "Refund history",
     "originalSale": "Original sale",
-    "refundOfHint": "This is a refund of sale #{{id}}",
+    "refundOfHint": "This is a refund of the original sale",
     "noRefunds": "No refunds yet",
     "openTransaction": "Open transaction",
     "timelineEvent": {

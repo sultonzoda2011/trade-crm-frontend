@@ -94,7 +94,7 @@
     "timeline": "Тартиби вақт",
     "refundHistory": "Таърихи бозгардониданҳо",
     "originalSale": "Фурӯши аслӣ",
-    "refundOfHint": "Ин бозгардонидан барои фурӯши #{{id}} аст",
+    "refundOfHint": "Ин бозгардонидан барои фурӯши аслӣ аст",
     "noRefunds": "Бозгардонидан набуд",
     "openTransaction": "Кушодани транзаксия",
     "timelineEvent": {
