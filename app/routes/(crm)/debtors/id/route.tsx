@@ -7,17 +7,15 @@ import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { MarketCard } from '~/components/shared/MarketCard';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
@@ -87,23 +85,11 @@ export default function DebtorDetailPage() {
             <>
               <div className="text-left sm:text-right">
                 <p className="text-muted-foreground text-xs">{t('totalDebt')}</p>
-                <p className={`font-mono text-xl font-bold ${debtor.totalDebtAmount > 0 ? 'text-warning' : 'text-success'}`}>
+                <p
+                  className={`font-mono text-xl font-bold ${debtor.totalDebtAmount > 0 ? 'text-warning' : 'text-success'}`}>
                   {fmtTJS(debtor.totalDebtAmount)}
                 </p>
               </div>
-              {can(Action.DEBTORS_EDIT) && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(debtor)}>
-                        <Pencil className="size-3.5" />
-                        <span className="hidden sm:inline">{t('actions.edit', { ns: 'common' })}</span>
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="bottom">{t('actions.edit', { ns: 'common' })}</TooltipContent>
-                </Tooltip>
-              )}
             </>
           }
         />
@@ -126,7 +112,11 @@ export default function DebtorDetailPage() {
               <InfoItem label={t('profile.activeDebtCount')} value={debtor.activeDebtCount} />
               <InfoItem
                 label={t('profile.overdueAmount')}
-                value={<span className={debtor.overdueAmount > 0 ? 'text-destructive' : undefined}>{fmtTJS(debtor.overdueAmount)}</span>}
+                value={
+                  <span className={debtor.overdueAmount > 0 ? 'text-destructive' : undefined}>
+                    {fmtTJS(debtor.overdueAmount)}
+                  </span>
+                }
               />
               <InfoItem label={t('profile.overdueCount')} value={debtor.overdueCount} />
               <InfoItem label={t('profile.totalIssued')} value={fmtTJS(debtor.totalIssued)} />
@@ -159,9 +149,7 @@ export default function DebtorDetailPage() {
                   </Badge>
                 ))}
               </div>
-              <p className="text-muted-foreground mt-3 text-xs">
-                {t('riskFactors.score', { count: debtor.score })}
-              </p>
+              <p className="text-muted-foreground mt-3 text-xs">{t('riskFactors.score', { count: debtor.score })}</p>
             </Panel>
           )}
 

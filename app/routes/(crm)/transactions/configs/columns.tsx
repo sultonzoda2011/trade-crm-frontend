@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { CreditCard, Eye, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { TransactionProducts } from '~/components/transactions/TransactionProducts';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { TRANSACTION_STATUS_BADGE, TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
@@ -49,16 +50,24 @@ const columnHelper = createColumnHelper<Transaction>();
 
 export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>[] => {
   return [
-    columnHelper.accessor('id', {
-      header: t('fields.id'),
+    columnHelper.display({
+      id: 'products',
+      header: t('fields.items'),
       enableHiding: false,
-      cell: (info) => (
-        <Link
-          to={`/transactions/${info.getValue()}`}
-          className="text-primary font-mono text-xs font-medium hover:underline">
-          #{info.getValue().slice(0, 8)}
-        </Link>
-      ),
+      cell: (info) => {
+        const tx = info.row.original;
+        return (
+          <Link
+            to={`/transactions/${tx.id}`}
+            className="inline-flex items-center gap-2 transition-opacity hover:opacity-80">
+            {tx.items && tx.items.length > 0 ? (
+              <TransactionProducts items={tx.items} size="sm" max={3} />
+            ) : (
+              <span className="text-muted-foreground text-xs">{t(`type.${tx.type}`)}</span>
+            )}
+          </Link>
+        );
+      },
     }),
 
     columnHelper.accessor('debtor', {

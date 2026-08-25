@@ -16,8 +16,6 @@ import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
@@ -106,21 +104,6 @@ export default function ProductDetailPage() {
                 </Badge>
               )}
             </>
-          }
-          actions={
-            can(Action.PRODUCTS_EDIT) ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button variant="outline" size="sm" render={<Link to={`/products/${product.id}/edit`} />}>
-                      <Pencil className="mr-1 size-4" />
-                      {t('actions.edit')}
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-              </Tooltip>
-            ) : undefined
           }
         />
       </Panel>

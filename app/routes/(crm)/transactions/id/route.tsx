@@ -14,6 +14,7 @@ import { InfoLink } from '~/components/shared/InfoLink';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
 import { TransactionTimeline } from '~/components/transactions/TransactionTimeline';
+import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { RefundHistory } from '~/components/transactions/RefundHistory';
 import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -68,6 +69,13 @@ export default function TransactionDetailPage() {
     !transaction.refundOfId &&
     refundableUnits > 0;
 
+  // Платежи показываем, только если они есть, либо это долг/кредит, где важно
+  // отслеживать историю погашений. Для наличной сделки, оплаченной сразу,
+  // отдельных платежей нет — пустая панель "нет данных" не нужна.
+  const hasPayments = !!transaction.payments && transaction.payments.length > 0;
+  const isCredit = transaction.paymentType === 'CREDIT' || transaction.type === 'DEBT' || !!transaction.debtor;
+  const showPayments = hasPayments || isCredit;
+
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
@@ -77,29 +85,32 @@ export default function TransactionDetailPage() {
             link: location.state?.fromPath || '/transactions',
             label: location.state?.fromName || t('title'),
           },
-          { label: `#${transaction.id.slice(0, 8)}` },
+          { label: getTransactionTitle(transaction, t) },
         ]}
       />
 
       <Panel className="p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2.5">
-              <h2 className="font-mono text-lg font-bold">#{transaction.id.slice(0, 8)}</h2>
-              <TransactionStatusBadge status={transaction.status} t={t} />
-              <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[transaction.type]}>
-                {t(`type.${transaction.type}`)}
-              </Badge>
+          <div className="flex items-start gap-3">
+            <TransactionProducts items={transaction.items} size="lg" max={4} />
+            <div className="space-y-1">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h2 className="text-lg font-bold">{getTransactionTitle(transaction, t)}</h2>
+                <TransactionStatusBadge status={transaction.status} t={t} />
+                <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[transaction.type]}>
+                  {t(`type.${transaction.type}`)}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground text-2xs">
+                {t('fields.createdAt')}: {formatDate(transaction.createdAt, true)}
+                {transaction.dueDate && (
+                  <>
+                    {' '}
+                    · {t('fields.dueDate')}: {formatDate(transaction.dueDate, false)}
+                  </>
+                )}
+              </p>
             </div>
-            <p className="text-muted-foreground text-2xs">
-              {t('fields.createdAt')}: {formatDate(transaction.createdAt, true)}
-              {transaction.dueDate && (
-                <>
-                  {' '}
-                  · {t('fields.dueDate')}: {formatDate(transaction.dueDate, false)}
-                </>
-              )}
-            </p>
           </div>
 
           {/* На узких экранах сумма остатка и кнопки не помещаются в один ряд —
@@ -222,8 +233,9 @@ export default function TransactionDetailPage() {
 
           <TransactionTimeline events={transaction.timeline} currentId={transaction.id} />
 
-          <Panel title={t('fields.payments')}>
-            {transaction.payments && transaction.payments.length > 0 ? (
+          {showPayments && (
+            <Panel title={t('fields.payments')}>
+              {hasPayments ? (
               <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
                 <table className="w-full text-left text-sm">
                   <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs uppercase">
@@ -260,8 +272,9 @@ export default function TransactionDetailPage() {
               </div>
             ) : (
               <p className="text-muted-foreground py-3 text-center text-sm">{t('table.noData', { ns: 'common' })}</p>
-            )}
-          </Panel>
+              )}
+            </Panel>
+          )}
         </div>
 
         <div className="space-y-3">
@@ -294,7 +307,7 @@ export default function TransactionDetailPage() {
             </div>
           </Panel>
 
-          <Panel title={t('fields.id')} className="p-3">
+          <Panel title={t('details')} className="p-3">
             <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
               <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />

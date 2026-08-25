@@ -42,11 +42,11 @@ export function EditCategoryModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success(t('categories:updateSuccess'));
+      toast.success(t('updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('categories:updateError'));
+      toast.error(t('updateError'));
     },
   });
 
@@ -78,8 +78,8 @@ export function EditCategoryModal() {
             label={!isMobile ? t('common:fields.image') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"            className="m-auto"
-
+            size="compact"
+            className="m-auto sm:m-0"
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />

@@ -2,6 +2,7 @@ import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { Panel } from '~/components/layout/Panel';
+import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { Badge } from '~/components/ui/badge';
 import { fmtTJS, formatDate } from '~/lib/format';
 import type { RelatedTransaction } from '~/types/transactions';
@@ -41,9 +42,7 @@ export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
       {refundOf ? (
         <div className="flex items-center justify-between gap-3 py-1">
           <div className="min-w-0">
-            <p className="text-muted-foreground text-xs">
-              {t('detail.refundOfHint', { id: refundOf.id.slice(0, 8) })}
-            </p>
+            <p className="text-muted-foreground text-xs">{t('detail.refundOfHint')}</p>
             <p className="text-2xs text-muted-foreground">{formatDate(refundOf.createdAt, true)}</p>
           </div>
           <div className="flex shrink-0 items-center gap-3">
@@ -62,7 +61,7 @@ export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
           {refunds.map((refund) => (
             <li key={refund.id} className="flex items-center justify-between gap-3 py-2">
               <div className="min-w-0">
-                <p className="font-mono text-sm font-medium">#{refund.id.slice(0, 8)}</p>
+                <p className="text-sm font-medium">{getTransactionTitle(refund, t)}</p>
                 <p className="text-muted-foreground text-2xs">
                   {formatDate(refund.createdAt, true)}
                   {refund.createdBy ? ` · ${t('detail.actor', { name: refund.createdBy.name })}` : ''}

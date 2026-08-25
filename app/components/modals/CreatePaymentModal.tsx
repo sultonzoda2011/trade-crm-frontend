@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
+import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
@@ -66,10 +67,10 @@ export function CreatePaymentModal() {
           </Button>
         </div>
       }>
-      <div className="bg-muted/50 mb-4 space-y-1 rounded-lg p-3 text-sm">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t('fields.id')}:</span>
-          <span className="font-mono font-medium">#{transaction.id.slice(0, 8)}</span>
+      <div className="bg-muted/50 mb-4 space-y-2 rounded-lg p-3 text-sm">
+        <div className="flex items-center gap-2.5">
+          <TransactionProducts items={transaction.items} size="sm" max={3} />
+          <span className="truncate font-medium">{getTransactionTitle(transaction, t)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('fields.totalAmount')}:</span>

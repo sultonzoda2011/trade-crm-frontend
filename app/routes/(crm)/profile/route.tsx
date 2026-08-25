@@ -206,8 +206,8 @@ export default function ProfilePage() {
             </div>
           </Panel>
 
-          <Panel title={t('sections.market')}>
-            {market ? (
+          {market && (
+            <Panel title={t('sections.market')}>
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <InfoItem
                   label={t('fields.market')}
@@ -227,10 +227,8 @@ export default function ProfilePage() {
                 <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />
                 <InfoItem label={t('fields.updatedAt')} value={formatDate(market.updatedAt, true)} />
               </div>
-            ) : (
-              <p className="text-muted-foreground py-4 text-center text-sm">{t('noMarket')}</p>
-            )}
-          </Panel>
+            </Panel>
+          )}
           {market && tabs.length > 0 && (
             <Panel>
               <MarketEntityTabs value={activeTab} onValueChange={setActiveTab} tabs={tabs} />

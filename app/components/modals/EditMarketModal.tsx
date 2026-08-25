@@ -69,11 +69,11 @@ export function EditMarketModal() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['markets'] });
       void queryClient.invalidateQueries({ queryKey: ['market'] });
-      toast.success(t('markets:updateSuccess'));
+      toast.success(t('updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('markets:updateError'));
+      toast.error(t('updateError'));
     },
   });
 

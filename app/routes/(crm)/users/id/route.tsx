@@ -9,26 +9,24 @@ import { usersApi } from '~/api/users';
 import { Panel } from '~/components/layout/Panel';
 import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { MarketCard } from '~/components/shared/MarketCard';
 import { ListLink } from '~/components/shared/ListLink';
+import { MarketCard } from '~/components/shared/MarketCard';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
-import { Badge } from '~/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import { Role } from '~/types/common';
 import { useUsersModals } from '~/routes/(crm)/users/store';
+import { Role } from '~/types/common';
 
 export default function UserDetailPage() {
   const { t } = useTranslation(['users', 'common']);
@@ -102,21 +100,6 @@ export default function UserDetailPage() {
           subtitle={user.email}
           image={user.image}
           badges={<Badge variant="outline">{roleLabel}</Badge>}
-          actions={
-            can(Action.USERS_EDIT) ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(user)}>
-                      <Pencil className="size-3.5" />
-                      <span className="hidden sm:inline">{t('actions.edit')}</span>
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-              </Tooltip>
-            ) : undefined
-          }
         />
       </Panel>
 
@@ -180,11 +163,7 @@ export default function UserDetailPage() {
           )}
 
           {!ownedMarkets.length && user.market && (
-            <MarketCard
-              market={user.market}
-              t={t}
-              viewState={{ fromPath: location.pathname, fromName: user.name }}
-            />
+            <MarketCard market={user.market} t={t} viewState={{ fromPath: location.pathname, fromName: user.name }} />
           )}
 
           {userTransactions.length > 0 && (

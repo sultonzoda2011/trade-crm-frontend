@@ -2,14 +2,14 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
-import { UserAvatar } from '~/components/shared/UserAvatar';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import type { Category, CategoryDetail } from '~/types/products';
 import { useCategoriesModals } from '~/routes/(crm)/categories/store';
+import type { Category, CategoryDetail } from '~/types/products';
 
 function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
   const deleteModal = useCategoriesModals((s) => s.delete);
@@ -54,7 +54,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Category, any>[] 
     }),
     columnHelper.accessor('description', {
       header: t('fields.description'),
-      cell: (info) => <div className="text-muted-foreground w-50 truncate text-sm">{info.getValue() ?? '—'}</div>,
+      cell: (info) => <div className="text-muted-foreground text-sm">{info.getValue() ?? '—'}</div>,
     }),
     columnHelper.accessor('_count.products', {
       id: '_count.products',

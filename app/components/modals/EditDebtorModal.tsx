@@ -32,11 +32,11 @@ export function EditDebtorModal() {
     mutationFn: ({ request, id }: { request: RequestDebtorSchema; id: string }) => debtorsApi.update({ request, id }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['debtors'] });
-      toast.success(t('debtors:updateSuccess'));
+      toast.success(t('updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('debtors:updateError'));
+      toast.error(t('updateError'));
     },
   });
 

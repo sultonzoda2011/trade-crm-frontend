@@ -53,11 +53,11 @@ export function EditUserModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['users'] });
-      toast.success(t('users:updateSuccess'));
+      toast.success(t('updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('users:updateError'));
+      toast.error(t('updateError'));
     },
   });
 

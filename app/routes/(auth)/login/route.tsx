@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { Eye, EyeOff, Mail } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { redirect, useNavigate, useSearchParams } from 'react-router';
@@ -176,7 +176,6 @@ export default function LoginPage() {
                   label={t('email')}
                   placeholder={t('emailPlaceholder')}
                   type="email"
-                  endIcon={<Mail className="text-muted-foreground h-4 w-4" />}
                 />
                 <FormInput
                   control={control}

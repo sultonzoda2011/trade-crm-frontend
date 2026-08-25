@@ -9,18 +9,16 @@ import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { InfoLink } from '~/components/shared/InfoLink';
-import { MarketCard } from '~/components/shared/MarketCard';
 import { ListLink } from '~/components/shared/ListLink';
+import { MarketCard } from '~/components/shared/MarketCard';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
-import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
@@ -87,26 +85,7 @@ export default function CategoryDetailPage() {
       />
 
       <Panel className="p-6">
-        <DetailHeader
-          name={category.name}
-          subtitle={category.description ?? undefined}
-          image={category.image}
-          actions={
-            can(Action.CATEGORIES_MANAGE) ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(category)}>
-                      <Pencil className="size-3.5" />
-                      <span className="hidden sm:inline">{t('actions.edit')}</span>
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-              </Tooltip>
-            ) : undefined
-          }
-        />
+        <DetailHeader name={category.name} subtitle={category.description ?? undefined} image={category.image} />
       </Panel>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">

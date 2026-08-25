@@ -8,7 +8,8 @@ import { getClientUser } from '~/lib/auth-utils';
 import type { Route } from './+types/layout';
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
-  // В SPA-режиме request.headers не содержит Cookie — читаем document.cookie напрямую
+  // В SPA-режиме request.headers не содержит токен — читаем клиентское
+  // хранилище (localStorage) напрямую через getClientUser().
   const user = getClientUser();
   if (!user) {
     const url = new URL(request.url);

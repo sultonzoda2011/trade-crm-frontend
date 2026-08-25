@@ -267,11 +267,9 @@ export function DataTable<TData>({
                         const header = cell.column.columnDef.header;
                         const label = typeof header === 'string' ? header : undefined;
                         return (
-                          <div key={cell.id} className="min-w-0">
-                            {label && <p className="text-muted-foreground text-2xs truncate">{label}</p>}
-                            <p className="truncate text-xs">
-                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </p>
+                          <div key={cell.id}>
+                            {label && <p className="text-muted-foreground text-sm">{label}</p>}
+                            <p className="text-xs">{flexRender(cell.column.columnDef.cell, cell.getContext())}</p>
                           </div>
                         );
                       })}

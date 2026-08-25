@@ -44,11 +44,11 @@ export function EditSellerModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['sellers'] });
-      toast.success(t('sellers:updateSuccess'));
+      toast.success(t('updateSuccess'));
       editModal.close();
     },
     onError: () => {
-      toast.error(t('sellers:updateError'));
+      toast.error(t('updateError'));
     },
   });
 

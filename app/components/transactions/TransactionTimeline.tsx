@@ -1,4 +1,4 @@
-import { Banknote, HandCoins, ShoppingCart, Undo2 } from 'lucide-react';
+import { ArrowUpRight, Banknote, HandCoins, ShoppingCart, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Panel } from '~/components/layout/Panel';
@@ -56,8 +56,9 @@ export function TransactionTimeline({ events, currentId }: TransactionTimelinePr
                   {isOther && (
                     <Link
                       to={`/transactions/${event.transactionId}`}
-                      className="text-primary text-xs hover:underline">
-                      #{event.transactionId.slice(0, 8)}
+                      className="text-primary inline-flex items-center gap-1 text-xs hover:underline">
+                      {t('detail.openTransaction')}
+                      <ArrowUpRight className="size-3.5" />
                     </Link>
                   )}
                 </div>

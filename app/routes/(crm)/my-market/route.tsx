@@ -20,6 +20,7 @@ import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
 import { StatRow } from '~/components/shared/StatRow';
+import { TransactionRow } from '~/components/shared/TransactionRow';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -158,26 +159,42 @@ export default function MyMarketPage() {
         </StatRow>
       </Panel>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-        <div className="min-w-0 space-y-3 lg:col-span-2">
-          <Panel className="p-3">
-            <div className="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2">
-              <InfoItem
-                label={t('fields.owner')}
-                value={
-                  <span className="flex items-center gap-2">
-                    <Avatar className="shrink-0">
-                      {market.owner.image ? <AvatarImage src={market.owner.image} alt={market.owner.name} /> : null}
-                      <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <InfoLink to={`/users/${market.ownerId}`} state={listState}>
-                      {market.owner.name}
-                    </InfoLink>
-                  </span>
-                }
-              />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />
-            </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
+          <Panel className="grid grid-cols-1 gap-x-3 gap-y-2 sm:grid-cols-2">
+            <InfoItem
+              label={t('fields.name')}
+              value={
+                <div className="flex items-center gap-2">
+                  <Avatar size="sm" className="shrink-0">
+                    {market.image && <AvatarImage src={market.image} alt={market.name} />}
+
+                    <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+
+                  <span className="truncate">{market.name}</span>
+                </div>
+              }
+            />
+            <InfoItem label={t('fields.address')} value={market.address} />
+
+            <InfoItem
+              label={t('fields.owner')}
+              value={
+                <span className="flex items-center gap-2">
+                  <Avatar className="shrink-0">
+                    {market.owner.image ? <AvatarImage src={market.owner.image} alt={market.owner.name} /> : null}
+                    <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <InfoLink to={`/users/${market.ownerId}`} state={listState}>
+                    {market.owner.name}
+                  </InfoLink>
+                </span>
+              }
+            />
+
+            <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />
+            <InfoItem label={t('fields.updatedAt')} value={formatDate(market.updatedAt, true)} />
           </Panel>
 
           <Panel>
@@ -263,21 +280,13 @@ export default function MyMarketPage() {
                   isEmpty: marketTransactions.length === 0,
                   emptyMessage: t('noTransactions'),
                   rows: marketTransactions.map((tx) => (
-                    <ListLink key={tx.id} to={`/transactions/${tx.id}`} state={listState} className="py-1.5">
-                      <div className="flex min-w-0 items-center gap-2.5">
-                        <Avatar className="shrink-0">
-                          {tx.createdBy.image ? <AvatarImage src={tx.createdBy.image} alt={tx.createdBy.name} /> : null}
-                          <AvatarFallback>{tx.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium">#{tx.id.slice(0, 8)}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {t(`type.${tx.type}`, { ns: 'transactions' })}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</span>
-                    </ListLink>
+                    <TransactionRow
+                      key={tx.id}
+                      tx={tx}
+                      t={t}
+                      to={`/transactions/${tx.id}`}
+                      state={listState}
+                    />
                   )),
                   viewAll: {
                     to: '/transactions',

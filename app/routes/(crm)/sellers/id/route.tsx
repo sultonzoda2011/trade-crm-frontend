@@ -20,10 +20,9 @@ import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
-import { formatDate, fmtTJS } from '~/lib/format';
+import { fmtTJS, formatDate } from '~/lib/format';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 
 export default function SellerDetailPage() {
@@ -98,26 +97,7 @@ export default function SellerDetailPage() {
       />
 
       <Panel className="p-6">
-        <DetailHeader
-          name={seller.name}
-          subtitle={seller.email}
-          image={seller.image}
-          actions={
-            can(Action.SELLERS_EDIT) ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(seller)}>
-                      <Pencil className="size-3.5" />
-                      <span className="hidden sm:inline">{t('actions.edit')}</span>
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-              </Tooltip>
-            ) : undefined
-          }
-        />
+        <DetailHeader name={seller.name} subtitle={seller.email} image={seller.image} />
       </Panel>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
