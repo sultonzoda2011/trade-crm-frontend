@@ -23,7 +23,6 @@ import { StatRow } from '~/components/shared/StatRow';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -130,26 +129,7 @@ export default function MyMarketPage() {
   return (
     <div className="flex flex-1 flex-col space-y-3 pb-4">
       <Panel className="p-3">
-        <DetailHeader
-          name={market.name}
-          subtitle={market.address}
-          image={market.image}
-          actions={
-            can(Action.MARKETS_EDIT) ? (
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => editModal.open(market)}>
-                      <Pencil className="size-3.5" />
-                      <span className="hidden sm:inline">{t('actions.edit')}</span>
-                    </Button>
-                  }
-                />
-                <TooltipContent side="bottom">{t('actions.edit')}</TooltipContent>
-              </Tooltip>
-            ) : undefined
-          }
-        />
+        <DetailHeader name={market.name} subtitle={market.address} image={market.image} />
         <StatRow className="border-border mt-3 border-t pt-2.5">
           <StatCard
             size="sm"
