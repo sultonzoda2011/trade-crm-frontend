@@ -86,42 +86,48 @@
 }
 
 :root {
-  /* Современная палитра shadcn с синим primary. */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2077 0.0398 265.7549);
+  /* ── Surfaces: a real elevation ladder so chrome / canvas / cards read apart.
+   * Lightness climbs with elevation: sidebar(desk) < muted < canvas < card(white).
+   * This is the fix for the flat light mode — before, --background, --card and
+   * --sidebar were all near-white (1 / 1 / 0.965) and blended into one sheet. */
+  --background: oklch(0.978 0.004 247);
+  --foreground: oklch(0.21 0.04 266);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2077 0.0398 265.7549);
+  --card-foreground: oklch(0.21 0.04 266);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2077 0.0398 265.7549);
+  --popover-foreground: oklch(0.21 0.04 266);
+  /* Раздельный токен для приподнятых вложенных поверхностей внутри карточек
+     (плитки, вложенные блоки) — раньше для этого брали bg-muted/50. */
+  --elevated: oklch(0.97 0.005 247);
   --primary: oklch(0.48 0.15 261);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.9231 0.028 263.4295);
-  --secondary-foreground: oklch(0.48 0.15 261);
-  --muted: oklch(0.9683 0.0069 247.8956);
-  --muted-foreground: oklch(0.5544 0.0407 257.4166);
-  --accent: oklch(0.9683 0.0069 247.8956);
-  --accent-foreground: oklch(0.48 0.15 261);
+  --secondary: oklch(0.928 0.018 256);
+  --secondary-foreground: oklch(0.42 0.12 262);
+  --muted: oklch(0.963 0.006 247);
+  --muted-foreground: oklch(0.552 0.035 257);
+  --accent: oklch(0.955 0.013 252);
+  --accent-foreground: oklch(0.42 0.12 262);
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.6271 0.1699 149.2138);
   --success-foreground: oklch(1 0 0);
   --warning: oklch(0.6658 0.1574 58.3183);
   --warning-foreground: oklch(1 0 0);
-  --border: oklch(0.9288 0.0126 255.5078);
-  --input: oklch(0.878 0.0126 255.5078);
+  --border: oklch(0.912 0.013 252);
+  --input: oklch(0.892 0.014 252);
   --ring: oklch(0.48 0.15 261);
   --chart-1: oklch(0.5598 0.1882 266.3996);
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
   --chart-5: oklch(0.6056 0.2189 292.7172);
-  --sidebar: oklch(0.965 0.005 248);
-  --sidebar-foreground: oklch(0.2795 0.0368 260.031);
+  --sidebar: oklch(0.948 0.01 256);
+  --sidebar-foreground: oklch(0.32 0.035 260);
   --sidebar-primary: oklch(0.48 0.15 261);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.9231 0.028 263.4295);
-  --sidebar-accent-foreground: oklch(0.48 0.15 261);
-  --sidebar-border: oklch(0.9288 0.0126 255.5078);
+  --sidebar-accent: oklch(0.924 0.022 258);
+  --sidebar-accent-foreground: oklch(0.42 0.13 262);
+  --sidebar-border: oklch(0.912 0.013 252);
   --sidebar-ring: oklch(0.48 0.15 261);
   --radius: 0.5rem;
   --shadow-x: 0px;
@@ -146,42 +152,45 @@
 }
 
 .dark {
-  /* Нейтральный zinc-тёмный фон с ярким синим primary. */
-  --background: oklch(0.2077 0.0398 265.7549);
-  --foreground: oklch(0.9842 0.0034 247.8575);
-  --card: oklch(0.2795 0.0368 260.031);
-  --card-foreground: oklch(0.9842 0.0034 247.8575);
-  --popover: oklch(0.2077 0.0398 265.7549);
-  --popover-foreground: oklch(0.9842 0.0034 247.8575);
+  /* ── Dark surfaces: same elevation ladder, inverted.
+   * Lightness climbs with elevation: sidebar(desk) < canvas < muted < card < popover.
+   * Before, --card / --sidebar / --muted / --accent were all one value (0.2795). */
+  --background: oklch(0.205 0.035 265);
+  --foreground: oklch(0.984 0.003 248);
+  --card: oklch(0.258 0.035 262);
+  --card-foreground: oklch(0.984 0.003 248);
+  --popover: oklch(0.27 0.035 263);
+  --popover-foreground: oklch(0.984 0.003 248);
+  --elevated: oklch(0.305 0.035 262);
   --primary: oklch(0.6231 0.188 259.8145);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.2795 0.0368 260.031);
-  --secondary-foreground: oklch(0.9231 0.028 263.4295);
-  --muted: oklch(0.2795 0.0368 260.031);
-  --muted-foreground: oklch(0.7107 0.0351 256.7878);
-  --accent: oklch(0.2795 0.0368 260.031);
-  --accent-foreground: oklch(0.9231 0.028 263.4295);
+  --secondary: oklch(0.275 0.035 260);
+  --secondary-foreground: oklch(0.92 0.02 263);
+  --muted: oklch(0.235 0.033 263);
+  --muted-foreground: oklch(0.714 0.035 257);
+  --accent: oklch(0.305 0.038 262);
+  --accent-foreground: oklch(0.95 0.012 250);
   --destructive: oklch(0.6368 0.2078 25.3313);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.7227 0.192 149.5793);
-  --success-foreground: oklch(0.2077 0.0398 265.7549);
+  --success-foreground: oklch(0.205 0.035 265);
   --warning: oklch(0.8369 0.1644 84.4286);
-  --warning-foreground: oklch(0.2077 0.0398 265.7549);
-  --border: oklch(0.3717 0.0392 257.287);
-  --input: oklch(0.3717 0.0392 257.287);
+  --warning-foreground: oklch(0.205 0.035 265);
+  --border: oklch(0.315 0.028 262);
+  --input: oklch(0.36 0.03 260);
   --ring: oklch(0.6231 0.188 259.8145);
   --chart-1: oklch(0.6231 0.188 259.8145);
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
   --chart-5: oklch(0.7093 0.1589 293.5412);
-  --sidebar: oklch(0.2795 0.0368 260.031);
-  --sidebar-foreground: oklch(0.9842 0.0034 247.8575);
+  --sidebar: oklch(0.185 0.032 266);
+  --sidebar-foreground: oklch(0.9 0.02 250);
   --sidebar-primary: oklch(0.6231 0.188 259.8145);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.3717 0.0392 257.287);
-  --sidebar-accent-foreground: oklch(0.9231 0.028 263.4295);
-  --sidebar-border: oklch(0.3717 0.0392 257.287);
+  --sidebar-accent: oklch(0.305 0.05 262);
+  --sidebar-accent-foreground: oklch(0.96 0.01 250);
+  --sidebar-border: oklch(0.3 0.028 262);
   --sidebar-ring: oklch(0.6231 0.188 259.8145);
   --radius: 0.5rem;
   --shadow-x: 0px;
@@ -211,6 +220,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
+  --color-elevated: var(--elevated);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
