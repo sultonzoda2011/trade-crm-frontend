@@ -12,6 +12,19 @@
   "transactionsHistory": "Transaction History",
   "viewMarkets": "Seller's Market",
   "noTransactions": "No transactions yet",
+  "markupBalance": "Markup Balance",
+  "earned": "Earned",
+  "refunded": "Reversed by refunds",
+  "paidOut": "Already paid out",
+  "balance": "Available",
+  "payout": "Pay out",
+  "payoutModalTitle": "Pay out markup",
+  "payoutHint": "You can pay out the full amount or part of it — the remainder keeps accumulating.",
+  "payoutSuccess": "Payout recorded",
+  "payoutError": "Failed to record the payout",
+  "creditsHistory": "Payout History",
+  "noCredits": "No payouts yet",
+  "noBalance": "No markup yet",
   "navigation": {
     "sellers": "Sellers"
   }
