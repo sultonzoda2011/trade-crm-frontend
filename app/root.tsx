@@ -109,45 +109,45 @@ export function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-const splashHints: Record<string, string> = {
-  ru: 'Подготовка рабочего стола…',
-  en: 'Preparing workspace…',
-  tg: 'Омода кардани муҳити кор…',
-};
-
 function Splash({ locale }: { locale: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [gone, setGone] = useState(false);
+  const [videoEnded, setVideoEnded] = useState(false);
   const navigation = useNavigation();
 
+  const isLoadingDone = navigation.state === 'idle';
+
   useEffect(() => {
-    if (navigation.state !== 'idle') return;
+    videoRef.current?.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    // Прячем сплэш, только когда оба условия выполнены:
+    // загрузка завершена И видео доиграло хотя бы один полный проход
+    if (!isLoadingDone || !videoEnded) return;
+
     const el = ref.current;
     if (!el) return;
     el.style.opacity = '0';
     const t = setTimeout(() => setGone(true), 300);
     return () => clearTimeout(t);
-  }, [navigation.state]);
+  }, [isLoadingDone, videoEnded]);
 
   if (gone) return null;
 
   return (
     <div ref={ref} id="app-splash">
-      <div className="splash-content">
-        <div className="splash-logo">
-          <img
-            className="h-24 w-auto object-contain dark:hidden"
-            src="/text-in-bottom-logo-light.png"
-            alt="Trade CRM"
-          />
-          <img
-            className="hidden h-24 w-auto object-contain dark:block"
-            src="/text-in-bottom-logo-dark.png"
-            alt="Trade CRM"
-          />
-        </div>
-        <div className="splash-loader" />
-        <p className="splash-hint">{splashHints[locale] ?? splashHints.ru}</p>
+      <div className="splash-logo">
+        <video
+          ref={videoRef}
+          className="w-full object-contain"
+          src="/logo-splash-animation.mp4"
+          autoPlay
+          muted
+          playsInline
+          onEnded={() => setVideoEnded(true)}
+        />
       </div>
     </div>
   );
