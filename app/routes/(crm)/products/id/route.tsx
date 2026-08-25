@@ -54,6 +54,19 @@ export default function ProductDetailPage() {
   const isLowStock = product.quantity <= product.lowStockThreshold;
   const marketState = { fromPath: location.pathname, fromName: t('title') };
 
+  // health (7 состояний) — основной сигнал состояния товара, он уже покрывает
+  // OUT_OF_STOCK / CRITICAL / LOW_STOCK, поэтому ручной бейдж lowStock его дублирует.
+  // reorderPriority — действие по закупке; пока запас на исходе он повторяет health
+  // (OUT_OF_STOCK/CRITICAL/LOW_STOCK ⇢ OUT_OF_STOCK/CRITICAL/WARNING). Показываем его
+  // только когда health описывает НЕ складскую проблему (напр. много возвратов), а
+  // заказывать всё равно пора — иначе это третий бейдж с тем же смыслом.
+  const health = product.metrics?.health;
+  const reorderPriority = product.metrics?.reorderPriority;
+  const healthCoversStock = health === 'OUT_OF_STOCK' || health === 'CRITICAL' || health === 'LOW_STOCK';
+  const reorderIsActionable =
+    reorderPriority === 'OUT_OF_STOCK' || reorderPriority === 'CRITICAL' || reorderPriority === 'WARNING';
+  const showReorderBadge = reorderIsActionable && !healthCoversStock;
+
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <BreadCrumbs
@@ -76,19 +89,20 @@ export default function ProductDetailPage() {
                   {product.category.name}
                 </Badge>
               )}
-              {isLowStock && (
-                <Badge variant="destructive" className="font-normal">
-                  {t('lowStock')}
+              {health ? (
+                <Badge variant="outline" className={PRODUCT_HEALTH_BADGE[health]}>
+                  {t(`health.${health}`)}
                 </Badge>
+              ) : (
+                isLowStock && (
+                  <Badge variant="destructive" className="font-normal">
+                    {t('lowStock')}
+                  </Badge>
+                )
               )}
-              {product.metrics?.health && (
-                <Badge variant="outline" className={PRODUCT_HEALTH_BADGE[product.metrics.health]}>
-                  {t(`health.${product.metrics.health}`)}
-                </Badge>
-              )}
-              {product.metrics?.reorderPriority && product.metrics.reorderPriority !== 'NOT_NEEDED' && (
-                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]}>
-                  {t(`reorderPriority.${product.metrics.reorderPriority}`)}
+              {showReorderBadge && reorderPriority && (
+                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[reorderPriority]}>
+                  {t(`reorderPriority.${reorderPriority}`)}
                 </Badge>
               )}
             </>
@@ -221,7 +235,7 @@ export default function ProductDetailPage() {
           </Panel>
 
           <Panel title={t('metrics.allTime')}>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <StatCard icon={Package} label={t('metrics.transactionCount')} value={product.sales.count} />
               <StatCard icon={Package} label={t('metrics.netUnitsSold')} value={product.sales.unitsSold} />
               <StatCard icon={Package} label={t('metrics.refundedUnits')} value={product.sales.refundedUnits} />
