@@ -1,7 +1,14 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
-import type { SellerDetailResponse, SellersResponse } from '~/types/sellers';
+import type {
+  CreateSellerCreditRequest,
+  SellerBalanceResponse,
+  SellerCreditResponse,
+  SellerCreditsResponse,
+  SellerDetailResponse,
+  SellersResponse,
+} from '~/types/sellers';
 
 export const sellersApi = {
   getAll: async (
@@ -39,5 +46,19 @@ export const sellersApi = {
   },
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/sellers/${id}`);
+  },
+
+  // Баланс продавца по надбавкам (markup) и выдача накопленного.
+  getBalance: async (id: string): Promise<SellerBalanceResponse> => {
+    const { data } = await apiClient.get(`/sellers/${id}/balance`);
+    return data;
+  },
+  getCredits: async (id: string, page = 1, limit = 10): Promise<SellerCreditsResponse> => {
+    const { data } = await apiClient.get(`/sellers/${id}/credits`, { params: { page, limit } });
+    return data;
+  },
+  createCredit: async ({ id, request }: { id: string; request: CreateSellerCreditRequest }): Promise<SellerCreditResponse> => {
+    const { data } = await apiClient.post(`/sellers/${id}/credits`, request);
+    return data;
   },
 };
