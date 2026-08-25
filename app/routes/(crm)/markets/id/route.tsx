@@ -10,26 +10,52 @@ import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditMarketModal } from '~/components/modals/EditMarketModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { EntityCard } from '~/components/shared/EntityCard';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { StatRow } from '~/components/shared/StatRow';
 import { InfoLink } from '~/components/shared/InfoLink';
 import { ListLink } from '~/components/shared/ListLink';
 import { MarketEntityTabs } from '~/components/shared/MarketEntityTabs';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { StatCard } from '~/components/shared/StatCard';
+import { StatRow } from '~/components/shared/StatRow';
 import { UserAvatar } from '~/components/shared/UserAvatar';
+import { Avatar, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { Role } from '~/types/common';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
+import { Role } from '~/types/common';
+import type { UserInfo } from '~/types/users';
+
+function SellerAvatars({ sellers }: { sellers: UserInfo[] }) {
+  if (sellers.length === 0) return null;
+  const visible = sellers.slice(0, 3);
+  const rest = sellers.length - visible.length;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <AvatarGroup data-size="sm">
+            {visible.map((seller) => (
+              <Avatar key={seller.id} size="sm">
+                {seller.image ? <AvatarImage src={seller.image} alt={seller.name} /> : null}
+                <AvatarFallback>{seller.name.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            ))}
+            {rest > 0 && <AvatarGroupCount>+{rest}</AvatarGroupCount>}
+          </AvatarGroup>
+        }
+      />
+      <TooltipContent side="top">{sellers.map((seller) => seller.name).join(', ')}</TooltipContent>
+    </Tooltip>
+  );
+}
 export default function MarketDetailPage() {
   const { t } = useTranslation(['markets', 'common']);
   const { id } = useParams<{ id: string }>();
@@ -79,6 +105,19 @@ export default function MarketDetailPage() {
       />
     );
   }
+  const sellersByProduct = useMemo(() => {
+    const map = new Map<string, UserInfo[]>();
+    for (const tx of marketTransactions) {
+      for (const item of tx.items) {
+        const sellers = map.get(item.productId) ?? [];
+        if (!sellers.some((seller) => seller.id === tx.createdBy.id)) {
+          sellers.push(tx.createdBy);
+          map.set(item.productId, sellers);
+        }
+      }
+    }
+    return map;
+  }, [marketTransactions]);
   const listState = { fromPath: location.pathname, fromName: market.name };
   const filterState = { fromMarketId: market.id, fromMarketName: market.name };
   return (
@@ -215,6 +254,40 @@ export default function MarketDetailPage() {
                     </ListLink>
                   )),
                   viewAll: { to: '/users', state: listState, label: t('viewAll'), count: market.users.length },
+                },
+                {
+                  value: 'products',
+                  label: t('fields.products'),
+                  count: market.count.products,
+                  isEmpty: marketProducts.length === 0,
+                  emptyMessage: t('noProducts'),
+                  rows: marketProducts.map((product) => {
+                    const sellers = sellersByProduct.get(product.id) ?? [];
+                    return (
+                      <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1">
+                        <div className="flex min-w-0 items-center gap-2.5">
+                          <Avatar className="shrink-0">
+                            {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
+                            <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{product.name}</p>
+                            <p className="text-muted-foreground truncate text-sm">
+                              {product.category ? `${product.category.name} · ` : ''}
+                              {sellers.length > 0
+                                ? `${t('soldCount', { count: product._count.transactionItems })} `
+                                : t('soldCount', { count: product._count.transactionItems })}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="flex shrink-0 items-center gap-2.5">
+                          <SellerAvatars sellers={sellers} />
+                          <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>
+                        </span>
+                      </ListLink>
+                    );
+                  }),
+                  viewAll: { to: '/products', state: filterState, label: t('viewAll'), count: market.count.products },
                 },
                 ...(isOwnMarket
                   ? [
