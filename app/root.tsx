@@ -10,8 +10,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
-  useNavigation,
   useNavigate,
+  useNavigation,
 } from 'react-router';
 
 import type { Route } from '.react-router/types/app/+types/root';
@@ -19,16 +19,15 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
-import { ThemeProvider } from '~/components/theme-provider';
 import ErrorPage from '~/components/shared/ErrorPage';
 import OfflineBanner from '~/components/shared/OfflineBanner';
+import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
-import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
-import { getQueryClient, getQueryPersister, QUERY_PERSIST_MAX_AGE } from '~/lib/query-client';
-import { setNavigate } from '~/lib/navigation';
-import { useIsMobile } from '~/hooks/use-mobile';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
+import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
+import { setNavigate } from '~/lib/navigation';
+import { getQueryClient, getQueryPersister, QUERY_PERSIST_MAX_AGE } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -172,14 +171,13 @@ function NavigationProgress() {
 
 function ToasterProvider() {
   const { resolvedTheme } = useTheme();
-  const isMobile = useIsMobile();
   return (
     <Toaster
       theme={resolvedTheme as 'light' | 'dark'}
       gap={8}
       visibleToasts={5}
       closeButton
-      position={isMobile ? 'top-center' : 'bottom-right'}
+      position={'bottom-right'}
     />
   );
 }
