@@ -86,7 +86,7 @@ export default function CreateTransactionPage() {
       type: canCreateSale ? 'SALE' : 'DEBT',
       paymentType: canCreateSale ? 'CASH' : 'CREDIT',
       dueDate: dayjs().format('YYYY-MM-DD'),
-      items: [{ productId: '', quantity: 1, discount: 0 }],
+      items: [{ productId: '', quantity: 1, discount: 0, markup: 0 }],
     },
   });
 
@@ -130,7 +130,8 @@ export default function CreateTransactionPage() {
       const q = Number(item.quantity) || 0;
       const p = product?.price ?? 0;
       const d = Number(item.discount) || 0;
-      return Math.max(q * p - d, 0);
+      const m = Number(item.markup) || 0;
+      return Math.max(q * p - d + m, 0);
     },
     [getProduct]
   );
@@ -154,9 +155,16 @@ export default function CreateTransactionPage() {
     return (Array.isArray(items) ? items : []).reduce((acc, item) => {
       const gross = getItemGross(item);
       const net = getItemTotal(item);
-      return acc + Math.max(gross - net, 0);
+      const m = Number(item?.markup) || 0;
+      // net уже включает +markup, поэтому чистую скидку считаем без него,
+      // иначе надбавка маскировала бы скидку в этой сумме.
+      return acc + Math.max(gross - (net - m), 0);
     }, 0);
   }, [items, getItemGross, getItemTotal]);
+
+  const totalMarkup = useMemo(() => {
+    return (Array.isArray(items) ? items : []).reduce((acc, item) => acc + (Number(item?.markup) || 0), 0);
+  }, [items]);
 
   const hasStockIssue = useMemo(
     () =>
@@ -178,6 +186,7 @@ export default function CreateTransactionPage() {
           productId: item.productId ?? '',
           quantity: Number(item.quantity),
           discount: item.discount ? Number(item.discount) : undefined,
+          markup: item.markup ? Number(item.markup) : undefined,
         })),
       };
       return transactionsApi.create(payload);
@@ -245,7 +254,7 @@ export default function CreateTransactionPage() {
                 variant="outline"
                 size="sm"
                 className="gap-1 text-xs"
-                onClick={() => append({ productId: '', quantity: 1, discount: 0 })}>
+                onClick={() => append({ productId: '', quantity: 1, discount: 0, markup: 0 })}>
                 <Plus className="h-3.5 w-3.5" />
                 {t('fields.addItem')}
               </Button>
@@ -270,7 +279,7 @@ export default function CreateTransactionPage() {
                       required
                     />
 
-                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
                       <div>
                         <label className="mb-1.5 block text-sm font-medium">{t('fields.price')}</label>
                         <CustomInput readOnly value={product ? fmtTJS(product.price) : ''} placeholder="—" />
@@ -293,6 +302,15 @@ export default function CreateTransactionPage() {
                         inputMode="decimal"
                         min={0}
                         placeholder={t('fields.discount')}
+                      />
+                      <FormInput
+                        control={control}
+                        label={t('fields.markup')}
+                        name={`items.${index}.markup`}
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        placeholder={t('fields.markup')}
                       />
                       <div>
                         <label className="mb-1.5 block text-sm font-medium">{t('fields.totalPrice')}</label>
@@ -330,6 +348,7 @@ export default function CreateTransactionPage() {
                         <div className="text-muted-foreground font-mono">
                           {fmtTJS(product.price)} × {qty}
                           {Number(item?.discount) > 0 && <> − {fmtTJS(Number(item?.discount) || 0)}</>}
+                          {Number(item?.markup) > 0 && <> + {fmtTJS(Number(item?.markup) || 0)}</>}
                           {' = '}
                           <span className="text-foreground font-semibold">{fmtTJS(itemTotal)}</span>
                         </div>
@@ -357,6 +376,15 @@ export default function CreateTransactionPage() {
                 </span>
                 {totalDiscount > 0 && <span className="font-mono font-semibold">− {fmtTJS(totalDiscount)}</span>}
               </div>
+              {totalMarkup > 0 && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground flex items-center gap-1.5">
+                    <Tag className="h-3.5 w-3.5" />
+                    {t('fields.markup')}
+                  </span>
+                  <span className="font-mono font-semibold">+ {fmtTJS(totalMarkup)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
                   <Wallet className="h-3.5 w-3.5" />
