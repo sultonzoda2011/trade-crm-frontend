@@ -884,6 +884,6 @@ span.flatpickr-weekday {
   opacity: 0.35;
 }
 #app-splash {
-  background: #D8DADE; /* фиксированно, не завязано на dark/light переменные темы */
+  background: black; /* фиксированно, не завязано на dark/light переменные темы */
   /* остальные твои существующие стили (position, z-index, transition и т.д.) оставь как есть */
 }
