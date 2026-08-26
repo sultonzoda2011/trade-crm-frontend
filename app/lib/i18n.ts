@@ -22,5 +22,6 @@ export const i18nConfig = {
     'markets',
     'categories',
     'profile',
+    'guide',
   ],
 };

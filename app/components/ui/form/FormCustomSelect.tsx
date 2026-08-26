@@ -13,6 +13,10 @@ interface FormCustomSelectProps<T extends FieldValues> {
   disabled?: boolean;
   isMulti?: boolean;
   isClearable?: boolean;
+  /** Enable server-side (API) search — forwards each keystroke (see `useAsyncSelectOptions`). */
+  onSearch?: (query: string) => void;
+  /** Show a loading state while an async search request is in flight. */
+  loading?: boolean;
 }
 
 export function FormCustomSelect<T extends FieldValues>({

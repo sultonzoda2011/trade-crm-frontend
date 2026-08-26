@@ -30,6 +30,7 @@ export default [
     route('/transactions', 'routes/(crm)/transactions/route.tsx'),
     route('/transactions/create', 'routes/(crm)/transactions/create/route.tsx'),
     route('/transactions/:id', 'routes/(crm)/transactions/id/route.tsx'),
+    route('/guide', 'routes/(crm)/guide/route.tsx'),
     route('/403', 'routes/(crm)/forbidden/route.tsx'),
     route('*', 'routes/(crm)/notfound/route.tsx'),
   ]),

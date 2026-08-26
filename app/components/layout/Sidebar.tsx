@@ -9,6 +9,7 @@ import darkFavicon from '/dark-favicon.png';
 import lightFavicon from '/light-favicon.png';
 import textInRightDark from '/text-in-right-logo-dark.png';
 import textInRightLight from '/text-in-right-logo-light.png';
+import { Link } from 'react-router'
 
 export function AppSidebar() {
   const { can } = useCan();
@@ -22,10 +23,10 @@ export function AppSidebar() {
       <SidebarHeader className="px-2">
         <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center">
           {/* Full logo */}
-          <div className="flex items-center p-2 group-data-[collapsible=icon]:hidden">
+          <Link to='/' className="flex items-center px-2 group-data-[collapsible=icon]:hidden">
             <img src={textInRightLight} className="h-10 w-auto object-contain dark:hidden" alt="Trade CRM" />
             <img src={textInRightDark} className="hidden h-10 w-auto object-contain dark:block" alt="Trade CRM" />
-          </div>
+          </Link>
 
           {/* Small logo */}
           <div className="hidden items-center justify-center group-data-[collapsible=icon]:flex">

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -14,6 +14,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { Panel } from '~/components/layout/Panel';
 import { FormGrid } from '~/components/shared/FormGrid';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { createProductSchema, type CreateProductSchema } from '~/validations/product';
@@ -25,15 +26,12 @@ export default function CreateProductPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: categoriesRes } = useQuery({
+  const categories = useAsyncSelectOptions({
     queryKey: ['categories', 'list'],
-    queryFn: () => categoriesApi.getAll(1, 100),
+    fetcher: async (search) => (await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
+    getValue: (c) => c.id,
+    getLabel: (c) => c.name,
   });
-
-  const categoryOptions = useMemo(
-    () => (categoriesRes?.data?.data ?? []).map((c) => ({ value: c.id, label: c.name })),
-    [categoriesRes]
-  );
 
   const unitOptions = useMemo(() => UNIT_VALUES.map((u) => ({ value: u, label: t(`unit.${u}`) })), [t]);
 
@@ -129,7 +127,9 @@ export default function CreateProductPage() {
                 name="categoryId"
                 label={t('fields.category')}
                 placeholder={t('fields.category')}
-                options={categoryOptions}
+                options={categories.options}
+                onSearch={categories.onSearch}
+                loading={categories.loading}
                 isClearable
               />
             </FormGrid>

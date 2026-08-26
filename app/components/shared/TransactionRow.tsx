@@ -1,5 +1,5 @@
-import type { ComponentProps, ReactNode } from 'react';
 import type { TFunction } from 'i18next';
+import type { ComponentProps, ReactNode } from 'react';
 import { ListLink } from '~/components/shared/ListLink';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
@@ -20,7 +20,7 @@ export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProp
   const defaultSubtitle = formatDate(tx.createdAt, true);
 
   return (
-    <ListLink {...linkProps} className="py-2">
+    <ListLink {...linkProps} className="py-2 px-3">
       <div className="flex min-w-0 items-center gap-2.5">
         <TransactionProducts items={tx.items} size="sm" max={3} />
         <div className="min-w-0">

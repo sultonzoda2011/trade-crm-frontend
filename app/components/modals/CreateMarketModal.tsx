@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
@@ -9,13 +9,12 @@ import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
-import { mapToOptions } from '~/lib/mapToOptions';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import { Role } from '~/types/common';
-import type { UsersResponse } from '~/types/users';
 import { createMarketSchema, type CreateMarketSchema } from '~/validations/market';
 
 export function CreateMarketModal() {
@@ -23,17 +22,15 @@ export function CreateMarketModal() {
   const queryClient = useQueryClient();
   const createModal = useMarketsModals((s) => s.create);
 
-  const { data: usersResponse } = useQuery<UsersResponse>({
+  // Owner picker: search users by name server-side, filtered to the OWNER role by the API.
+  const owners = useAsyncSelectOptions({
     queryKey: ['users', 'owners'],
-    queryFn: () => usersApi.getAll(1, 100),
-    staleTime: 60_000,
+    fetcher: async (search) =>
+      (await usersApi.getAll(1, 20, { search: search || undefined }, [{ key: 'role', value: Role.Owner }]))?.data?.data ?? [],
+    getValue: (u) => u.id,
+    getLabel: (u) => u.name,
   });
 
-  const userOptions = mapToOptions(
-    (usersResponse?.data?.data ?? []).filter((user) => user.role === Role.Owner),
-    'id',
-    'name'
-  );
   const { control, handleSubmit, reset } = useForm<CreateMarketSchema>({
     resolver: zodResolver(createMarketSchema(t)),
     defaultValues: { name: '', address: '', ownerId: '', image: null },
@@ -107,7 +104,9 @@ export function CreateMarketModal() {
               control={control}
               name="ownerId"
               label={t('fields.ownerId')}
-              options={userOptions}
+              options={owners.options}
+              onSearch={owners.onSearch}
+              loading={owners.loading}
               placeholder={t('fields.ownerId')}
               required
             />

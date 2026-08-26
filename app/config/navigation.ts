@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { LayoutDashboard, Package, ReceiptText, Store, StoreIcon, Tag, Users } from 'lucide-react';
+import { BookOpen, Building2, HandCoins, LayoutDashboard, Package, ReceiptText, Store, Tag, UserRound, Users } from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
 import { Role } from '~/types/common';
 import { Action } from '~/config/actions';
@@ -17,7 +17,7 @@ export interface NavItem {
 export const getSidebarConfig = (t: TFunction): NavItem[] => [
   {
     title: t('navigation.dashboard'),
-    url: '/',
+    url: '/dashboard',
     icon: LayoutDashboard,
     action: Action.DASHBOARDS_VIEW,
   },
@@ -30,13 +30,13 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
   {
     title: t('navigation.markets'),
     url: '/markets',
-    icon: StoreIcon,
+    icon: Store,
     action: Action.MARKETS_VIEW,
   },
   {
     title: t('navigation.myMarket'),
     url: '/my-market',
-    icon: StoreIcon,
+    icon: Building2,
     // Гейтим по роли, а не по MARKETS_VIEW_BY_ID: это действие разрешено
     // ADMIN+OWNER, а сам роут /my-market — только OWNER (ROUTE_PERMISSIONS),
     // поэтому у ADMIN ссылка вела бы прямиком на /403.
@@ -45,7 +45,7 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
   {
     title: t('navigation.sellers'),
     url: '/sellers',
-    icon: Store,
+    icon: UserRound,
     action: Action.SELLERS_VIEW,
   },
   {
@@ -63,7 +63,7 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
   {
     title: t('navigation.debtors'),
     url: '/debtors',
-    icon: Store,
+    icon: HandCoins,
     action: Action.DEBTORS_VIEW,
   },
   {
@@ -71,6 +71,12 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     url: '/transactions',
     icon: ReceiptText,
     action: Action.TRANSACTIONS_VIEW,
+  },
+  {
+    // Справочник виден всем ролям — ни action, ни roles не задаём.
+    title: t('navigation.guide'),
+    url: '/guide',
+    icon: BookOpen,
   },
 ];
 

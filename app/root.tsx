@@ -119,9 +119,13 @@ function Splash({ locale }: { locale: string }) {
   const isLoadingDone = navigation.state === 'idle';
 
   useEffect(() => {
-    videoRef.current?.play().catch(() => {});
+    const v = videoRef.current;
+    if (!v) return;
+    v.play().catch(() => {
+      v.muted = true;
+      v.play().catch(() => {});
+    });
   }, []);
-
   useEffect(() => {
     // Прячем сплэш, только когда оба условия выполнены:
     // загрузка завершена И видео доиграло хотя бы один полный проход
@@ -141,10 +145,9 @@ function Splash({ locale }: { locale: string }) {
       <div className="splash-logo">
         <video
           ref={videoRef}
-          className="w-full object-contain"
+          className="m-auto w-full object-contain sm:w-[20%]"
           src="/logo-splash-animation.mp4"
           autoPlay
-          muted
           playsInline
           onEnded={() => setVideoEnded(true)}
         />

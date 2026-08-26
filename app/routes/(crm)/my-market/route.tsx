@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, Pencil, ReceiptText, Users } from 'lucide-react';
+import { Package, Pencil, ReceiptText, HandCoins } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
@@ -142,7 +142,7 @@ export default function MyMarketPage() {
           />
           <StatCard
             size="sm"
-            icon={Users}
+            icon={HandCoins}
             label={t('fields.debtors')}
             value={market.count.debtors}
             to="/debtors"
@@ -186,7 +186,7 @@ export default function MyMarketPage() {
                     {market.owner.image ? <AvatarImage src={market.owner.image} alt={market.owner.name} /> : null}
                     <AvatarFallback>{market.owner.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
-                  <InfoLink to={`/users/${market.ownerId}`} state={listState}>
+                  <InfoLink to={`/profile`} state={listState}>
                     {market.owner.name}
                   </InfoLink>
                 </span>
@@ -266,7 +266,7 @@ export default function MyMarketPage() {
                   isEmpty: marketDebtors.length === 0,
                   emptyMessage: t('noDebtors'),
                   rows: marketDebtors.map((debtor) => (
-                    <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={listState} className="py-1.5">
+                    <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={listState} className="py-3">
                       <span className="truncate text-sm font-medium">{debtor.name}</span>
                       <span className="text-muted-foreground text-xs">{debtor.phone}</span>
                     </ListLink>
@@ -280,13 +280,7 @@ export default function MyMarketPage() {
                   isEmpty: marketTransactions.length === 0,
                   emptyMessage: t('noTransactions'),
                   rows: marketTransactions.map((tx) => (
-                    <TransactionRow
-                      key={tx.id}
-                      tx={tx}
-                      t={t}
-                      to={`/transactions/${tx.id}`}
-                      state={listState}
-                    />
+                    <TransactionRow  key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={listState} />
                   )),
                   viewAll: {
                     to: '/transactions',
@@ -333,7 +327,7 @@ export default function MyMarketPage() {
               },
               {
                 key: 'debtors',
-                icon: Users,
+                icon: HandCoins,
                 label: t('viewDebtors'),
                 render: <Link to="/debtors" state={filterState} />,
               },

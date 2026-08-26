@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
@@ -20,10 +20,10 @@ import { FormDateInput } from '~/components/ui/form/FormDateInput'
 import { FormInput } from '~/components/ui/form/FormInput'
 import { Action } from '~/config/actions'
 import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions'
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions'
 import { useCan } from '~/hooks/useCan'
 import { useForm } from '~/hooks/useForm'
 import { fmtTJS } from '~/lib/format'
-import { mapToOptions } from '~/lib/mapToOptions'
 import type { CreateTransactionRequest } from '~/types/transactions'
 import {
   createTransactionSchema,
@@ -40,29 +40,32 @@ export default function CreateTransactionPage() {
 
   const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
 
-  const { data: debtorsRes } = useQuery({
+  // Server-side search: the debtor/product lists can exceed any fixed page, so instead of
+  // loading a capped first page and filtering locally we query the API as the user types.
+  const debtors = useAsyncSelectOptions({
     queryKey: ['debtors', 'select'],
-    queryFn: () => debtorsApi.getAll(1, 100),
-    staleTime: 30_000,
+    fetcher: async (search) => (await debtorsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
+    getValue: (d) => d.id,
+    getLabel: (d) => d.name,
   });
 
-  const { data: productsRes } = useQuery({
+  const products = useAsyncSelectOptions({
     queryKey: ['products', 'select'],
-    queryFn: () => productsApi.getAll(1, 100),
-    staleTime: 30_000,
+    fetcher: async (search) => (await productsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
+    getValue: (p) => p.id,
+    getLabel: (p) => p.name,
   });
 
-  const debtorOptions = useMemo(() => mapToOptions(debtorsRes?.data?.data ?? [], 'id', 'name'), [debtorsRes]);
+  const debtorOptions = debtors.options;
+  const productOptions = products.options;
 
-  const productsList = useMemo(() => productsRes?.data?.data ?? [], [productsRes]);
-
+  // Read stock/price from the accumulated set (products.byId), not just the latest search —
+  // a row that already picked a product must keep its data even after the results narrow.
   const stockMap = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const p of productsList) map[p.id] = p.quantity;
+    for (const p of products.byId.values()) map[p.id] = p.quantity;
     return map;
-  }, [productsList]);
-
-  const productOptions = useMemo(() => mapToOptions(productsList, 'id', 'name'), [productsList]);
+  }, [products.byId]);
 
   const typeOptions = useMemo(
     () => getTransactionTypeOptions(t).filter((opt) => canCreateSale || opt.value !== 'SALE'),
@@ -112,11 +115,7 @@ export default function CreateTransactionPage() {
     }
   }, [type, paymentType, setValue]);
 
-  const productMap = useMemo(() => {
-    const map = new Map<string, (typeof productsList)[number]>();
-    for (const p of productsList) map.set(p.id, p);
-    return map;
-  }, [productsList]);
+  const productMap = products.byId;
 
   const getProduct = useMemo(
     () => (productId?: string | null) => (productId ? productMap.get(productId) : undefined),
@@ -276,6 +275,8 @@ export default function CreateTransactionPage() {
                       name={`items.${index}.productId`}
                       placeholder={t('fields.product')}
                       options={productOptions}
+                      onSearch={products.onSearch}
+                      loading={products.loading}
                       required
                     />
 
@@ -444,6 +445,8 @@ export default function CreateTransactionPage() {
                     label={t('fields.debtor')}
                     placeholder={t('fields.debtor')}
                     options={debtorOptions}
+                    onSearch={debtors.onSearch}
+                    loading={debtors.loading}
                     isClearable
                     required
                   />

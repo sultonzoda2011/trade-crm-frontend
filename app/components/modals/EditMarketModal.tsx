@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
@@ -11,11 +11,11 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
-import { mapToOptions } from '~/lib/mapToOptions';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import { Role } from '~/types/common';
 import { updateMarketSchema, type UpdateMarketSchema } from '~/validations/market';
@@ -27,18 +27,26 @@ export function EditMarketModal() {
   const editModal = useMarketsModals((s) => s.edit);
   const canManageUsers = can(Action.USERS_VIEW);
 
-  const { data: usersResponse } = useQuery({
-    queryKey: ['users', 'owners'],
-    queryFn: () => usersApi.getAll(1, 100),
-    enabled: editModal.isOpen && canManageUsers,
-    staleTime: 60_000,
-  });
-
-  const userOptions = mapToOptions(
-    (usersResponse?.data?.data ?? []).filter((user) => user.role === Role.Owner),
-    'id',
-    'name'
+  // Seed with the market's current owner so its name shows without a first fetch, then search
+  // owners by name server-side (role-filtered to OWNER by the API).
+  const currentOwner = editModal.data?.owner;
+  const ownerSeed = useMemo(
+    () => (currentOwner ? [{ id: currentOwner.id, name: currentOwner.name }] : undefined),
+    [currentOwner]
   );
+
+  const owners = useAsyncSelectOptions({
+    queryKey: ['users', 'owners'],
+    fetcher: async (search) =>
+      ((await usersApi.getAll(1, 20, { search: search || undefined }, [{ key: 'role', value: Role.Owner }]))?.data?.data ?? []).map((u) => ({
+        id: u.id,
+        name: u.name,
+      })),
+    getValue: (u) => u.id,
+    getLabel: (u) => u.name,
+    enabled: editModal.isOpen && canManageUsers,
+    seed: ownerSeed,
+  });
 
   const { control, handleSubmit, reset } = useForm<UpdateMarketSchema>({
     resolver: zodResolver(updateMarketSchema(t)),
@@ -122,7 +130,9 @@ export function EditMarketModal() {
                 control={control}
                 name="ownerId"
                 label={t('fields.ownerId')}
-                options={userOptions}
+                options={owners.options}
+                onSearch={owners.onSearch}
+                loading={owners.loading}
                 placeholder={t('fields.ownerId')}
                 required
               />

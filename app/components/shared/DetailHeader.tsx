@@ -15,7 +15,7 @@ export function DetailHeader({ name, subtitle, image, badges, actions, className
   return (
     <div className={cn('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-5', className)}>
       <div className="flex min-w-0 items-center gap-4 sm:gap-5">
-        <Avatar>
+        <Avatar size="lg">
           {image ? <AvatarImage src={image} alt={name} className="object-cover" /> : null}
           <AvatarFallback>{name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>

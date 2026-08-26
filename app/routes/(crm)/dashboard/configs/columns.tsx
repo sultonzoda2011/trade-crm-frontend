@@ -20,7 +20,6 @@ function SellerNameCell({
   canViewSellers: boolean;
 }) {
   const seller = row.seller;
-  const location = useLocation();
 
   if (!seller) return <span className="text-muted-foreground font-medium">—</span>;
 
@@ -35,17 +34,7 @@ function SellerNameCell({
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        className="h-auto p-0 font-medium hover:underline"
-        render={
-          <Link
-            to={isSelf ? '/profile' : `/sellers/${seller.id}`}
-            state={{ fromPath: location.pathname, fromName: t('usersReport') }}
-          />
-        }>
-        <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
-      </Button>
+      <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
     </div>
   );
 }

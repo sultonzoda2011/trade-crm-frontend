@@ -122,7 +122,7 @@ export default function ProfilePage() {
       rows: products.map((product) => (
         <ListLink key={product.id} to={`/products/${product.id}`} state={fromState} className="py-1">
           <div className="flex min-w-0 items-center gap-2.5">
-            <Avatar size="sm" className="shrink-0">
+            <Avatar size="lg" className="shrink-0">
               {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
               <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>

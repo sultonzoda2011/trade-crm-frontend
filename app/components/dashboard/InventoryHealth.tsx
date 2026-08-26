@@ -1,6 +1,6 @@
-import { PackageX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+
 import { Panel } from '~/components/layout/Panel';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -29,34 +29,63 @@ export function ReorderList({ products, className }: ReorderListProps) {
       title={t('reorder.title')}
       className={cn('p-0', className)}
       actions={
-        <Button variant="ghost" size="sm" className="text-xs" render={<Link to="/products?needsReorder=true" />}>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 px-2 text-xs sm:px-3"
+          render={<Link to="/products?needsReorder=true" />}>
           {t('viewAll')}
         </Button>
       }>
       {products.length === 0 ? (
-        <p className="text-muted-foreground px-4 py-6 text-sm">{t('reorder.empty')}</p>
+        <div className="flex min-h-24 items-center justify-center px-4 py-6">
+          <p className="text-muted-foreground text-center text-sm">{t('reorder.empty')}</p>
+        </div>
       ) : (
         <div className="divide-border divide-y">
           {products.map((product) => (
             <Link
               key={product.id}
               to={`/products/${product.id}`}
-              className="hover:bg-muted/40 flex items-center justify-between gap-3 px-4 py-3 transition-colors">
-              <div className="min-w-0">
+              className={cn(
+                'hover:bg-muted/40',
+                'flex min-w-0 items-center gap-3 px-3 py-3 sm:px-4',
+                'transition-colors',
+                'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
+              )}>
+              {/* Product information */}
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{product.name}</p>
-                <p className="text-muted-foreground text-xs">
+
+                <p className="text-muted-foreground mt-0.5 truncate text-xs">
                   {product.metrics.daysOfStockRemaining === null
                     ? t('reorder.noVelocity')
-                    : t('reorder.daysLeft', { days: product.metrics.daysOfStockRemaining })}
+                    : t('reorder.daysLeft', {
+                        days: product.metrics.daysOfStockRemaining,
+                      })}
+
                   {' · '}
-                  {t('reorder.inStock', { count: product.quantity })}
+
+                  {t('reorder.inStock', {
+                    count: product.quantity,
+                  })}
                 </p>
               </div>
+
+              {/* Reorder information */}
               <div className="flex shrink-0 items-center gap-2">
-                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]}>
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'max-w-24 truncate sm:max-w-none',
+                    REORDER_PRIORITY_BADGE[product.metrics.reorderPriority]
+                  )}>
                   {t(`reorderPriority.${product.metrics.reorderPriority}`, { ns: 'products' })}
                 </Badge>
-                <span className="font-mono text-sm font-semibold">+{product.metrics.recommendedQuantity}</span>
+
+                <span className="min-w-8 text-right font-mono text-sm font-semibold">
+                  +{product.metrics.recommendedQuantity}
+                </span>
               </div>
             </Link>
           ))}
@@ -132,32 +161,47 @@ export function InventoryHealth({ inventory, className }: InventoryHealthProps) 
   ];
 
   return (
-    <Panel title={t('inventory.title')} className={cn('space-y-4', className)}>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+    <Panel title={t('inventory.title')} className={cn('space-y-4 sm:space-y-5', className)}>
+      {/* Health metrics */}
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 sm:gap-3">
         {tiles.map((tile) => (
           <Link
             key={tile.key}
             to={tile.to}
-            className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-3 transition-colors">
-            <span className={cn('font-mono text-xl font-bold', tile.className)}>{tile.count}</span>
-            <span className="text-muted-foreground text-2xs leading-tight">
-              {t(`health.${tile.key}`, { ns: 'products' })}
+            className={cn(
+              'bg-muted/50 hover:bg-muted/80',
+              'flex min-w-0 flex-col justify-center',
+              'rounded-lg p-3 sm:p-3.5',
+              'transition-colors',
+              'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
+            )}>
+            <span className={cn('font-mono text-lg font-bold sm:text-xl', tile.className)}>{tile.count}</span>
+
+            <span className="text-muted-foreground text-2xs mt-0.5 line-clamp-2 leading-snug sm:text-xs">
+              {t(`health.${tile.key}`, {
+                ns: 'products',
+              })}
             </span>
           </Link>
         ))}
       </div>
 
-      <div className="border-border grid gap-3 border-t pt-3 sm:grid-cols-2">
-        <div>
-          <p className="text-muted-foreground text-xs">{t('inventory.stockValue')}</p>
-          <p className="font-mono text-sm font-semibold">{fmtTJS(inventory.stockValue)}</p>
+      {/* Inventory values */}
+      <div className="border-border grid grid-cols-1 gap-3 border-t pt-3 sm:grid-cols-2 sm:gap-4">
+        <div className="min-w-0">
+          <p className="text-muted-foreground text-xs sm:text-sm">{t('inventory.stockValue')}</p>
+
+          <p className="mt-0.5 truncate font-mono text-lg font-semibold sm:text-xl">{fmtTJS(inventory.stockValue)}</p>
         </div>
-        <div>
-          <p className="text-muted-foreground flex items-center gap-1 text-xs">
-            <PackageX className="h-3 w-3" />
-            {t('inventory.frozenValue')}
-          </p>
-          <p className={cn('font-mono text-sm font-semibold', inventory.slowMovingValue > 0 && 'text-warning')}>
+
+        <div className="min-w-0 sm:text-right">
+          <p className="text-muted-foreground text-xs sm:text-sm">{t('inventory.frozenValue')}</p>
+
+          <p
+            className={cn(
+              'mt-0.5 truncate font-mono text-lg font-semibold sm:text-xl',
+              inventory.slowMovingValue > 0 && 'text-warning'
+            )}>
             {fmtTJS(inventory.slowMovingValue)}
           </p>
         </div>

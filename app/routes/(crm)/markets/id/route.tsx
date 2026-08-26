@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, Pencil, ReceiptText, Users } from 'lucide-react';
+import { Package, Pencil, ReceiptText, HandCoins } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -304,7 +304,7 @@ export default function MarketDetailPage() {
     },
 
     {
-      icon: Users,
+      icon: HandCoins,
       label: t('viewDebtors'),
       render: <Link to="/debtors" state={filterState} />,
     },
@@ -333,7 +333,7 @@ export default function MarketDetailPage() {
 
           <StatCard
             size="sm"
-            icon={Users}
+            icon={HandCoins}
             label={t('fields.debtors')}
             value={market.count.debtors}
             to="/debtors"

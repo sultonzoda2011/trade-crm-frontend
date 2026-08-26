@@ -16,6 +16,7 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
 import { updateProductSchema, type UpdateProductSchema } from '~/validations/product';
@@ -35,15 +36,22 @@ export default function EditProductPage() {
     staleTime: 30_000,
   });
 
-  const { data: categoriesRes } = useQuery({
-    queryKey: ['categories', 'list'],
-    queryFn: () => categoriesApi.getAll(1, 100),
-  });
-
-  const categoryOptions = useMemo(
-    () => (categoriesRes?.data?.data ?? []).map((c) => ({ value: c.id, label: c.name })),
-    [categoriesRes]
+  // Seed with the product's current category so the select shows its label even when that
+  // category isn't on the first page of server results.
+  const currentCategory = response?.data?.category ?? null;
+  const categorySeed = useMemo(
+    () => (currentCategory ? [{ id: currentCategory.id, name: currentCategory.name }] : undefined),
+    [currentCategory]
   );
+
+  const categories = useAsyncSelectOptions({
+    queryKey: ['categories', 'list'],
+    fetcher: async (search) =>
+      ((await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? []).map((c) => ({ id: c.id, name: c.name })),
+    getValue: (c) => c.id,
+    getLabel: (c) => c.name,
+    seed: categorySeed,
+  });
 
   const unitOptions = useMemo(() => UNIT_VALUES.map((u) => ({ value: u, label: t(`unit.${u}`) })), [t]);
 
@@ -159,7 +167,9 @@ export default function EditProductPage() {
                 name="categoryId"
                 label={t('fields.category')}
                 placeholder={t('fields.category')}
-                options={categoryOptions}
+                options={categories.options}
+                onSearch={categories.onSearch}
+                loading={categories.loading}
                 isClearable
               />
             </FormGrid>

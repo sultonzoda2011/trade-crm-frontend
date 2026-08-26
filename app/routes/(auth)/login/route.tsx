@@ -150,23 +150,26 @@ export default function LoginPage() {
           className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full blur-[130px]"
         />
 
-        <div className="relative flex justify-end gap-2 p-4">
-          <LanguageSwitcher />
-          <ModeToggle />
-        </div>
-
         <div className="relative flex flex-1 items-center justify-center px-4 py-6 sm:px-8">
           <div className="w-full max-w-sm space-y-6">
             {/* Logo — mobile only; the hero carries it on desktop */}
             <div className="flex justify-center lg:hidden">
-              <img className="h-11 w-auto object-contain dark:hidden" src={textInRightLight} alt="Trade CRM" />
-              <img className="hidden h-11 w-auto object-contain dark:block" src={textInRightDark} alt="Trade CRM" />
+              <img className="h-15 w-auto object-contain dark:hidden" src={textInRightLight} alt="Trade CRM" />
+              <img className="hidden h-15 w-auto object-contain dark:block" src={textInRightDark} alt="Trade CRM" />
             </div>
 
             <div className="bg-card ring-foreground/10 rounded-2xl p-6 shadow-lg ring-1 sm:p-8">
-              <div className="space-y-1.5">
-                <h2 className="text-2xl font-bold tracking-tight">{t('signIn')}</h2>
-                <p className="text-muted-foreground text-sm">{t('welcome')}</p>
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1.5">
+                  <h2 className="text-2xl font-bold tracking-tight">{t('signIn')}</h2>
+
+                  <p className="text-muted-foreground text-sm">{t('welcome')}</p>
+                </div>
+
+                <div className="flex shrink-0 items-center gap-1">
+                  <LanguageSwitcher />
+                  <ModeToggle />
+                </div>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">

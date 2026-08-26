@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { CalendarDays } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -9,9 +8,9 @@ import { PageHeader } from '~/components/layout/PageHeader';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { Label } from '~/components/ui/label';
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
 import { formatDate } from '~/lib/format';
-import { mapToOptions } from '~/lib/mapToOptions';
 import { cn } from '~/lib/utils';
 
 export interface DashboardFilters {
@@ -52,13 +51,13 @@ export default function DashboardLayout() {
     );
   };
 
-  const { data: sellersResponse } = useQuery({
+  // Продавцов может быть много — фильтр ищет по имени на сервере, а не грузит первые 100.
+  const sellers = useAsyncSelectOptions({
     queryKey: ['sellers', 'list'],
-    queryFn: () => sellersApi.getAll(1, 100, {}, []),
-    staleTime: 60_000,
+    fetcher: async (search) => (await sellersApi.getAll(1, 20, { search: search || undefined }, []))?.data?.data ?? [],
+    getValue: (s) => s.id,
+    getLabel: (s) => s.name,
   });
-
-  const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
 
   const validPeriod: Period = PERIOD_OPTIONS.some((option) => option.value === period) ? (period as Period) : 'month';
 
@@ -115,10 +114,12 @@ export default function DashboardLayout() {
                     value: '',
                     label: t('allSellers'),
                   },
-                  ...sellerOptions,
+                  ...sellers.options,
                 ]}
                 value={sellerId ?? ''}
                 onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
+                onSearch={sellers.onSearch}
+                loading={sellers.loading}
               />
             </div>
 

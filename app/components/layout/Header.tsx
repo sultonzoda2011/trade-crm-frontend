@@ -1,14 +1,18 @@
-import { Search } from 'lucide-react';
+import { HelpCircle, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
-import { CommandPalette } from '~/components/shared/CommandPalette';
-import { SidebarTrigger } from '~/components/ui/sidebar';
 import { UserNav } from '~/components/layout/UserNav';
+import { CommandPalette } from '~/components/shared/CommandPalette';
+import { Button } from '~/components/ui/button';
+import { SidebarTrigger } from '~/components/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 
 export default function Header() {
   const { t } = useTranslation('common');
+  const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   useEffect(() => {
@@ -41,14 +45,27 @@ export default function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t('navigation.guide')}
+                onClick={() => navigate('/guide')}>
+                <HelpCircle className="h-4 w-4" />
+              </Button>
+            }
+          />
+          <TooltipContent side="bottom">{t('navigation.guide')}</TooltipContent>
+        </Tooltip>
+
         {/* На <lg скрыто не просто так: тема и язык уже переключаются внутри
             UserNav (см. app/components/layout/UserNav.tsx) — на мобильном
             это дублирующие контролы, функциональность не теряется. */}
         <div className="hidden items-center gap-2 lg:flex">
           <ModeToggle />
-          <div className="w-40 2xl:w-44">
-            <LanguageSwitcher />
-          </div>
+          <LanguageSwitcher />
         </div>
 
         <div className="bg-border h-6 w-px shrink-0" aria-hidden="true" />

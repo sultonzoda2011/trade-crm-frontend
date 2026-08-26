@@ -28,6 +28,7 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/categories/:id': [Role.Admin, Role.Owner],
   '/debtors': [Role.Admin, Role.Owner, Role.Seller],
   '/debtors/:id': [Role.Admin, Role.Owner, Role.Seller],
+  '/guide': [Role.Admin, Role.Owner, Role.Seller],
   '/403': [Role.Admin, Role.Owner, Role.Seller],
 };
 
