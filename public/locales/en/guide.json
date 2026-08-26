@@ -1,0 +1,50 @@
+{
+  "title": "User guide",
+  "subtitle": "A complete reference for working with Trade CRM. Pick a section on the left or use search.",
+  "searchPlaceholder": "Search the guide…",
+  "clearSearch": "Clear search",
+  "tocTitle": "Contents",
+  "matchesCount": "Matches: {{count}}",
+  "noResults": "Nothing found for \"{{query}}\"",
+  "emptyDescription": "Select a section from the contents.",
+  "callout": {
+    "tip": "Tip",
+    "note": "Note",
+    "important": "Important",
+    "warning": "Warning"
+  },
+  "sections": {
+    "basics": {
+      "title": "Getting started",
+      "summary": "Sign-in, interface, search, theme, language, required fields, and roles."
+    },
+    "dashboard": {
+      "title": "Dashboard and reports",
+      "summary": "The home screen: revenue, deals, debts, stock, products and a sellers report."
+    },
+    "transactions": {
+      "title": "Sales and transactions",
+      "summary": "How to record a sale, a credit sale and a refund; statuses and payments."
+    },
+    "debtors": {
+      "title": "Debtors and payments",
+      "summary": "Debtor cards, risk level, and where to record a debt payment."
+    },
+    "products": {
+      "title": "Products and categories",
+      "summary": "The catalog, units, stock, reorder thresholds and categories."
+    },
+    "markets": {
+      "title": "Markets",
+      "summary": "Your market and all markets: staff, products, debtors and deals."
+    },
+    "people": {
+      "title": "Sellers and users",
+      "summary": "Accounts and roles, a seller's markup and its payout."
+    },
+    "profile": {
+      "title": "Profile and settings",
+      "summary": "Personal details, password change, theme, language and signing out."
+    }
+  }
+}
