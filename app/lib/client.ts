@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import { toast } from 'sonner';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
 import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
-import { getIsOnline } from '~/lib/offline/networkStatus';
 import { redirectToLogin } from '~/lib/navigation';
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
@@ -14,32 +13,10 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  // Без этого запрос, оборвавшийся ПОСЛЕ отправки (сеть пропала не до, а
-  // прямо во время ожидания ответа — гонка, которую request-интерцептор
-  // ниже не ловит), может висеть неопределённо долго в некоторых Android
-  // WebView. Из-за этого бейдж синка застревал на "Синхронизация..."
-  // навсегда, а не показывал "Офлайн". 15с — с запасом даже для /sync/pull
-  // с полным снапшотом на медленной связи.
+  // Some Android WebViews can hang indefinitely on a request that drops
+  // mid-flight rather than failing fast, so cap it explicitly.
   timeout: 15000,
 });
-
-/**
- * Брошено request-интерцептором, если запроса без сети не было и быть не
- * могло — устройство офлайн. Отличаем от обычной сетевой ошибки (реальная
- * попытка соединения оборвалась), чтобы не показывать тост "нет соединения"
- * на КАЖДЫЙ из десятков запросов, которые страница шлёт при заходе офлайн —
- * пользователь и так видит статус в SyncStatusBadge.
- */
-export class OfflineError extends Error {
-  url?: string;
-  method?: string;
-  constructor(url?: string, method?: string) {
-    super(`Offline: request to "${url ?? ''}" was not sent`);
-    this.name = 'OfflineError';
-    this.url = url;
-    this.method = method;
-  }
-}
 
 const ERROR_MESSAGES: Record<number, string> = {
   400: 'errors.badRequest',
@@ -126,15 +103,6 @@ function canAccessApi(action: Action): boolean {
 
 // ---------- request interceptor ----------
 apiClient.interceptors.request.use((config) => {
-  // Главный фикс: без этой проверки каждый запрос реально уходил в сеть и
-  // висел на таймауте (10-30 секунд) прежде чем упасть — и это на КАЖДОЙ
-  // странице, а не только там, где явно обработан офлайн (transactions/
-  // products/debtors/categories). Обрываем здесь, для ВСЕХ запросов сразу,
-  // за миллисекунды, ещё до попытки открыть соединение.
-  if (!getIsOnline()) {
-    return Promise.reject(new OfflineError(config.url, config.method));
-  }
-
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -158,27 +126,6 @@ apiClient.interceptors.request.use((config) => {
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // Запрос даже не уходил (см. request-интерцептор выше) — это ожидаемо
-    // при отсутствии сети, не полагающаяся на сервер ошибка. Молча
-    // отклоняем: TanStack Query (retry: false без сети, offlineFirst)
-    // покажет то, что есть в кэше, без спама тостами по каждой странице.
-    if (error instanceof OfflineError) {
-      if (isSilent(error.url)) {
-        return Promise.reject(error);
-      }
-      const method = (error.method || 'get') as Method;
-      if (method !== 'get') {
-        // Запись (create/update/delete) в модуле, где ещё нет своей
-        // офлайн-логики (см. handoff-план: markets/users/sellers/...) —
-        // честно говорим, что действие не выполнено, а не проглатываем
-        // молча (иначе выглядит так, будто кнопка "Сохранить" сломана).
-        toast.error(i18next.t('errors.offlineAction', { ns: 'common' }));
-      }
-      // GET — тихо: страница остаётся с тем, что уже есть в персистентном
-      // кэше React Query, без тоста на каждый заход/фильтр.
-      return Promise.reject(error);
-    }
-
     const status: number | undefined = error.response?.status;
     const requestUrl: string | undefined = error.config?.url;
 

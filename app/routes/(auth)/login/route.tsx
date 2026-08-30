@@ -13,7 +13,6 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { canAccess } from '~/config/permissions';
 import { useForm } from '~/hooks/useForm';
 import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils';
-import { runSync } from '~/lib/offline/syncEngine';
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
@@ -86,12 +85,6 @@ export default function LoginPage() {
         image: null,
       };
       setUserInfo(user);
-      // Первый после логина токен — самое время забрать офлайн-снапшот
-      // (products/categories/debtors/transactions), не дожидаясь события
-      // сети/resume: до этого useSyncEngine на root.tsx уже пытался
-      // синкнуться при старте приложения БЕЗ токена и получил 401, а без
-      // повторного триггера так и остался бы с пустым локальным кэшем.
-      void runSync();
       toast.success(t('loginSuccess'));
       const redirectTo = searchParams.get('redirectTo') || '/';
 

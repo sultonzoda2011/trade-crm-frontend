@@ -15,20 +15,18 @@ import {
 } from 'react-router';
 
 import type { Route } from '.react-router/types/app/+types/root';
-import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
 import ErrorPage from '~/components/shared/ErrorPage';
-import OfflineBanner from '~/components/shared/OfflineBanner';
 import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
-import { useSyncEngine } from '~/hooks/useSyncEngine';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
-import { getQueryClient, getQueryPersister, QUERY_PERSIST_MAX_AGE } from '~/lib/query-client';
+import { getQueryClient } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -85,24 +83,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <Splash locale={locale} />
-        <PersistQueryClientProvider
-          client={queryClient}
-          persistOptions={{
-            persister: getQueryPersister(),
-            maxAge: QUERY_PERSIST_MAX_AGE,
-            // Меняем при несовместимых изменениях формы данных, чтобы старый
-            // кэш из localStorage не сломал новый код после обновления.
-            buster: 'v1',
-          }}>
+        <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <CapacitorBridge />
             <NavigationProgress />
-            <OfflineBanner />
             <TooltipProvider>{children}</TooltipProvider>
             <ToasterProvider />
           </ThemeProvider>
           {import.meta.env.DEV && <DevTools />}
-        </PersistQueryClientProvider>
+        </QueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -208,7 +197,6 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
-  useSyncEngine();
   return null;
 }
 
