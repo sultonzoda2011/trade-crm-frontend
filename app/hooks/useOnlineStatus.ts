@@ -1,19 +1,13 @@
 import * as React from 'react';
+import { getIsOnline, initNetworkStatus, subscribeOnline } from '~/lib/offline/networkStatus';
 
-/** Отслеживает online/offline статус через события браузера (и Capacitor WebView). */
+/**
+ * Статус сети для UI (SyncStatusBadge и т.п.). Источник — networkStatus.ts:
+ * @capacitor/network в первую очередь (навигатор.onLine ненадёжен в Android
+ * WebView), браузерные online/offline — фолбэк для обычной разработки.
+ */
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = React.useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
-
-  React.useEffect(() => {
-    const onOnline = () => setIsOnline(true);
-    const onOffline = () => setIsOnline(false);
-    window.addEventListener('online', onOnline);
-    window.addEventListener('offline', onOffline);
-    return () => {
-      window.removeEventListener('online', onOnline);
-      window.removeEventListener('offline', onOffline);
-    };
-  }, []);
-
-  return isOnline;
+  React.useEffect(() => initNetworkStatus(), []);
+  return React.useSyncExternalStore(subscribeOnline, getIsOnline, () => true);
 }
+
