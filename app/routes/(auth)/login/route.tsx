@@ -13,6 +13,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { canAccess } from '~/config/permissions';
 import { useForm } from '~/hooks/useForm';
 import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils';
+import { runSync } from '~/lib/offline/syncEngine';
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
@@ -85,6 +86,12 @@ export default function LoginPage() {
         image: null,
       };
       setUserInfo(user);
+      // Первый после логина токен — самое время забрать офлайн-снапшот
+      // (products/categories/debtors/transactions), не дожидаясь события
+      // сети/resume: до этого useSyncEngine на root.tsx уже пытался
+      // синкнуться при старте приложения БЕЗ токена и получил 401, а без
+      // повторного триггера так и остался бы с пустым локальным кэшем.
+      void runSync();
       toast.success(t('loginSuccess'));
       const redirectTo = searchParams.get('redirectTo') || '/';
 
@@ -202,7 +209,7 @@ export default function LoginPage() {
                   </button>
                 </div>
 
-                <Button type="submit" size="lg" className="h-10 w-full text-sm font-semibold" disabled={isSubmitting}>
+                <Button type="submit" size="lg" className="w-full text-sm font-semibold" disabled={isSubmitting}>
                   {isSubmitting ? t('submitting') : t('signIn')}
                 </Button>
               </form>
@@ -214,7 +221,7 @@ export default function LoginPage() {
                 <span className="bg-border h-px flex-1" />
               </div>
 
-              <Button type="button" variant="outline" size="lg" className="h-10 w-full gap-2 text-sm font-medium">
+              <Button type="button" variant="outline" size="lg" className="w-full gap-2 text-sm font-medium">
                 <GoogleIcon className="h-4 w-4" />
                 {t('continueWithGoogle')}
               </Button>
