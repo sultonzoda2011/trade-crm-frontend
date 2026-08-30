@@ -52,7 +52,7 @@ export function CreateDebtorModal() {
           </Button>
         </div>
       }>
-      <form id="create-debtor-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form id="create-debtor-form" onSubmit={handleSubmit(onSubmit)}>
         <FormInput
           control={control}
           name="name"
@@ -60,7 +60,15 @@ export function CreateDebtorModal() {
           placeholder={t('fields.fullName')}
           required
         />
-        <FormInput control={control} name="phone" type="tel" inputMode="tel" label={t('fields.phone')} placeholder={t('fields.phone')} required />
+        <FormInput
+          control={control}
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          label={t('fields.phone')}
+          placeholder={t('fields.phone')}
+          required
+        />
       </form>
     </Modal>
   );
