@@ -30,7 +30,11 @@ export function ListPageToolbar({
             onChange={(e) => onSearchChange(e.target.value)}
             startIcon={<Search className="text-muted-foreground h-4 w-4" />}
           />
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">{children}</div>
+          {/* Было overflow-x-auto — на узких экранах кнопки/бейдж фильтра
+             утыкались друг в друга в одну нескролящуюся на вид строку.
+             flex-wrap переносит лишние элементы на вторую строку вместо
+             того, чтобы сжимать/перекрывать их. */}
+          <div className="flex flex-wrap items-center gap-2">{children}</div>
         </div>
       </div>
     </>
