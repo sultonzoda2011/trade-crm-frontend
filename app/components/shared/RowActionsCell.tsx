@@ -4,7 +4,12 @@ import { MoreVertical } from 'lucide-react';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '~/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '~/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 
 interface IconActionButtonProps {
@@ -25,7 +30,7 @@ export function IconActionButton({ icon, label, onClick, render, danger, outline
           <Button
             variant={outline ? 'outline' : 'ghost'}
             size="icon"
-            className={cn('h-8 w-8', danger && 'text-destructive hover:bg-destructive/10 hover:text-destructive')}
+            className={cn(danger && 'text-destructive hover:bg-destructive/10 hover:text-destructive')}
             onClick={onClick}
             disabled={disabled}
             render={render}>
@@ -51,8 +56,8 @@ export function IconActionButton({ icon, label, onClick, render, danger, outline
  */
 export function RowActionsCell({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
-  const items = React.Children.toArray(children).filter(
-    (child): child is ReactElement<IconActionButtonProps> => React.isValidElement(child)
+  const items = React.Children.toArray(children).filter((child): child is ReactElement<IconActionButtonProps> =>
+    React.isValidElement(child)
   );
 
   if (isMobile && items.length > 1) {
@@ -61,7 +66,7 @@ export function RowActionsCell({ children }: { children: ReactNode }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon-sm" className="h-8 w-8">
+              <Button variant="ghost" size="icon">
                 <MoreVertical className="size-4" />
               </Button>
             }
@@ -87,5 +92,9 @@ export function RowActionsCell({ children }: { children: ReactNode }) {
     );
   }
 
-  return <div className="flex justify-end gap-1">{children}</div>;
+  return (
+    <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+      {children}
+    </div>
+  );
 }
