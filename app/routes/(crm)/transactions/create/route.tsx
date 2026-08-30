@@ -1,36 +1,36 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import dayjs from 'dayjs'
-import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
-import { useFieldArray } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router'
-import { toast } from 'sonner'
-import { debtorsApi } from '~/api/debtors'
-import { productsApi } from '~/api/products'
-import { transactionsApi } from '~/api/transactions'
-import { Panel } from '~/components/layout/Panel'
-import { CustomInput } from '~/components/shared/CustomInput'
-import { Badge } from '~/components/ui/badge'
-import BreadCrumbs from '~/components/ui/bread-crumb'
-import { Button } from '~/components/ui/button'
-import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect'
-import { FormDateInput } from '~/components/ui/form/FormDateInput'
-import { FormInput } from '~/components/ui/form/FormInput'
-import { Action } from '~/config/actions'
-import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions'
-import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions'
-import { useCan } from '~/hooks/useCan'
-import { useForm } from '~/hooks/useForm'
-import { fmtTJS } from '~/lib/format'
-import type { CreateTransactionRequest } from '~/types/transactions'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react';
+import { useEffect, useMemo } from 'react';
+import { useFieldArray } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
+import { debtorsApi } from '~/api/debtors';
+import { productsApi } from '~/api/products';
+import { transactionsApi } from '~/api/transactions';
+import { Panel } from '~/components/layout/Panel';
+import { CustomInput } from '~/components/shared/CustomInput';
+import { Badge } from '~/components/ui/badge';
+import BreadCrumbs from '~/components/ui/bread-crumb';
+import { Button } from '~/components/ui/button';
+import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
+import { FormDateInput } from '~/components/ui/form/FormDateInput';
+import { FormInput } from '~/components/ui/form/FormInput';
+import { Action } from '~/config/actions';
+import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
+import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
+import { useCan } from '~/hooks/useCan';
+import { useForm } from '~/hooks/useForm';
+import { fmtTJS } from '~/lib/format';
+import type { CreateTransactionRequest } from '~/types/transactions';
 import {
   createTransactionSchema,
   isOverStock,
   type CreateTransactionInput,
   type CreateTransactionItemInput,
-} from '~/validations/transactions'
+} from '~/validations/transactions';
 
 export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
@@ -67,12 +67,18 @@ export default function CreateTransactionPage() {
     return map;
   }, [products.byId]);
 
+  const priceMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const p of products.byId.values()) map[p.id] = p.price;
+    return map;
+  }, [products.byId]);
+
   const typeOptions = useMemo(
     () => getTransactionTypeOptions(t).filter((opt) => canCreateSale || opt.value !== 'SALE'),
     [t, canCreateSale]
   );
 
-  const transactionSchema = useMemo(() => createTransactionSchema(t, stockMap), [t, stockMap]);
+  const transactionSchema = useMemo(() => createTransactionSchema(t, stockMap, priceMap), [t, stockMap, priceMap]);
 
   const { control, handleSubmit, watch, setValue, formState } = useForm<CreateTransactionInput>({
     resolver: zodResolver(transactionSchema),
@@ -117,67 +123,70 @@ export default function CreateTransactionPage() {
 
   const productMap = products.byId;
 
-  const getProduct = useMemo(
-    () => (productId?: string | null) => (productId ? productMap.get(productId) : undefined),
-    [productMap]
-  );
+  // ВАЖНО: раньше это была цепочка useMemo-мемоизированных функций
+  // (getProduct → getItemTotal → calculatedTotal), каждая со своим списком
+  // зависимостей. Когда items и productMap менялись в одном и том же рендере
+  // (типичный случай: только что выбрали товар — сразу пришли и новый
+  // productId, и подрос byId), memo-кэш каждого уровня инвалидировался
+  // независимо, и итоговая сумма могла на один рендер отстать от реальных
+  // items/productMap — с одной позицией это отставание никогда не
+  // "догонялось" (следующего триггера для пересчёта не было), и итог
+  // застревал на 0. Считаем всё напрямую в один проход, без промежуточных
+  // мемоизированных функций-замыканий.
+  const getProduct = (productId?: string | null) => (productId ? productMap.get(productId) : undefined);
 
-  const getItemTotal = useMemo(
-    () => (item?: CreateTransactionItemInput | undefined) => {
-      if (!item) return 0;
-      const product = getProduct(item.productId);
-      const q = Number(item.quantity) || 0;
-      const p = product?.price ?? 0;
-      const d = Number(item.discount) || 0;
-      const m = Number(item.markup) || 0;
-      return Math.max(q * p - d + m, 0);
-    },
-    [getProduct]
-  );
+  const itemsList = Array.isArray(items) ? items : [];
 
-  const calculatedTotal = useMemo(() => {
-    return (Array.isArray(items) ? items : []).reduce((acc, item) => acc + getItemTotal(item), 0);
-  }, [items, getItemTotal]);
+  // ВАЖНО: раньше это было завёрнуто в useMemo([itemsList, productMap]).
+  // Реальная причина бага — не в этой мемоизации самой по себе, а в том,
+  // что react-hook-form's watch('items') не гарантирует новую ссылку на
+  // массив при изменении вложенного поля через Controller (известная
+  // особенность RHF: массив может мутироваться "на месте"). Из-за этого
+  // useMemo решал, что зависимости не изменились, и отдавал закэшированный
+  // (устаревший) итог — а строка "Итого" в самой карточке товара (обычная
+  // функция, без memo) всегда пересчитывалась верно, отсюда расхождение:
+  // в карточке видно 15 000, а в сводке платежа — 0. Расчёт тут дешёвый
+  // (цикл по нескольким позициям), поэтому просто считаем каждый рендер,
+  // без useMemo — синхронность важнее микрооптимизации.
+  let calculatedTotal = 0;
+  let totalDiscount = 0;
+  let totalMarkup = 0;
+  for (const item of itemsList) {
+    const product = getProduct(item?.productId);
+    const q = Number(item?.quantity) || 0;
+    const p = product?.price ?? 0;
+    const d = Number(item?.discount) || 0;
+    const m = Number(item?.markup) || 0;
+    const gross = q * p;
+    const net = Math.max(gross - d + m, 0);
+    calculatedTotal += net;
+    // net уже включает +markup, поэтому чистую скидку считаем без него,
+    // иначе надбавка маскировала бы скидку в этой сумме.
+    totalDiscount += Math.max(gross - (net - m), 0);
+    totalMarkup += m;
+  }
 
-  const getItemGross = useMemo(
-    () => (item?: CreateTransactionItemInput | undefined) => {
-      if (!item) return 0;
-      const product = getProduct(item.productId);
-      const q = Number(item.quantity) || 0;
-      const p = product?.price ?? 0;
-      return q * p;
-    },
-    [getProduct]
-  );
+  const getItemTotal = (item?: CreateTransactionItemInput | undefined) => {
+    if (!item) return 0;
+    const product = getProduct(item.productId);
+    const q = Number(item.quantity) || 0;
+    const p = product?.price ?? 0;
+    const d = Number(item.discount) || 0;
+    const m = Number(item.markup) || 0;
+    return Math.max(q * p - d + m, 0);
+  };
 
-  const totalDiscount = useMemo(() => {
-    return (Array.isArray(items) ? items : []).reduce((acc, item) => {
-      const gross = getItemGross(item);
-      const net = getItemTotal(item);
-      const m = Number(item?.markup) || 0;
-      // net уже включает +markup, поэтому чистую скидку считаем без него,
-      // иначе надбавка маскировала бы скидку в этой сумме.
-      return acc + Math.max(gross - (net - m), 0);
-    }, 0);
-  }, [items, getItemGross, getItemTotal]);
-
-  const totalMarkup = useMemo(() => {
-    return (Array.isArray(items) ? items : []).reduce((acc, item) => acc + (Number(item?.markup) || 0), 0);
-  }, [items]);
-
-  const hasStockIssue = useMemo(
-    () =>
-      (Array.isArray(items) ? items : []).some((item) =>
-        isOverStock(item?.quantity, item?.productId ? stockMap[item.productId] : undefined)
-      ),
-    [items, stockMap]
+  // Тот же риск устаревания ссылки на itemsList, что и у calculatedTotal
+  // выше — считаем напрямую, без useMemo.
+  const hasStockIssue = itemsList.some((item) =>
+    isOverStock(item?.quantity, item?.productId ? stockMap[item.productId] : undefined)
   );
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateTransactionInput) => {
       const payload: CreateTransactionRequest = {
         debtorId: data.debtorId || undefined,
-        customerName:data.customerName || undefined,
+        customerName: data.customerName || undefined,
         type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
         paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
         dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
@@ -361,7 +370,7 @@ export default function CreateTransactionPage() {
             </div>
           </Panel>
 
-          <Panel title={t('paymentSummary')} className="p-4">
+          <Panel title={t('paymentSummary')}>
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
@@ -421,7 +430,7 @@ export default function CreateTransactionPage() {
         </div>
 
         <div className="space-y-6">
-          <Panel title={t('details')} className="p-4">
+          <Panel title={t('details')}>
             <div className="space-y-4">
               <FormCustomSelect control={control} name="type" label={t('fields.type')} options={typeOptions} required />
               <FormCustomSelect
