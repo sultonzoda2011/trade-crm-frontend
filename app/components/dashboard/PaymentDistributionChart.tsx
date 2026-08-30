@@ -65,7 +65,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
   }));
 
   return (
-    <Panel title={t('paymentTypes')} className="col-span-1 flex flex-col">
+    <Panel title={t('paymentTypes')} className="col-span-1" bodyClassName="flex flex-col">
       <div className="flex flex-1 items-center justify-center">
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
