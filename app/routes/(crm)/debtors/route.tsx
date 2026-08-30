@@ -1,18 +1,23 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
+import { Plus, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { fmtTJS } from '~/lib/format';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
 import { useDebtorsModals, useDebtorsStore } from '~/routes/(crm)/debtors/store';
@@ -23,6 +28,7 @@ import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 export default function DebtorsPage() {
   const { t } = useTranslation(['debtors', 'common']);
   const queryClient = useQueryClient();
+  const location = useLocation();
   const { can } = useCan();
   const deleteModal = useDebtorsModals((s) => s.delete);
   const createModal = useDebtorsModals((s) => s.create);
@@ -89,8 +95,12 @@ export default function DebtorsPage() {
         <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
         {can(Action.DEBTORS_CREATE) && (
-          <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
-            <Plus className="h-4 w-4" data-icon="inline-start" />
+          <Button
+            size="icon"
+            aria-label={t('create')}
+            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            onClick={() => createModal.open()}>
+            <Plus data-icon="inline-start" />
             <span className="hidden sm:inline">{t('create')}</span>
           </Button>
         )}
@@ -106,10 +116,29 @@ export default function DebtorsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        getRowLink={(row) => ({
+          to: `/debtors/${row.original.id}`,
+          state: { fromPath: location.pathname, fromName: t('title') },
+        })}
         mobileFields={{
           totalDebtAmount: 'primary',
           'market.name': 'secondary',
           '_count.transactions': 'secondary',
+        }}
+        renderMobileCard={(row) => {
+          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
+          const d = row.original;
+          return (
+            <EntityMobileCard
+              image={null}
+              fallbackIcon={UserRound}
+              title={d.name}
+              subtitle={d.phone}
+              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+              badges={[{ label: t(`risk.${d.risk}`), className: DEBTOR_RISK_BADGE[d.risk] }]}
+              stats={[{ label: t('totalDebtAmount'), value: fmtTJS(d.totalDebtAmount) }]}
+            />
+          );
         }}
       />
       <CreateDebtorModal />
