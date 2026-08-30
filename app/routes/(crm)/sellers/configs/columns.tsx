@@ -6,6 +6,7 @@ import { UserAvatar } from '~/components/shared/UserAvatar';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
+import { getClientUser } from '~/lib/auth-utils';
 import type { Seller } from '~/types/sellers';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 
@@ -14,13 +15,22 @@ function SellerActionsCell({ row, t }: { row: Seller; t: TFunction }) {
   const editModal = useSellersModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
+  // Owner-продавец может встретить самого себя в списке продавцов (бэкенд
+  // включает владельца в выдачу). Открывать чужую страницу /sellers/:id для
+  // самого себя не нужно — ведём на собственный /profile.
+  const isSelf = getClientUser()?.id === row.id;
 
   return (
     <RowActionsCell>
       <IconActionButton
         icon={<Eye className="h-4 w-4" />}
         label={t('actions.view')}
-        render={<Link to={`/sellers/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
+        render={
+          <Link
+            to={isSelf ? '/profile' : `/sellers/${row.id}`}
+            state={isSelf ? undefined : { fromPath: location.pathname, fromName: t('title') }}
+          />
+        }
       />
       {can(Action.SELLERS_EDIT) && (
         <IconActionButton
