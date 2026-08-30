@@ -86,7 +86,7 @@ export function InsightList({ insights, className }: InsightListProps) {
   const { t } = useTranslation('dashboard');
 
   return (
-    <Panel title={t('insights.title')} className={cn('p-0', className)}>
+    <Panel title={t('insights.title')} className={className} bodyClassName="p-0">
       {insights.length === 0 ? (
         <div className="text-muted-foreground flex items-center gap-2 px-4 py-6 text-sm">
           <CheckCircle2 className="text-success h-4 w-4 shrink-0" />
