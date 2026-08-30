@@ -55,7 +55,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="h-6 w-6 text-emerald-600 hover:bg-emerald-500/10 dark:text-emerald-400"
+                    className="text-success hover:bg-success/10 h-6 w-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       table.toggleAllColumnsVisible(true);
@@ -91,7 +91,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="h-6 w-6 text-blue-600 hover:bg-blue-500/10 dark:text-blue-400"
+                    className="text-primary hover:bg-primary/10 h-6 w-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       table.resetColumnVisibility();
