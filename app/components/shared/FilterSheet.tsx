@@ -95,10 +95,24 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
     <Sheet open={open} onOpenChange={handleOpen} modal={false}>
       <SheetTrigger
         render={
-          <Button variant="outline" className="relative gap-2">
-            <Filter className="h-4 w-4" />
-            {t('filters.title')}
-            {activeCount > 0 && <Badge className="text-2xs h-4 min-w-4 rounded-full px-1">{activeCount}</Badge>}
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label={t('filters.title')}
+            className="relative shrink-0 sm:w-auto sm:gap-1.5 sm:px-3">
+            <Filter />
+            <span className="hidden sm:inline">{t('filters.title')}</span>
+            {/*
+              На телефоне подпись скрыта, кнопка — квадрат 44×44, поэтому счётчик
+              висит индикатором в углу; от `sm:` он возвращается в поток рядом с
+              подписью. `min-h-4` обязателен: в базе у Badge стоит `min-h-5`,
+              который перебивал прежний `h-4` и бейдж был выше задуманного.
+            */}
+            {activeCount > 0 && (
+              <Badge className="text-2xs absolute -top-0.5 -right-0.5 min-h-4 min-w-4 shrink-0 rounded-full px-1 sm:static sm:ml-1">
+                {activeCount}
+              </Badge>
+            )}
           </Button>
         }
       />
