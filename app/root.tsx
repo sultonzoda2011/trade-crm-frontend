@@ -25,6 +25,7 @@ import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
+import { useSyncEngine } from '~/hooks/useSyncEngine';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
 import { getQueryClient, getQueryPersister, QUERY_PERSIST_MAX_AGE } from '~/lib/query-client';
@@ -76,7 +77,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        <title>Trade CRM</title>
+        <title>TradeCRM</title>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <Meta />
@@ -123,12 +124,30 @@ function Splash({ locale }: { locale: string }) {
     if (!v) return;
     v.play().catch(() => {
       v.muted = true;
-      v.play().catch(() => {});
+      v.play().catch(() => setVideoEnded(true));
     });
   }, []);
+
+  // Страховка: если видео не загрузилось (404, неподдерживаемый кодек в
+  // WebView, отсутствие сети) или зависло — не блокируем приложение
+  // навсегда. onError закрывает случай явной ошибки, таймаут — случай
+  // "тихого" зависания без события.
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const onError = () => setVideoEnded(true);
+    v.addEventListener('error', onError);
+    const timeout = setTimeout(() => setVideoEnded(true), 4000);
+    return () => {
+      v.removeEventListener('error', onError);
+      clearTimeout(timeout);
+    };
+  }, []);
+
   useEffect(() => {
     // Прячем сплэш, только когда оба условия выполнены:
     // загрузка завершена И видео доиграло хотя бы один полный проход
+    // (или сработал error/timeout-фолбэк выше)
     if (!isLoadingDone || !videoEnded) return;
 
     const el = ref.current;
@@ -189,6 +208,7 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
+  useSyncEngine();
   return null;
 }
 
