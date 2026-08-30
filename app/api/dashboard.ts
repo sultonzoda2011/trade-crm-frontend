@@ -1,5 +1,9 @@
 import { apiClient } from '~/lib/client';
+import { computeOverviewOffline } from '~/lib/offline/offlineOverview';
+import { getIsOnline } from '~/lib/offline/networkStatus';
 import type { DashboardResponse, OverviewResponse, SellersReportResponse } from '~/types/dashboard';
+
+const isOffline = (): boolean => !getIsOnline();
 
 export interface DashboardParams {
   period?: string;
@@ -14,6 +18,10 @@ export const dashboardApi = {
    * recommendations in one round-trip.
    */
   getOverview: async (params?: DashboardParams): Promise<OverviewResponse> => {
+    if (isOffline()) {
+      const data = await computeOverviewOffline(params ?? {});
+      return { success: true, data, timestamp: new Date().toISOString() };
+    }
     const { data } = await apiClient.get('/dashboard/overview', { params });
     return data;
   },
