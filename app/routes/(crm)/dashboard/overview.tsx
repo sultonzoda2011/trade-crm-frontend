@@ -1,5 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, Banknote, Package, Receipt, ShoppingCart, Undo2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  ArrowRight,
+  Banknote,
+  Package,
+  PackageCheck,
+  PackagePlus,
+  Receipt,
+  ShoppingCart,
+  TicketPercent,
+  Undo2,
+} from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useOutletContext } from 'react-router';
@@ -10,6 +21,7 @@ import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
+import { StatCard } from '~/components/shared/StatCard';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { useCan } from '~/hooks/useCan';
@@ -111,38 +123,53 @@ export default function DashboardOverviewPage() {
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <RevenueTrendChart data={overview.revenueTrend} />
-        <OverdueAlertCard debts={debts} />
+        <PaymentDistributionChart data={overview.paymentMix} />
       </div>
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
-        <PaymentDistributionChart data={overview.paymentMix} />
-        <Panel title={t('stockSummary')} className="space-y-3 lg:col-span-2">
-          <div className="grid grid-cols-2 gap-2 sm:gap-3">
-            <Link
+        <OverdueAlertCard debts={debts} />
+
+        <Panel title={t('stockSummary')} className="lg:col-span-1" bodyClassName="space-y-2">
+          <div className="grid grid-cols-2 gap-2 sm:gap-5">
+            <StatCard
+              align="start"
+              size="sm"
+              icon={Package}
+              label={t('inventory.total')}
+              value={inventory.totalProducts}
               to="/products"
-              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-2 transition-colors sm:p-3">
-              <span className="flex items-center gap-1 font-mono text-sm font-bold sm:gap-1.5 sm:text-xl">
-                <Package className="text-muted-foreground hidden h-4 w-4 sm:block" />
-                {inventory.totalProducts}
-              </span>
-              <span className="text-muted-foreground text-2xs truncate">{t('inventory.total')}</span>
-            </Link>
-            <Link
+            />
+
+            <StatCard
+              align="start"
+              size="sm"
+              icon={PackagePlus}
+              label={t('inventory.toOrder')}
+              value={inventory.needsReorder}
               to="/products?needsReorder=true"
-              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-2 transition-colors sm:p-3">
-              <span className="text-warning font-mono text-sm font-bold sm:text-xl">{inventory.needsReorder}</span>
-              <span className="text-muted-foreground text-2xs truncate">{t('inventory.toOrder')}</span>
-            </Link>
-            <Link
+              valueClassName="text-warning"
+              iconClassName="bg-warning/10 text-warning"
+            />
+
+            <StatCard
+              align="start"
+              size="sm"
+              icon={PackageCheck}
+              label={t('inventory.healthy')}
+              value={inventory.healthy}
               to="/products?health=HEALTHY"
-              className="bg-muted/50 hover:bg-muted/80 flex flex-col gap-0.5 rounded-lg p-2 transition-colors sm:p-3">
-              <span className="text-success font-mono text-sm font-bold sm:text-xl">{inventory.healthy}</span>
-              <span className="text-muted-foreground text-2xs truncate">{t('inventory.healthy')}</span>
-            </Link>
-            <div className="bg-muted/50 flex flex-col gap-0.5 rounded-lg p-2 sm:p-3">
-              <span className="truncate font-mono text-sm font-bold sm:text-xl">{fmtTJS(sales.discountAmount)}</span>
-              <span className="text-muted-foreground text-2xs truncate">{t('metrics.discounts')}</span>
-            </div>
+              valueClassName="text-success"
+              iconClassName="bg-success/10 text-success"
+            />
+
+            <StatCard
+              align="start"
+              size="sm"
+              icon={TicketPercent}
+              label={t('metrics.discounts')}
+              value={fmtTJS(sales.discountAmount)}
+              to="/transactions"
+            />
           </div>
           {!user?.marketId && (
             /* ADMIN без своего рынка видит сводку по всем рынкам, поэтому
