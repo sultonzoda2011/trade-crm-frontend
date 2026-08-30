@@ -4,6 +4,9 @@ import { z } from 'zod';
 /** Available stock per product id, used for cross-field stock validation. */
 export type StockMap = Record<string, number>;
 
+/** Price per product id, used to validate that discount doesn't exceed the item's total. */
+export type PriceMap = Record<string, number>;
+
 /** Single source of truth for the "quantity exceeds available stock" rule. */
 export function isOverStock(quantity: unknown, available?: number | null): boolean {
   if (available == null) return false;
@@ -17,7 +20,7 @@ export function isOverStock(quantity: unknown, available?: number | null): boole
  * `string | null`. These unions accept `null` as "empty" and produce translated
  * messages instead of raw Zod English errors.
  */
-export const createTransactionItemSchema = (t: TFunction, stockMap?: StockMap) =>
+export const createTransactionItemSchema = (t: TFunction, stockMap?: StockMap, priceMap?: PriceMap) =>
   z
     .object({
       productId: z
@@ -67,12 +70,31 @@ export const createTransactionItemSchema = (t: TFunction, stockMap?: StockMap) =
           path: ['quantity'],
         });
       }
+    })
+    .superRefine((item, ctx) => {
+      // Скидка больше "цена × количество + наценка" раньше молча обнуляла
+      // итог по позиции (Math.max(..., 0) в подсчёте суммы) — пользователь
+      // видел "0 TJS" без объяснений. Явно запрещаем такую скидку.
+      if (!item.productId || !priceMap) return;
+      const price = priceMap[item.productId];
+      if (price == null) return;
+      const q = Number(item.quantity) || 0;
+      const d = Number(item.discount) || 0;
+      const m = Number(item.markup) || 0;
+      const gross = q * price + m;
+      if (d > gross) {
+        ctx.addIssue({
+          code: 'custom',
+          message: t('discountExceedsTotal', { max: gross, ns: 'validation' }),
+          path: ['discount'],
+        });
+      }
     });
 
 export type CreateTransactionItemSchema = z.infer<ReturnType<typeof createTransactionItemSchema>>;
 export type CreateTransactionItemInput = z.input<ReturnType<typeof createTransactionItemSchema>>;
 
-export const createTransactionSchema = (t: TFunction, stockMap?: StockMap) =>
+export const createTransactionSchema = (t: TFunction, stockMap?: StockMap, priceMap?: PriceMap) =>
   z
     .object({
       debtorId: z.union([z.string(), z.null()]).optional(),
@@ -89,7 +111,9 @@ export const createTransactionSchema = (t: TFunction, stockMap?: StockMap) =>
         .refine((val) => val == null || val === '' || /^\d{4}-\d{2}-\d{2}$/.test(val), {
           message: t('invalidDate', { ns: 'validation' }),
         }),
-      items: z.array(createTransactionItemSchema(t, stockMap)).min(1, t('itemsRequired', { ns: 'validation' })),
+      items: z
+        .array(createTransactionItemSchema(t, stockMap, priceMap))
+        .min(1, t('itemsRequired', { ns: 'validation' })),
     })
     .superRefine((data, ctx) => {
       if (data.type === 'DEBT') {
