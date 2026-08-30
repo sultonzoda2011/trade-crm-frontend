@@ -87,7 +87,7 @@ export default function DashboardLayout() {
   ];
 
   return (
-    <div className="flex flex-1 flex-col space-y-5 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <PageHeader
         title={t('title')}
         actions={
