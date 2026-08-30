@@ -5,7 +5,7 @@ export function ByIdSkeleton() {
   return (
     <div className="flex flex-1 flex-col space-y-6 pb-8">
       <Skeleton className="h-4 w-48" />
-      <Panel className="p-6">
+      <Panel bodyClassName="p-6">
         <div className="flex items-center gap-4">
           <Skeleton className="h-20 w-20 rounded-full" />
           <div className="space-y-2">
@@ -14,7 +14,7 @@ export function ByIdSkeleton() {
           </div>
         </div>
       </Panel>
-      <Panel className="p-6">
+      <Panel bodyClassName="p-6">
         <div className="mb-8 flex justify-between">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-6 w-24" />
