@@ -16,6 +16,7 @@
   "fileMustBeImage": "Файл бояд тасвир бошад",
   "quantityMin": "Ҳадди аққал 1",
   "discountMin": "Ҳадди аққал 0",
+  "discountExceedsTotal": "Тахфиф аз маблағи мол зиёд буда наметавонад ({{max}} TJS)",
   "markupMin": "Ҳадди аққал 0",
   "sellerCreditExceedsBalance": "Маблағ аз баланси ҷорӣ зиёд аст",
   "itemProductRequired": "Молро интихоб кунед",
