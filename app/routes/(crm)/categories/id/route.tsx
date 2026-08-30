@@ -50,9 +50,11 @@ export default function CategoryDetailPage() {
 
   const market = marketResponse?.data;
 
+  const PREVIEW_LIMIT = 5;
+
   const { data: productsResponse } = useQuery({
     queryKey: ['category-products', id],
-    queryFn: () => productsApi.getAll(1, 50, {}, [{ key: 'categoryId', value: id! }]),
+    queryFn: () => productsApi.getAll(1, PREVIEW_LIMIT, {}, [{ key: 'categoryId', value: id! }]),
     enabled: !!id,
     staleTime: 30_000,
   });
@@ -75,7 +77,7 @@ export default function CategoryDetailPage() {
   const filterState = { fromCategoryId: category.id, fromCategoryName: category.name };
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -84,14 +86,14 @@ export default function CategoryDetailPage() {
         ]}
       />
 
-      <Panel className="p-6">
+      <Panel bodyClassName="p-4">
         <DetailHeader name={category.name} subtitle={category.description ?? undefined} image={category.image} />
       </Panel>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
               <InfoItem
                 label={t('fields.name')}
                 value={
@@ -128,16 +130,18 @@ export default function CategoryDetailPage() {
             <Panel
               title={t('fields.productsCount')}
               actions={
-                <PanelViewAll
-                  to="/products"
-                  state={filterState}
-                  label={t('viewAll')}
-                  count={category._count.products}
-                />
+                category._count.products > PREVIEW_LIMIT ? (
+                  <PanelViewAll
+                    to="/products"
+                    state={filterState}
+                    label={t('viewAll')}
+                    count={category._count.products}
+                  />
+                ) : undefined
               }>
-              <div className="scrollbar-thin divide-border max-h-64 divide-y overflow-x-hidden overflow-y-auto">
+              <div className="divide-border divide-y">
                 {categoryProducts.map((product) => (
-                  <ListLink key={product.id} to={`/products/${product.id}`} state={listState} className="py-1.5">
+                  <ListLink key={product.id} to={`/products/${product.id}`} state={listState}>
                     <div className="flex min-w-0 items-center gap-2.5">
                       <Avatar size="sm" className="shrink-0">
                         {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
@@ -161,7 +165,7 @@ export default function CategoryDetailPage() {
           )}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {market && <MarketCard market={market} t={t} viewState={listState} />}
 
           <QuickActions
