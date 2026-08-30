@@ -16,6 +16,7 @@
   "fileMustBeImage": "File must be an image",
   "quantityMin": "Minimum 1",
   "discountMin": "Minimum 0",
+  "discountExceedsTotal": "Discount can't exceed the item total ({{max}} TJS)",
   "markupMin": "Minimum 0",
   "sellerCreditExceedsBalance": "Amount exceeds current balance",
   "itemProductRequired": "Select product",
