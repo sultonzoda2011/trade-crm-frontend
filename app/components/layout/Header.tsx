@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { UserNav } from '~/components/layout/UserNav';
 import { CommandPalette } from '~/components/shared/CommandPalette';
+import SyncStatusBadge from '~/components/shared/SyncStatusBadge';
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
@@ -31,20 +32,28 @@ export default function Header() {
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         <SidebarTrigger className="shrink-0" />
         <div className="bg-border h-6 w-px shrink-0" aria-hidden="true" />
-        <button
-          type="button"
+        {/*
+          Раньше здесь был руками собранный <button>: без data-slot="button" он не
+          попадал под touch-правило и стоял 36px рядом с 44px соседями, а его
+          классы дублировали variant="outline" size="icon" из cva. Адаптивную
+          ширину (на xl кнопка превращается в широкую строку поиска) сохраняем.
+        */}
+        <Button
+          variant="outline"
+          size="icon"
           aria-label={t('palette.trigger')}
           onClick={() => setPaletteOpen(true)}
-          className="border-input bg-background text-muted-foreground hover:bg-muted hover:text-foreground flex h-9 w-9 items-center justify-center gap-2 rounded-lg border px-0 text-sm transition-colors xl:w-56 xl:justify-start xl:px-2.5 2xl:w-64">
+          className="text-muted-foreground xl:h-9 xl:w-56 xl:justify-start xl:gap-2 xl:px-2.5 2xl:w-64">
           <Search className="size-4 shrink-0" />
           <span className="hidden flex-1 truncate text-left xl:inline">{t('palette.trigger')}...</span>
           <kbd className="bg-muted text-2xs pointer-events-none hidden h-5 items-center gap-0.5 rounded border px-1.5 font-mono font-medium xl:flex">
             Ctrl K
           </kbd>
-        </button>
+        </Button>
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
+        <SyncStatusBadge />
         <Tooltip>
           <TooltipTrigger
             render={
