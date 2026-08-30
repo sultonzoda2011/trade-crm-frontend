@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
+import { Plus, Store, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { sellersApi } from '~/api/sellers';
 import { CreateSellerModal } from '~/components/modals/CreateSellerModal';
@@ -9,6 +11,7 @@ import { EditSellerModal } from '~/components/modals/EditSellerModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { Button } from '~/components/ui/button';
@@ -16,6 +19,7 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { getClientUser } from '~/lib/auth-utils';
 import { getColumns } from '~/routes/(crm)/sellers/configs/columns';
 import { getSellerFilters } from '~/routes/(crm)/sellers/configs/filters';
 import { useSellersModals, useSellersStore } from '~/routes/(crm)/sellers/store';
@@ -23,6 +27,7 @@ import { useSellersModals, useSellersStore } from '~/routes/(crm)/sellers/store'
 export default function SellersPage() {
   const { t } = useTranslation(['sellers', 'common']);
   const queryClient = useQueryClient();
+  const location = useLocation();
   const { can } = useCan();
   const deleteModal = useSellersModals((s) => s.delete);
   const createModal = useSellersModals((s) => s.create);
@@ -88,8 +93,12 @@ export default function SellersPage() {
         <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
         {can(Action.SELLERS_CREATE) && (
-          <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
-            <Plus className="h-4 w-4" data-icon="inline-start" />
+          <Button
+            size="icon"
+            aria-label={t('create')}
+            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            onClick={() => createModal.open()}>
+            <Plus data-icon="inline-start" />
             <span className="hidden sm:inline">{t('create')}</span>
           </Button>
         )}
@@ -105,8 +114,32 @@ export default function SellersPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        // Как и в колонке действий: свою карточку открываем как /profile —
+        // отдельной страницы «продавец сам о себе» нет.
+        getRowLink={(row) =>
+          getClientUser()?.id === row.original.id
+            ? { to: '/profile' }
+            : {
+                to: `/sellers/${row.original.id}`,
+                state: { fromPath: location.pathname, fromName: t('title') },
+              }
+        }
         mobileFields={{
           'market.name': 'secondary',
+        }}
+        renderMobileCard={(row) => {
+          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
+          const s = row.original;
+          return (
+            <EntityMobileCard
+              image={s.image}
+              fallbackIcon={UserRound}
+              title={s.name}
+              subtitle={s.email}
+              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+              stats={[{ icon: Store, label: t('fields.market'), value: s.market?.name ?? '—' }]}
+            />
+          );
         }}
       />
       <CreateSellerModal />
