@@ -1,5 +1,6 @@
 import { QueryClient, keepPreviousData } from "@tanstack/react-query";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { getIsOnline } from "~/lib/offline/networkStatus";
 
 /**
  * gcTime должен быть >= maxAge персистера, иначе кэш выкидывается из памяти
@@ -24,14 +25,20 @@ export function makeQueryClient() {
         placeholderData: keepPreviousData,
         retry: (failureCount, error: any) => {
           // Без сети смысла ретраить нет — сразу отдаём кэш/ошибку.
-          if (!navigator.onLine) return false;
+          if (!getIsOnline()) return false;
           return failureCount < 2;
         },
       },
       mutations: {
-        // Мутации (создание/изменение/удаление) требуют сети — офлайн они
-        // просто падают с понятной ошибкой через существующий error toast.
-        networkMode: "online",
+        // ВАЖНО: было "online" — при таком режиме React Query вообще не
+        // вызывает mutationFn без сети (мутация просто "зависает" в
+        // isPaused), а именно внутри mutationFn (api/transactions.ts,
+        // api/products.ts, api/debtors.ts) находится офлайн-логика: если
+        // оставить "online", весь offline-first слой ниже никогда не
+        // сработает. "always" вызывает mutationFn всегда, а решение
+        // "идти в сеть или писать локально" принимает уже сам вызов внутри
+        // api/*.ts (see isOffline()).
+        networkMode: "always",
         retry: false,
       },
     },
