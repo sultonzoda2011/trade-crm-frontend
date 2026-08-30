@@ -11,6 +11,7 @@ import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
 import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
@@ -37,15 +38,21 @@ export default function DebtorDetailPage() {
     staleTime: 30_000,
   });
 
+  // Превью на детальной странице — максимум PREVIEW_LIMIT, дальше "Все"
+  // (та же логика, что в my-market/markets/id) — раньше тянули 50 и
+  // рендерили целиком.
+  const PREVIEW_LIMIT = 5;
+
   const { data: txResponse, isLoading: isTxLoading } = useQuery({
     queryKey: ['debtor-transactions', id],
-    queryFn: () => transactionsApi.getAll(1, 50, {}, [{ key: 'debtorId', value: id! }]),
+    queryFn: () => transactionsApi.getAll(1, PREVIEW_LIMIT, {}, [{ key: 'debtorId', value: id! }]),
     enabled: !!id,
     staleTime: 30_000,
   });
 
   const debtor = response?.data;
   const transactions = txResponse?.data?.data ?? [];
+  const totalTx = txResponse?.data?.meta?.total ?? 0;
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -60,7 +67,7 @@ export default function DebtorDetailPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -72,7 +79,7 @@ export default function DebtorDetailPage() {
         ]}
       />
 
-      <Panel className="p-6">
+      <Panel bodyClassName="p-4">
         <DetailHeader
           name={debtor.name}
           subtitle={debtor.phone}
@@ -95,10 +102,10 @@ export default function DebtorDetailPage() {
         />
       </Panel>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
               <InfoItem label={t('fields.name')} value={debtor.name} />
               <InfoItem label={t('fields.phone')} value={debtor.phone} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(debtor.createdAt, true)} />
@@ -153,7 +160,18 @@ export default function DebtorDetailPage() {
             </Panel>
           )}
 
-          <Panel title={t('transactionsHistory')}>
+          <Panel
+            title={t('transactionsHistory')}
+            actions={
+              totalTx > PREVIEW_LIMIT ? (
+                <PanelViewAll
+                  to="/transactions"
+                  state={{ fromDebtorId: debtor.id, fromDebtorName: debtor.name }}
+                  label={t('viewAll')}
+                  count={totalTx}
+                />
+              ) : undefined
+            }>
             {isTxLoading ? (
               <SkeletonList count={3} />
             ) : transactions.length === 0 ? (
@@ -186,7 +204,7 @@ export default function DebtorDetailPage() {
           </Panel>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {debtor.market && (
             <MarketCard
               market={debtor.market}
