@@ -9,6 +9,7 @@ import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { RequiresOnlineBanner } from '~/components/shared/RequiresOnlineBanner';
 import { FormGrid } from '~/components/shared/FormGrid';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
@@ -18,6 +19,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
+import { useOnlineStatus } from '~/hooks/useOnlineStatus';
 import { appendToFormData } from '~/lib/form-data';
 import { updateProductSchema, type UpdateProductSchema } from '~/validations/product';
 
@@ -75,6 +77,8 @@ export default function EditProductPage() {
     });
   }, [product, reset]);
 
+  const online = useOnlineStatus();
+
   const { mutate, isPending } = useMutation({
     mutationFn: (data: UpdateProductSchema) => {
       const payload: Record<string, unknown> = {
@@ -126,6 +130,8 @@ export default function EditProductPage() {
         ]}
       />
 
+      {!online && <RequiresOnlineBanner />}
+
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold tracking-tight">{t('actions.edit')}</h1>
         {/* На телефоне действия продублированы в sticky-панели снизу, здесь только для md+. */}
@@ -133,7 +139,7 @@ export default function EditProductPage() {
           <Button variant="outline" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="edit-product-page-form" disabled={isPending}>
+          <Button type="submit" form="edit-product-page-form" disabled={isPending || !online}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.save')}
           </Button>
@@ -222,7 +228,7 @@ export default function EditProductPage() {
           <Button variant="outline" className="flex-1" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="edit-product-page-form" className="flex-1" disabled={isPending}>
+          <Button type="submit" form="edit-product-page-form" className="flex-1" disabled={isPending || !online}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.save')}
           </Button>

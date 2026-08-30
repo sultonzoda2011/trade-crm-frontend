@@ -1,15 +1,28 @@
+import { Capacitor } from '@capacitor/core';
+import {
+  createTransactionOffline,
+  getAllTransactions,
+  getTransactionById,
+  payTransactionOffline,
+} from '@trade-crm/offline-core';
+import { getClientUser } from '~/lib/auth-utils';
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
+import { getStorage } from '~/lib/offline/storage';
+import { useSyncStore } from '~/store/useSyncStore';
 import type { ActiveFilter } from '~/types/filters';
 import type {
   CreatePaymentRequest,
   CreateTransactionRequest,
   RefundTransactionRequest,
+  Transaction,
   TransactionDetailResponse,
   TransactionResponse,
   TransactionsResponse,
   UpdateTransactionRequest,
 } from '~/types/transactions';
+
+const isNative = () => Capacitor.isNativePlatform();
 
 export const transactionsApi = {
   getAll: async (
@@ -18,34 +31,58 @@ export const transactionsApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<TransactionsResponse> => {
+    if (isNative()) {
+      const storage = await getStorage();
+      const { items, total } = await getAllTransactions<Transaction>(storage, { page, limit });
+      return {
+        success: true,
+        data: { data: items, meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 } },
+        timestamp: new Date().toISOString(),
+      };
+    }
     const { data } = await apiClient.get('/transactions', {
-      params: {
-        page,
-        limit,
-        ...options,
-        ...filtersToParams(filters),
-      },
+      params: { page, limit, ...options, ...filtersToParams(filters) },
     });
     return data;
   },
 
   getById: async (id: string): Promise<TransactionResponse> => {
+    if (isNative()) {
+      const storage = await getStorage();
+      const tx = await getTransactionById<Transaction>(storage, id);
+      if (!tx) throw new Error(`Transaction ${id} not found locally`);
+      return { success: true, data: tx, timestamp: new Date().toISOString() };
+    }
     const { data } = await apiClient.get(`/transactions/${id}`);
     return data;
   },
-  /**
-   * Transaction as a business process: lines with their remaining refundable
-   * quantity, payments, refunds, the original sale and a merged event timeline.
-   * `getById` stays for the places that only need the plain record.
-   */
+
+  /** Детальный вид (лайны + возвраты + таймлайн) — требует пересчёта на сервере, только онлайн. */
   getDetail: async (id: string): Promise<TransactionDetailResponse> => {
     const { data } = await apiClient.get(`/transactions/${id}/detail`);
     return data;
   },
+
+  /** Создание продажи/долга разрешено офлайн: списывает остаток локально + outbox.
+   *  REFUND через этот метод не создаётся (см. отдельный refund()) — только онлайн. */
   create: async (request: CreateTransactionRequest) => {
+    if (isNative() && request.type !== 'REFUND') {
+      const storage = await getStorage();
+      const marketId = getClientUser()?.marketId ?? '';
+      const tx = await createTransactionOffline(storage, {
+        marketId,
+        type: request.type,
+        paymentType: request.paymentType,
+        debtorId: request.debtorId,
+        items: request.items,
+      });
+      await useSyncStore.getState().refreshPendingCount();
+      return { success: true, data: JSON.parse(tx.payload), timestamp: new Date().toISOString() };
+    }
     const { data } = await apiClient.post(`/transactions`, request);
     return data;
   },
+
   update: async ({ request, id }: { request: UpdateTransactionRequest; id: string }) => {
     const { data } = await apiClient.patch(`/transactions/${id}`, request);
     return data;
@@ -53,14 +90,20 @@ export const transactionsApi = {
   delete: async (id: string): Promise<void> => {
     await apiClient.delete(`/transactions/${id}`);
   },
+
+  /** Оплата долга офлайн — только для транзакций, уже уехавших на сервер (есть server_id). */
   pay: async ({ request, id }: { request: CreatePaymentRequest; id: string }) => {
+    if (isNative()) {
+      const storage = await getStorage();
+      await payTransactionOffline(storage, id, request);
+      await useSyncStore.getState().refreshPendingCount();
+      return { success: true, timestamp: new Date().toISOString() };
+    }
     const { data } = await apiClient.patch(`/transactions/${id}/pay`, request);
     return data;
   },
-  /**
-   * Partial or full refund. Omitting `request` returns everything still
-   * refundable, which keeps the previous whole-transaction behaviour working.
-   */
+
+  /** Возврат — пересчёт на сервере (частичный/остаточный), только онлайн. */
   refund: async ({
     id,
     request,

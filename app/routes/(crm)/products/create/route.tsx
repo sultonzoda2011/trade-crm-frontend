@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
+import { RequiresOnlineBanner } from '~/components/shared/RequiresOnlineBanner';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
@@ -16,6 +17,7 @@ import { Panel } from '~/components/layout/Panel';
 import { FormGrid } from '~/components/shared/FormGrid';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
+import { useOnlineStatus } from '~/hooks/useOnlineStatus';
 import { appendToFormData } from '~/lib/form-data';
 import { createProductSchema, type CreateProductSchema } from '~/validations/product';
 
@@ -48,6 +50,8 @@ export default function CreateProductPage() {
       image: null,
     },
   });
+
+  const online = useOnlineStatus();
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateProductSchema) => {
@@ -93,12 +97,14 @@ export default function CreateProductPage() {
           <Button variant="outline" onClick={() => navigate('/products')}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-product-page-form" disabled={isPending}>
+          <Button type="submit" form="create-product-page-form" disabled={isPending || !online}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create')}
           </Button>
         </div>
       </div>
+
+      {!online && <RequiresOnlineBanner />}
 
       <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[3.5fr_6.5fr]">
         <Panel>
@@ -182,7 +188,7 @@ export default function CreateProductPage() {
           <Button variant="outline" className="flex-1" onClick={() => navigate('/products')}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-product-page-form" className="flex-1" disabled={isPending}>
+          <Button type="submit" form="create-product-page-form" className="flex-1" disabled={isPending || !online}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create')}
           </Button>

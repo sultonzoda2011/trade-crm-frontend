@@ -2,6 +2,9 @@
   "name": "trade-crm-frontend",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
@@ -12,11 +15,14 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
+    "@capacitor-community/sqlite": "^8.1.1",
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.5.0",
     "@capacitor/keyboard": "^8.0.5",
     "@capacitor/network": "^8.0.1",
     "@capacitor/status-bar": "^8.0.3",
+    "@trade-crm/offline-core": "*",
+    "@trade-crm/storage-capacitor": "*",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@react-router/fs-routes": "^7.13.2",

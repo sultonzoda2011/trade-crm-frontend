@@ -24,6 +24,9 @@ import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
+import { getStorage } from '~/lib/offline/storage';
+import { useSyncStore } from '~/store/useSyncStore';
+import { Capacitor } from '@capacitor/core';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
 import { getQueryClient } from '~/lib/query-client';
@@ -197,6 +200,17 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    // Открываем/создаём локальную SQLite один раз при старте приложения,
+    // не дожидаясь первого запроса какой-либо страницы — иначе первый
+    // экран (обычно dashboard) увидит пустую базу на долю секунды.
+    getStorage()
+      .then(() => useSyncStore.getState().refreshPendingCount())
+      .catch((err) => console.error('[offline] storage init failed', err));
+  }, []);
+
   return null;
 }
 

@@ -1,0 +1,20 @@
+{
+  "name": "@trade-crm/storage-capacitor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@trade-crm/offline-core": "*",
+    "@capacitor-community/sqlite": "^8.1.1",
+    "@capacitor/network": "^8.0.1",
+    "@capacitor/core": "^8.5.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

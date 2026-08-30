@@ -1,29 +1,69 @@
 import { create } from 'zustand';
+import { countPending, listOutbox, pull, push, type OutboxItem, type PushResult } from '@trade-crm/offline-core';
+import { getStorage } from '~/lib/offline/storage';
+import { httpClient } from '~/lib/offline/httpClient';
 
-export type SyncPhase = 'idle' | 'syncing' | 'error';
-
-export interface SyncStoreState {
-  phase: SyncPhase;
-  /** Сколько действий ещё ждут отправки на сервер (outbox). */
+interface SyncState {
   pendingCount: number;
-  /** ISO-время последней успешной синхронизации, null — синхронизации ещё не было. */
-  lastSyncedAt: string | null;
+  lastSyncAt: string | null;
+  isSyncing: boolean;
+  outbox: OutboxItem[];
   lastError: string | null;
-
-  setPhase: (phase: SyncPhase) => void;
-  setPendingCount: (count: number) => void;
-  setLastSyncedAt: (iso: string) => void;
-  setLastError: (message: string | null) => void;
+  refreshPendingCount: () => Promise<void>;
+  refreshOutbox: () => Promise<void>;
+  runPull: () => Promise<void>;
+  runPush: () => Promise<PushResult | null>;
 }
 
-export const useSyncStore = create<SyncStoreState>((set) => ({
-  phase: 'idle',
+export const useSyncStore = create<SyncState>((set, get) => ({
   pendingCount: 0,
-  lastSyncedAt: null,
+  lastSyncAt: null,
+  isSyncing: false,
+  outbox: [],
   lastError: null,
 
-  setPhase: (phase) => set({ phase }),
-  setPendingCount: (pendingCount) => set({ pendingCount }),
-  setLastSyncedAt: (lastSyncedAt) => set({ lastSyncedAt }),
-  setLastError: (lastError) => set({ lastError }),
+  refreshPendingCount: async () => {
+    const storage = await getStorage();
+    const n = await countPending(storage);
+    set({ pendingCount: n });
+  },
+
+  refreshOutbox: async () => {
+    const storage = await getStorage();
+    const items = await listOutbox(storage);
+    set({ outbox: items, pendingCount: items.length });
+  },
+
+  runPull: async () => {
+    if (get().isSyncing) return;
+    set({ isSyncing: true, lastError: null });
+    try {
+      const storage = await getStorage();
+      await pull(storage, httpClient);
+      set({ lastSyncAt: new Date().toISOString() });
+    } catch (err: any) {
+      set({ lastError: err?.message ?? 'Pull failed' });
+    } finally {
+      set({ isSyncing: false });
+    }
+  },
+
+  runPush: async () => {
+    if (get().isSyncing) return null;
+    set({ isSyncing: true, lastError: null });
+    try {
+      const storage = await getStorage();
+      const result = await push(storage, httpClient);
+      await get().refreshOutbox();
+      if (result.errors.length > 0) {
+        set({ lastError: result.errors.map((e) => e.message).join('; ') });
+      }
+      return result;
+    } catch (err: any) {
+      set({ lastError: err?.message ?? 'Push failed' });
+      return null;
+    } finally {
+      set({ isSyncing: false });
+    }
+  },
 }));
