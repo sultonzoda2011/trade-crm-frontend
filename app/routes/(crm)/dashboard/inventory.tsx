@@ -58,11 +58,13 @@ export default function DashboardInventoryPage() {
 
   return (
     <div className="space-y-6">
-      <InsightList insights={inventoryInsights} />
-      <div className="grid items-start gap-6 lg:grid-cols-3">
+      <div className="grid items-start gap-6 lg:grid-cols-2">
+        <InsightList insights={inventoryInsights} />
         <ReorderList products={overview.products.reorder} />
-        <InventoryHealth inventory={overview.inventory} />
+      </div>
+      <div className="grid items-start gap-6 lg:grid-cols-2">
         <ReturnsPanel returns={overview.returns} />
+        <InventoryHealth inventory={overview.inventory} />
       </div>
     </div>
   );
