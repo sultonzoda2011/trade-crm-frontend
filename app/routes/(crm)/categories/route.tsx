@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
+import { Package, Plus, Tag } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { Button } from '~/components/ui/button';
@@ -88,8 +90,12 @@ export default function CategoriesPage() {
         <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
         {can(Action.CATEGORIES_MANAGE) && (
-          <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
-            <Plus className="h-4 w-4" data-icon="inline-start" />
+          <Button
+            size="icon"
+            aria-label={t('create')}
+            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            onClick={() => createModal.open()}>
+            <Plus data-icon="inline-start" />
             <span className="hidden sm:inline">{t('create')}</span>
           </Button>
         )}
@@ -109,6 +115,20 @@ export default function CategoriesPage() {
           '_count.products': 'primary',
           created: 'primary',
           description: 'secondary',
+        }}
+        renderMobileCard={(row) => {
+          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
+          const c = row.original;
+          return (
+            <EntityMobileCard
+              image={c.image}
+              fallbackIcon={Tag}
+              title={c.name}
+              subtitle={c.description}
+              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+              stats={[{ icon: Package, label: t('fields.productsCount'), value: c._count.products }]}
+            />
+          );
         }}
       />
       <CreateCategoryModal />
