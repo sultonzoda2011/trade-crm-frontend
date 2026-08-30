@@ -117,7 +117,10 @@ export const getColumns = ({
   }),
   columnHelper.accessor('debtsCount', {
     header: t('table.debtsCount'),
-    cell: (info) => <span className="font-mono tabular-nums">{info.getValue()}</span>,
+    // Бэкенд иногда не отдаёт это поле для конкретного продавца (пусто в
+    // ответе) — тогда `info.getValue()` возвращает undefined, и React рендерит
+    // пустую строку без всякого намёка на 0. Подстраховываемся на фронте.
+    cell: (info) => <span className="font-mono tabular-nums">{info.getValue() ?? 0}</span>,
   }),
   columnHelper.accessor('debtsAmount', {
     header: t('table.debtsAmount'),
