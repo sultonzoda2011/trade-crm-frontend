@@ -15,24 +15,22 @@ interface ReturnsPanelProps {
 
 const percent = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 
-/**
- * Returns as a cost, not as a transaction type.
- *
- * The headline is the money that came back, because that is what
- * the period actually lost. Growth here is bad news, hence the
- * inverted comparison colours.
- *
- * Per-product rates are only shown for products the backend already
- * considered statistically meaningful.
- */
 export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
   const { t } = useTranslation('dashboard');
 
   return (
-    <Panel title={t('returns.title')} className={cn('space-y-4 sm:space-y-5', className)}>
+    <Panel
+      title={t('returns.title')}
+      className={`h-full min-h-0 ${className ?? ''}`}
+      bodyClassName="
+        flex
+        min-h-0
+        flex-1
+        flex-col
+        gap-[clamp(1rem,1.5vw,1.25rem)]
+      ">
       {/* Summary */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        {/* Amount */}
         <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.amount')}</p>
 
@@ -41,7 +39,6 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
           <ComparisonIndicator comparison={returns.comparison.amount} invert className="mt-1" />
         </div>
 
-        {/* Rate */}
         <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.rate')}</p>
 
@@ -50,7 +47,6 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
           <ComparisonIndicator comparison={returns.comparison.returnRate} invert className="mt-1" />
         </div>
 
-        {/* Units */}
         <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.units')}</p>
 
@@ -60,8 +56,8 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
 
       {/* Top returned products */}
       {returns.topProducts.length > 0 && (
-        <div className="border-border space-y-3 border-t pt-4">
-          <p className="text-muted-foreground flex items-center gap-1.5 text-xs font-semibold">
+        <div className="border-border min-h-0 border-t pt-4">
+          <p className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold">
             <Undo2 className="h-3.5 w-3.5 shrink-0" />
             <span>{t('returns.topProducts')}</span>
           </p>
@@ -73,16 +69,14 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
                 to={`/products/${product.productId}`}
                 className={cn(
                   'hover:bg-muted/40',
-                  '-mx-1 flex min-w-0 items-center gap-3 rounded-md px-2.5 py-2.5',
+                  'flex min-w-0 items-center gap-3 rounded-md px-2.5 py-2.5',
                   'transition-colors',
                   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
                 )}>
-                {/* Product name */}
                 <span className="min-w-0 flex-1 truncate text-sm">{product.productName}</span>
 
-                {/* Product stats */}
                 <span className="flex shrink-0 items-center gap-2 sm:gap-3">
-                  <span className="text-muted-foreground text-xs whitespace-nowrap">
+                  <span className="text-muted-foreground hidden text-xs whitespace-nowrap sm:inline">
                     {t('returns.unitsBack', {
                       count: product.refundedUnits,
                     })}
@@ -96,6 +90,10 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
             ))}
           </div>
         </div>
+      )}
+
+      {returns.topProducts.length === 0 && (
+        <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">{t('empty')}</div>
       )}
     </Panel>
   );
