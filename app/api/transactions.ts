@@ -1,5 +1,8 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
+import { createTransactionOffline, payTransactionOffline, refundTransactionOffline } from '~/lib/offline/offlineTransactions';
+import { getIsOnline } from '~/lib/offline/networkStatus';
+import { enqueueOutbox } from '~/lib/offline/outbox';
 import type { ActiveFilter } from '~/types/filters';
 import type {
   CreatePaymentRequest,
@@ -10,6 +13,8 @@ import type {
   TransactionsResponse,
   UpdateTransactionRequest,
 } from '~/types/transactions';
+
+const isOffline = (): boolean => !getIsOnline();
 
 export const transactionsApi = {
   getAll: async (
@@ -42,7 +47,24 @@ export const transactionsApi = {
     const { data } = await apiClient.get(`/transactions/${id}/detail`);
     return data;
   },
+  /**
+   * Offline: считаем транзакцию локально (offlineTransactions.ts), кладём
+   * в очередь на отправку и сразу возвращаем результат в форме обычного
+   * ApiResponse — вызывающий код (useMutation onSuccess/навигация/тосты)
+   * не знает и не должен знать, была ли сеть.
+   */
   create: async (request: CreateTransactionRequest) => {
+    if (isOffline()) {
+      const transaction = await createTransactionOffline(request);
+      await enqueueOutbox({
+        method: 'post',
+        url: '/transactions',
+        body: request,
+        entity: 'transactions',
+        localId: transaction.id,
+      });
+      return { success: true, data: transaction, timestamp: transaction.createdAt };
+    }
     const { data } = await apiClient.post(`/transactions`, request);
     return data;
   },
@@ -54,6 +76,17 @@ export const transactionsApi = {
     await apiClient.delete(`/transactions/${id}`);
   },
   pay: async ({ request, id }: { request: CreatePaymentRequest; id: string }) => {
+    if (isOffline()) {
+      const transaction = await payTransactionOffline(id, request);
+      await enqueueOutbox({
+        method: 'patch',
+        url: `/transactions/${id}/pay`,
+        body: request,
+        entity: 'transactions',
+        localId: id,
+      });
+      return { success: true, data: transaction, timestamp: transaction.updatedAt };
+    }
     const { data } = await apiClient.patch(`/transactions/${id}/pay`, request);
     return data;
   },
@@ -68,6 +101,17 @@ export const transactionsApi = {
     id: string;
     request?: RefundTransactionRequest;
   }): Promise<TransactionDetailResponse> => {
+    if (isOffline()) {
+      const refundTx = await refundTransactionOffline(id, request?.items);
+      await enqueueOutbox({
+        method: 'post',
+        url: `/transactions/${id}/refund`,
+        body: request ?? {},
+        entity: 'transactions',
+        localId: refundTx.id,
+      });
+      return { success: true, data: refundTx, timestamp: refundTx.createdAt } as unknown as TransactionDetailResponse;
+    }
     const { data } = await apiClient.post(`/transactions/${id}/refund`, request ?? {});
     return data;
   },
