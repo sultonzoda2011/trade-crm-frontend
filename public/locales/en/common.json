@@ -34,7 +34,8 @@
     "serverError": "Internal server error",
     "badGateway": "Server temporarily unavailable",
     "serviceUnavailable": "Service unavailable",
-    "unknown": "Unknown error ({{status}})"
+    "unknown": "Unknown error ({{status}})",
+    "offlineAction": "No internet — this action will run once you're back online"
   },
   "offline": {
     "banner": "No internet connection — showing saved data",
@@ -57,6 +58,7 @@
   "filters": {
     "title": "Filters",
     "reset": "Reset",
+    "remove": "Remove filter",
     "close": "Close",
     "active": "active",
     "from": "From",
@@ -69,7 +71,7 @@
     "dateRange": "Date",
     "asc": "Ascending",
     "desc": "Descending",
-    "customer":"Customer",
+    "customer": "Customer",
     "createdAt": "Created at",
     "name": "Name",
     "email": "Email",
@@ -130,7 +132,7 @@
     "email": "Email",
     "password": "Password",
     "market": "Market",
-    "customer":"Customer",
+    "customer": "Customer",
     "product": "Product",
     "role": "Role",
     "owner": "Owner",
@@ -205,5 +207,12 @@
     "week": "Week",
     "month": "Month",
     "year": "Year"
+  },
+  "sync": {
+    "synced": "Synced",
+    "syncing": "Syncing…",
+    "offlinePending": "Offline · {{count}} pending",
+    "offlineNoPending": "Offline",
+    "error": "Sync error · {{count}} pending"
   }
 }
