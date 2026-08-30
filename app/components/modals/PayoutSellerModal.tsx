@@ -89,7 +89,7 @@ export function PayoutSellerModal() {
         </div>
       </div>
 
-      <form id="payout-seller-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form id="payout-seller-form" onSubmit={handleSubmit(onSubmit)} >
         <FormInput
           control={control}
           name="amount"
