@@ -1,6 +1,8 @@
 import { type Row, type Table, flexRender } from '@tanstack/react-table';
 import { AlertCircle } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { EmptyState } from '~/components/shared/EmptyState';
 import {
@@ -43,6 +45,31 @@ interface DataTableProps<TData> {
    * таблицы, для которых приоритет ещё не расписан.
    */
   mobileFields?: Record<string, 'primary' | 'secondary'>;
+  /**
+   * Полностью кастомная мобильная карточка для конкретной таблицы (напр.
+   * товары — фото на фон, показатели здоровья остатка). Когда задан, обходит
+   * generic-раскладку (headerCell/primary/secondary) целиком — компонент сам
+   * решает, что и как показывать. Скелетон/ошибка/пустое состояние и
+   * пагинация остаются общими.
+   */
+  renderMobileCard?: (row: Row<TData>) => ReactNode;
+  /**
+   * Ссылка на страницу деталей строки. Если задана, вся мобильная карточка
+   * становится тапабельной.
+   *
+   * Почему ссылка, а не `onRowClick`: карточка ведёт на конкретный URL, и
+   * настоящий `<a>` даёт то, чего обработчик клика не даёт — долгое нажатие с
+   * системным меню, открытие в новом окне, предпросмотр URL, попадание в
+   * навигацию скринридера. `state` нужен странице деталей для хлебной крошки
+   * «назад» (`fromPath`/`fromName`) — тот же объект, что и у ссылки «Просмотр»
+   * в колонке действий.
+   *
+   * Реализовано оверлеем (`absolute inset-0`), а не обёрткой карточки в
+   * `<Link>`: внутри карточки живут кнопки и dropdown действий, а
+   * интерактивные элементы внутри `<a>` — невалидная вложенность, которая
+   * ломает и клавиатуру, и скринридеры.
+   */
+  getRowLink?: (row: Row<TData>) => { to: string; state?: unknown } | undefined;
 }
 
 function getpages(current: number, total: number): (number | 'ellipsis')[] {
@@ -161,6 +188,8 @@ export function DataTable<TData>({
   getRowClassName,
   onRowClick,
   mobileFields,
+  renderMobileCard,
+  getRowLink,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const visibleColumns = table.getVisibleLeafColumns();
@@ -195,86 +224,117 @@ export function DataTable<TData>({
             <EmptyState />
           ) : (
             table.getRowModel().rows.map((row) => {
-              const cells = row.getVisibleCells().filter((cell) => cardColumns.includes(cell.column));
-              const lastCell = pinLastColumn ? row.getVisibleCells().at(-1) : undefined;
-              const bodyCells = cells.filter((cell) => !(lastCell && cell.id === lastCell.id));
+              const link = getRowLink?.(row);
+              const card = renderMobileCard
+                ? renderMobileCard(row)
+                : (() => {
+                    const cells = row.getVisibleCells().filter((cell) => cardColumns.includes(cell.column));
+                    const lastCell = pinLastColumn ? row.getVisibleCells().at(-1) : undefined;
+                    const bodyCells = cells.filter((cell) => !(lastCell && cell.id === lastCell.id));
 
-              // Пустые значения (напр. "Должник" у сделки без должника) не
-              // показываем вовсе — иначе на карточке остаётся лейбл без
-              // значения, который выглядит как незаполненные/битые данные.
-              const isFilled = (cell: (typeof bodyCells)[number]) => {
-                const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
-                if (!accessorKey) return true;
-                const raw = cell.getValue();
-                return !(raw === null || raw === undefined || raw === '');
-              };
+                    // Пустые значения (напр. "Должник" у сделки без должника) не
+                    // показываем вовсе — иначе на карточке остаётся лейбл без
+                    // значения, который выглядит как незаполненные/битые данные.
+                    const isFilled = (cell: (typeof bodyCells)[number]) => {
+                      const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
+                      if (!accessorKey) return true;
+                      const raw = cell.getValue();
+                      return !(raw === null || raw === undefined || raw === '');
+                    };
 
-              // Первая колонка (обычно UserAvatar с именем) — всегда шапка
-              // карточки, не строка списка. Остальные раскладываются по
-              // приоритету: primary — крупный чип-ряд, secondary — компактная
-              // сетка 2 колонки, всё, чего нет в mobileFields — скрыто (доступно
-              // на странице деталей). mobileFields не задан вовсе — старое
-              // поведение (все колонки одним списком), чтобы не ломать таблицы,
-              // для которых приоритет ещё не расписан.
-              const [headerCell, ...restCells] = bodyCells;
-              const filledRest = restCells.filter(isFilled);
-              const primaryCells = mobileFields
-                ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'primary')
-                : [];
-              const secondaryCells = mobileFields
-                ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'secondary')
-                : filledRest;
+                    // Первая колонка (обычно UserAvatar с именем) — всегда шапка
+                    // карточки, не строка списка. Остальные раскладываются по
+                    // приоритету: primary — крупный чип-ряд, secondary — компактная
+                    // сетка 2 колонки, всё, чего нет в mobileFields — скрыто (доступно
+                    // на странице деталей). mobileFields не задан вовсе — старое
+                    // поведение (все колонки одним списком), чтобы не ломать таблицы,
+                    // для которых приоритет ещё не расписан.
+                    const [headerCell, ...restCells] = bodyCells;
+                    const filledRest = restCells.filter(isFilled);
+                    const primaryCells = mobileFields
+                      ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'primary')
+                      : [];
+                    const secondaryCells = mobileFields
+                      ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'secondary')
+                      : filledRest;
+
+                    return (
+                      <div
+                        onClick={() => onRowClick?.(row)}
+                        className={cn(
+                          'bg-card min-h-11 rounded-xl border p-3 shadow-sm',
+                          onRowClick && 'active:bg-muted/50 cursor-pointer',
+                          getRowClassName?.(row)
+                        )}>
+                        <div className="flex items-start justify-between gap-2">
+                          {headerCell && (
+                            <div className="min-w-0 flex-1">
+                              {flexRender(headerCell.column.columnDef.cell, headerCell.getContext())}
+                            </div>
+                          )}
+                          {lastCell && (
+                            <div className="relative z-2 shrink-0" onClick={(e) => e.stopPropagation()}>
+                              {flexRender(lastCell.column.columnDef.cell, lastCell.getContext())}
+                            </div>
+                          )}
+                        </div>
+
+                        {primaryCells.length > 0 && (
+                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {primaryCells.map((cell) => (
+                              <span key={cell.id} className="min-w-0 truncate text-sm font-semibold">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {secondaryCells.length > 0 && (
+                          <div
+                            className={cn(
+                              'grid grid-cols-2 gap-x-3 gap-y-1',
+                              primaryCells.length > 0 ? 'border-border/60 mt-2 border-t pt-2' : 'mt-2'
+                            )}>
+                            {secondaryCells.map((cell) => {
+                              const header = cell.column.columnDef.header;
+                              const label = typeof header === 'string' ? header : undefined;
+                              return (
+                                // Иерархия была перевёрнута: подпись колонки шла
+                                // крупнее (text-sm), чем само значение (text-xs) —
+                                // взгляд цеплялся за «Рынок»/«Телефон», а не за
+                                // данные. Приводим к тем же ролям, что в
+                                // EntityMobileCard: лейбл — мелкий muted, значение —
+                                // акцент.
+                                <div key={cell.id} className="min-w-0">
+                                  {label && <p className="text-muted-foreground truncate text-xs">{label}</p>}
+                                  <div className="min-w-0 truncate text-sm font-semibold">
+                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })();
 
               return (
-                <div
-                  key={row.id}
-                  onClick={() => onRowClick?.(row)}
-                  className={cn(
-                    'bg-card min-h-11 shrink-0 rounded-xl border p-3 shadow-sm',
-                    onRowClick && 'active:bg-muted/50 cursor-pointer',
-                    getRowClassName?.(row)
-                  )}>
-                  <div className="flex items-start justify-between gap-2">
-                    {headerCell && (
-                      <div className="min-w-0 flex-1">
-                        {flexRender(headerCell.column.columnDef.cell, headerCell.getContext())}
-                      </div>
-                    )}
-                    {lastCell && (
-                      <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
-                        {flexRender(lastCell.column.columnDef.cell, lastCell.getContext())}
-                      </div>
-                    )}
-                  </div>
-
-                  {primaryCells.length > 0 && (
-                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                      {primaryCells.map((cell) => (
-                        <span key={cell.id} className="min-w-0 truncate text-sm font-semibold">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                        </span>
-                      ))}
-                    </div>
+                <div key={row.id} className="relative shrink-0">
+                  {link && (
+                    <Link
+                      to={link.to}
+                      state={link.state}
+                      aria-label={t('actions.view')}
+                      // z-1, потому что шапка карточки и её кнопка действий
+                      // позиционированы (relative) — без слоя оверлей уходил
+                      // под них и тап по верхней половине карточки не работал.
+                      // Кнопки действий поднимаются выше (z-2) внутри самой
+                      // карточки, чтобы ⋮ оставался нажимаемым.
+                      className="focus-visible:ring-ring/50 absolute inset-0 z-1 rounded-xl focus-visible:ring-2 focus-visible:outline-none"
+                    />
                   )}
-
-                  {secondaryCells.length > 0 && (
-                    <div
-                      className={cn(
-                        'grid grid-cols-2 gap-x-3 gap-y-1',
-                        primaryCells.length > 0 ? 'border-border/60 mt-2 border-t pt-2' : 'mt-2'
-                      )}>
-                      {secondaryCells.map((cell) => {
-                        const header = cell.column.columnDef.header;
-                        const label = typeof header === 'string' ? header : undefined;
-                        return (
-                          <div key={cell.id}>
-                            {label && <p className="text-muted-foreground text-sm">{label}</p>}
-                            <p className="text-xs">{flexRender(cell.column.columnDef.cell, cell.getContext())}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                  {card}
                 </div>
               );
             })
