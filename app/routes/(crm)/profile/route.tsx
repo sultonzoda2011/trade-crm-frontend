@@ -120,7 +120,7 @@ export default function ProfilePage() {
       isEmpty: products.length === 0,
       emptyMessage: t('noProducts'),
       rows: products.map((product) => (
-        <ListLink key={product.id} to={`/products/${product.id}`} state={fromState} className="py-1">
+        <ListLink key={product.id} to={`/products/${product.id}`} state={fromState}>
           <div className="flex min-w-0 items-center gap-2.5">
             <Avatar size="lg" className="shrink-0">
               {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
@@ -151,7 +151,7 @@ export default function ProfilePage() {
       isEmpty: debtors.length === 0,
       emptyMessage: t('noDebtors'),
       rows: debtors.map((debtor) => (
-        <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={fromState} className="py-1.5">
+        <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={fromState}>
           <span className="truncate text-sm font-medium">{debtor.name}</span>
           <span className="text-muted-foreground text-xs">{debtor.phone}</span>
         </ListLink>
@@ -185,21 +185,21 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <BreadCrumbs
         items={[{ label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' }, { label: t('title') }]}
       />
 
       <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="min-w-0 space-y-6 lg:col-span-2">
-          <Panel className="p-6">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="min-w-0 space-y-4 lg:col-span-2">
+          <Panel bodyClassName="p-4">
             <DetailHeader name={profile.name} subtitle={profile.email} image={profile.image} badges={roleBadge} />
           </Panel>
 
           <Panel title={t('sections.profile')}>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
               <InfoItem label={t('fields.role')} value={roleBadge} />
               <InfoItem label={t('fields.email')} value={profile.email} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(profile.createdAt, true)} />
@@ -208,7 +208,7 @@ export default function ProfilePage() {
 
           {market && (
             <Panel title={t('sections.market')}>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
                 <InfoItem
                   label={t('fields.market')}
                   value={
@@ -236,7 +236,7 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className="min-w-0 space-y-6">
+        <div className="min-w-0 space-y-4">
           {market && (
             <Panel title={t('sections.market')}>
               <div className="space-y-4">
