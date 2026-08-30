@@ -1,7 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { flexRender } from '@tanstack/react-table';
+import { Plus, Store, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
 import { usersApi } from '~/api/users';
@@ -10,10 +12,12 @@ import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -25,6 +29,7 @@ import { useUsersModals, useUsersStore } from '~/routes/(crm)/users/store';
 export default function UsersPage() {
   const { t } = useTranslation(['users', 'common']);
   const queryClient = useQueryClient();
+  const location = useLocation();
   const { can } = useCan();
   const deleteModal = useUsersModals((s) => s.delete);
   const createModal = useUsersModals((s) => s.create);
@@ -99,8 +104,12 @@ export default function UsersPage() {
         <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
         {can(Action.USERS_CREATE) && (
-          <Button className="shrink-0 gap-2" onClick={() => createModal.open()}>
-            <Plus className="h-4 w-4" data-icon="inline-start" />
+          <Button
+            size="icon"
+            aria-label={t('create')}
+            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            onClick={() => createModal.open()}>
+            <Plus data-icon="inline-start" />
             <span className="hidden sm:inline">{t('create')}</span>
           </Button>
         )}
@@ -116,9 +125,29 @@ export default function UsersPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        getRowLink={(row) => ({
+          to: `/users/${row.original.id}`,
+          state: { fromPath: location.pathname, fromName: t('title') },
+        })}
         mobileFields={{
           role: 'primary',
           'market.name': 'secondary',
+        }}
+        renderMobileCard={(row) => {
+          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
+          const u = row.original;
+          const roleCfg = ROLE_CONFIG[u.role];
+          return (
+            <EntityMobileCard
+              image={u.image}
+              fallbackIcon={UserRound}
+              title={u.name}
+              subtitle={u.email}
+              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+              badges={roleCfg ? [{ label: roleCfg.label(t), className: roleCfg.className }] : []}
+              stats={[{ icon: Store, label: t('fields.market'), value: u.market?.name ?? '—' }]}
+            />
+          );
         }}
       />
       <CreateUserModal />
