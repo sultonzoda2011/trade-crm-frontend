@@ -30,3 +30,12 @@ export interface OfflineDebtor {
   marketId: string;
   updatedAt: string;
 }
+
+export interface OfflineCategory {
+  id: string;
+  name: string;
+  description: string | null;
+  marketId: string;
+  image: string | null;
+  updatedAt: string;
+}
