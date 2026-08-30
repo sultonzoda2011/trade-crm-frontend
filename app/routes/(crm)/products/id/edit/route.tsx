@@ -141,7 +141,7 @@ export default function EditProductPage() {
       </div>
 
       <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[3.5fr_6.5fr]">
-        <Panel className="p-4">
+        <Panel>
           <FormFileInput
             control={control}
             name="image"
@@ -152,7 +152,7 @@ export default function EditProductPage() {
           />
         </Panel>
 
-        <Panel className="p-6">
+        <Panel bodyClassName="p-6">
           <form id="edit-product-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <FormGrid>
               <FormInput
