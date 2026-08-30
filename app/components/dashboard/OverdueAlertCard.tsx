@@ -28,11 +28,8 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
 
   return (
     <Panel
-      className={cn(
-        'space-y-3',
-        hasOverdue && 'border-destructive/20 bg-destructive/5 rounded-xl border',
-        className
-      )}>
+      className={cn(hasOverdue && 'border-destructive/20 bg-destructive/5 border', className)}
+      bodyClassName="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <div
@@ -46,11 +43,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
               <Wallet className="text-muted-foreground h-4 w-4" />
             )}
           </div>
-          <h3
-            className={cn(
-              'truncate text-sm font-semibold',
-              hasOverdue ? 'text-destructive' : undefined
-            )}>
+          <h3 className={cn('truncate text-sm font-semibold', hasOverdue ? 'text-destructive' : undefined)}>
             {t('debts.title')}
           </h3>
         </div>
@@ -64,20 +57,13 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
           to="/transactions?debtStatus=OVERDUE"
           className={cn(
             'flex items-center justify-between gap-2 rounded-md px-2.5 py-2 transition-colors',
-            hasOverdue
-              ? 'bg-destructive/10 hover:bg-destructive/15'
-              : 'bg-muted/50 hover:bg-muted/80'
+            hasOverdue ? 'bg-destructive/10 hover:bg-destructive/15' : 'bg-muted/50 hover:bg-muted/80'
           )}>
           <span className="flex min-w-0 items-center gap-2">
             <AlertCircle
-              className={cn(
-                'h-3.5 w-3.5 shrink-0',
-                hasOverdue ? 'text-destructive' : 'text-muted-foreground'
-              )}
+              className={cn('h-3.5 w-3.5 shrink-0', hasOverdue ? 'text-destructive' : 'text-muted-foreground')}
             />
-            <span className="min-w-0 truncate text-sm">
-              {t('debts.overdue', { count: debts.overdueCount })}
-            </span>
+            <span className="min-w-0 truncate text-sm">{t('debts.overdue', { count: debts.overdueCount })}</span>
           </span>
           <span
             className={cn(
@@ -93,9 +79,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
           className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-md px-2.5 py-2 transition-colors">
           <span className="flex min-w-0 items-center gap-2">
             <Clock className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
-            <span className="min-w-0 truncate text-sm">
-              {t('debts.dueSoon', { count: debts.dueSoonCount })}
-            </span>
+            <span className="min-w-0 truncate text-sm">{t('debts.dueSoon', { count: debts.dueSoonCount })}</span>
           </span>
           <span
             className={cn(
@@ -115,21 +99,13 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
         <div>
           {/* The one period-scoped figure here — labelled as such. */}
           <p className="text-muted-foreground text-xs">{t('debts.collected')}</p>
-          <p
-            className={cn(
-              'font-mono text-sm font-semibold',
-              debts.collectedAmount > 0 && 'text-success'
-            )}>
+          <p className={cn('font-mono text-sm font-semibold', debts.collectedAmount > 0 && 'text-success')}>
             {fmtTJS(debts.collectedAmount)}
           </p>
         </div>
       </div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="w-full gap-1 text-xs"
-        render={<Link to="/debtors?risk=HIGH" />}>
+      <Button variant="ghost" size="sm" className="w-full gap-1 text-xs" render={<Link to="/debtors?risk=HIGH" />}>
         {t('debts.whoToCall')} <ChevronRight className="h-3.5 w-3.5" />
       </Button>
     </Panel>
