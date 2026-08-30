@@ -84,7 +84,7 @@ export default function SellerDetailPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -96,14 +96,14 @@ export default function SellerDetailPage() {
         ]}
       />
 
-      <Panel className="p-6">
+      <Panel bodyClassName="p-4">
         <DetailHeader name={seller.name} subtitle={seller.email} image={seller.image} />
       </Panel>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
               <InfoItem
                 label={t('fields.name')}
                 value={
@@ -211,7 +211,7 @@ export default function SellerDetailPage() {
           </Panel>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {seller.market && (
             <MarketCard
               market={seller.market}
