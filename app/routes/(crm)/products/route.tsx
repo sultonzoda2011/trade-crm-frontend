@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { flexRender } from '@tanstack/react-table';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +13,7 @@ import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { ProductMobileCard } from '~/components/products/ProductMobileCard';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -150,8 +152,12 @@ export default function ProductsPage() {
         <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
         {can(Action.PRODUCTS_CREATE) && (
-          <Button className="shrink-0 gap-2" render={<Link to="/products/create" />}>
-            <Plus className="h-4 w-4" data-icon="inline-start" />
+          <Button
+            size="icon"
+            aria-label={t('create')}
+            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            render={<Link to="/products/create" />}>
+            <Plus data-icon="inline-start" />
             <span className="hidden sm:inline">{t('create')}</span>
           </Button>
         )}
@@ -168,6 +174,10 @@ export default function ProductsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        getRowLink={(row) => ({
+          to: `/products/${row.original.id}`,
+          state: { fromPath: location.pathname, fromName: t('title') },
+        })}
         mobileFields={{
           price: 'primary',
           quantity: 'primary',
@@ -175,6 +185,16 @@ export default function ProductsPage() {
           'metrics.reorderPriority': 'secondary',
           'metrics.revenue': 'secondary',
           'category.name': 'secondary',
+        }}
+        renderMobileCard={(row) => {
+          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
+          return (
+            <ProductMobileCard
+              row={row}
+              t={t}
+              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+            />
+          );
         }}
       />
       <ConfirmDialog
