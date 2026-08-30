@@ -17,7 +17,7 @@ export function TopProducts({ products, title }: { products: ProductLeaderRow[];
   return (
     <Panel
       title={title}
-      className="p-0"
+      bodyClassName="p-0"
       actions={
         <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/products" />}>
           {t('viewAll')} <ArrowRight className="h-3.5 w-3.5" />
