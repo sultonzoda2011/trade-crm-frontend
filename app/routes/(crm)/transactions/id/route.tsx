@@ -7,17 +7,17 @@ import { Panel } from '~/components/layout/Panel';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { InfoItem } from '~/components/shared/InfoItem';
-import { MarketCard } from '~/components/shared/MarketCard';
 import { InfoLink } from '~/components/shared/InfoLink';
+import { MarketCard } from '~/components/shared/MarketCard';
+import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
-import { TransactionTimeline } from '~/components/transactions/TransactionTimeline';
-import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { RefundHistory } from '~/components/transactions/RefundHistory';
-import { Badge } from '~/components/ui/badge';
+import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
+import { TransactionTimeline } from '~/components/transactions/TransactionTimeline';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
@@ -64,10 +64,7 @@ export default function TransactionDetailPage() {
   // what is left on the lines, not the status. Refund rows themselves are
   // never refundable, and neither is anything already fully returned.
   const canRefund =
-    can(Action.TRANSACTIONS_REFUND) &&
-    transaction.type !== 'REFUND' &&
-    !transaction.refundOfId &&
-    refundableUnits > 0;
+    can(Action.TRANSACTIONS_REFUND) && transaction.type !== 'REFUND' && !transaction.refundOfId && refundableUnits > 0;
 
   // Платежи показываем, только если они есть, либо это долг/кредит, где важно
   // отслеживать историю погашений. Для наличной сделки, оплаченной сразу,
@@ -77,7 +74,7 @@ export default function TransactionDetailPage() {
   const showPayments = hasPayments || isCredit;
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-8">
+    <div className="flex flex-1 flex-col space-y-4 pb-6">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -89,7 +86,7 @@ export default function TransactionDetailPage() {
         ]}
       />
 
-      <Panel className="p-4">
+      <Panel>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
             <TransactionProducts items={transaction.items} size="lg" max={4} />
@@ -160,8 +157,8 @@ export default function TransactionDetailPage() {
         </div>
       </Panel>
 
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
-        <div className="space-y-3 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-4 lg:col-span-2">
           <Panel
             title={t('fields.items')}
             actions={
@@ -236,50 +233,50 @@ export default function TransactionDetailPage() {
           {showPayments && (
             <Panel title={t('fields.payments')}>
               {hasPayments ? (
-              <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs uppercase">
-                    <tr>
-                      <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
-                      <th className="px-2.5 py-1.5">{t('fields.note')}</th>
-                      <th className="px-2.5 py-1.5">{t('fields.createdBy')}</th>
-                      <th className="px-2.5 py-1.5 text-right">{t('fields.createdAt')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {transaction.payments.map((p) => (
-                      <tr key={p.id}>
-                        <td className="text-success px-2.5 py-2 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
-                        <td className="text-muted-foreground px-2.5 py-2">{p.note || '-'}</td>
-                        <td className="px-2.5 py-2">
-                          <span className="flex items-center gap-2">
-                            <Avatar size="sm" className="shrink-0">
-                              {p.createdBy?.image ? (
-                                <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
-                              ) : null}
-                              <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <span className="truncate">{p.createdBy?.name || '-'}</span>
-                          </span>
-                        </td>
-                        <td className="text-muted-foreground px-2.5 py-2 text-right text-xs">
-                          {formatDate(p.createdAt, true)}
-                        </td>
+                <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs uppercase">
+                      <tr>
+                        <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
+                        <th className="px-2.5 py-1.5">{t('fields.note')}</th>
+                        <th className="px-2.5 py-1.5">{t('fields.createdBy')}</th>
+                        <th className="px-2.5 py-1.5 text-right">{t('fields.createdAt')}</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-muted-foreground py-3 text-center text-sm">{t('table.noData', { ns: 'common' })}</p>
+                    </thead>
+                    <tbody className="divide-y">
+                      {transaction.payments.map((p) => (
+                        <tr key={p.id}>
+                          <td className="text-success px-2.5 py-2 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
+                          <td className="text-muted-foreground px-2.5 py-2">{p.note || '-'}</td>
+                          <td className="px-2.5 py-2">
+                            <span className="flex items-center gap-2">
+                              <Avatar size="sm" className="shrink-0">
+                                {p.createdBy?.image ? (
+                                  <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
+                                ) : null}
+                                <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                              <span className="truncate">{p.createdBy?.name || '-'}</span>
+                            </span>
+                          </td>
+                          <td className="text-muted-foreground px-2.5 py-2 text-right text-xs">
+                            {formatDate(p.createdAt, true)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground py-3 text-center text-sm">{t('table.noData', { ns: 'common' })}</p>
               )}
             </Panel>
           )}
         </div>
 
-        <div className="space-y-3">
-          <Panel title={t('detail.summary')} className="p-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+        <div className="space-y-4">
+          <Panel title={t('detail.summary')} bodyClassName="p-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
               <InfoItem label={t('summary.totalAmount')} value={fmtTJS(summary.totalAmount)} />
               <InfoItem
                 label={t('summary.paidAmount')}
@@ -307,8 +304,8 @@ export default function TransactionDetailPage() {
             </div>
           </Panel>
 
-          <Panel title={t('details')} className="p-3">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
+          <Panel title={t('details')} bodyClassName="p-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
               <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
               <InfoItem label={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
@@ -333,7 +330,7 @@ export default function TransactionDetailPage() {
             </div>
           </Panel>
           {transaction.debtor && (
-            <Panel title={t('fields.debtor')} className="p-3">
+            <Panel title={t('fields.debtor')} bodyClassName="p-4">
               <div className="space-y-2.5">
                 <InfoItem
                   label={t('fields.debtor')}
@@ -357,7 +354,6 @@ export default function TransactionDetailPage() {
               market={transaction.market}
               t={t}
               viewState={{ fromPath: location.pathname, fromName: t('title') }}
-              className="p-3"
             />
           )}
 
