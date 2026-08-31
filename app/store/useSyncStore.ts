@@ -1,5 +1,15 @@
 import { create } from 'zustand';
-import { countPending, listOutbox, pull, push, type OutboxItem, type PushResult } from '@trade-crm/offline-core';
+import {
+  cancelDebtorOffline,
+  cancelTransactionOffline,
+  countPending,
+  listOutbox,
+  pull,
+  push,
+  removeFromOutbox,
+  type OutboxItem,
+  type PushResult,
+} from '@trade-crm/offline-core';
 import { getStorage } from '~/lib/offline/storage';
 import { httpClient } from '~/lib/offline/httpClient';
 
@@ -13,6 +23,7 @@ interface SyncState {
   refreshOutbox: () => Promise<void>;
   runPull: () => Promise<void>;
   runPush: () => Promise<PushResult | null>;
+  cancelItem: (item: OutboxItem) => Promise<void>;
 }
 
 export const useSyncStore = create<SyncState>((set, get) => ({
@@ -65,5 +76,20 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     } finally {
       set({ isSyncing: false });
     }
+  },
+  cancelItem: async (item: OutboxItem) => {
+    const storage = await getStorage();
+    if (item.entity === 'transactions' && item.method === 'post') {
+      // Только create-транзакцию можно безопасно отменить с откатом остатка.
+      // Отмена оплаты (method: 'patch') сюда не попадёт — see /sync page filter.
+      await cancelTransactionOffline(storage, item.localId);
+    } else if (item.entity === 'debtors' && item.method === 'post') {
+      await cancelDebtorOffline(storage, item.localId);
+    } else {
+      // Остальное — просто убираем сам outbox-элемент, без отката (сущность
+      // не резервирует ресурс типа остатка, откатывать нечего).
+      await removeFromOutbox(storage, item.id);
+    }
+    await get().refreshOutbox();
   },
 }));

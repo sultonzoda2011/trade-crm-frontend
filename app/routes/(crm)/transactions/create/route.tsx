@@ -487,13 +487,13 @@ export default function CreateTransactionPage() {
           <span className="font-mono text-base font-semibold">{fmtTJS(calculatedTotal)}</span>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={() => navigate('/transactions')}>
+          <Button variant="outline" className="flex-1 h-9" onClick={() => navigate('/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button
             type="submit"
             form="create-transaction-page-form"
-            className="flex-1"
+            className="flex-1 h-9"
             disabled={isPending || !formState.isValid}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create', { ns: 'common' })}

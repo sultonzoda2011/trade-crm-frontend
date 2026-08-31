@@ -45,6 +45,24 @@ CREATE TABLE IF NOT EXISTS transactions (
   dirty INTEGER NOT NULL DEFAULT 0
 );
 
+CREATE TABLE IF NOT EXISTS markets (
+  local_id TEXT PRIMARY KEY,
+  server_id TEXT,
+  name TEXT NOT NULL,
+  payload TEXT NOT NULL, -- полный JSON маркета, как отдаёт сервер
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  local_id TEXT PRIMARY KEY,
+  server_id TEXT,
+  name TEXT NOT NULL,
+  role TEXT NOT NULL,
+  market_id TEXT NOT NULL,
+  payload TEXT NOT NULL, -- полный JSON пользователя/продавца
+  updated_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS outbox (
   id TEXT PRIMARY KEY,
   entity TEXT NOT NULL,

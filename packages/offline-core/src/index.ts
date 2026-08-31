@@ -6,3 +6,5 @@ export * from './repos/products';
 export * from './repos/categories';
 export * from './repos/debtors';
 export * from './repos/transactions';
+export * from './repos/markets';
+export * from './repos/users';

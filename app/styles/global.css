@@ -21,6 +21,22 @@
 }
 
 /*
+ * Мобильные WebView (Android Chrome/WebView, iOS Safari — а значит и весь
+ * Capacitor-билд) по умолчанию сами увеличивают размер текста для
+ * читаемости при определённой ширине/ориентации экрана (алгоритм зависит
+ * от производителя и версии прошивки — отсюда «на одном телефоне ОК, на
+ * другом кнопка толще»). Кнопка при этом имеет фиксированную высоту
+ * (h-9/h-8/...), но её текст внутри — не фиксированную, поэтому раздутый
+ * текст визуально выпирает за рамки кнопки/переносится, и высота "плывёт".
+ * Это НЕ баг Button.tsx как компонента — это поведение самого WebView,
+ * которое отключается ровно этим свойством, глобально, один раз.
+ */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/*
  * Статические токены, не зависящие от :root/.dark (шрифты, доп. размеры текста).
  * Цвета/радиусы/тени объявлены один раз ниже, во втором @theme inline —
  * раньше здесь было ДВА конфликтующих блока: --radius-sm/md/lg/xl считались
@@ -440,97 +456,91 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 32px;
+  gap: 28px;
 }
 
-.splash-logo {
-  font-family: var(--font-sans), sans-serif;
-  font-size: 1.625rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  color: var(--foreground);
-  margin: 0;
+.splash-code {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 220px;
+  padding: 20px 22px;
+  border-radius: var(--radius-lg);
+  background: var(--muted);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
 }
 
-.splash-logo span {
+.splash-code-kw {
   color: var(--primary);
 }
 
-.splash-loader {
-  width: 90px;
-  height: 14px;
-  box-shadow: 0 3px 0 var(--background);
-  position: relative;
-  clip-path: inset(-40px 0 -5px);
+.splash-code-val {
+  color: var(--foreground);
 }
 
-.splash-loader::before {
-  content: '';
-  position: absolute;
-  inset: auto calc(50% - 17px) 0;
-  height: 50px;
-  --g: no-repeat linear-gradient(var(--primary) 0 0);
-  background: var(--g), var(--g), var(--g), var(--g);
-  background-size: 16px 14px;
-  animation:
-    l7-1 2s infinite linear,
-    l7-2 2s infinite linear;
+.splash-code-line {
+  opacity: 0;
+  transform: translateY(4px);
+  animation: splash-line-in 0.35s ease forwards;
+  white-space: pre;
 }
 
-@keyframes l7-1 {
+.splash-code-line-1 {
+  animation-delay: 0.1s;
+}
+.splash-code-line-2 {
+  animation-delay: 0.5s;
+}
+.splash-code-line-3 {
+  animation-delay: 0.9s;
+}
+.splash-code-line-4 {
+  animation-delay: 1.3s;
+}
+
+@keyframes splash-line-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.splash-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 1em;
+  margin-left: 4px;
+  background: var(--primary);
+  vertical-align: text-bottom;
+  animation: splash-blink 1s step-end infinite;
+}
+
+@keyframes splash-blink {
   0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
   100% {
-    background-position:
-      0 -50px,
-      100% -50px;
-  }
-  17.5% {
-    background-position:
-      0 100%,
-      100% -50px,
-      0 -50px,
-      100% -50px;
-  }
-  35% {
-    background-position:
-      0 100%,
-      100% 100%,
-      0 -50px,
-      100% -50px;
-  }
-  52.5% {
-    background-position:
-      0 100%,
-      100% 100%,
-      0 calc(100% - 16px),
-      100% -50px;
-  }
-  70%,
-  98% {
-    background-position:
-      0 100%,
-      100% 100%,
-      0 calc(100% - 16px),
-      100% calc(100% - 16px);
+    opacity: 0;
   }
 }
 
-@keyframes l7-2 {
-  0%,
-  70% {
-    transform: translate(0);
-  }
-  100% {
-    transform: translate(200%);
-  }
-}
-
-.splash-hint {
-  font-family: var(--font-sans), sans-serif;
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
+.splash-logo-wrap {
   margin: 0;
-  letter-spacing: 0.01em;
+  opacity: 0;
+  animation: splash-line-in 0.4s ease forwards;
+  animation-delay: 1.6s;
+}
+
+.splash-logo {
+  width: 168px;
+  height: auto;
+  object-fit: contain;
 }
 
 /* ─── Sonner toast styles ─────────────────────────────────────────────────── */
@@ -913,8 +923,4 @@ span.flatpickr-weekday {
   color: var(--muted-foreground) !important;
   cursor: not-allowed;
   opacity: 0.35;
-}
-#app-splash {
-  background: black; /* фиксированно, не завязано на dark/light переменные темы */
-  /* остальные твои существующие стили (position, z-index, transition и т.д.) оставь как есть */
 }

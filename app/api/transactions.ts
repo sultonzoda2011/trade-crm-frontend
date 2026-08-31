@@ -1,4 +1,4 @@
-import { Capacitor } from '@capacitor/core';
+import { isOfflineCapable } from '~/lib/offline/platform';
 import {
   createTransactionOffline,
   getAllTransactions,
@@ -22,8 +22,6 @@ import type {
   UpdateTransactionRequest,
 } from '~/types/transactions';
 
-const isNative = () => Capacitor.isNativePlatform();
-
 export const transactionsApi = {
   getAll: async (
     page = 1,
@@ -31,7 +29,7 @@ export const transactionsApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<TransactionsResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const { items, total } = await getAllTransactions<Transaction>(storage, { page, limit });
       return {
@@ -47,7 +45,7 @@ export const transactionsApi = {
   },
 
   getById: async (id: string): Promise<TransactionResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const tx = await getTransactionById<Transaction>(storage, id);
       if (!tx) throw new Error(`Transaction ${id} not found locally`);
@@ -66,7 +64,7 @@ export const transactionsApi = {
   /** Создание продажи/долга разрешено офлайн: списывает остаток локально + outbox.
    *  REFUND через этот метод не создаётся (см. отдельный refund()) — только онлайн. */
   create: async (request: CreateTransactionRequest) => {
-    if (isNative() && request.type !== 'REFUND') {
+    if (isOfflineCapable() && request.type !== 'REFUND') {
       const storage = await getStorage();
       const marketId = getClientUser()?.marketId ?? '';
       const tx = await createTransactionOffline(storage, {
@@ -93,7 +91,7 @@ export const transactionsApi = {
 
   /** Оплата долга офлайн — только для транзакций, уже уехавших на сервер (есть server_id). */
   pay: async ({ request, id }: { request: CreatePaymentRequest; id: string }) => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       await payTransactionOffline(storage, id, request);
       await useSyncStore.getState().refreshPendingCount();

@@ -1,12 +1,10 @@
-import { Capacitor } from '@capacitor/core';
+import { isOfflineCapable } from '~/lib/offline/platform';
 import { getAllProducts, getProductById } from '@trade-crm/offline-core';
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import { getStorage } from '~/lib/offline/storage';
 import type { ActiveFilter } from '~/types/filters';
 import type { Product, ProductDetailResponse, ProductsResponse } from '~/types/products';
-
-const isNative = () => Capacitor.isNativePlatform();
 
 export const productsApi = {
   getAll: async (
@@ -15,7 +13,7 @@ export const productsApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<ProductsResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const { items, total } = await getAllProducts<Product>(storage, { search: options.search, page, limit });
       return {
@@ -36,7 +34,7 @@ export const productsApi = {
   },
 
   getById: async (id: string): Promise<ProductDetailResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const product = await getProductById(storage, id);
       if (!product) throw new Error(`Product ${id} not found locally`);

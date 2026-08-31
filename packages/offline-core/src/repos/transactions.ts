@@ -142,6 +142,25 @@ export async function createTransactionOffline(
 }
 
 /** Оплата долга офлайн — записываем платёж в payload транзакции локально + outbox. */
+/** Отменить неотправленную транзакцию: вернуть оптимистично списанный остаток,
+ *  удалить локальную запись и её outbox-элемент. Используется, когда push
+ *  упал (напр. "не хватает остатка") и пользователь решил не продолжать —
+ *  без этого запись висела бы в outbox вечно, ретраясь с той же ошибкой. */
+export async function cancelTransactionOffline(storage: StorageAdapter, localId: string): Promise<void> {
+  const row = await getTransactionRow(storage, localId);
+  if (!row) return;
+
+  const payload = JSON.parse(row.payload);
+  await storage.transaction(async (tx) => {
+    for (const item of payload.items ?? []) {
+      // Возврат остатка — минус от минуса, т.е. +quantity.
+      await decrementProductQuantity(tx, item.productId, -item.quantity);
+    }
+    await tx.exec(`DELETE FROM transactions WHERE local_id = ?`, [localId]);
+    await tx.exec(`DELETE FROM outbox WHERE local_id = ? AND entity = 'transactions'`, [localId]);
+  });
+}
+
 export async function payTransactionOffline(
   storage: StorageAdapter,
   localId: string,

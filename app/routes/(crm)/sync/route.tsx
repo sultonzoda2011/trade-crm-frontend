@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { AlertCircle, CloudDownload, CloudUpload, RefreshCw } from 'lucide-react';
+import { AlertCircle, CloudDownload, CloudUpload, RefreshCw, X } from 'lucide-react';
 import { Panel } from '~/components/layout/Panel';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { useOnlineStatus } from '~/hooks/useOnlineStatus';
 import { useSyncStore } from '~/store/useSyncStore';
+import type { OutboxItem } from '@trade-crm/offline-core';
 
 const ENTITY_LABEL: Record<string, string> = {
   products: 'Товар',
@@ -16,7 +17,7 @@ const ENTITY_LABEL: Record<string, string> = {
 
 export default function SyncPage() {
   const online = useOnlineStatus();
-  const { outbox, isSyncing, lastSyncAt, lastError, refreshOutbox, runPull, runPush } = useSyncStore();
+  const { outbox, isSyncing, lastSyncAt, lastError, refreshOutbox, runPull, runPush, cancelItem } = useSyncStore();
 
   useEffect(() => {
     refreshOutbox();
@@ -29,6 +30,15 @@ export default function SyncPage() {
   const handlePull = async () => {
     await runPull();
     await refreshOutbox();
+  };
+
+  const handleCancel = async (item: OutboxItem) => {
+    const isTransaction = item.entity === 'transactions' && item.method === 'post';
+    const confirmMessage = isTransaction
+      ? 'Отменить эту транзакцию? Списанный остаток товара вернётся обратно.'
+      : 'Отменить эту запись? Она не будет отправлена на сервер.';
+    if (!window.confirm(confirmMessage)) return;
+    await cancelItem(item);
   };
 
   return (
@@ -91,6 +101,11 @@ export default function SyncPage() {
                   </div>
                   {item.error && <div className="text-destructive mt-1 text-xs break-words">{item.error}</div>}
                 </div>
+                {item.status === 'failed' && (
+                  <Button variant="ghost" size="icon" className="shrink-0" onClick={() => handleCancel(item)}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </li>
             ))}
           </ul>

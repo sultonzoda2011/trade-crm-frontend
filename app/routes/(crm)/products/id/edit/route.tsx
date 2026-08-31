@@ -225,10 +225,10 @@ export default function EditProductPage() {
         className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={() => navigate(`/products/${id}`)}>
+          <Button variant="outline" className="flex-1 h-9" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="edit-product-page-form" className="flex-1" disabled={isPending || !online}>
+          <Button type="submit" form="edit-product-page-form" className="flex-1 h-9" disabled={isPending || !online}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.save')}
           </Button>

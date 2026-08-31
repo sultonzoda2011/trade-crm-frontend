@@ -20,3 +20,9 @@ export async function getAllCategories<T = unknown>(
     : await storage.query<CategoryRow>(`SELECT * FROM categories ORDER BY name`);
   return rows.map((r) => JSON.parse(r.payload) as T);
 }
+
+export async function getCategoryById<T = unknown>(storage: StorageAdapter, localId: string): Promise<T | null> {
+  const rows = await storage.query<CategoryRow>(`SELECT * FROM categories WHERE local_id = ?`, [localId]);
+  const row = rows[0];
+  return row ? (JSON.parse(row.payload) as T) : null;
+}

@@ -1,7 +1,11 @@
 {
   "name": "trade-crm-frontend",
+  "version": "1.0.0",
+  "description": "TradeCRM — offline-first CRM for trading",
+  "author": "sultonzoda2011",
   "private": true,
   "type": "module",
+  "main": "electron/main.cjs",
   "workspaces": [
     "packages/*"
   ],
@@ -11,7 +15,10 @@
     "dev:fresh": "rimraf node_modules/.vite && react-router dev",
     "start": "vite preview --port 3000",
     "typecheck": "react-router typegen && tsc",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:win": "npm run build && electron-builder --win"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.0",
@@ -23,6 +30,7 @@
     "@capacitor/status-bar": "^8.0.3",
     "@trade-crm/offline-core": "*",
     "@trade-crm/storage-capacitor": "*",
+    "@trade-crm/storage-electron": "*",
     "@fontsource-variable/geist": "^5.2.8",
     "@hookform/resolvers": "^5.2.2",
     "@react-router/fs-routes": "^7.13.2",
@@ -32,6 +40,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.2",
     "axios": "^1.14.0",
+    "better-sqlite3": "^11.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -70,6 +79,10 @@
     "@capacitor/cli": "^8.5.0",
     "@playwright/test": "^1.62.1",
     "@react-router/dev": "7.13.2",
+    "concurrently": "^9.1.2",
+    "electron": "^33.2.1",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.1",
     "@tailwindcss/vite": "^4.2.2",
     "@tanstack/devtools-vite": "^0.7.0",
     "@tanstack/react-devtools": "^0.10.5",

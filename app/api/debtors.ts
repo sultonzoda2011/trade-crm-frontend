@@ -1,4 +1,4 @@
-import { Capacitor } from '@capacitor/core';
+import { isOfflineCapable } from '~/lib/offline/platform';
 import { createDebtorOffline, getAllDebtors, getDebtorById } from '@trade-crm/offline-core';
 import { getClientUser } from '~/lib/auth-utils';
 import { apiClient } from '~/lib/client';
@@ -8,8 +8,6 @@ import { useSyncStore } from '~/store/useSyncStore';
 import type { Debtor, DebtorDetailResponse, DebtorRequest, DebtorsResponse } from '~/types/debtors';
 import type { ActiveFilter } from '~/types/filters';
 
-const isNative = () => Capacitor.isNativePlatform();
-
 export const debtorsApi = {
   getAll: async (
     page = 1,
@@ -17,7 +15,7 @@ export const debtorsApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<DebtorsResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const { items, total } = await getAllDebtors<Debtor>(storage, { search: options.search, page, limit });
       return {
@@ -33,7 +31,7 @@ export const debtorsApi = {
   },
 
   getById: async (id: string): Promise<DebtorDetailResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const debtor = await getDebtorById(storage, id);
       if (!debtor) throw new Error(`Debtor ${id} not found locally`);
@@ -45,7 +43,7 @@ export const debtorsApi = {
 
   /** Создание должника разрешено офлайн: пишем локально + кладём в outbox. */
   create: async (request: DebtorRequest) => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const marketId = getClientUser()?.marketId ?? '';
       const debtor = await createDebtorOffline(storage, marketId, request);

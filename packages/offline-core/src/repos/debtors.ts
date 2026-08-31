@@ -84,3 +84,13 @@ export async function createDebtorOffline<T = unknown>(
 
   return payload as T;
 }
+
+/** Отменить неотправленного должника (аналогично cancelTransactionOffline) —
+ *  например, если создали по ошибке, а push уже упал по другой причине
+ *  (напр. дубликат телефона), проще отменить, чем ретраить бесконечно. */
+export async function cancelDebtorOffline(storage: StorageAdapter, localId: string): Promise<void> {
+  await storage.transaction(async (tx) => {
+    await tx.exec(`DELETE FROM debtors WHERE local_id = ?`, [localId]);
+    await tx.exec(`DELETE FROM outbox WHERE local_id = ? AND entity = 'debtors'`, [localId]);
+  });
+}

@@ -1,12 +1,10 @@
-import { Capacitor } from '@capacitor/core';
-import { getAllCategories } from '@trade-crm/offline-core';
+import { isOfflineCapable } from '~/lib/offline/platform';
+import { getAllCategories, getCategoryById } from '@trade-crm/offline-core';
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import { getStorage } from '~/lib/offline/storage';
 import type { ActiveFilter } from '~/types/filters';
 import type { CategoriesResponse, CategoryDetailResponse, CategoryInfo } from '~/types/products';
-
-const isNative = () => Capacitor.isNativePlatform();
 
 export const categoriesApi = {
   getAll: async (
@@ -15,7 +13,7 @@ export const categoriesApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<CategoriesResponse> => {
-    if (isNative()) {
+    if (isOfflineCapable()) {
       const storage = await getStorage();
       const all = await getAllCategories<CategoryInfo & Record<string, unknown>>(storage, { search: options.search });
       const start = (page - 1) * limit;
@@ -34,6 +32,12 @@ export const categoriesApi = {
   },
 
   getById: async (id: string): Promise<CategoryDetailResponse> => {
+    if (isOfflineCapable()) {
+      const storage = await getStorage();
+      const category = await getCategoryById(storage, id);
+      if (!category) throw new Error(`Category ${id} not found locally`);
+      return { success: true, data: category as any, timestamp: new Date().toISOString() };
+    }
     const { data } = await apiClient.get(`/categories/${id}`);
     return data;
   },

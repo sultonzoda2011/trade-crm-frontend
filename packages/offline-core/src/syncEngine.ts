@@ -8,6 +8,8 @@ interface PullResponse {
   categories: any[];
   debtors: any[];
   transactions: any[];
+  market: any | null;
+  users: any[];
 }
 
 async function getLastSync(storage: StorageAdapter): Promise<string | undefined> {
@@ -68,6 +70,25 @@ export async function pull(storage: StorageAdapter, http: HttpClient): Promise<v
          ON CONFLICT(local_id) DO UPDATE SET server_id=excluded.server_id, payload=excluded.payload,
            status=excluded.status, market_id=excluded.market_id, updated_at=excluded.updated_at, dirty=0`,
         [t.id, t.id, JSON.stringify(t), t.status, t.marketId, t.updatedAt]
+      );
+    }
+    if (data.market) {
+      const m = data.market;
+      await tx.exec(
+        `INSERT INTO markets (local_id, server_id, name, payload, updated_at)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(local_id) DO UPDATE SET server_id=excluded.server_id, name=excluded.name,
+           payload=excluded.payload, updated_at=excluded.updated_at`,
+        [m.id, m.id, m.name, JSON.stringify(m), m.updatedAt]
+      );
+    }
+    for (const u of data.users) {
+      await tx.exec(
+        `INSERT INTO users (local_id, server_id, name, role, market_id, payload, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(local_id) DO UPDATE SET server_id=excluded.server_id, name=excluded.name,
+           role=excluded.role, market_id=excluded.market_id, payload=excluded.payload, updated_at=excluded.updated_at`,
+        [u.id, u.id, u.name, u.role, u.marketId, JSON.stringify(u), u.updatedAt]
       );
     }
   });

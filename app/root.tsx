@@ -25,10 +25,12 @@ import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { getStorage } from '~/lib/offline/storage';
+import { isOfflineCapable } from '~/lib/offline/platform';
 import { useSyncStore } from '~/store/useSyncStore';
-import { Capacitor } from '@capacitor/core';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
+import textInBottomDark from '/text-in-bottom-logo-dark.png';
+import textInBottomLight from '/text-in-bottom-logo-light.png';
 import { getQueryClient } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
@@ -104,64 +106,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 function Splash({ locale }: { locale: string }) {
   const ref = useRef<HTMLDivElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
   const [gone, setGone] = useState(false);
-  const [videoEnded, setVideoEnded] = useState(false);
+  const [animationDone, setAnimationDone] = useState(false);
   const navigation = useNavigation();
 
   const isLoadingDone = navigation.state === 'idle';
 
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.play().catch(() => {
-      v.muted = true;
-      v.play().catch(() => setVideoEnded(true));
-    });
-  }, []);
-
-  // Страховка: если видео не загрузилось (404, неподдерживаемый кодек в
-  // WebView, отсутствие сети) или зависло — не блокируем приложение
-  // навсегда. onError закрывает случай явной ошибки, таймаут — случай
-  // "тихого" зависания без события.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    const onError = () => setVideoEnded(true);
-    v.addEventListener('error', onError);
-    const timeout = setTimeout(() => setVideoEnded(true), 4000);
-    return () => {
-      v.removeEventListener('error', onError);
-      clearTimeout(timeout);
-    };
+    // Раньше здесь ждали video 'ended' + error/timeout-фолбэк на случай, если
+    // видео не проигралось (404/кодек/нет сети в WebView) — с чистой
+    // CSS-анимацией такого риска нет вообще, ждём просто её длительность.
+    const timeout = setTimeout(() => setAnimationDone(true), 2200);
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    // Прячем сплэш, только когда оба условия выполнены:
-    // загрузка завершена И видео доиграло хотя бы один полный проход
-    // (или сработал error/timeout-фолбэк выше)
-    if (!isLoadingDone || !videoEnded) return;
+    // Прячем сплэш, только когда оба условия выполнены: загрузка приложения
+    // завершена И анимация хотя бы раз доиграла до конца.
+    if (!isLoadingDone || !animationDone) return;
 
     const el = ref.current;
     if (!el) return;
     el.style.opacity = '0';
     const t = setTimeout(() => setGone(true), 300);
     return () => clearTimeout(t);
-  }, [isLoadingDone, videoEnded]);
+  }, [isLoadingDone, animationDone]);
 
   if (gone) return null;
 
   return (
     <div ref={ref} id="app-splash">
-      <div className="splash-logo">
-        <video
-          ref={videoRef}
-          className="m-auto w-full object-contain sm:w-[20%]"
-          src="/logo-splash-animation.mp4"
-          autoPlay
-          playsInline
-          onEnded={() => setVideoEnded(true)}
-        />
+      <div className="splash-content">
+        <div className="splash-code" aria-hidden="true">
+          <div className="splash-code-line splash-code-line-1">
+            <span className="splash-code-kw">const</span> crm = {'{'}
+          </div>
+          <div className="splash-code-line splash-code-line-2">
+            &nbsp;&nbsp;offline: <span className="splash-code-val">true</span>,
+          </div>
+          <div className="splash-code-line splash-code-line-3">
+            &nbsp;&nbsp;sync: <span className="splash-code-val">'ready'</span>
+          </div>
+          <div className="splash-code-line splash-code-line-4">
+            {'}'}
+            <span className="splash-cursor" />
+          </div>
+        </div>
+        <p className="splash-logo-wrap">
+          <img src={textInBottomLight} className="splash-logo dark:hidden" alt="Trade CRM" />
+          <img src={textInBottomDark} className="splash-logo hidden dark:block" alt="Trade CRM" />
+        </p>
       </div>
     </div>
   );
@@ -202,7 +196,7 @@ function CapacitorBridge() {
   useCapacitorStatusBar(resolvedTheme);
 
   useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
+    if (!isOfflineCapable()) return;
     // Открываем/создаём локальную SQLite один раз при старте приложения,
     // не дожидаясь первого запроса какой-либо страницы — иначе первый
     // экран (обычно dashboard) увидит пустую базу на долю секунды.
