@@ -6,7 +6,6 @@ import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { UserNav } from '~/components/layout/UserNav';
 import { CommandPalette } from '~/components/shared/CommandPalette';
-import SyncStatusBadge from '~/components/shared/SyncStatusBadge';
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
@@ -53,7 +52,6 @@ export default function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
-        <SyncStatusBadge />
         <Tooltip>
           <TooltipTrigger
             render={

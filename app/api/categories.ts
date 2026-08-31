@@ -1,10 +1,7 @@
-import { isOfflineCapable } from '~/lib/offline/platform';
-import { getAllCategories, getCategoryById } from '@trade-crm/offline-core';
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
-import { getStorage } from '~/lib/offline/storage';
 import type { ActiveFilter } from '~/types/filters';
-import type { CategoriesResponse, CategoryDetailResponse, CategoryInfo } from '~/types/products';
+import type { CategoriesResponse, CategoryDetailResponse } from '~/types/products';
 
 export const categoriesApi = {
   getAll: async (
@@ -13,35 +10,14 @@ export const categoriesApi = {
     options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
     filters: ActiveFilter[] = []
   ): Promise<CategoriesResponse> => {
-    if (isOfflineCapable()) {
-      const storage = await getStorage();
-      const all = await getAllCategories<CategoryInfo & Record<string, unknown>>(storage, { search: options.search });
-      const start = (page - 1) * limit;
-      const pageItems = all.slice(start, start + limit);
-      return {
-        success: true,
-        data: {
-          data: pageItems as any,
-          meta: { page, limit, total: all.length, totalPages: Math.ceil(all.length / limit) || 1 },
-        },
-        timestamp: new Date().toISOString(),
-      };
-    }
     const { data } = await apiClient.get('/categories', { params: { page, limit, ...options, ...filtersToParams(filters) } });
     return data;
   },
 
   getById: async (id: string): Promise<CategoryDetailResponse> => {
-    if (isOfflineCapable()) {
-      const storage = await getStorage();
-      const category = await getCategoryById(storage, id);
-      if (!category) throw new Error(`Category ${id} not found locally`);
-      return { success: true, data: category as any, timestamp: new Date().toISOString() };
-    }
     const { data } = await apiClient.get(`/categories/${id}`);
     return data;
   },
-  /** Создание/правка категории — только онлайн (редко используется, справочник). */
   create: async (formData: FormData) => {
     const { data } = await apiClient.post('/categories', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

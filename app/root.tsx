@@ -24,9 +24,6 @@ import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
-import { getStorage } from '~/lib/offline/storage';
-import { isOfflineCapable } from '~/lib/offline/platform';
-import { useSyncStore } from '~/store/useSyncStore';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
 import textInBottomDark from '/text-in-bottom-logo-dark.png';
@@ -142,10 +139,10 @@ function Splash({ locale }: { locale: string }) {
             <span className="splash-code-kw">const</span> crm = {'{'}
           </div>
           <div className="splash-code-line splash-code-line-2">
-            &nbsp;&nbsp;offline: <span className="splash-code-val">true</span>,
+            &nbsp;&nbsp;status: <span className="splash-code-val">'ready'</span>,
           </div>
           <div className="splash-code-line splash-code-line-3">
-            &nbsp;&nbsp;sync: <span className="splash-code-val">'ready'</span>
+            &nbsp;&nbsp;version: <span className="splash-code-val">1</span>
           </div>
           <div className="splash-code-line splash-code-line-4">
             {'}'}
@@ -194,16 +191,6 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
-
-  useEffect(() => {
-    if (!isOfflineCapable()) return;
-    // Открываем/создаём локальную SQLite один раз при старте приложения,
-    // не дожидаясь первого запроса какой-либо страницы — иначе первый
-    // экран (обычно dashboard) увидит пустую базу на долю секунды.
-    getStorage()
-      .then(() => useSyncStore.getState().refreshPendingCount())
-      .catch((err) => console.error('[offline] storage init failed', err));
-  }, []);
 
   return null;
 }
