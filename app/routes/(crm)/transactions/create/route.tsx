@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
+import { isOfflineQueuedResponse } from '~/lib/offline/isQueued';
 import { Panel } from '~/components/layout/Panel';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { Badge } from '~/components/ui/badge';
@@ -199,9 +200,9 @@ export default function CreateTransactionPage() {
       };
       return transactionsApi.create(payload);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success(t('createSuccess'));
+      toast.success(isOfflineQueuedResponse(data) ? t('createQueuedOffline') : t('createSuccess'));
       navigate('/transactions');
     },
     onError: () => {

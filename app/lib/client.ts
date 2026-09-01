@@ -5,6 +5,22 @@ import { toast } from 'sonner';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
 import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
 import { redirectToLogin } from '~/lib/navigation';
+import { getIsOnline } from '~/lib/offline/network';
+import { readFromCache, writeToCache } from '~/lib/offline/readCache';
+import { enqueueMutation, type QueuedKind } from '~/lib/offline/queue';
+
+// Единственные 3 мутации, которым разрешён офлайн-режим (см. решение по
+// TradeCRM: остальные сущности офлайн только на чтение, без очереди).
+// delete НИКОГДА сюда не попадает.
+const OFFLINE_QUEUEABLE: { method: 'post' | 'patch'; pattern: RegExp; kind: QueuedKind }[] = [
+  { method: 'post', pattern: /^\/transactions$/, kind: 'transaction:create' },
+  { method: 'patch', pattern: /^\/transactions\/[^/]+\/pay$/, kind: 'transaction:pay' },
+  { method: 'post', pattern: /^\/transactions\/[^/]+\/refund$/, kind: 'transaction:refund' },
+];
+
+function matchQueueable(urlPath: string, method: string) {
+  return OFFLINE_QUEUEABLE.find((r) => r.method === method && r.pattern.test(urlPath));
+}
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
@@ -102,7 +118,7 @@ function canAccessApi(action: Action): boolean {
 }
 
 // ---------- request interceptor ----------
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(async (config) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -119,18 +135,66 @@ apiClient.interceptors.request.use((config) => {
     }
   }
 
+  // Известно офлайн (не просто "запрос упал") — не ждём таймаут (15с) на
+  // реальную попытку, сразу помечаем запрос для обработки в response-error
+  // интерцепторе (GET -> кэш, разрешённые мутации -> очередь).
+  if (!(await getIsOnline())) {
+    return Promise.reject(Object.assign(new Error('offline'), { __offlineShortCircuit: true, config }));
+  }
+
   return config;
 });
 
 // ---------- response interceptor ----------
 apiClient.interceptors.response.use(
-  (response) => response,
+  async (response) => {
+    // Успешный GET — освежаем офлайн-кэш этим ответом на будущее.
+    if ((response.config.method || 'get') === 'get') {
+      const urlPath = (response.config.url || '').split('?')[0];
+      await writeToCache(urlPath, response.config.params, response.data).catch(() => undefined);
+    }
+    return response;
+  },
   async (error) => {
     const status: number | undefined = error.response?.status;
-    const requestUrl: string | undefined = error.config?.url;
+    const config = error.config;
+    const requestUrl: string | undefined = config?.url;
+    const urlPath = (requestUrl || '').split('?')[0];
+    const method = (config?.method || 'get') as Method;
+    const isNetworkFailure = error.__offlineShortCircuit || !error.response;
 
     if (isSilent(requestUrl)) {
       return Promise.reject(error);
+    }
+
+    // Сеть недоступна (или запрос физически не дошёл) — для GET отдаём
+    // кэш, для 3 разрешённых мутаций транзакций кладём в очередь и
+    // возвращаем синтетический "успех", чтобы UI не отличал офлайн-кейс
+    // от обычного (transactionsApi.create и т.п. просто получают data).
+    if (isNetworkFailure) {
+      if (method === 'get') {
+        const cached = await readFromCache(urlPath, config?.params);
+        if (cached !== null) {
+          return { data: cached, status: 200, statusText: 'OK (cache)', headers: {}, config };
+        }
+      } else {
+        const queueable = matchQueueable(urlPath, method);
+        if (queueable) {
+          const queued = await enqueueMutation({
+            kind: queueable.kind,
+            method: queueable.method,
+            url: requestUrl!,
+            payload: typeof config?.data === 'string' ? JSON.parse(config.data) : config?.data,
+          });
+          return {
+            data: { offlineQueued: true, queueId: queued.id },
+            status: 202,
+            statusText: 'Accepted (queued offline)',
+            headers: {},
+            config,
+          };
+        }
+      }
     }
 
     if (!error.response) {

@@ -1,23 +1,22 @@
 import { useEffect } from 'react';
-import { AlertCircle, CloudDownload, CloudUpload, RefreshCw, X } from 'lucide-react';
+import { AlertCircle, CloudUpload, RefreshCw, X } from 'lucide-react';
 import { Panel } from '~/components/layout/Panel';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { useOnlineStatus } from '~/hooks/useOnlineStatus';
 import { useSyncStore } from '~/store/useSyncStore';
-import type { OutboxItem } from '@trade-crm/offline-core';
+import type { QueuedMutation } from '~/lib/offline/queue';
 
-const ENTITY_LABEL: Record<string, string> = {
-  products: 'Товар',
-  categories: 'Категория',
-  debtors: 'Должник',
-  transactions: 'Транзакция',
+const KIND_LABEL: Record<QueuedMutation['kind'], string> = {
+  'transaction:create': 'Создание транзакции',
+  'transaction:pay': 'Оплата',
+  'transaction:refund': 'Возврат',
 };
 
 export default function SyncPage() {
   const online = useOnlineStatus();
-  const { outbox, isSyncing, lastSyncAt, lastError, refreshOutbox, runPull, runPush, cancelItem } = useSyncStore();
+  const { outbox, isSyncing, lastSyncAt, lastError, refreshOutbox, runPush, cancelItem } = useSyncStore();
 
   useEffect(() => {
     refreshOutbox();
@@ -27,17 +26,8 @@ export default function SyncPage() {
     await runPush();
   };
 
-  const handlePull = async () => {
-    await runPull();
-    await refreshOutbox();
-  };
-
-  const handleCancel = async (item: OutboxItem) => {
-    const isTransaction = item.entity === 'transactions' && item.method === 'post';
-    const confirmMessage = isTransaction
-      ? 'Отменить эту транзакцию? Списанный остаток товара вернётся обратно.'
-      : 'Отменить эту запись? Она не будет отправлена на сервер.';
-    if (!window.confirm(confirmMessage)) return;
+  const handleCancel = async (item: QueuedMutation) => {
+    if (!window.confirm('Убрать эту запись из очереди? Она не будет отправлена на сервер.')) return;
     await cancelItem(item);
   };
 
@@ -48,20 +38,14 @@ export default function SyncPage() {
       <Panel
         title="Синхронизация"
         actions={
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={!online || isSyncing} onClick={handlePull}>
-              <CloudDownload className="mr-1.5 h-4 w-4" />
-              Обновить
-            </Button>
-            <Button size="sm" disabled={!online || isSyncing || outbox.length === 0} onClick={handlePush}>
-              <CloudUpload className="mr-1.5 h-4 w-4" />
-              Отправить {outbox.length > 0 ? `(${outbox.length})` : ''}
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" disabled={!online || isSyncing || outbox.length === 0} onClick={handlePush}>
+            <CloudUpload className="mr-1.5 h-4 w-4" />
+            Отправить {outbox.length > 0 ? `(${outbox.length})` : ''}
+          </Button>
         }>
         <div className="text-muted-foreground flex items-center gap-2 text-sm">
           <Badge variant={online ? 'secondary' : 'destructive'}>{online ? 'В сети' : 'Офлайн'}</Badge>
-          {lastSyncAt && <span>Последнее обновление: {new Date(lastSyncAt).toLocaleString('ru-RU')}</span>}
+          {lastSyncAt && <span>Последняя синхронизация: {new Date(lastSyncAt).toLocaleString('ru-RU')}</span>}
           {isSyncing && (
             <span className="flex items-center gap-1">
               <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Синхронизация...
@@ -86,10 +70,7 @@ export default function SyncPage() {
               <li key={item.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium">{ENTITY_LABEL[item.entity] ?? item.entity}</span>
-                    <Badge variant="outline" className="text-xs">
-                      {item.method === 'post' ? 'создание' : 'изменение'}
-                    </Badge>
+                    <span className="font-medium">{KIND_LABEL[item.kind] ?? item.kind}</span>
                     {item.status === 'failed' && (
                       <Badge variant="destructive" className="text-xs">
                         ошибка

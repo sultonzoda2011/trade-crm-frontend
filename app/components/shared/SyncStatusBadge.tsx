@@ -8,11 +8,11 @@ import { Badge } from '~/components/ui/badge';
 export default function SyncStatusBadge() {
   const online = useOnlineStatus();
   const pendingCount = useSyncStore((s) => s.pendingCount);
-  const refreshPendingCount = useSyncStore((s) => s.refreshPendingCount);
+  const refreshOutbox = useSyncStore((s) => s.refreshOutbox);
 
   useEffect(() => {
-    refreshPendingCount();
-  }, [refreshPendingCount]);
+    refreshOutbox();
+  }, [refreshOutbox]);
 
   if (!online) {
     return (
@@ -38,3 +38,4 @@ export default function SyncStatusBadge() {
 
   return null;
 }
+

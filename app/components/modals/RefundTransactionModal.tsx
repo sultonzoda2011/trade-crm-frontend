@@ -5,6 +5,7 @@ import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
+import { isOfflineQueuedResponse } from '~/lib/offline/isQueued';
 import { Modal } from '~/components/shared/Modal';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { Button } from '~/components/ui/button';
@@ -93,13 +94,13 @@ export function RefundTransactionModal() {
         request: { items, reason: data.reason?.trim() || undefined },
       });
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['transactions'] });
       void queryClient.invalidateQueries({ queryKey: ['products'] });
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: ['transaction', transaction.id] });
       }
-      toast.success(t('refundSuccess'));
+      toast.success(isOfflineQueuedResponse(data) ? t('refundQueuedOffline') : t('refundSuccess'));
       refundModal.close();
       reset();
     },

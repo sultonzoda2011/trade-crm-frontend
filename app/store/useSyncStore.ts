@@ -1,29 +1,18 @@
 import { create } from 'zustand';
-import {
-  cancelDebtorOffline,
-  cancelTransactionOffline,
-  countPending,
-  listOutbox,
-  pull,
-  push,
-  removeFromOutbox,
-  type OutboxItem,
-  type PushResult,
-} from '@trade-crm/offline-core';
-import { getStorage } from '~/lib/offline/storage';
-import { httpClient } from '~/lib/offline/httpClient';
+import { getQueryClient } from '~/lib/query-client';
+import { listQueue, removeQueueItem, type QueuedMutation } from '~/lib/offline/queue';
+import { runSync } from '~/lib/offline/syncService';
 
 interface SyncState {
   pendingCount: number;
   lastSyncAt: string | null;
   isSyncing: boolean;
-  outbox: OutboxItem[];
+  outbox: QueuedMutation[];
   lastError: string | null;
-  refreshPendingCount: () => Promise<void>;
   refreshOutbox: () => Promise<void>;
-  runPull: () => Promise<void>;
-  runPush: () => Promise<PushResult | null>;
-  cancelItem: (item: OutboxItem) => Promise<void>;
+  runPush: () => Promise<void>;
+  /** Только для элементов, уже помеченных 'failed' (превышены попытки) — убрать вручную. */
+  cancelItem: (item: QueuedMutation) => Promise<void>;
 }
 
 export const useSyncStore = create<SyncState>((set, get) => ({
@@ -33,63 +22,29 @@ export const useSyncStore = create<SyncState>((set, get) => ({
   outbox: [],
   lastError: null,
 
-  refreshPendingCount: async () => {
-    const storage = await getStorage();
-    const n = await countPending(storage);
-    set({ pendingCount: n });
-  },
-
   refreshOutbox: async () => {
-    const storage = await getStorage();
-    const items = await listOutbox(storage);
-    set({ outbox: items, pendingCount: items.length });
-  },
-
-  runPull: async () => {
-    if (get().isSyncing) return;
-    set({ isSyncing: true, lastError: null });
-    try {
-      const storage = await getStorage();
-      await pull(storage, httpClient);
-      set({ lastSyncAt: new Date().toISOString() });
-    } catch (err: any) {
-      set({ lastError: err?.message ?? 'Pull failed' });
-    } finally {
-      set({ isSyncing: false });
-    }
+    const items = await listQueue();
+    set({ outbox: items, pendingCount: items.filter((i) => i.status !== 'failed').length });
   },
 
   runPush: async () => {
-    if (get().isSyncing) return null;
+    if (get().isSyncing) return;
     set({ isSyncing: true, lastError: null });
     try {
-      const storage = await getStorage();
-      const result = await push(storage, httpClient);
-      await get().refreshOutbox();
-      if (result.errors.length > 0) {
-        set({ lastError: result.errors.map((e) => e.message).join('; ') });
-      }
-      return result;
+      await runSync(getQueryClient());
+      set({ lastSyncAt: new Date().toISOString() });
     } catch (err: any) {
-      set({ lastError: err?.message ?? 'Push failed' });
-      return null;
+      set({ lastError: err?.message ?? 'Sync failed' });
     } finally {
       set({ isSyncing: false });
+      await get().refreshOutbox();
     }
   },
-  cancelItem: async (item: OutboxItem) => {
-    const storage = await getStorage();
-    if (item.entity === 'transactions' && item.method === 'post') {
-      // Только create-транзакцию можно безопасно отменить с откатом остатка.
-      // Отмена оплаты (method: 'patch') сюда не попадёт — see /sync page filter.
-      await cancelTransactionOffline(storage, item.localId);
-    } else if (item.entity === 'debtors' && item.method === 'post') {
-      await cancelDebtorOffline(storage, item.localId);
-    } else {
-      // Остальное — просто убираем сам outbox-элемент, без отката (сущность
-      // не резервирует ресурс типа остатка, откатывать нечего).
-      await removeFromOutbox(storage, item.id);
-    }
+
+  cancelItem: async (item) => {
+    // Мы никогда не делаем локальных оптимистичных пересчётов (остатки,
+    // баланс) — поэтому отмена это просто удаление из очереди, без отката.
+    await removeQueueItem(item.id);
     await get().refreshOutbox();
   },
 }));
