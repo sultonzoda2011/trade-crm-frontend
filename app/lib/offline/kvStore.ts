@@ -1,5 +1,5 @@
 // Общий контракт для двух бэкендов хранилища (SQLite на Android,
-// IndexedDB на вебе/Electron/Vercel-деплое). Оба стора key-value:
+// IndexedDB на вебе/Vercel-деплое). Оба стора key-value:
 // используем это и для read-кэша (getAll и т.п.), и для очереди мутаций —
 // у каждого свой namespace (store), но операции одинаковые.
 export interface KvStore {

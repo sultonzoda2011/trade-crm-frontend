@@ -1,7 +1,7 @@
 import type { KvStore } from './kvStore';
 
 // IndexedDB-реализация KvStore — используется везде, где нет нативного
-// Android-рантайма (веб-превью в браузере, Electron webview, Vercel-деплой).
+// Android-рантайма (веб-превью в браузере, Vercel-деплой).
 // Один объект-стор "kv" с составным ключом `${namespace}:${key}`, чтобы не
 // плодить отдельные IndexedDB stores под каждую сущность.
 const DB_NAME = 'trade-crm-offline';

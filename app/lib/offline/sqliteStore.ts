@@ -5,7 +5,7 @@ import type { KvStore } from './kvStore';
 // создаются lazily при первом обращении к каждому namespace.
 //
 // Импорт @capacitor-community/sqlite делаем динамически (см. platform.ts) —
-// на веб/Electron-сборках этот модуль не должен попадать в бандл рантайма.
+// на веб-сборках этот модуль не должен попадать в бандл рантайма.
 let sqlitePromise: Promise<import('@capacitor-community/sqlite').SQLiteDBConnection> | null = null;
 const ensuredTables = new Set<string>();
 

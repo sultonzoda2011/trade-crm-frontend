@@ -2,7 +2,7 @@ import { isNativePlatform } from './platform';
 
 // На Android WebView браузерные online/offline события ненадёжны (не всегда
 // стреляют при потере wifi без смены IP) — поэтому на native используем
-// @capacitor/network, а на вебе/Electron остаёмся на navigator.onLine.
+// @capacitor/network, а на вебе остаёмся на navigator.onLine.
 
 export async function getIsOnline(): Promise<boolean> {
   if (await isNativePlatform()) {
