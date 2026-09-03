@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { BookOpen, Building2, HandCoins, LayoutDashboard, Package, ReceiptText, Store, Tag, UserRound, Users } from 'lucide-react';
+import { BookOpen, Building2, HandCoins, LayoutDashboard, Package, ReceiptText, RefreshCw, Store, Tag, UserRound, Users } from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
 import { Role } from '~/types/common';
 import { Action } from '~/config/actions';
@@ -12,6 +12,8 @@ export interface NavItem {
   roles?: Role[];
   items?: NavItem[];
   comingSoon?: boolean;
+  /** Показывать только на мобильном layout (см. Sidebar.tsx, useSidebar().isMobile) — сейчас только для /sync. */
+  mobileOnly?: boolean;
 }
 
 export const getSidebarConfig = (t: TFunction): NavItem[] => [
@@ -77,6 +79,16 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
     title: t('navigation.guide'),
     url: '/guide',
     icon: BookOpen,
+  },
+  {
+    // Только для телефона (Capacitor/узкий экран) — на десктопе синк не
+    // нужен так остро, а лишний пункт в меню только мешает. Доступ по
+    // ролям не ограничиваем здесь: /sync открыт всем ролям (ROUTE_PERMISSIONS),
+    // сами сущности внутри страницы уже фильтруются по правам (см. SYNC_ENTITIES.roles).
+    title: t('navigation.sync'),
+    url: '/sync',
+    icon: RefreshCw,
+    mobileOnly: true,
   },
 ];
 

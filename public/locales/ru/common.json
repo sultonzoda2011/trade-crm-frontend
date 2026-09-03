@@ -10,7 +10,8 @@
     "transactions": "Транзакции",
     "categories": "Категории",
     "sellersReport": "Отчёт по продавцам",
-    "guide": "Руководство"
+    "guide": "Руководство",
+    "sync": "Синхронизация"
   },
   "palette": {
     "trigger": "Поиск",

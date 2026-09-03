@@ -8,6 +8,7 @@ import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { useOnlineStatus } from '~/hooks/useOnlineStatus';
+import { useCan } from '~/hooks/useCan';
 import { useSyncStore } from '~/store/useSyncStore';
 import { SYNC_ENTITIES } from '~/lib/offline/entities';
 import { getLastSyncedAt } from '~/lib/offline/syncMeta';
@@ -22,17 +23,24 @@ const KIND_LABEL_KEY: Record<QueuedMutation['kind'], string> = {
 export default function SyncPage() {
   const { t, i18n } = useTranslation(['sync', 'common']);
   const online = useOnlineStatus();
+  const { can } = useCan();
   const { outbox, isSyncing, lastSyncAt, lastError, refreshOutbox, runPush, cancelItem } = useSyncStore();
   const [entityLastSync, setEntityLastSync] = useState<Record<string, string | null>>({});
+
+  // Раздел /sync доступен всем ролям (см. ROUTE_PERMISSIONS), но конкретные
+  // сущности внутри — по тем же правам, что и настоящие страницы: Seller не
+  // должен видеть здесь "Рынки", как не видит их и в основном меню.
+  const visibleEntities = SYNC_ENTITIES.filter((e) => can(e.roles));
 
   useEffect(() => {
     refreshOutbox();
   }, [refreshOutbox]);
 
   useEffect(() => {
-    Promise.all(SYNC_ENTITIES.map((e) => getLastSyncedAt(e.key, 'list'))).then((values) => {
-      setEntityLastSync(Object.fromEntries(SYNC_ENTITIES.map((e, i) => [e.key, values[i]])));
+    Promise.all(visibleEntities.map((e) => getLastSyncedAt(e.key, 'list'))).then((values) => {
+      setEntityLastSync(Object.fromEntries(visibleEntities.map((e, i) => [e.key, values[i]])));
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePush = async () => {
@@ -128,7 +136,7 @@ export default function SyncPage() {
 
       <Panel title={t('referenceDataTitle')} bodyClassName="p-0">
         <ul className="divide-border divide-y">
-          {SYNC_ENTITIES.map((entity) => (
+          {visibleEntities.map((entity) => (
             <li key={entity.key}>
               <Link
                 to={`/sync/${entity.key}`}

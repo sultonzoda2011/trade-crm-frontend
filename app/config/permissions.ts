@@ -30,6 +30,17 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/debtors/:id': [Role.Admin, Role.Owner, Role.Seller],
   '/guide': [Role.Admin, Role.Owner, Role.Seller],
   '/403': [Role.Admin, Role.Owner, Role.Seller],
+  // Тот же набор ролей, что и у настоящего роута сущности выше — раздел
+  // офлайн-синхронизации не должен открывать доступ шире, чем есть в
+  // обычном приложении (например, Seller не должен получить /sync/markets,
+  // раз у него нет доступа к /markets).
+  '/sync': [Role.Admin, Role.Owner, Role.Seller],
+  '/sync/products': [Role.Admin, Role.Owner, Role.Seller],
+  '/sync/transactions': [Role.Admin, Role.Owner, Role.Seller],
+  '/sync/debtors': [Role.Admin, Role.Owner, Role.Seller],
+  '/sync/categories': [Role.Admin, Role.Owner],
+  '/sync/markets': [Role.Admin],
+  '/sync/sellers': [Role.Admin, Role.Owner],
 };
 
 export function canAccess(role: Role, pathname: string): boolean {

@@ -7,7 +7,7 @@ import { Progress } from '~/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { useOnlineStatus } from '~/hooks/useOnlineStatus';
-import { syncEntityDetails, syncEntityList, type DetailSyncProgress, type ListSyncProgress } from '~/lib/offline/entitySync';
+import { syncEntityDetails, syncEntityList, type DetailSyncProgress, type ListSyncItem, type ListSyncProgress } from '~/lib/offline/entitySync';
 import type { SyncEntityConfig } from '~/lib/offline/entities';
 
 interface SyncEntityPageProps {
@@ -21,7 +21,7 @@ export function SyncEntityPage({ entity }: SyncEntityPageProps) {
 
   const [listProgress, setListProgress] = useState<ListSyncProgress | null>(null);
   const [isListSyncing, setIsListSyncing] = useState(false);
-  const [lastIds, setLastIds] = useState<string[] | null>(null);
+  const [lastItems, setLastItems] = useState<ListSyncItem[] | null>(null);
 
   const [detailProgress, setDetailProgress] = useState<DetailSyncProgress | null>(null);
   const [isDetailSyncing, setIsDetailSyncing] = useState(false);
@@ -30,19 +30,19 @@ export function SyncEntityPage({ entity }: SyncEntityPageProps) {
     setIsListSyncing(true);
     setListProgress(null);
     try {
-      const ids = await syncEntityList(entity, setListProgress);
-      setLastIds(ids);
+      const items = await syncEntityList(entity, setListProgress);
+      setLastItems(items);
     } finally {
       setIsListSyncing(false);
     }
   };
 
   const handleSyncDetails = async () => {
-    if (!lastIds || !entity.hasDetail) return;
+    if (!lastItems || !entity.hasDetail) return;
     setIsDetailSyncing(true);
     setDetailProgress(null);
     try {
-      await syncEntityDetails(entity, lastIds, setDetailProgress);
+      await syncEntityDetails(entity, lastItems, setDetailProgress);
     } finally {
       setIsDetailSyncing(false);
     }
@@ -88,7 +88,7 @@ export function SyncEntityPage({ entity }: SyncEntityPageProps) {
             <div className="space-y-2">
               <div className="flex flex-wrap items-center gap-3">
                 <ActionButton
-                  disabled={!online || isDetailSyncing || !lastIds}
+                  disabled={!online || isDetailSyncing || !lastItems}
                   loading={isDetailSyncing}
                   offline={!online}
                   offlineReason={offlineReason}
@@ -99,11 +99,12 @@ export function SyncEntityPage({ entity }: SyncEntityPageProps) {
                 {detailProgress && (
                   <span className="text-muted-foreground text-sm">
                     {t('detailProgress', { done: detailProgress.done, total: detailProgress.total })}
+                    {detailProgress.skipped > 0 && ` · ${t('detailSkipped', { count: detailProgress.skipped })}`}
                   </span>
                 )}
               </div>
               <p className={offline ? 'text-warning text-sm font-medium' : 'text-muted-foreground text-sm'}>
-                {offline ? offlineReason : lastIds ? t('syncDetailsDescription') : t('syncDetailsRequiresList')}
+                {offline ? offlineReason : lastItems ? t('syncDetailsDescription') : t('syncDetailsRequiresList')}
               </p>
               {isDetailSyncing && <Progress value={detailPercent} className="h-2" />}
             </div>

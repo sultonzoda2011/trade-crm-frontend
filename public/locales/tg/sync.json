@@ -21,6 +21,7 @@
   "syncDetailsDescription": "Барои ҳар як сабти рӯйхат корточкаи муфассалро бор мекунад, то бидуни интернет кушода шавад.",
   "syncDetailsRequiresList": "Аввал рӯйхатро навсозӣ кунед — корточкаҳо аз он бор карда мешаванд.",
   "detailProgress": "Корточкаҳо: {{done}} аз {{total}}",
+  "detailSkipped": "{{count}} аллакай навсозӣ буд, гузашта шуд",
   "entities": {
     "products": "Молҳо",
     "transactions": "Муомилотҳо",

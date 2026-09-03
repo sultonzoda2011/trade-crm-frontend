@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarHeader } from '~/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  useSidebar,
+} from '~/components/ui/sidebar';
 import { getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
 import { NavMain } from '~/components/layout/NavMain';
@@ -14,9 +21,13 @@ import { Link } from 'react-router'
 export function AppSidebar() {
   const { can } = useCan();
   const { t } = useTranslation();
+  const { isMobile } = useSidebar();
 
   const navConfig = useMemo(() => getSidebarConfig(t), [t]);
-  const visibleItems = useMemo(() => getVisibleNavigation(navConfig, can), [navConfig, can]);
+  const visibleItems = useMemo(
+    () => getVisibleNavigation(navConfig, can).filter((item) => !item.mobileOnly || isMobile),
+    [navConfig, can, isMobile]
+  );
 
   return (
     <Sidebar collapsible="icon" className="mt-2 border-none">

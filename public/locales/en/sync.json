@@ -21,6 +21,7 @@
   "syncDetailsDescription": "Downloads the full detail page for every record in the list so it can be opened without internet.",
   "syncDetailsRequiresList": "Update the list first — records are downloaded from it.",
   "detailProgress": "Records: {{done}} of {{total}}",
+  "detailSkipped": "{{count}} already up to date, skipped",
   "entities": {
     "products": "Products",
     "transactions": "Transactions",

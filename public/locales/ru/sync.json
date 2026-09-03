@@ -21,6 +21,7 @@
   "syncDetailsDescription": "Загружает подробную карточку каждой записи из списка, чтобы её можно было открыть без интернета.",
   "syncDetailsRequiresList": "Сначала обновите список — карточки скачиваются по записям из него.",
   "detailProgress": "Карточки: {{done}} из {{total}}",
+  "detailSkipped": "{{count}} уже актуальны, пропущено",
   "entities": {
     "products": "Товары",
     "transactions": "Транзакции",

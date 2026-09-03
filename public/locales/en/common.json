@@ -10,7 +10,8 @@
     "transactions": "Transactions",
     "categories": "Categories",
     "sellersReport": "Sellers report",
-    "guide": "Guide"
+    "guide": "Guide",
+    "sync": "Sync"
   },
   "palette": {
     "trigger": "Search",
