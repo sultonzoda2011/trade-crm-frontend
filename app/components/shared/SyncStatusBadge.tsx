@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { CloudOff, RefreshCw } from 'lucide-react';
 import { useOnlineStatus } from '~/hooks/useOnlineStatus';
@@ -6,6 +7,7 @@ import { useSyncStore } from '~/store/useSyncStore';
 import { Badge } from '~/components/ui/badge';
 
 export default function SyncStatusBadge() {
+  const { t } = useTranslation('sync');
   const online = useOnlineStatus();
   const pendingCount = useSyncStore((s) => s.pendingCount);
   const refreshOutbox = useSyncStore((s) => s.refreshOutbox);
@@ -19,7 +21,7 @@ export default function SyncStatusBadge() {
       <Link to="/sync">
         <Badge variant="destructive" className="gap-1">
           <CloudOff className="h-3 w-3" />
-          Офлайн
+          {t('offline')}
         </Badge>
       </Link>
     );
@@ -38,4 +40,3 @@ export default function SyncStatusBadge() {
 
   return null;
 }
-

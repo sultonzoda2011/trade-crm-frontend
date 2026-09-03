@@ -1,0 +1,37 @@
+{
+  "title": "Sync",
+  "offlineTooltip": "No internet connection — this action is unavailable",
+  "outgoingTitle": "Outgoing changes",
+  "pushButton": "Send data",
+  "pushDescription": "Sends queued offline changes (created transactions, payments, refunds) to the server in the order they were created.",
+  "online": "Online",
+  "offline": "Offline",
+  "lastSync": "Updated: {{date}}",
+  "neverSynced": "Not synced yet",
+  "syncing": "Syncing...",
+  "queueTitle": "Waiting to be sent ({{count}})",
+  "queueEmpty": "Everything is synced",
+  "queueFailed": "failed",
+  "confirmRemoveQueueItem": "Remove this item from the queue? It will not be sent to the server.",
+  "referenceDataTitle": "Reference data",
+  "syncList": "Update list",
+  "syncListDescription": "Downloads every page of the list from the server and saves it for offline viewing, including switching between pages.",
+  "pageProgress": "Page {{page}} of {{total}}",
+  "syncDetails": "Update records",
+  "syncDetailsDescription": "Downloads the full detail page for every record in the list so it can be opened without internet.",
+  "syncDetailsRequiresList": "Update the list first — records are downloaded from it.",
+  "detailProgress": "Records: {{done}} of {{total}}",
+  "entities": {
+    "products": "Products",
+    "transactions": "Transactions",
+    "debtors": "Debtors",
+    "categories": "Categories",
+    "markets": "Markets",
+    "sellers": "Sellers"
+  },
+  "queue": {
+    "transactionCreate": "Create transaction",
+    "transactionPay": "Payment",
+    "transactionRefund": "Refund"
+  }
+}

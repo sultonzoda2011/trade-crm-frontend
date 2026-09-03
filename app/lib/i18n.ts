@@ -23,5 +23,6 @@ export const i18nConfig = {
     'categories',
     'profile',
     'guide',
+    'sync',
   ],
 };
