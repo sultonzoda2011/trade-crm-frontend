@@ -142,6 +142,24 @@ apiClient.interceptors.request.use(async (config) => {
     return Promise.reject(Object.assign(new Error('offline'), { __offlineShortCircuit: true, config }));
   }
 
+  // На Android WebView (и в целом в системном HTTP-стеке — OkHttp/CapacitorHttp)
+  // GET-запрос может быть тихо отдан из кэша самой сети/ОС, минуя сервер —
+  // axios при этом получает нормальный успешный ответ и не может отличить
+  // его от реально свежего. Наш собственный офлайн-кэш (readCache/writeToCache)
+  // это не заменяет: он для случая "сети вообще нет", а не "сеть есть, но
+  // отдала устаревшее". Поэтому явно запрещаем HTTP-кэширование на уровне
+  // самого запроса — заголовками (для прокси/сервера) и меткой в URL (для
+  // WebView/OkHttp, которые кэшируют по URL и не всегда смотрят заголовки).
+  // "_" в URL — cache-buster, а не query-параметр запроса: readCache/writeToCache
+  // берут `config.url.split('?')[0]`, так что на ключ нашего офлайн-кэша это
+  // не влияет — там как был чистый '/products', так и остаётся.
+  if (method === 'get') {
+    config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
+    config.headers['Pragma'] = 'no-cache';
+    const bustSuffix = `${urlPath.includes('?') ? '&' : '?'}_=${Date.now()}`;
+    config.url = urlPath + bustSuffix;
+  }
+
   return config;
 });
 
