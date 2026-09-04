@@ -142,22 +142,24 @@ apiClient.interceptors.request.use(async (config) => {
     return Promise.reject(Object.assign(new Error('offline'), { __offlineShortCircuit: true, config }));
   }
 
-  // На Android WebView (и в целом в системном HTTP-стеке — OkHttp/CapacitorHttp)
-  // GET-запрос может быть тихо отдан из кэша самой сети/ОС, минуя сервер —
-  // axios при этом получает нормальный успешный ответ и не может отличить
-  // его от реально свежего. Наш собственный офлайн-кэш (readCache/writeToCache)
-  // это не заменяет: он для случая "сети вообще нет", а не "сеть есть, но
-  // отдала устаревшее". Поэтому явно запрещаем HTTP-кэширование на уровне
-  // самого запроса — заголовками (для прокси/сервера) и меткой в URL (для
-  // WebView/OkHttp, которые кэшируют по URL и не всегда смотрят заголовки).
-  // "_" в URL — cache-buster, а не query-параметр запроса: readCache/writeToCache
-  // берут `config.url.split('?')[0]`, так что на ключ нашего офлайн-кэша это
-  // не влияет — там как был чистый '/products', так и остаётся.
+  // На Android WebView (и в целом в системном HTTP-стеке) GET-запрос может
+  // быть тихо отдан из кэша самой сети/ОС, минуя сервер — axios при этом
+  // получает нормальный успешный ответ и не может отличить его от реально
+  // свежего. Наш собственный офлайн-кэш (readCache/writeToCache) это не
+  // заменяет: он для случая "сети вообще нет", а не "сеть есть, но отдала
+  // устаревшее". Поэтому явно запрещаем HTTP-кэширование заголовками.
+  //
+  // ВАЖНО: раньше здесь ещё добавлялся cache-buster прямо в URL
+  // (`?_=timestamp`) — оказалось, что бэкенд слушает через глобальный
+  // ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }), и этот
+  // параметр долетал до @Query()-DTO эндпоинтов как лишнее поле, которое
+  // валидация отклоняет 400-кой ("_ should not exist"). Заголовки в эту
+  // валидацию не попадают (она смотрит только body/query/params), поэтому
+  // используем только их — этого достаточно, штатный Cache-Control:no-store
+  // соблюдается стандартным сетевым стеком WebView.
   if (method === 'get') {
     config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     config.headers['Pragma'] = 'no-cache';
-    const bustSuffix = `${urlPath.includes('?') ? '&' : '?'}_=${Date.now()}`;
-    config.url = urlPath + bustSuffix;
   }
 
   return config;
