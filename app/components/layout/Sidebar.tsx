@@ -6,7 +6,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
-  useSidebar,
 } from '~/components/ui/sidebar';
 import { getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
@@ -21,12 +20,11 @@ import { Link } from 'react-router'
 export function AppSidebar() {
   const { can } = useCan();
   const { t } = useTranslation();
-  const { isMobile } = useSidebar();
 
   const navConfig = useMemo(() => getSidebarConfig(t), [t]);
   const visibleItems = useMemo(
-    () => getVisibleNavigation(navConfig, can).filter((item) => !item.mobileOnly || isMobile),
-    [navConfig, can, isMobile]
+    () => getVisibleNavigation(navConfig, can),
+    [navConfig, can]
   );
 
   return (

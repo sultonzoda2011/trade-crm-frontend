@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
-import { isOfflineQueuedResponse } from '~/lib/offline/isQueued';
 import { Panel } from '~/components/layout/Panel';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { Badge } from '~/components/ui/badge';
@@ -202,7 +201,7 @@ export default function CreateTransactionPage() {
     },
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      toast.success(isOfflineQueuedResponse(data) ? t('createQueuedOffline') : t('createSuccess'));
+      toast.success(t('createSuccess'));
       navigate('/transactions');
     },
     onError: () => {
@@ -441,12 +440,15 @@ export default function CreateTransactionPage() {
                 options={paymentTypeOptions}
                 required
               />
-              <FormInput
-                control={control}
-                name="customerName"
-                label={t('fields.customer')}
-                placeholder={t('fields.customer')}
-              />
+              {type === 'SALE' && (
+                <FormInput
+                  control={control}
+                  name="customerName"
+                  label={t('fields.customer')}
+                  placeholder={t('fields.customer')}
+                />
+              )}
+
               {type === 'DEBT' && (
                 <div>
                   <FormCustomSelect
@@ -488,13 +490,13 @@ export default function CreateTransactionPage() {
           <span className="font-mono text-base font-semibold">{fmtTJS(calculatedTotal)}</span>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-9" onClick={() => navigate('/transactions')}>
+          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate('/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
           <Button
             type="submit"
             form="create-transaction-page-form"
-            className="flex-1 h-9"
+            className="h-9 flex-1"
             disabled={isPending || !formState.isValid}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create', { ns: 'common' })}

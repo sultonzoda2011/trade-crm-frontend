@@ -4,14 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
 import { Modal } from '~/components/shared/Modal';
-import { RequiresOnlineBanner } from '~/components/shared/RequiresOnlineBanner';
 import { Button } from '~/components/ui/button';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
-import { useOnlineStatus } from '~/hooks/useOnlineStatus';
 import { appendToFormData } from '~/lib/form-data';
 import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 import { createCategorySchema, type CreateCategorySchema } from '~/validations/category';
@@ -52,7 +50,6 @@ export function CreateCategoryModal() {
     mutate(data);
   }
   const isMobile = useIsMobile();
-  const online = useOnlineStatus();
 
   return (
     <Modal
@@ -64,17 +61,12 @@ export function CreateCategoryModal() {
           <Button variant="outline" onClick={createModal.close}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-category-form" disabled={isPending || !online}>
+          <Button type="submit" form="create-category-form" disabled={isPending}>
             {t('actions.create')}
           </Button>
         </div>
       }>
       <form id="create-category-form" onSubmit={handleSubmit(onSubmit)}>
-        {!online && (
-          <div className="mb-4">
-            <RequiresOnlineBanner />
-          </div>
-        )}
         <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
           <FormFileInput
             control={control}

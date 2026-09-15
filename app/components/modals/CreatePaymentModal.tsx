@@ -3,7 +3,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
-import { isOfflineQueuedResponse } from '~/lib/offline/isQueued';
 import { Modal } from '~/components/shared/Modal';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { Button } from '~/components/ui/button';
@@ -38,7 +37,7 @@ export function CreatePaymentModal() {
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: ['transaction', transaction.id] });
       }
-      toast.success(isOfflineQueuedResponse(data) ? t('transactions:payQueuedOffline') : t('transactions:paySuccess'));
+      toast.success(t('transactions:paySuccess'));
       payModal.close();
       reset();
     },

@@ -48,12 +48,6 @@ html {
     'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
 
-  /*
-   * Единая типографическая шкала. Раньше по компонентам были точечные
-   * text-[11px]/text-[13px]/text-[0.8rem] и т.п. — теперь одна шкала на весь
-   * проект (text-2xs...text-3xl), новые точечные размеры добавлять сюда,
-   * а не через text-[Npx] в разметке.
-   */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
   --text-xs: 0.75rem;
@@ -91,46 +85,6 @@ html {
  * и высоту, и ширину поровну (остаются квадратными), у xs/icon-xs — вообще
  * не трогаем (это осознанно компактные элементы для плотного UI).
  */
-@media (pointer: coarse) {
-  [data-slot='button']:not([data-size='xs']):not([data-size='icon-xs']),
-  [data-slot='select-trigger'],
-  [data-slot='input'],
-  [data-slot='textarea'],
-  [data-slot='switch'],
-  [data-slot='radio'],
-  [data-slot='sidebar-menu-button'],
-  [data-slot='dropdown-menu-item'],
-  [data-slot='select-item'],
-  [data-slot='tabs-trigger'] {
-    min-height: 2.75rem; /* 44px */
-  }
-
-  [data-slot='button'][data-size^='icon']:not([data-size='icon-xs']) {
-    min-width: 2.75rem; /* держим квадрат, а не растягиваем только по высоте */
-  }
-
-  /*
-   * Поля-группы (поиск в тулбаре списков, поля с кнопкой/иконкой внутри).
-   * Само поле внутри InputGroup объявляет data-slot="input-group-control",
-   * а не "input", поэтому под правило выше оно не попадает — а контейнер
-   * группы это h-8 (32px). Из-за этого в одном ряду с 44px-кнопками поиск
-   * визуально «проваливался» и тулбар выглядел рваным.
-   * Тянем контейнер, а сам input растягиваем на всю его высоту, чтобы зоной
-   * касания была вся площадь группы, а не только 32px по центру.
-   */
-  [data-slot='input-group'] {
-    min-height: 2.75rem;
-  }
-
-  [data-slot='input-group'] > input[data-slot='input-group-control'] {
-    height: 100%;
-  }
-
-  [data-slot='checkbox'] {
-    min-height: 1.375rem;
-    min-width: 1.375rem;
-  }
-}
 
 :root {
   /* ── Surfaces: a real elevation ladder so chrome / canvas / cards read apart.

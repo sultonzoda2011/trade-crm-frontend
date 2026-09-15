@@ -5,22 +5,6 @@ import { toast } from 'sonner';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
 import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
 import { redirectToLogin } from '~/lib/navigation';
-import { getIsOnline } from '~/lib/offline/network';
-import { readFromCache, writeToCache } from '~/lib/offline/readCache';
-import { enqueueMutation, type QueuedKind } from '~/lib/offline/queue';
-
-// Единственные 3 мутации, которым разрешён офлайн-режим (см. решение по
-// TradeCRM: остальные сущности офлайн только на чтение, без очереди).
-// delete НИКОГДА сюда не попадает.
-const OFFLINE_QUEUEABLE: { method: 'post' | 'patch'; pattern: RegExp; kind: QueuedKind }[] = [
-  { method: 'post', pattern: /^\/transactions$/, kind: 'transaction:create' },
-  { method: 'patch', pattern: /^\/transactions\/[^/]+\/pay$/, kind: 'transaction:pay' },
-  { method: 'post', pattern: /^\/transactions\/[^/]+\/refund$/, kind: 'transaction:refund' },
-];
-
-function matchQueueable(urlPath: string, method: string) {
-  return OFFLINE_QUEUEABLE.find((r) => r.method === method && r.pattern.test(urlPath));
-}
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
@@ -90,9 +74,9 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/transactions/:id', methods: ['delete'], action: Action.TRANSACTIONS_DELETE },
   { pattern: '/transactions/:id/pay', methods: ['patch'], action: Action.TRANSACTIONS_EDIT },
   { pattern: '/transactions/:id/refund', methods: ['post'], action: Action.TRANSACTIONS_REFUND },
-  { pattern: '/categories', methods: ['get'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories', methods: ['get'], action: Action.CATEGORIES_VIEW },
   { pattern: '/categories', methods: ['post'], action: Action.CATEGORIES_MANAGE },
-  { pattern: '/categories/:id', methods: ['get'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/:id', methods: ['get'], action: Action.CATEGORIES_VIEW },
   { pattern: '/categories/:id', methods: ['patch'], action: Action.CATEGORIES_MANAGE },
   { pattern: '/categories/:id', methods: ['delete'], action: Action.CATEGORIES_MANAGE },
 ];
@@ -135,28 +119,6 @@ apiClient.interceptors.request.use(async (config) => {
     }
   }
 
-  // Известно офлайн (не просто "запрос упал") — не ждём таймаут (15с) на
-  // реальную попытку, сразу помечаем запрос для обработки в response-error
-  // интерцепторе (GET -> кэш, разрешённые мутации -> очередь).
-  if (!(await getIsOnline())) {
-    return Promise.reject(Object.assign(new Error('offline'), { __offlineShortCircuit: true, config }));
-  }
-
-  // На Android WebView (и в целом в системном HTTP-стеке) GET-запрос может
-  // быть тихо отдан из кэша самой сети/ОС, минуя сервер — axios при этом
-  // получает нормальный успешный ответ и не может отличить его от реально
-  // свежего. Наш собственный офлайн-кэш (readCache/writeToCache) это не
-  // заменяет: он для случая "сети вообще нет", а не "сеть есть, но отдала
-  // устаревшее". Поэтому явно запрещаем HTTP-кэширование заголовками.
-  //
-  // ВАЖНО: раньше здесь ещё добавлялся cache-buster прямо в URL
-  // (`?_=timestamp`) — оказалось, что бэкенд слушает через глобальный
-  // ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }), и этот
-  // параметр долетал до @Query()-DTO эндпоинтов как лишнее поле, которое
-  // валидация отклоняет 400-кой ("_ should not exist"). Заголовки в эту
-  // валидацию не попадают (она смотрит только body/query/params), поэтому
-  // используем только их — этого достаточно, штатный Cache-Control:no-store
-  // соблюдается стандартным сетевым стеком WebView.
   if (method === 'get') {
     config.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate';
     config.headers['Pragma'] = 'no-cache';
@@ -167,54 +129,14 @@ apiClient.interceptors.request.use(async (config) => {
 
 // ---------- response interceptor ----------
 apiClient.interceptors.response.use(
-  async (response) => {
-    // Успешный GET — освежаем офлайн-кэш этим ответом на будущее.
-    if ((response.config.method || 'get') === 'get') {
-      const urlPath = (response.config.url || '').split('?')[0];
-      await writeToCache(urlPath, response.config.params, response.data).catch(() => undefined);
-    }
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const status: number | undefined = error.response?.status;
     const config = error.config;
     const requestUrl: string | undefined = config?.url;
-    const urlPath = (requestUrl || '').split('?')[0];
-    const method = (config?.method || 'get') as Method;
-    const isNetworkFailure = error.__offlineShortCircuit || !error.response;
 
     if (isSilent(requestUrl)) {
       return Promise.reject(error);
-    }
-
-    // Сеть недоступна (или запрос физически не дошёл) — для GET отдаём
-    // кэш, для 3 разрешённых мутаций транзакций кладём в очередь и
-    // возвращаем синтетический "успех", чтобы UI не отличал офлайн-кейс
-    // от обычного (transactionsApi.create и т.п. просто получают data).
-    if (isNetworkFailure) {
-      if (method === 'get') {
-        const cached = await readFromCache(urlPath, config?.params);
-        if (cached !== null) {
-          return { data: cached, status: 200, statusText: 'OK (cache)', headers: {}, config };
-        }
-      } else {
-        const queueable = matchQueueable(urlPath, method);
-        if (queueable) {
-          const queued = await enqueueMutation({
-            kind: queueable.kind,
-            method: queueable.method,
-            url: requestUrl!,
-            payload: typeof config?.data === 'string' ? JSON.parse(config.data) : config?.data,
-          });
-          return {
-            data: { offlineQueued: true, queueId: queued.id },
-            status: 202,
-            statusText: 'Accepted (queued offline)',
-            headers: {},
-            config,
-          };
-        }
-      }
     }
 
     if (!error.response) {

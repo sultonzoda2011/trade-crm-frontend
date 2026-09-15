@@ -29,7 +29,6 @@ import { setNavigate } from '~/lib/navigation';
 import textInBottomDark from '/text-in-bottom-logo-dark.png';
 import textInBottomLight from '/text-in-bottom-logo-light.png';
 import { getQueryClient } from '~/lib/query-client';
-import { initSyncListener } from '~/lib/offline/syncService';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -192,13 +191,6 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
-
-  useEffect(() => {
-    // Стартовый прогон очереди (на случай, если приложение открыли уже
-    // онлайн с накопленной с прошлой офлайн-сессии очередью) + подписка на
-    // восстановление сети для автосинка.
-    return initSyncListener(getQueryClient());
-  }, []);
 
   return null;
 }
