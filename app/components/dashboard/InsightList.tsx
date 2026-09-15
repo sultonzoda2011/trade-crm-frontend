@@ -49,10 +49,10 @@ function InsightRow({ insight }: { insight: BusinessInsight }) {
       )}>
       <span
         className={cn(
-          'mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border',
+          'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border',
           INSIGHT_SEVERITY_BADGE[insight.severity]
         )}>
-        <Icon className="h-3.5 w-3.5" />
+        <Icon className="size-3.5" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm leading-snug">{t(insight.messageKey, formatParams(insight.params))}</p>
@@ -64,7 +64,7 @@ function InsightRow({ insight }: { insight: BusinessInsight }) {
           className="h-7 shrink-0 gap-1 text-xs"
           render={<Link to={insightHref(insight.action)} />}>
           <span className="hidden sm:inline">{t('insights.open')}</span>
-          <ArrowRight className="h-3.5 w-3.5" />
+          <ArrowRight className="size-3.5" />
         </Button>
       )}
     </div>
@@ -89,7 +89,7 @@ export function InsightList({ insights, className }: InsightListProps) {
     <Panel title={t('insights.title')} className={className} bodyClassName="p-0">
       {insights.length === 0 ? (
         <div className="text-muted-foreground flex items-center gap-2 px-4 py-6 text-sm">
-          <CheckCircle2 className="text-success h-4 w-4 shrink-0" />
+          <CheckCircle2 className="text-success size-4 shrink-0" />
           {t('insights.allClear')}
         </div>
       ) : (

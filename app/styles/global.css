@@ -47,6 +47,14 @@ html {
   --font-sans:
     'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
+  /* Отдельная гарнитура для заголовков (CardTitle/PageHeader) — раньше
+   * `font-heading` использовался в 4 местах, но нигде не был объявлен, из-за
+   * чего класс ничего не делал и заголовки тихо наследовали Manrope.
+   * 'PT Serif' первой в стеке — если позже подключат сам файл шрифта (сейчас
+   * нет доступа поставить webfont), она подхватится сама. До тех пор падает
+   * на 'Times New Roman' — она, в отличие от Georgia, реально поддерживает
+   * кириллицу на Android/iOS/Windows. */
+  --font-heading: 'PT Serif', Georgia, 'Times New Roman', serif;
 
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
@@ -87,50 +95,52 @@ html {
  */
 
 :root {
-  /* ── Surfaces: a real elevation ladder so chrome / canvas / cards read apart.
-   * Lightness climbs with elevation: sidebar(desk) < muted < canvas < card(white).
-   * This is the fix for the flat light mode — before, --background, --card and
-   * --sidebar were all near-white (1 / 1 / 0.965) and blended into one sheet. */
-  --background: oklch(0.978 0.004 247);
-  --foreground: oklch(0.21 0.04 266);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.04 266);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.04 266);
-  /* Раздельный токен для приподнятых вложенных поверхностей внутри карточек
-     (плитки, вложенные блоки) — раньше для этого брали bg-muted/50. */
-  --elevated: oklch(0.97 0.005 247);
-  --primary: oklch(0.48 0.15 261);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.928 0.018 256);
-  --secondary-foreground: oklch(0.42 0.12 262);
-  --muted: oklch(0.963 0.006 247);
-  --muted-foreground: oklch(0.552 0.035 257);
-  --accent: oklch(0.955 0.013 252);
-  --accent-foreground: oklch(0.42 0.12 262);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.6271 0.1699 149.2138);
-  --success-foreground: oklch(1 0 0);
+  /* ── Ledger / paper palette. Заменяет generic Industrial-slate (v1): тёплая
+   * бумага вместо холодного белого, чернильно-чёрный primary вместо
+   * дефолтного SaaS-синего — под тематику TradeCRM/DEBTIFY (замена бумажной
+   * тетради учёта долгов). Elevation-лестница сохранена: sidebar < muted <
+   * canvas < card. */
+  --background: #fdfbf7;
+  --foreground: #1a1a1a;
+  --card: #fffefb;
+  --card-foreground: #1a1a1a;
+  --popover: #fffefb;
+  --popover-foreground: #1a1a1a;
+  --elevated: #f7f3ea;
+  --primary: #1a1a1a;
+  --primary-foreground: #fdfbf7;
+  --secondary: #efe9db;
+  --secondary-foreground: #2b2620;
+  --muted: #f3efe4;
+  --muted-foreground: #6b6255;
+  --accent: #efe9db;
+  --accent-foreground: #2b2620;
+  --destructive: #b33a3a;
+  --destructive-foreground: #fdfbf7;
+  --success: #059669;
+  --success-foreground: #fdfbf7;
   --warning: oklch(0.6658 0.1574 58.3183);
-  --warning-foreground: oklch(1 0 0);
-  --border: oklch(0.912 0.013 252);
-  --input: oklch(0.892 0.014 252);
-  --ring: oklch(0.48 0.15 261);
-  --chart-1: oklch(0.5598 0.1882 266.3996);
+  --warning-foreground: #fdfbf7;
+  --border: #e5e1d8;
+  --input: #ded7c7;
+  --ring: #1a1a1a;
+  --chart-1: #1a1a1a;
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
-  --chart-5: oklch(0.6056 0.2189 292.7172);
-  --sidebar: oklch(0.948 0.01 256);
-  --sidebar-foreground: oklch(0.32 0.035 260);
-  --sidebar-primary: oklch(0.48 0.15 261);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.924 0.022 258);
-  --sidebar-accent-foreground: oklch(0.42 0.13 262);
-  --sidebar-border: oklch(0.912 0.013 252);
-  --sidebar-ring: oklch(0.48 0.15 261);
-  --radius: 0.5rem;
+  --chart-5: #6b6255;
+  --sidebar: #f3efe4;
+  --sidebar-foreground: #2b2620;
+  --sidebar-primary: #1a1a1a;
+  --sidebar-primary-foreground: #fdfbf7;
+  --sidebar-accent: #e9e2d1;
+  --sidebar-accent-foreground: #2b2620;
+  --sidebar-border: #e5e1d8;
+  --sidebar-ring: #1a1a1a;
+  /* Красная вертикальная линия полей бухгалтерской книги — применяется в
+   * (crm)/layout.tsx на обёртке контента. */
+  --ledger-margin: #b33a3a;
+  --radius: 0.15rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 10px;
@@ -153,47 +163,47 @@ html {
 }
 
 .dark {
-  /* ── Dark surfaces: same elevation ladder, inverted.
-   * Lightness climbs with elevation: sidebar(desk) < canvas < muted < card < popover.
-   * Before, --card / --sidebar / --muted / --accent were all one value (0.2795). */
-  --background: oklch(0.205 0.035 265);
-  --foreground: oklch(0.984 0.003 248);
-  --card: oklch(0.258 0.035 262);
-  --card-foreground: oklch(0.984 0.003 248);
-  --popover: oklch(0.27 0.035 263);
-  --popover-foreground: oklch(0.984 0.003 248);
-  --elevated: oklch(0.305 0.035 262);
-  --primary: oklch(0.6231 0.188 259.8145);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.275 0.035 260);
-  --secondary-foreground: oklch(0.92 0.02 263);
-  --muted: oklch(0.235 0.033 263);
-  --muted-foreground: oklch(0.714 0.035 257);
-  --accent: oklch(0.305 0.038 262);
-  --accent-foreground: oklch(0.95 0.012 250);
-  --destructive: oklch(0.6368 0.2078 25.3313);
-  --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.7227 0.192 149.5793);
-  --success-foreground: oklch(0.205 0.035 265);
+  /* ── Dark ledger: тёмно-коричневая "ночная" бумага вместо холодного
+   * серо-синего v1. Elevation-лестница: sidebar < canvas < muted < card < popover. */
+  --background: #211b14;
+  --foreground: #f3efe4;
+  --card: #2a231a;
+  --card-foreground: #f3efe4;
+  --popover: #2f281e;
+  --popover-foreground: #f3efe4;
+  --elevated: #342c21;
+  --primary: #f3efe4;
+  --primary-foreground: #211b14;
+  --secondary: #342c21;
+  --secondary-foreground: #e5ddc9;
+  --muted: #2a231a;
+  --muted-foreground: #b3a892;
+  --accent: #342c21;
+  --accent-foreground: #f3efe4;
+  --destructive: #c9584f;
+  --destructive-foreground: #211b14;
+  --success: #2fb589;
+  --success-foreground: #211b14;
   --warning: oklch(0.8369 0.1644 84.4286);
-  --warning-foreground: oklch(0.205 0.035 265);
-  --border: oklch(0.315 0.028 262);
-  --input: oklch(0.36 0.03 260);
-  --ring: oklch(0.6231 0.188 259.8145);
-  --chart-1: oklch(0.6231 0.188 259.8145);
+  --warning-foreground: #211b14;
+  --border: #3d3527;
+  --input: #453c2c;
+  --ring: #f3efe4;
+  --chart-1: #f3efe4;
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
-  --chart-5: oklch(0.7093 0.1589 293.5412);
-  --sidebar: oklch(0.185 0.032 266);
-  --sidebar-foreground: oklch(0.9 0.02 250);
-  --sidebar-primary: oklch(0.6231 0.188 259.8145);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.305 0.05 262);
-  --sidebar-accent-foreground: oklch(0.96 0.01 250);
-  --sidebar-border: oklch(0.3 0.028 262);
-  --sidebar-ring: oklch(0.6231 0.188 259.8145);
-  --radius: 0.5rem;
+  --chart-5: #b3a892;
+  --sidebar: #1b1610;
+  --sidebar-foreground: #e5ddc9;
+  --sidebar-primary: #f3efe4;
+  --sidebar-primary-foreground: #211b14;
+  --sidebar-accent: #342c21;
+  --sidebar-accent-foreground: #f3efe4;
+  --sidebar-border: #3d3527;
+  --sidebar-ring: #f3efe4;
+  --ledger-margin: #c9584f;
+  --radius: 0.15rem;
   --shadow-x: 0px;
   --shadow-y: 10px;
   --shadow-blur: 15px;
@@ -291,6 +301,14 @@ html {
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+  }
+
+  /* Заголовки страниц отдельной гарнитурой (--font-heading) — один раз здесь,
+     PageHeader.tsx везде использует <h1>, править по компонентам не нужно. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
   }
 
   /*

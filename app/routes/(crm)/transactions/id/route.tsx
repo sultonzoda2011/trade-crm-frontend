@@ -168,7 +168,7 @@ export default function TransactionDetailPage() {
             }>
             <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
               <table className="w-full text-left text-sm">
-                <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs uppercase">
+                <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
                   <tr>
                     <th className="px-2.5 py-1.5">{t('fields.product')}</th>
                     <th className="px-2.5 py-1.5 text-right">{t('fields.price')}</th>
@@ -214,7 +214,7 @@ export default function TransactionDetailPage() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium uppercase">
+                      className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium">
                       {t('fields.totalPrice')}
                     </td>
                     <td className="px-2.5 py-2 text-right font-mono text-sm font-semibold">
@@ -235,7 +235,7 @@ export default function TransactionDetailPage() {
               {hasPayments ? (
                 <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
                   <table className="w-full text-left text-sm">
-                    <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs uppercase">
+                    <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
                       <tr>
                         <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
                         <th className="px-2.5 py-1.5">{t('fields.note')}</th>

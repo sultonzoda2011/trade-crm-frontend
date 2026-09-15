@@ -5,8 +5,8 @@ export function FormSection({ icon: Icon, title, children }: { icon: LucideIcon;
   return (
     <section className="space-y-4">
       <div className="flex items-center gap-2.5">
-        <div className="bg-muted text-muted-foreground flex h-9 w-9 items-center justify-center rounded-lg">
-          <Icon className="h-4.5 w-4.5" />
+        <div className="bg-muted text-muted-foreground flex size-9 items-center justify-center rounded-lg">
+          <Icon className="size-4.5" />
         </div>
         <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
       </div>

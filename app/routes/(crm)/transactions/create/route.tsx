@@ -263,7 +263,7 @@ export default function CreateTransactionPage() {
                 size="sm"
                 className="gap-1 text-xs"
                 onClick={() => append({ productId: '', quantity: 1, discount: 0, markup: 0 })}>
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="size-3.5" />
                 {t('fields.addItem')}
               </Button>
             }
@@ -333,10 +333,10 @@ export default function CreateTransactionPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="text-destructive hover:bg-destructive/10 h-8 w-8"
+                          className="text-destructive hover:bg-destructive/10 size-8"
                           disabled={fields.length === 1}
                           onClick={() => remove(index)}>
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="size-4" />
                         </Button>
                       </div>
                     </div>
@@ -344,13 +344,13 @@ export default function CreateTransactionPage() {
                     {product && (
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
                         <div className="flex items-center gap-2">
-                          <Package className="text-muted-foreground h-3.5 w-3.5" />
+                          <Package className="text-muted-foreground size-3.5" />
                           <span className={overStock ? 'text-destructive font-medium' : 'text-muted-foreground'}>
                             {t('inStock')}: {product.quantity}
                           </span>
                           {overStock && (
                             <span className="text-destructive flex items-center gap-1 font-medium">
-                              <AlertTriangle className="h-3.5 w-3.5" />
+                              <AlertTriangle className="size-3.5" />
                               {t('stockError')}
                             </span>
                           )}
@@ -374,14 +374,14 @@ export default function CreateTransactionPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ShoppingCart className="h-3.5 w-3.5" />
+                  <ShoppingCart className="size-3.5" />
                   {t('fields.totalAmount')}
                 </span>
                 <span className="font-mono font-semibold">{fmtTJS(calculatedTotal)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Tag className="h-3.5 w-3.5" />
+                  <Tag className="size-3.5" />
                   {t('fields.discount')}
                 </span>
                 {totalDiscount > 0 && <span className="font-mono font-semibold">− {fmtTJS(totalDiscount)}</span>}
@@ -389,7 +389,7 @@ export default function CreateTransactionPage() {
               {totalMarkup > 0 && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-1.5">
-                    <Tag className="h-3.5 w-3.5" />
+                    <Tag className="size-3.5" />
                     {t('fields.markup')}
                   </span>
                   <span className="font-mono font-semibold">+ {fmtTJS(totalMarkup)}</span>
@@ -397,7 +397,7 @@ export default function CreateTransactionPage() {
               )}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Wallet className="h-3.5 w-3.5" />
+                  <Wallet className="size-3.5" />
                   {t('fields.credited')}
                 </span>
                 <span className="text-success font-mono font-semibold">
@@ -406,7 +406,7 @@ export default function CreateTransactionPage() {
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Banknote className="h-3.5 w-3.5" />
+                  <Banknote className="size-3.5" />
                   {t('fields.remainingAmount')}
                 </span>
                 <span className="text-warning font-mono font-semibold">
@@ -421,7 +421,7 @@ export default function CreateTransactionPage() {
                 <Badge
                   variant="outline"
                   className="border-destructive/40 bg-destructive/10 text-destructive w-full justify-center gap-1.5 py-1.5">
-                  <AlertTriangle className="h-3.5 w-3.5" />
+                  <AlertTriangle className="size-3.5" />
                   {t('stockError')}
                 </Badge>
               )}

@@ -19,20 +19,20 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   return (
     <RowActionsCell>
       <IconActionButton
-        icon={<Eye className="h-4 w-4" />}
+        icon={<Eye className="size-4" />}
         label={t('actions.view')}
         render={<Link to={`/debtors/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
       />
       {can(Action.DEBTORS_EDIT) && (
         <IconActionButton
-          icon={<Pencil className="h-4 w-4" />}
+          icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
           onClick={() => editModal.open(row)}
         />
       )}
       {can(Action.DEBTORS_DELETE) && (
         <IconActionButton
-          icon={<Trash2 className="h-4 w-4" />}
+          icon={<Trash2 className="size-4" />}
           label={t('actions.delete')}
           danger
           onClick={() => deleteModal.open(row.id)}

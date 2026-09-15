@@ -34,7 +34,7 @@ export function DebtorRiskBadge({ risk, factors, className }: DebtorRiskBadgePro
 
   const badge = (
     <Badge variant="outline" className={cn('gap-1', DEBTOR_RISK_BADGE[risk], className)}>
-      <Icon className="h-3.5 w-3.5" />
+      <Icon className="size-3.5" />
       {t(`risk.${risk}`)}
     </Badge>
   );

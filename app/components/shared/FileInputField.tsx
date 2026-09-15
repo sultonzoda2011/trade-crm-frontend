@@ -116,7 +116,7 @@ export function FileInputField({
           onClick={() => !value && inputRef.current?.click()}>
           {value ? (
             <>
-              <FileIcon className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+              <FileIcon className="text-muted-foreground size-3.5 shrink-0" />
               <span className="text-foreground min-w-0 flex-1 truncate">{fileName}</span>
               <button
                 type="button"
@@ -125,12 +125,12 @@ export function FileInputField({
                   onChange(null);
                 }}
                 className="text-muted-foreground hover:text-foreground shrink-0 transition-colors">
-                <X className="h-3.5 w-3.5" />
+                <X className="size-3.5" />
               </button>
             </>
           ) : (
             <>
-              <Paperclip className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+              <Paperclip className="text-muted-foreground size-3.5 shrink-0" />
               <span className="text-muted-foreground">{t('fileInput.selectFile')}</span>
             </>
           )}
@@ -144,7 +144,7 @@ export function FileInputField({
                 <img src={previewUrl!} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center gap-2 p-4">
-                  <FileIcon className="text-muted-foreground h-10 w-10" />
+                  <FileIcon className="text-muted-foreground size-10" />
                   {fileName && size !== 'compact' && (
                     <span className="text-muted-foreground max-w-[80%] truncate text-sm">{fileName}</span>
                   )}
@@ -157,17 +157,17 @@ export function FileInputField({
                       type="button"
                       size="icon"
                       variant="secondary"
-                      className="h-7 w-7 shadow-md"
+                      className="size-7 shadow-md"
                       onClick={() => inputRef.current?.click()}>
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="size-3.5" />
                     </Button>
                     <Button
                       type="button"
                       size="icon"
                       variant="destructive"
-                      className="h-7 w-7 shadow-md"
+                      className="size-7 shadow-md"
                       onClick={() => onChange(null)}>
-                      <X className="h-3.5 w-3.5" />
+                      <X className="size-3.5" />
                     </Button>
                   </>
                 ) : (
@@ -178,7 +178,7 @@ export function FileInputField({
                       variant="secondary"
                       className="gap-1.5 shadow-md"
                       onClick={() => inputRef.current?.click()}>
-                      <Pencil className="h-3.5 w-3.5" />
+                      <Pencil className="size-3.5" />
                       {t('fileInput.change')}
                     </Button>
                     <Button
@@ -187,7 +187,7 @@ export function FileInputField({
                       variant="destructive"
                       className="gap-1.5 shadow-md"
                       onClick={() => onChange(null)}>
-                      <X className="h-3.5 w-3.5" />
+                      <X className="size-3.5" />
                       {t('fileInput.delete')}
                     </Button>
                   </>
@@ -213,9 +213,9 @@ export function FileInputField({
               )}>
               <div className={cn('bg-background rounded-full border shadow-sm', size === 'compact' ? 'p-2' : 'p-3')}>
                 {acceptsImages(accept) ? (
-                  <ImageIcon className={size === 'compact' ? 'h-4 w-4' : 'h-5 w-5'} />
+                  <ImageIcon className={size === 'compact' ? 'size-4' : 'size-5'} />
                 ) : (
-                  <Upload className={size === 'compact' ? 'h-4 w-4' : 'h-5 w-5'} />
+                  <Upload className={size === 'compact' ? 'size-4' : 'size-5'} />
                 )}
               </div>
               {size !== 'compact' && (

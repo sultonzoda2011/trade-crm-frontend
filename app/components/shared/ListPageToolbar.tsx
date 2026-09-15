@@ -28,7 +28,7 @@ export function ListPageToolbar({
             className="w-full sm:max-w-96"
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}
-            startIcon={<Search className="text-muted-foreground h-4 w-4" />}
+            startIcon={<Search className="text-muted-foreground size-4" />}
           />
           {/* Было overflow-x-auto — на узких экранах кнопки/бейдж фильтра
              утыкались друг в друга в одну нескролящуюся на вид строку.

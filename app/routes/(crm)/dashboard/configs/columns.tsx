@@ -60,14 +60,14 @@ function SellerActionsCell({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8"
+              className="size-8"
               render={
                 <Link
                   to={`/sellers/${row.seller.id}`}
                   state={{ fromPath: location.pathname, fromName: t('usersReport') }}
                 />
               }>
-              <Eye className="h-4 w-4" />
+              <Eye className="size-4" />
             </Button>
           }
         />

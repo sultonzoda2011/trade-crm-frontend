@@ -1,7 +1,6 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Badge } from '~/components/ui/badge';
 import { cn } from '~/lib/utils';
 
 interface StatCardProps {
@@ -75,17 +74,23 @@ export function StatCard({
 
         <span
           className={cn(
-            'text-muted-foreground w-full truncate text-center font-medium tracking-wider uppercase',
+            'text-muted-foreground w-full truncate text-center font-medium',
             size === 'md' ? 'text-xs' : 'text-2xs'
           )}>
           {label}
         </span>
 
-        <Badge
-          variant="secondary"
-          className={cn('max-w-full font-mono', size === 'md' ? 'text-lg' : 'text-base', valueClassName)}>
-          <span className="truncate">{value}</span>
-        </Badge>
+        {/* Раньше значение лежало в <Badge> — пилюля вокруг цифры без
+            функционального смысла (не статус, просто число). Убрано в пользу
+            обычного крупного текста. */}
+        <span
+          className={cn(
+            'max-w-full truncate font-mono font-semibold',
+            size === 'md' ? 'text-lg' : 'text-base',
+            valueClassName
+          )}>
+          {value}
+        </span>
       </>
     ) : (
       <>

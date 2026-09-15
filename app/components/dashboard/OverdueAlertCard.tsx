@@ -34,13 +34,13 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
         <div className="flex min-w-0 items-center gap-2">
           <div
             className={cn(
-              'flex h-7 w-7 shrink-0 items-center justify-center rounded-md',
+              'flex size-7 shrink-0 items-center justify-center rounded-md',
               hasOverdue ? 'bg-destructive/10' : 'bg-muted'
             )}>
             {hasOverdue ? (
-              <AlertCircle className="text-destructive h-4 w-4" />
+              <AlertCircle className="text-destructive size-4" />
             ) : (
-              <Wallet className="text-muted-foreground h-4 w-4" />
+              <Wallet className="text-muted-foreground size-4" />
             )}
           </div>
           <h3 className={cn('truncate text-sm font-semibold', hasOverdue ? 'text-destructive' : undefined)}>
@@ -61,7 +61,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
           )}>
           <span className="flex min-w-0 items-center gap-2">
             <AlertCircle
-              className={cn('h-3.5 w-3.5 shrink-0', hasOverdue ? 'text-destructive' : 'text-muted-foreground')}
+              className={cn('size-3.5 shrink-0', hasOverdue ? 'text-destructive' : 'text-muted-foreground')}
             />
             <span className="min-w-0 truncate text-sm">{t('debts.overdue', { count: debts.overdueCount })}</span>
           </span>
@@ -78,7 +78,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
           to="/transactions?debtStatus=DUE_SOON"
           className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-md px-2.5 py-2 transition-colors">
           <span className="flex min-w-0 items-center gap-2">
-            <Clock className="text-muted-foreground h-3.5 w-3.5 shrink-0" />
+            <Clock className="text-muted-foreground size-3.5 shrink-0" />
             <span className="min-w-0 truncate text-sm">{t('debts.dueSoon', { count: debts.dueSoonCount })}</span>
           </span>
           <span
@@ -106,7 +106,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
       </div>
 
       <Button variant="ghost" size="sm" className="w-full gap-1 text-xs" render={<Link to="/debtors?risk=HIGH" />}>
-        {t('debts.whoToCall')} <ChevronRight className="h-3.5 w-3.5" />
+        {t('debts.whoToCall')} <ChevronRight className="size-3.5" />
       </Button>
     </Panel>
   );

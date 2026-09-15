@@ -212,7 +212,7 @@ export function RefundTransactionModal() {
 
           <div className="hidden overflow-x-auto rounded-lg border md:block">
             <table className="w-full text-left text-sm">
-              <thead className="text-muted-foreground bg-sidebar border-b text-xs uppercase">
+              <thead className="text-muted-foreground bg-sidebar border-b text-xs">
                 <tr>
                   <th className="px-2.5 py-1.5">{t('refundModal.columns.product')}</th>
                   <th className="px-2.5 py-1.5 text-center">{t('refundModal.columns.sold')}</th>

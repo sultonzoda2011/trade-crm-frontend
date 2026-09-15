@@ -30,7 +30,9 @@ export default function CrmLayout() {
       <div className="m-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
         <Header />
         <ScrollArea className="bg-background min-h-0 flex-1">
-          <div className="p-3 md:p-6">
+          {/* Красная линия полей бухгалтерской книги — одна общая обёртка,
+              применяется сразу ко всем страницам (crm), без правок по каждой. */}
+          <div className="border-(--ledger-margin) p-3 md:p-6" style={{ borderLeftWidth: 2 }}>
             <Outlet />
           </div>
         </ScrollArea>

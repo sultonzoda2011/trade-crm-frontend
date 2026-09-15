@@ -39,8 +39,8 @@ export function AppSidebar() {
 
           {/* Small logo */}
           <div className="hidden items-center justify-center group-data-[collapsible=icon]:flex">
-            <img src={lightFavicon} className="h-8 w-8 object-contain dark:hidden" alt="Trade CRM" />
-            <img src={darkFavicon} className="hidden h-8 w-8 object-contain dark:block" alt="Trade CRM" />
+            <img src={lightFavicon} className="size-8 object-contain dark:hidden" alt="Trade CRM" />
+            <img src={darkFavicon} className="hidden size-8 object-contain dark:block" alt="Trade CRM" />
           </div>
         </div>
       </SidebarHeader>

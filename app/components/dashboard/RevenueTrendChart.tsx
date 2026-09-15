@@ -85,7 +85,7 @@ export function RevenueTrendChart({ data }: RevenueTrendChartProps) {
                     <div className="flex w-full items-center justify-between gap-4">
                       <span className="text-muted-foreground flex items-center gap-1.5">
                         <span
-                          className="h-2 w-2 shrink-0 rounded-xs"
+                          className="size-2 shrink-0 rounded-xs"
                           style={{ backgroundColor: item.color ?? item.payload?.fill }}
                         />
                         {chartConfig[key as keyof typeof chartConfig]?.label ?? name}

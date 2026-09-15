@@ -32,7 +32,7 @@ export default function DashboardProductsPage() {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
         <div className="text-center">
-          <AlertTriangle className="text-destructive mx-auto mb-3 h-8 w-8" />
+          <AlertTriangle className="text-destructive mx-auto mb-3 size-8" />
           <p className="font-medium">{t('loadError')}</p>
         </div>
       </div>

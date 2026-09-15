@@ -31,7 +31,7 @@ export function MetricCard({
   const body = (
     <div className="flex h-full min-h-[clamp(112px,9vw,144px)] flex-col">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-muted-foreground min-w-0 truncate text-xs font-medium tracking-wide uppercase">{label}</p>
+        <p className="text-muted-foreground min-w-0 truncate text-xs font-medium">{label}</p>
 
         <Icon className="text-muted-foreground size-4 shrink-0" />
       </div>

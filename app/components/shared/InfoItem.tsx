@@ -20,7 +20,7 @@ import { cn } from '~/lib/utils';
 export function InfoItem({ label, value, className }: { label: string; value: ReactNode; className?: string }) {
   return (
     <div className={cn('min-w-0 space-y-1.5', className)}>
-      <p className="text-muted-foreground truncate text-xs font-medium tracking-wider uppercase">{label}</p>
+      <p className="text-muted-foreground truncate text-xs font-medium">{label}</p>
       <div className="min-w-0 text-sm font-semibold [overflow-wrap:anywhere]">{value}</div>
     </div>
   );

@@ -22,7 +22,7 @@ function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) 
     <RowActionsCell>
       {can(Action.TRANSACTIONS_EDIT) && (
         <IconActionButton
-          icon={<CreditCard className="h-3.5 w-3.5" />}
+          icon={<CreditCard className="size-3.5" />}
           label={t('pay')}
           outline
           disabled={row.remainingAmount <= 0}
@@ -30,13 +30,13 @@ function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) 
         />
       )}
       <IconActionButton
-        icon={<Eye className="h-4 w-4" />}
+        icon={<Eye className="size-4" />}
         label={t('actions.view', { ns: 'common' })}
         render={<Link to={`/transactions/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
       />
       {can(Action.TRANSACTIONS_DELETE) && (
         <IconActionButton
-          icon={<Trash2 className="h-4 w-4" />}
+          icon={<Trash2 className="size-4" />}
           label={t('actions.delete', { ns: 'common' })}
           danger
           onClick={() => deleteModal.open(row.id)}

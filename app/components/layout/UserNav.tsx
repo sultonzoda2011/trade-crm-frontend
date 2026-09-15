@@ -76,7 +76,7 @@ export function UserNav() {
         render={
           <button className="hover:bg-accent hover:text-accent-foreground hover:border-border group flex h-9 items-center gap-2 rounded-lg border border-transparent px-1.5 transition-all outline-none sm:px-2" />
         }>
-        <Avatar className="h-8 w-8 border">
+        <Avatar className="size-8 border">
           {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
 
           <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
@@ -88,7 +88,7 @@ export function UserNav() {
           <span className="text-muted-foreground text-2xs mt-1 leading-none">{roleLabel}</span>
         </div>
 
-        <ChevronDown className="text-muted-foreground hidden h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
+        <ChevronDown className="text-muted-foreground hidden size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64 overflow-hidden p-0" sideOffset={8}>
@@ -96,7 +96,7 @@ export function UserNav() {
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 border-2">
+                <Avatar className="size-12 border-2">
                   {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
 
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
@@ -124,7 +124,7 @@ export function UserNav() {
             }}
             closeOnClick={false}
             className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
-            <User className="text-muted-foreground mr-2 h-4 w-4" />
+            <User className="text-muted-foreground mr-2 size-4" />
 
             <span className="text-sm">{tc('header.profile')}</span>
           </DropdownMenuItem>
@@ -134,9 +134,9 @@ export function UserNav() {
             onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
             className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
             {currentTheme === 'dark' ? (
-              <Sun className="text-muted-foreground mr-2 h-4 w-4" />
+              <Sun className="text-muted-foreground mr-2 size-4" />
             ) : (
-              <Moon className="text-muted-foreground mr-2 h-4 w-4" />
+              <Moon className="text-muted-foreground mr-2 size-4" />
             )}
 
             <span className="text-sm">{tc('header.theme')}</span>
@@ -147,7 +147,7 @@ export function UserNav() {
             closeOnClick={false}
             onClick={changeLanguage}
             className="focus:bg-primary/5 cursor-pointer rounded-md px-3 py-2">
-            <Languages className="text-muted-foreground mr-2 h-4 w-4" />
+            <Languages className="text-muted-foreground mr-2 size-4" />
 
             <span className="flex-1 text-sm">{tc('header.language')}</span>
 
@@ -161,7 +161,7 @@ export function UserNav() {
           <DropdownMenuItem
             onClick={handleLogout}
             className="text-destructive focus:text-destructive focus:bg-destructive/5 cursor-pointer rounded-md px-3 py-2">
-            <LogOut className="mr-2 h-4 w-4" />
+            <LogOut className="mr-2 size-4" />
 
             <span className="text-sm font-medium">{t('logout')}</span>
           </DropdownMenuItem>

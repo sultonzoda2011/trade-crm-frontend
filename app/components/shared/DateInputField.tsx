@@ -148,11 +148,11 @@ export function DateInputField({
             type="button"
             onClick={handleClear}
             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-7 -translate-y-1/2 transition-colors">
-            <X className="h-3.5 w-3.5" />
+            <X className="size-3.5" />
           </button>
         )}
 
-        <CalendarIcon className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 h-3.5 w-3.5 -translate-y-1/2" />
+        <CalendarIcon className="text-muted-foreground pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2" />
       </div>
 
       {error && <p className="text-destructive text-sm">{error}</p>}

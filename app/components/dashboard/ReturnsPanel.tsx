@@ -58,7 +58,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
       {returns.topProducts.length > 0 && (
         <div className="border-border min-h-0 border-t pt-4">
           <p className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold">
-            <Undo2 className="h-3.5 w-3.5 shrink-0" />
+            <Undo2 className="size-3.5 shrink-0" />
             <span>{t('returns.topProducts')}</span>
           </p>
 

@@ -47,7 +47,7 @@ export function LanguageSwitcher() {
 
   return (
     <Button type="button" variant="outline" size="icon" onClick={handleChange} aria-label="Change language">
-      <img src={currentLanguageItem.icon} alt={currentLanguageItem.value} className="h-6 w-6 rounded-sm object-cover" />
+      <img src={currentLanguageItem.icon} alt={currentLanguageItem.value} className="size-6 rounded-sm object-cover" />
     </Button>
   );
 }

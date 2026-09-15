@@ -75,7 +75,7 @@ export function EntityMobileCard({
         {!image && (
           <FallbackIcon
             strokeWidth={1.25}
-            className="text-primary/30 pointer-events-none absolute -top-2 -right-2 h-24 w-24 rotate-12"
+            className="text-primary/30 pointer-events-none absolute -top-2 -right-2 size-24 rotate-12"
           />
         )}
         {image && <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-transparent" />}

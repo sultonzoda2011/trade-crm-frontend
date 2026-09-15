@@ -217,7 +217,7 @@ export function DataTable<TData>({
             ))
           ) : isError ? (
             <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
-              <AlertCircle className="text-destructive h-8 w-8" />
+              <AlertCircle className="text-destructive size-8" />
               <p className="text-sm">{t('table.error')}</p>
             </div>
           ) : table.getRowModel().rows.length === 0 ? (
@@ -404,7 +404,7 @@ export function DataTable<TData>({
                               'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
                           )}>
                           {isLastPinned ? (
-                            <Skeleton className="mx-auto h-7 w-7 rounded-md" />
+                            <Skeleton className="mx-auto size-7 rounded-md" />
                           ) : (
                             <Skeleton className={cn('h-4', widths[(rowIndex * 3 + colIndex) % widths.length])} />
                           )}
@@ -417,7 +417,7 @@ export function DataTable<TData>({
                 <TableRow>
                   <TableCell colSpan={visibleColumns.length}>
                     <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
-                      <AlertCircle className="text-destructive h-8 w-8" />
+                      <AlertCircle className="text-destructive size-8" />
                       <p className="text-sm">{t('table.error')}</p>
                     </div>
                   </TableCell>

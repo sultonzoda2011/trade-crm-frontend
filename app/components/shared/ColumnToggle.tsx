@@ -45,7 +45,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
       />
       <DropdownMenuContent align="end" className="w-72 p-0">
         <div className="flex items-center justify-between gap-2 px-3 py-2.5">
-          <span className="text-muted-foreground text-2xs min-w-0 truncate font-semibold tracking-wider uppercase">
+          <span className="text-muted-foreground text-2xs min-w-0 truncate font-semibold">
             {t('table.columnVisibility')}
           </span>
           <div className="bg-muted/50 flex shrink-0 items-center gap-0.5 rounded-lg p-0.5">
@@ -55,7 +55,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="text-success hover:bg-success/10 h-6 w-6"
+                    className="text-success hover:bg-success/10 size-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       table.toggleAllColumnsVisible(true);
@@ -73,7 +73,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="text-destructive hover:bg-destructive/10 h-6 w-6"
+                    className="text-destructive hover:bg-destructive/10 size-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       table.toggleAllColumnsVisible(false);
@@ -91,7 +91,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="text-primary hover:bg-primary/10 h-6 w-6"
+                    className="text-primary hover:bg-primary/10 size-6"
                     onClick={(e) => {
                       e.stopPropagation();
                       table.resetColumnVisibility();

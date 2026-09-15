@@ -60,7 +60,7 @@ export default function Header() {
                 size="icon"
                 aria-label={t('navigation.guide')}
                 onClick={() => navigate('/guide')}>
-                <HelpCircle className="h-4 w-4" />
+                <HelpCircle className="size-4" />
               </Button>
             }
           />

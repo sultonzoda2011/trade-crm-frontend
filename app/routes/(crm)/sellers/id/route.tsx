@@ -157,7 +157,7 @@ export default function SellerDetailPage() {
             actions={
               can(Action.SELLERS_EDIT) && balance && balance.balance > 0 ? (
                 <Button size="sm" className="gap-1.5 text-xs" onClick={() => payoutModal.open(seller)}>
-                  <Wallet className="h-3.5 w-3.5" />
+                  <Wallet className="size-3.5" />
                   {t('payout')}
                 </Button>
               ) : undefined
@@ -186,7 +186,7 @@ export default function SellerDetailPage() {
                 {credits.length > 0 && (
                   <div className="border-t pt-3">
                     <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-medium">
-                      <Coins className="h-3.5 w-3.5" />
+                      <Coins className="size-3.5" />
                       {t('creditsHistory')}
                     </p>
                     {isCreditsLoading ? (

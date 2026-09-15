@@ -37,7 +37,7 @@ export function ComparisonIndicator({ comparison, invert, className }: Compariso
   if (changePercent === 0) {
     return (
       <span className={cn('text-muted-foreground inline-flex items-center gap-1 text-xs', className)}>
-        <Minus className="h-3 w-3" />
+        <Minus className="size-3" />
         {t('comparison.unchanged')}
       </span>
     );
@@ -54,7 +54,7 @@ export function ComparisonIndicator({ comparison, invert, className }: Compariso
         isGood ? 'text-success' : 'text-destructive',
         className
       )}>
-      <Icon className="h-3 w-3" />
+      <Icon className="size-3" />
       {isUp ? '+' : ''}
       {changePercent}%
       <span className="text-muted-foreground font-normal">{t('comparison.vsPrevious')}</span>

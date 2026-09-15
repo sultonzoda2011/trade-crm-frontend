@@ -113,11 +113,11 @@ export default function LoginPage() {
         {/* Ambient brand depth so the panel isn't a flat black slab */}
         <div
           aria-hidden
-          className="bg-primary/25 pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full blur-[120px]"
+          className="bg-primary/25 pointer-events-none absolute -top-24 -left-24 size-96 rounded-full blur-[120px]"
         />
         <div
           aria-hidden
-          className="bg-primary/20 pointer-events-none absolute -right-20 -bottom-16 h-80 w-80 rounded-full blur-[120px]"
+          className="bg-primary/20 pointer-events-none absolute -right-20 -bottom-16 size-80 rounded-full blur-[120px]"
         />
 
         <div className="relative flex items-center">
@@ -143,11 +143,11 @@ export default function LoginPage() {
         {/* Ambient brand glow — тонко в светлой теме, насыщеннее в тёмной; за непрозрачной карточкой */}
         <div
           aria-hidden
-          className="bg-primary/10 dark:bg-primary/20 pointer-events-none absolute -top-32 right-0 h-96 w-96 rounded-full blur-[130px]"
+          className="bg-primary/10 dark:bg-primary/20 pointer-events-none absolute -top-32 right-0 size-96 rounded-full blur-[130px]"
         />
         <div
           aria-hidden
-          className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 h-80 w-80 rounded-full blur-[130px]"
+          className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full blur-[130px]"
         />
 
         <div className="relative flex flex-1 items-center justify-center px-4 py-6 sm:px-8">
@@ -188,9 +188,9 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   endIcon={
                     showPassword ? (
-                      <EyeOff className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
+                      <EyeOff className="size-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
                     ) : (
-                      <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
+                      <Eye className="size-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
                     )
                   }
                 />
@@ -215,7 +215,7 @@ export default function LoginPage() {
               </div>
 
               <Button type="button" variant="outline" size="lg" className="w-full gap-2 text-sm font-medium">
-                <GoogleIcon className="h-4 w-4" />
+                <GoogleIcon className="size-4" />
                 {t('continueWithGoogle')}
               </Button>
             </div>

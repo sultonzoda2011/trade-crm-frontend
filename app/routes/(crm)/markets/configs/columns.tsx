@@ -20,7 +20,7 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   return (
     <RowActionsCell>
       <IconActionButton
-        icon={<Eye className="h-4 w-4" />}
+        icon={<Eye className="size-4" />}
         label={t('actions.view')}
         render={
           <Link
@@ -31,14 +31,14 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
       />
       {can(Action.MARKETS_EDIT) && (
         <IconActionButton
-          icon={<Pencil className="h-4 w-4" />}
+          icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
           onClick={() => editModal.open(row)}
         />
       )}
       {can(Action.MARKETS_DELETE) && (
         <IconActionButton
-          icon={<Trash2 className="h-4 w-4" />}
+          icon={<Trash2 className="size-4" />}
           label={t('actions.delete')}
           danger
           onClick={() => deleteModal.open(row.id)}

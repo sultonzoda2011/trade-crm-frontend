@@ -52,7 +52,7 @@ export default function DashboardOverviewPage() {
     return (
       <div className="flex flex-1 items-center justify-center py-16">
         <div className="text-center">
-          <AlertTriangle className="text-destructive mx-auto mb-3 h-8 w-8" />
+          <AlertTriangle className="text-destructive mx-auto mb-3 size-8" />
           <p className="font-medium">{t('loadError')}</p>
         </div>
       </div>
@@ -175,7 +175,7 @@ export default function DashboardOverviewPage() {
             /* ADMIN без своего рынка видит сводку по всем рынкам, поэтому
                ссылка на управление рынками имеет смысл только здесь. */
             <Button variant="ghost" size="sm" className="gap-1 text-xs" render={<Link to="/markets" />}>
-              {t('allMarkets')} <ArrowRight className="h-3.5 w-3.5" />
+              {t('allMarkets')} <ArrowRight className="size-3.5" />
             </Button>
           )}
         </Panel>

@@ -35,8 +35,8 @@ export default function ErrorPage({
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center">
-      <div className={cn('flex h-16 w-16 items-center justify-center rounded-2xl', wrapperClass)}>
-        <Icon className={cn('h-8 w-8', iconClass)} />
+      <div className={cn('flex size-16 items-center justify-center rounded-2xl', wrapperClass)}>
+        <Icon className={cn('size-8', iconClass)} />
       </div>
       <div className="space-y-2">
         <p className="text-5xl font-bold tracking-tight">{code}</p>

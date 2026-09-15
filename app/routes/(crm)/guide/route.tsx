@@ -119,7 +119,7 @@ export default function GuidePage() {
 
   const toc = (
     <nav className="space-y-1">
-      <p className="text-muted-foreground px-2 pb-1 text-xs font-medium tracking-wide uppercase">
+      <p className="text-muted-foreground px-2 pb-1 text-xs font-medium">
         {t('tocTitle')}
       </p>
       {sections.map((s) => {

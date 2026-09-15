@@ -125,11 +125,11 @@ export function CreateUserModal() {
               endIcon={
                 showPassword ? (
                   <EyeOff
-                    className="h-4 w-4 cursor-pointer bg-transparent"
+                    className="size-4 cursor-pointer bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
                   />
                 ) : (
-                  <Eye className="h-4 w-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
+                  <Eye className="size-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
                 )
               }
               label={t('fields.password')}
