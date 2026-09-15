@@ -18,10 +18,10 @@ import textInRightLight from '/text-in-right-logo-light.png';
 import { Link } from 'react-router'
 
 export function AppSidebar() {
-  const { can } = useCan();
+  const { can, user } = useCan();
   const { t } = useTranslation();
 
-  const navConfig = useMemo(() => getSidebarConfig(t), [t]);
+  const navConfig = useMemo(() => getSidebarConfig(t, user?.marketId), [t, user?.marketId]);
   const visibleItems = useMemo(
     () => getVisibleNavigation(navConfig, can),
     [navConfig, can]

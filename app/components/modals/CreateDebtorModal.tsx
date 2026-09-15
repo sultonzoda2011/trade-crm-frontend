@@ -52,7 +52,7 @@ export function CreateDebtorModal() {
           </Button>
         </div>
       }>
-      <form id="create-debtor-form" onSubmit={handleSubmit(onSubmit)}>
+      <form id="create-debtor-form" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
         <FormInput
           control={control}
           name="name"

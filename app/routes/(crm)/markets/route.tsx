@@ -19,7 +19,6 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
-import { getClientUser } from '~/lib/auth-utils';
 import { getColumns } from '~/routes/(crm)/markets/configs/columns';
 import { getMarketFilters } from '~/routes/(crm)/markets/configs/filters';
 import { useMarketsModals, useMarketsStore } from '~/routes/(crm)/markets/store';
@@ -115,18 +114,10 @@ export default function MarketsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        // Тот же выбор адреса, что и у кнопки «Просмотр» в колонке действий:
-        // свой рынок открываем через /my-market (свои права и виджеты), чужой —
-        // через /markets/:id. Расходиться этим двум путям нельзя, иначе тап по
-        // карточке и тап по ⋮ → «Просмотр» ведут в разные места.
-        getRowLink={(row) =>
-          getClientUser()?.marketId === row.original.id
-            ? { to: '/my-market' }
-            : {
-                to: `/markets/${row.original.id}`,
-                state: { fromPath: location.pathname, fromName: t('title') },
-              }
-        }
+        getRowLink={(row) => ({
+          to: `/markets/${row.original.id}`,
+          state: { fromPath: location.pathname, fromName: t('title') },
+        })}
         mobileFields={{
           'count.products': 'primary',
           'count.debtors': 'primary',

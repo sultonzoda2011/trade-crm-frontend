@@ -25,7 +25,7 @@ export function FormInput<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <div className={cn('space-y-1.5', className)}>
+        <div className={cn('space-y-1.5 px-1', className)}>
           {label && (
             <Label htmlFor={name}>
               {label}

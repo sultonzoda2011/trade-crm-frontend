@@ -14,7 +14,7 @@ export interface NavItem {
   comingSoon?: boolean;
 }
 
-export const getSidebarConfig = (t: TFunction): NavItem[] => [
+export const getSidebarConfig = (t: TFunction, marketId?: string): NavItem[] => [
   {
     title: t('navigation.dashboard'),
     url: '/dashboard',
@@ -35,12 +35,9 @@ export const getSidebarConfig = (t: TFunction): NavItem[] => [
   },
   {
     title: t('navigation.myMarket'),
-    url: '/my-market',
+    url: marketId ? `/markets/${marketId}` : '/markets',
     icon: Building2,
-    // Гейтим по роли, а не по MARKETS_VIEW_BY_ID: это действие разрешено
-    // ADMIN+OWNER, а сам роут /my-market — только OWNER (ROUTE_PERMISSIONS),
-    // поэтому у ADMIN ссылка вела бы прямиком на /403.
-    roles: [Role.Owner],
+    action: Action.MY_MARKET,
   },
   {
     title: t('navigation.sellers'),

@@ -7,7 +7,6 @@ import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
-import { getClientUser } from '~/lib/auth-utils';
 import { formatDate } from '~/lib/format';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import type { Market } from '~/types/markets';
@@ -17,10 +16,6 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const editModal = useMarketsModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
-  // Собственный рынок текущего пользователя (marketId в токене) открываем
-  // через /my-market, а не общий /markets/:id — та же карточка, но со своими
-  // правами/виджетами, плюс не плодим отдельную страницу для самого себя.
-  const isOwnMarket = getClientUser()?.marketId === row.id;
 
   return (
     <RowActionsCell>
@@ -29,8 +24,8 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
         label={t('actions.view')}
         render={
           <Link
-            to={isOwnMarket ? '/my-market' : `/markets/${row.id}`}
-            state={isOwnMarket ? undefined : { fromPath: location.pathname, fromName: t('title') }}
+            to={`/markets/${row.id}`}
+            state={{ fromPath: location.pathname, fromName: t('title') }}
           />
         }
       />

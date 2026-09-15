@@ -44,7 +44,7 @@ const MIN_SEARCH_LENGTH = 2;
 export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
-  const { can, role } = useCan();
+  const { can, role, user } = useCan();
 
   const [query, setQuery] = useState('');
   const debouncedQuery = useDebounce(query);
@@ -63,9 +63,9 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         if (item.items) walk(item.items);
       }
     };
-    walk(getVisibleNavigation(getSidebarConfig(t), can));
+    walk(getVisibleNavigation(getSidebarConfig(t, user?.marketId), can));
     return flat;
-  }, [t, role, can]);
+  }, [t, role, can, user?.marketId]);
 
   const filteredPages = useMemo(() => {
     const q = query.trim().toLowerCase();
