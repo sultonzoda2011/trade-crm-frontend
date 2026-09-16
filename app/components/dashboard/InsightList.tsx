@@ -63,7 +63,7 @@ function InsightRow({ insight }: { insight: BusinessInsight }) {
           size="sm"
           className="h-7 shrink-0 gap-1 text-xs"
           render={<Link to={insightHref(insight.action)} />}>
-          <span className="hidden sm:inline">{t('insights.open')}</span>
+          <span className="sm:inline">{t('insights.open')}</span>
           <ArrowRight className="size-3.5" />
         </Button>
       )}

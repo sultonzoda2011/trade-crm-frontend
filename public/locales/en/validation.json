@@ -25,5 +25,10 @@
   "debtorRequired": "Debtor is required",
   "stockExceeded": "Exceeds stock ({{count}} available)",
   "stockUnavailable": "Product stock is unavailable",
-  "paymentTypeMismatch": "Payment type is not allowed for this transaction type"
+  "paymentTypeMismatch": "Payment type is not allowed for this transaction type",
+  "priceRequired": "Price is required",
+  "priceMin": "Price must be greater than 0",
+  "nameMin": "Name must be at least 2 characters",
+  "nameMax": "Name must not exceed 100 characters",
+  "emailUnique": "This email is already in use"
 }

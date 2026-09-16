@@ -26,8 +26,8 @@ import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
-import textInBottomDark from '/text-in-bottom-logo-dark.png';
-import textInBottomLight from '/text-in-bottom-logo-light.png';
+import lightLogo from '/light-logo.png';
+import darkLogo from '/dark-logo.png';
 import { getQueryClient } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
@@ -150,8 +150,8 @@ function Splash({ locale }: { locale: string }) {
           </div>
         </div>
         <p className="splash-logo-wrap">
-          <img src={textInBottomLight} className="splash-logo dark:hidden" alt="Trade CRM" />
-          <img src={textInBottomDark} className="splash-logo hidden dark:block" alt="Trade CRM" />
+          <img src={lightLogo} className="splash-logo dark:hidden" alt="Trade CRM" />
+          <img src={darkLogo} className="splash-logo hidden dark:block" alt="Trade CRM" />
         </p>
       </div>
     </div>

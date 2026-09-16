@@ -23,7 +23,10 @@
     "createUser": "Create User",
     "createMarket": "Create market",
     "createProduct": "Create product",
-    "createTransaction": "Create transaction"
+    "createTransaction": "Create transaction",
+    "filter": "Filter",
+    "clear": "Clear",
+    "close": "Close"
   },
   "errors": {
     "noConnection": "No server connection. Please check your internet.",
@@ -124,6 +127,7 @@
     "retry": "Retry",
     "activate": "Activate",
     "toggleTheme": "Toggle theme",
+    "changeLanguage": "Change language",
     "collapse": "Collapse",
     "expand": "Expand"
   },
@@ -144,7 +148,15 @@
     "description": "Description",
     "image": "Image",
     "actions": "Actions",
-    "status": "Status"
+    "status": "Status",
+    "date": "Date",
+    "quantity": "Quantity",
+    "unit": "Unit",
+    "total": "Total",
+    "price": "Price",
+    "discount": "Discount",
+    "amount": "Amount",
+    "sum": "Sum"
   },
   "logout": "Logout",
   "usernameRequired": "Username is required",
@@ -172,6 +184,12 @@
   },
   "dateRangePicker": {
     "placeholder": "Select period"
+  },
+  "input": {
+    "name": "Enter name",
+    "email": "Enter email",
+    "phone": "Enter phone",
+    "message": "Enter message"
   },
   "role": {
     "admin": "Administrator",

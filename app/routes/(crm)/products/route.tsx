@@ -158,7 +158,7 @@ export default function ProductsPage() {
             className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
             render={<Link to="/products/create" />}>
             <Plus data-icon="inline-start" />
-            <span className="hidden sm:inline">{t('create')}</span>
+            <span className="sm:inline">{t('create')}</span>
           </Button>
         )}
       </ListPageToolbar>

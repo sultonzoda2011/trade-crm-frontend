@@ -99,7 +99,7 @@ export default function SellersPage() {
             className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
             onClick={() => createModal.open()}>
             <Plus data-icon="inline-start" />
-            <span className="hidden sm:inline">{t('create')}</span>
+            <span className="sm:inline">{t('create')}</span>
           </Button>
         )}
       </ListPageToolbar>

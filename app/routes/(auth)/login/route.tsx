@@ -16,8 +16,8 @@ import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import { createLoginSchema, type LoginForm } from '~/validations/auth';
-import textInRightDark from '/text-in-right-logo-dark.png';
-import textInRightLight from '/text-in-right-logo-light.png';
+import lightLogo from '/light-logo.png';
+import darkLogo from '/dark-logo.png';
 
 /** Официальный многоцветный логотип Google «G». */
 function GoogleIcon({ className }: { className?: string }) {
@@ -121,8 +121,8 @@ export default function LoginPage() {
         />
 
         <div className="relative flex items-center">
-          <img className="h-12 w-auto object-contain dark:hidden" src={textInRightDark} alt="Trade CRM" />
-          <img className="hidden h-12 w-auto object-contain dark:block" src={textInRightLight} alt="Trade CRM" />
+          <img className="h-14 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
+          <img className="hidden h-14 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
         </div>
 
         <div className="relative max-w-md space-y-5">
@@ -154,8 +154,8 @@ export default function LoginPage() {
           <div className="w-full max-w-sm space-y-6">
             {/* Logo — mobile only; the hero carries it on desktop */}
             <div className="flex justify-center lg:hidden">
-              <img className="h-15 w-auto object-contain dark:hidden" src={textInRightLight} alt="Trade CRM" />
-              <img className="hidden h-15 w-auto object-contain dark:block" src={textInRightDark} alt="Trade CRM" />
+              <img className="h-14 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
+              <img className="hidden h-14 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
             </div>
 
             <div className="bg-card ring-foreground/10 rounded-2xl p-6 shadow-lg ring-1 sm:p-8">

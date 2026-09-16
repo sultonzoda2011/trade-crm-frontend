@@ -11,10 +11,9 @@ import { getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
 import { NavMain } from '~/components/layout/NavMain';
 
-import darkFavicon from '/dark-favicon.png';
-import lightFavicon from '/light-favicon.png';
-import textInRightDark from '/text-in-right-logo-dark.png';
-import textInRightLight from '/text-in-right-logo-light.png';
+
+import lightLogo from '/light-logo.png';
+import darkLogo from '/dark-logo.png';
 import { Link } from 'react-router'
 
 export function AppSidebar() {
@@ -33,14 +32,14 @@ export function AppSidebar() {
         <div className="flex items-center justify-start group-data-[collapsible=icon]:justify-center">
           {/* Full logo */}
           <Link to='/' className="flex items-center px-2 group-data-[collapsible=icon]:hidden">
-            <img src={textInRightLight} className="h-10 w-auto object-contain dark:hidden" alt="Trade CRM" />
-            <img src={textInRightDark} className="hidden h-10 w-auto object-contain dark:block" alt="Trade CRM" />
+            <img src={lightLogo} className="h-12 w-auto object-contain dark:hidden" alt="Trade CRM" />
+            <img src={darkLogo} className="hidden h-12 w-auto object-contain dark:block" alt="Trade CRM" />
           </Link>
 
           {/* Small logo */}
           <div className="hidden items-center justify-center group-data-[collapsible=icon]:flex">
-            <img src={lightFavicon} className="size-8 object-contain dark:hidden" alt="Trade CRM" />
-            <img src={darkFavicon} className="hidden size-8 object-contain dark:block" alt="Trade CRM" />
+            <img src={lightLogo} className="size-8 object-contain dark:hidden" alt="Trade CRM" />
+            <img src={darkLogo} className="hidden size-8 object-contain dark:block" alt="Trade CRM" />
           </div>
         </div>
       </SidebarHeader>

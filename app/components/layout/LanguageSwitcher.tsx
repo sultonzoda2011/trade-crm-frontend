@@ -6,6 +6,7 @@ import RU from '/locales/icons/ru.png';
 import TJ from '/locales/icons/tj.png';
 
 import { Button } from '~/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { type SupportedLng } from '~/lib/i18n';
 
 const languages: {
@@ -27,7 +28,7 @@ const languages: {
 ];
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const currentLanguage = (i18n.language?.split('-')[0] as SupportedLng) ?? 'ru';
 
@@ -46,8 +47,15 @@ export function LanguageSwitcher() {
   const currentLanguageItem = languages.find((language) => language.value === currentLanguage) ?? languages[0];
 
   return (
-    <Button type="button" variant="outline" size="icon" onClick={handleChange} aria-label="Change language">
-      <img src={currentLanguageItem.icon} alt={currentLanguageItem.value} className="size-6 rounded-sm object-cover" />
-    </Button>
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button type="button" variant="outline" size="icon" onClick={handleChange} aria-label="Change language">
+            <img src={currentLanguageItem.icon} alt={currentLanguageItem.value} className="size-6 rounded-sm object-cover" />
+          </Button>
+        }
+      />
+      <TooltipContent side="bottom">{t('actions.changeLanguage')}</TooltipContent>
+    </Tooltip>
   );
 }

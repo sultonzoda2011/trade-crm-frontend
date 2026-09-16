@@ -39,7 +39,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
         render={
           <Button variant="outline" className="ml-auto gap-2 px-3">
             <SlidersHorizontal className="size-3.5" />
-            <span className="hidden sm:inline">{t('table.columns')}</span>
+            <span className="sm:inline">{t('table.columns')}</span>
           </Button>
         }
       />

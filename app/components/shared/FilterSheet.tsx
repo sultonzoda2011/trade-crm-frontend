@@ -101,7 +101,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
             aria-label={t('filters.title')}
             className="relative shrink-0 sm:w-auto sm:gap-1.5 sm:px-3">
             <Filter />
-            <span className="hidden sm:inline">{t('filters.title')}</span>
+            <span className="sm:inline">{t('filters.title')}</span>
             {/*
               На телефоне подпись скрыта, кнопка — квадрат 44×44, поэтому счётчик
               висит индикатором в углу; от `sm:` он возвращается в поток рядом с

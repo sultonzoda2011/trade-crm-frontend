@@ -104,7 +104,7 @@ function PageControls({
   return (
     <div className="flex w-full flex-row items-center justify-between gap-2 px-3 py-2">
       <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-sm">
-        <span className="hidden sm:inline">{t('table.list')}</span>
+        <span className="sm:inline">{t('table.list')}</span>
         <CustomSelect
           value={limit}
           options={[10, 20, 50].map((size) => ({ value: size, label: size.toString() }))}
