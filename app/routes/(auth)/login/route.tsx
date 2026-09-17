@@ -1,23 +1,23 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { redirect, useNavigate, useSearchParams } from 'react-router';
-import { toast } from 'sonner';
-import { authApi } from '~/api/auth';
-import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
-import { ModeToggle } from '~/components/layout/ModeToggle';
-import { Button } from '~/components/ui/button';
-import { FormInput } from '~/components/ui/form/FormInput';
-import { canAccess } from '~/config/permissions';
-import { useForm } from '~/hooks/useForm';
-import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils';
-import { cn } from '~/lib/utils';
-import { Role } from '~/types/common';
-import { createLoginSchema, type LoginForm } from '~/validations/auth';
-import lightLogo from '/light-logo.png';
-import darkLogo from '/dark-logo.png';
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
+import { Eye, EyeOff } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { redirect, useNavigate, useSearchParams } from 'react-router'
+import { toast } from 'sonner'
+import { authApi } from '~/api/auth'
+import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher'
+import { ModeToggle } from '~/components/layout/ModeToggle'
+import { Button } from '~/components/ui/button'
+import { FormInput } from '~/components/ui/form/FormInput'
+import { canAccess } from '~/config/permissions'
+import { useForm } from '~/hooks/useForm'
+import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils'
+import { cn } from '~/lib/utils'
+import { Role } from '~/types/common'
+import { createLoginSchema, type LoginForm } from '~/validations/auth'
+import darkLogo from '/dark-logo.png'
+import lightLogo from '/light-logo.png'
 
 /** Официальный многоцветный логотип Google «G». */
 function GoogleIcon({ className }: { className?: string }) {
@@ -113,16 +113,16 @@ export default function LoginPage() {
         {/* Ambient brand depth so the panel isn't a flat black slab */}
         <div
           aria-hidden
-          className="bg-primary/25 pointer-events-none absolute -top-24 -left-24 size-96 rounded-full blur-[120px]"
+          className="bg-primary/10 dark:bg-primary/20 pointer-events-none absolute -top-32 right-0 size-96 rounded-full blur-[130px]"
         />
         <div
           aria-hidden
-          className="bg-primary/20 pointer-events-none absolute -right-20 -bottom-16 size-80 rounded-full blur-[120px]"
+          className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full blur-[130px]"
         />
 
         <div className="relative flex items-center">
-          <img className="h-14 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
-          <img className="hidden h-14 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
+          <img className="h-30 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
+          <img className="hidden h-30 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
         </div>
 
         <div className="relative max-w-md space-y-5">
@@ -154,8 +154,8 @@ export default function LoginPage() {
           <div className="w-full max-w-sm space-y-6">
             {/* Logo — mobile only; the hero carries it on desktop */}
             <div className="flex justify-center lg:hidden">
-              <img className="h-14 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
-              <img className="hidden h-14 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
+              <img className="h-25 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
+              <img className="hidden h-25 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
             </div>
 
             <div className="bg-card ring-foreground/10 rounded-2xl p-6 shadow-lg ring-1 sm:p-8">
@@ -195,11 +195,7 @@ export default function LoginPage() {
                   }
                 />
                 <div className="flex">
-                  <button
-                    type="button"
-                    className="text-primary hover:text-primary/80 text-sm font-medium transition-colors">
-                    {t('forgotPassword')}
-                  </button>
+                  <Button variant={'link'}>{t('forgotPassword')}</Button>
                 </div>
 
                 <Button type="submit" size="lg" className="w-full text-sm font-semibold" disabled={isSubmitting}>
