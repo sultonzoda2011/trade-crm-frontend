@@ -96,10 +96,10 @@ export default function SellersPage() {
           <Button
             size="icon"
             aria-label={t('create')}
-            className="shrink-0 sm:w-auto sm:gap-1.5 sm:px-3"
+            className="w-auto shrink-0 gap-1.5 px-3"
             onClick={() => createModal.open()}>
             <Plus data-icon="inline-start" />
-            <span className="sm:inline">{t('create')}</span>
+            <span>{t('create')}</span>
           </Button>
         )}
       </ListPageToolbar>

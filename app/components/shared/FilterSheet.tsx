@@ -99,19 +99,15 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
             variant="outline"
             size="icon"
             aria-label={t('filters.title')}
-            className="relative shrink-0 sm:w-auto sm:gap-1.5 sm:px-3">
+            className="relative w-auto shrink-0 gap-1.5 px-3">
             <Filter />
-            <span className="sm:inline">{t('filters.title')}</span>
+            <span>{t('filters.title')}</span>
             {/*
-              На телефоне подпись скрыта, кнопка — квадрат 44×44, поэтому счётчик
-              висит индикатором в углу; от `sm:` он возвращается в поток рядом с
-              подписью. `min-h-4` обязателен: в базе у Badge стоит `min-h-5`,
-              который перебивал прежний `h-4` и бейдж был выше задуманного.
+              Подпись видна на всех размерах, кнопка тянется по контенту — счётчик
+              всегда в потоке рядом с подписью, а не индикатором в углу.
             */}
             {activeCount > 0 && (
-              <Badge className="text-2xs absolute -top-0.5 -right-0.5 min-h-4 min-w-4 shrink-0 rounded-full px-1 sm:static sm:ml-1">
-                {activeCount}
-              </Badge>
+              <Badge className="text-2xs ml-1 min-h-4 min-w-4 shrink-0 rounded-full px-1">{activeCount}</Badge>
             )}
           </Button>
         }
