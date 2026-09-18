@@ -2,12 +2,9 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 
-import { debtorsApi } from '~/api/debtors';
 import { marketsApi } from '~/api/markets';
-import { productsApi } from '~/api/products';
-import { transactionsApi } from '~/api/transactions';
 
-import { MARKET_PREVIEW_LIMIT, MarketDetailView } from '~/components/markets/MarketDetailView';
+import { MarketDetailView } from '~/components/markets/MarketDetailView';
 import { EditMarketModal } from '~/components/modals/EditMarketModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
@@ -21,40 +18,18 @@ export default function MarketDetailPage() {
   const navigate = useNavigate();
   const { user } = useCan();
 
-  const { data: marketResponse, isLoading } = useQuery({
-    queryKey: ['market', id],
-    queryFn: () => marketsApi.getById(id!),
+  const { data: response, isLoading } = useQuery({
+    queryKey: ['market-full', id],
+    queryFn: () => marketsApi.getFull(id!),
     enabled: Boolean(id),
     staleTime: 30_000,
   });
 
-  const market = marketResponse?.data;
+  const market = response?.data?.market;
 
   // Товары/должники/сделки отдаются только по своему рынку — для чужого
-  // запросы не отправляем, и вид покажет одну вкладку с сотрудниками.
+  // маркета бэкенд возвращает null и запросов внутри не делает.
   const isOwnMarket = Boolean(user?.marketId) && user?.marketId === id;
-  const previewsEnabled = Boolean(id) && isOwnMarket;
-
-  const { data: productsResponse } = useQuery({
-    queryKey: ['products', 'market-preview', id],
-    queryFn: () => productsApi.getAll(1, MARKET_PREVIEW_LIMIT),
-    enabled: previewsEnabled,
-    staleTime: 30_000,
-  });
-
-  const { data: debtorsResponse } = useQuery({
-    queryKey: ['debtors', 'market-preview', id],
-    queryFn: () => debtorsApi.getAll(1, MARKET_PREVIEW_LIMIT),
-    enabled: previewsEnabled,
-    staleTime: 30_000,
-  });
-
-  const { data: transactionsResponse } = useQuery({
-    queryKey: ['transactions', 'market-preview', id],
-    queryFn: () => transactionsApi.getAll(1, MARKET_PREVIEW_LIMIT),
-    enabled: previewsEnabled,
-    staleTime: 30_000,
-  });
 
   if (isLoading) {
     return <ByIdSkeleton />;
@@ -76,9 +51,9 @@ export default function MarketDetailPage() {
         market={market}
         isOwnMarket={isOwnMarket}
         previews={{
-          products: productsResponse?.data?.data ?? [],
-          debtors: debtorsResponse?.data?.data ?? [],
-          transactions: transactionsResponse?.data?.data ?? [],
+          products: response?.data?.products?.data ?? [],
+          debtors: response?.data?.debtors?.data ?? [],
+          transactions: response?.data?.transactions?.data ?? [],
         }}
       />
 

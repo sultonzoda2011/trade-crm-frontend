@@ -3,8 +3,6 @@ import { ArrowUpRight, Pencil, ReceiptText, Store } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
-import { marketsApi } from '~/api/markets';
-import { transactionsApi } from '~/api/transactions';
 import { usersApi } from '~/api/users';
 import { Panel } from '~/components/layout/Panel';
 import { EditUserModal } from '~/components/modals/EditUserModal';
@@ -16,7 +14,6 @@ import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -37,34 +34,16 @@ export default function UserDetailPage() {
   const editModal = useUsersModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['user', id],
-    queryFn: () => usersApi.getById(id!),
+    queryKey: ['user-full', id],
+    queryFn: () => usersApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,
   });
 
-  const user = response?.data;
-
-  const isAdminOrOwner = useMemo(() => user?.role === Role.Admin || user?.role === Role.Owner, [user?.role]);
-
-  const { data: marketsResponse, isLoading: isMarketsLoading } = useQuery({
-    queryKey: ['user-markets', id],
-    queryFn: () => marketsApi.getAll(1, 100, {}, [{ key: 'ownerId', value: id! }]),
-    enabled: !!id && !!user && isAdminOrOwner,
-    staleTime: 30_000,
-  });
-
-  const ownedMarkets = marketsResponse?.data?.data ?? [];
-
-  const { data: txResponse, isLoading: isTxLoading } = useQuery({
-    queryKey: ['user-transactions', id],
-    queryFn: () => transactionsApi.getAll(1, 5, {}, [{ key: 'createdById', value: id! }]),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const userTransactions = useMemo(() => txResponse?.data?.data ?? [], [txResponse]);
-  const totalTx = txResponse?.data?.meta?.total ?? 0;
+  const user = response?.data?.user;
+  const ownedMarkets = response?.data?.markets?.data ?? [];
+  const userTransactions = useMemo(() => response?.data?.transactions?.data ?? [], [response]);
+  const totalTx = response?.data?.transactions?.meta?.total ?? 0;
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -138,10 +117,7 @@ export default function UserDetailPage() {
           {ownedMarkets.length > 0 && (
             <Panel title={t('fields.market')}>
               <div className="divide-border divide-y">
-                {isMarketsLoading ? (
-                  <SkeletonList count={3} height="h-12" className="py-0" />
-                ) : (
-                  ownedMarkets.slice(0, 5).map((m) => (
+                {ownedMarkets.slice(0, 5).map((m) => (
                     <ListLink
                       key={m.id}
                       to={`/markets/${m.id}`}
@@ -155,8 +131,7 @@ export default function UserDetailPage() {
                       </span>
                       <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
                     </ListLink>
-                  ))
-                )}
+                  ))}
               </div>
             </Panel>
           )}
@@ -176,21 +151,17 @@ export default function UserDetailPage() {
                   count={totalTx}
                 />
               }>
-              {isTxLoading ? (
-                <SkeletonList count={3} height="h-24" className="py-0" />
-              ) : (
-                <div className="divide-border divide-y">
-                  {userTransactions.map((tx) => (
-                    <TransactionRow
-                      key={tx.id}
-                      tx={tx}
-                      t={t}
-                      to={`/transactions/${tx.id}`}
-                      state={{ fromPath: location.pathname, fromName: user.name }}
-                    />
-                  ))}
-                </div>
-              )}
+              <div className="divide-border divide-y">
+                {userTransactions.map((tx) => (
+                  <TransactionRow
+                    key={tx.id}
+                    tx={tx}
+                    t={t}
+                    to={`/transactions/${tx.id}`}
+                    state={{ fromPath: location.pathname, fromName: user.name }}
+                  />
+                ))}
+              </div>
             </Panel>
           )}
 

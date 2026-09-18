@@ -3,7 +3,6 @@ import { Pencil, ReceiptText, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
-import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
@@ -13,7 +12,6 @@ import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
@@ -32,8 +30,8 @@ export default function DebtorDetailPage() {
   const editModal = useDebtorsModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['debtor', id],
-    queryFn: () => debtorsApi.getById(id!),
+    queryKey: ['debtor-full', id],
+    queryFn: () => debtorsApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,
   });
@@ -43,16 +41,9 @@ export default function DebtorDetailPage() {
   // рендерили целиком.
   const PREVIEW_LIMIT = 5;
 
-  const { data: txResponse, isLoading: isTxLoading } = useQuery({
-    queryKey: ['debtor-transactions', id],
-    queryFn: () => transactionsApi.getAll(1, PREVIEW_LIMIT, {}, [{ key: 'debtorId', value: id! }]),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const debtor = response?.data;
-  const transactions = txResponse?.data?.data ?? [];
-  const totalTx = txResponse?.data?.meta?.total ?? 0;
+  const debtor = response?.data?.debtor;
+  const transactions = response?.data?.transactions?.data ?? [];
+  const totalTx = response?.data?.transactions?.meta?.total ?? 0;
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -172,9 +163,7 @@ export default function DebtorDetailPage() {
                 />
               ) : undefined
             }>
-            {isTxLoading ? (
-              <SkeletonList count={3} />
-            ) : transactions.length === 0 ? (
+            {transactions.length === 0 ? (
               <p className="text-muted-foreground py-6 text-center text-sm">{t('noTransactions')}</p>
             ) : (
               <div className="divide-border divide-y">

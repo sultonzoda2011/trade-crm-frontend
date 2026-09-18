@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
-import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { EditSellerModal } from '~/components/modals/EditSellerModal';
 import { PayoutSellerModal } from '~/components/modals/PayoutSellerModal';
@@ -15,7 +14,6 @@ import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { SkeletonList } from '~/components/shared/SkeletonList';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import BreadCrumbs from '~/components/ui/bread-crumb';
@@ -35,41 +33,17 @@ export default function SellerDetailPage() {
   const payoutModal = useSellersModals((s) => s.payout);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['seller', id],
-    queryFn: () => sellersApi.getById(id!),
+    queryKey: ['seller-full', id],
+    queryFn: () => sellersApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,
   });
 
-  const seller = response?.data;
-
-  const { data: txResponse, isLoading: isTxLoading } = useQuery({
-    queryKey: ['seller-transactions', id],
-    queryFn: () => transactionsApi.getAll(1, 5, {}, [{ key: 'createdById', value: id! }]),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const transactions = useMemo(() => txResponse?.data?.data ?? [], [txResponse]);
-  const totalTx = txResponse?.data?.meta?.total ?? 0;
-
-  const { data: balanceResponse, isLoading: isBalanceLoading } = useQuery({
-    queryKey: ['seller-balance', id],
-    queryFn: () => sellersApi.getBalance(id!),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const balance = balanceResponse?.data;
-
-  const { data: creditsResponse, isLoading: isCreditsLoading } = useQuery({
-    queryKey: ['seller-credits', id],
-    queryFn: () => sellersApi.getCredits(id!, 1, 5),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const credits = useMemo(() => creditsResponse?.data?.data ?? [], [creditsResponse]);
+  const seller = response?.data?.seller;
+  const transactions = useMemo(() => response?.data?.transactions?.data ?? [], [response]);
+  const totalTx = response?.data?.transactions?.meta?.total ?? 0;
+  const balance = response?.data?.balance;
+  const credits = useMemo(() => response?.data?.credits?.data ?? [], [response]);
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -133,9 +107,7 @@ export default function SellerDetailPage() {
                 />
               ) : undefined
             }>
-            {isTxLoading ? (
-              <SkeletonList count={3} />
-            ) : transactions.length === 0 ? (
+            {transactions.length === 0 ? (
               <p className="text-muted-foreground py-6 text-center text-sm">{t('noTransactions')}</p>
             ) : (
               <div className="divide-border divide-y">
@@ -162,9 +134,7 @@ export default function SellerDetailPage() {
                 </Button>
               ) : undefined
             }>
-            {isBalanceLoading ? (
-              <SkeletonList count={1} />
-            ) : !balance || balance.earned === 0 ? (
+            {!balance || balance.earned === 0 ? (
               <p className="text-muted-foreground py-6 text-center text-sm">{t('noBalance')}</p>
             ) : (
               <div className="space-y-3">
@@ -189,21 +159,17 @@ export default function SellerDetailPage() {
                       <Coins className="size-3.5" />
                       {t('creditsHistory')}
                     </p>
-                    {isCreditsLoading ? (
-                      <SkeletonList count={2} />
-                    ) : (
-                      <div className="divide-border divide-y">
-                        {credits.map((credit) => (
-                          <div key={credit.id} className="flex items-center justify-between py-2 text-sm">
-                            <div className="flex flex-col">
-                              <span className="font-mono font-medium">{fmtTJS(credit.amount)}</span>
-                              {credit.note && <span className="text-muted-foreground text-xs">{credit.note}</span>}
-                            </div>
-                            <span className="text-muted-foreground text-xs">{formatDate(credit.createdAt, true)}</span>
+                    <div className="divide-border divide-y">
+                      {credits.map((credit) => (
+                        <div key={credit.id} className="flex items-center justify-between py-2 text-sm">
+                          <div className="flex flex-col">
+                            <span className="font-mono font-medium">{fmtTJS(credit.amount)}</span>
+                            {credit.note && <span className="text-muted-foreground text-xs">{credit.note}</span>}
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          <span className="text-muted-foreground text-xs">{formatDate(credit.createdAt, true)}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

@@ -4,10 +4,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
-import { marketsApi } from '~/api/markets';
 import { productsApi } from '~/api/products';
 import { profileApi } from '~/api/profile';
-import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
 import { ChangePasswordModal } from '~/components/modals/ChangePasswordModal';
 import { EditProfileModal } from '~/components/modals/EditProfileModal';
@@ -40,23 +38,15 @@ export default function ProfilePage() {
   const passwordModal = useProfileModals((s) => s.password);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['profile'],
-    queryFn: () => profileApi.getProfile(),
+    queryKey: ['profile-full'],
+    queryFn: () => profileApi.getFullProfile(),
     staleTime: 30_000,
   });
 
-  const profile = response?.data;
+  const profile = response?.data?.profile;
+  const market = response?.data?.market ?? undefined;
   const user = getClientUser();
   const fromState = { fromPath: location.pathname, fromName: t('title') };
-
-  const { data: marketResponse } = useQuery({
-    queryKey: ['profile-market', user?.marketId],
-    queryFn: () => marketsApi.getById(user?.marketId!),
-    enabled: !!user?.marketId,
-    staleTime: 30_000,
-  });
-
-  const market = marketResponse?.data;
 
   const { can } = useCan();
 
@@ -67,29 +57,23 @@ export default function ProfilePage() {
 
   const { data: productsResponse, isLoading: isProductsLoading } = useQuery({
     queryKey: ['products', 'profile', user?.marketId],
-    queryFn: () => productsApi.getAll(1, 20, {}, []),
+    queryFn: () => productsApi.getAll(1, 5, {}, []),
     enabled: !!user?.marketId && canViewProducts && activeTab === 'products',
     staleTime: 30_000,
   });
 
   const { data: debtorsResponse, isLoading: isDebtorsLoading } = useQuery({
     queryKey: ['debtors', 'profile', user?.marketId],
-    queryFn: () => debtorsApi.getAll(1, 20, {}, []),
+    queryFn: () => debtorsApi.getAll(1, 5, {}, []),
     enabled: !!user?.marketId && canViewDebtors && activeTab === 'debtors',
-    staleTime: 30_000,
-  });
-
-  const { data: txResponse, isLoading: isTxLoading } = useQuery({
-    queryKey: ['transactions', 'profile', user?.marketId],
-    queryFn: () => transactionsApi.getAll(1, 5, {}, []),
-    enabled: !!user?.marketId && canViewTransactions,
     staleTime: 30_000,
   });
 
   const products = useMemo(() => productsResponse?.data?.data ?? [], [productsResponse]);
   const debtors = useMemo(() => debtorsResponse?.data?.data ?? [], [debtorsResponse]);
-  const transactions = useMemo(() => txResponse?.data?.data ?? [], [txResponse]);
-  const totalTx = txResponse?.data?.meta?.total ?? market?.count.transactions ?? 0;
+  const transactions = useMemo(() => response?.data?.transactions?.data ?? [], [response]);
+  const totalTx = response?.data?.transactions?.meta?.total ?? market?.count.transactions ?? 0;
+  const isTxLoading = isLoading;
 
   const tabs: EntityTab[] = [];
   if (market && canViewTransactions) {

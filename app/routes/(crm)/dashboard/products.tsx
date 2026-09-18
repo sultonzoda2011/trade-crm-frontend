@@ -50,7 +50,7 @@ export default function DashboardProductsPage() {
   }
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-3">
+    <div className="grid items-stretch gap-6 lg:grid-cols-3">
       <TopProducts products={overview.products.topByRevenue} title={t('products.topByRevenue')} />
       <TopProducts products={overview.products.topByUnits} title={t('products.topByUnits')} />
       <CategoryPerformance categories={overview.categories} />

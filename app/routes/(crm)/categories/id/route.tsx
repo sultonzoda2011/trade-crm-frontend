@@ -4,8 +4,6 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
-import { marketsApi } from '~/api/markets';
-import { productsApi } from '~/api/products';
 import { Panel } from '~/components/layout/Panel';
 import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
@@ -33,33 +31,18 @@ export default function CategoryDetailPage() {
   const editModal = useCategoriesModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['category', id],
-    queryFn: () => categoriesApi.getById(id!),
+    queryKey: ['category-full', id],
+    queryFn: () => categoriesApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,
   });
 
-  const category = response?.data;
-
-  const { data: marketResponse } = useQuery({
-    queryKey: ['market-by-category', category?.marketId],
-    queryFn: () => marketsApi.getById(category!.marketId),
-    enabled: !!category?.marketId,
-    staleTime: 60_000,
-  });
-
-  const market = marketResponse?.data;
+  const category = response?.data?.category;
+  const market = response?.data?.market ?? undefined;
 
   const PREVIEW_LIMIT = 5;
 
-  const { data: productsResponse } = useQuery({
-    queryKey: ['category-products', id],
-    queryFn: () => productsApi.getAll(1, PREVIEW_LIMIT, {}, [{ key: 'categoryId', value: id! }]),
-    enabled: !!id,
-    staleTime: 30_000,
-  });
-
-  const categoryProducts = useMemo(() => productsResponse?.data?.data ?? [], [productsResponse]);
+  const categoryProducts = useMemo(() => response?.data?.products?.data ?? [], [response]);
 
   if (isLoading) return <ByIdSkeleton />;
 

@@ -58,11 +58,11 @@ export default function DashboardInventoryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <InsightList insights={inventoryInsights} />
         <ReorderList products={overview.products.reorder} />
       </div>
-      <div className="grid items-start gap-6 lg:grid-cols-2">
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <ReturnsPanel returns={overview.returns} />
         <InventoryHealth inventory={overview.inventory} />
       </div>
