@@ -1,5 +1,6 @@
 import type { ApiResponse, PaginatedData } from '~/types/common';
 import type { MarketInfo } from '~/types/markets';
+import type { Transaction } from '~/types/transactions';
 
 export interface Seller {
   id: string;
@@ -45,3 +46,10 @@ export type SellerCreditsResponse = ApiResponse<PaginatedData<SellerCredit>>;
 
 export type SellersResponse = ApiResponse<PaginatedData<Seller>>;
 export type SellerDetailResponse = ApiResponse<Seller>;
+export interface SellerFullData {
+  seller: Seller;
+  transactions: PaginatedData<Transaction>;
+  balance: SellerBalance;
+  credits: PaginatedData<SellerCredit>;
+}
+export type SellerFullResponse = ApiResponse<SellerFullData>;

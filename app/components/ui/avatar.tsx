@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Avatar as AvatarPrimitive } from '@base-ui/react/avatar';
 
+import { cldThumb } from '~/lib/cloudinary';
 import { cn } from '~/lib/utils';
 
 function Avatar({
@@ -23,10 +24,13 @@ function Avatar({
   );
 }
 
-function AvatarImage({ className, ...props }: AvatarPrimitive.Image.Props) {
+function AvatarImage({ className, src, ...props }: AvatarPrimitive.Image.Props) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"
+      // Аватарки везде маленькие (24-40px) — грузим Cloudinary-превью вместо
+      // оригинала фото с телефона, который может весить несколько мегабайт.
+      src={cldThumb(src, { w: 96 })}
       className={cn('aspect-square size-full rounded-full object-cover', className)}
       {...props}
     />
