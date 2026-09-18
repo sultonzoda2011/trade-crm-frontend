@@ -1,5 +1,7 @@
-import type { ApiResponse } from '~/types/common';
+import type { ApiResponse, PaginatedData } from '~/types/common';
 import type { Role } from '~/types/common';
+import type { Market } from '~/types/markets';
+import type { Transaction } from '~/types/transactions';
 
 export interface Profile {
   id: string;
@@ -12,6 +14,13 @@ export interface Profile {
 }
 
 export type ProfileResponse = ApiResponse<Profile>;
+
+export interface ProfileFullData {
+  profile: Profile;
+  market: Market | null;
+  transactions: PaginatedData<Transaction>;
+}
+export type ProfileFullResponse = ApiResponse<ProfileFullData>;
 
 export interface UpdatePasswordRequest {
   currentPassword: string;

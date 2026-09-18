@@ -1,4 +1,7 @@
 import type { ApiResponse, PaginatedData } from '~/types/common';
+import type { Product } from '~/types/products';
+import type { Debtor } from '~/types/debtors';
+import type { Transaction } from '~/types/transactions';
 import type { User } from '~/types/users';
 
 export interface Market {
@@ -28,3 +31,10 @@ export interface MarketCount {
 
 export type MarketDetailResponse = ApiResponse<Market>;
 export type MarketsResponse = ApiResponse<PaginatedData<Market>>;
+export interface MarketFullData {
+  market: Market;
+  products: PaginatedData<Product> | null;
+  debtors: PaginatedData<Debtor> | null;
+  transactions: PaginatedData<Transaction> | null;
+}
+export type MarketFullResponse = ApiResponse<MarketFullData>;

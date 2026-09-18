@@ -1,6 +1,6 @@
 import type { MetricComparison, ProductMetrics } from '~/types/analytics';
 import type { ApiResponse, PaginatedData } from '~/types/common';
-import type { MarketInfo } from '~/types/markets';
+import type { Market, MarketInfo } from '~/types/markets';
 
 export interface ProductCount {
   transactionItems: number;
@@ -82,6 +82,12 @@ export interface CategoryDetail {
 }
 export type CategoriesResponse = ApiResponse<PaginatedData<Category>>;
 export type CategoryDetailResponse = ApiResponse<CategoryDetail>;
+export interface CategoryFullData {
+  category: CategoryDetail;
+  market: Market | null;
+  products: PaginatedData<Product>;
+}
+export type CategoryFullResponse = ApiResponse<CategoryFullData>;
 export interface CreateCategoryRequest {
   name: string;
   description?: string;

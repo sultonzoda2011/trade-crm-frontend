@@ -1,6 +1,7 @@
 import type { DebtorRisk } from '~/types/analytics';
 import type { ApiResponse, PaginatedData } from '~/types/common';
 import type { MarketInfo } from '~/types/markets';
+import type { Transaction } from '~/types/transactions';
 
 /**
  * Aggregated debt position of one debtor, computed by the backend.
@@ -51,3 +52,8 @@ export interface DebtorRequest {
 }
 export type DebtorsResponse = ApiResponse<PaginatedData<Debtor>>;
 export type DebtorDetailResponse = ApiResponse<Debtor>;
+export interface DebtorFullData {
+  debtor: Debtor;
+  transactions: PaginatedData<Transaction>;
+}
+export type DebtorFullResponse = ApiResponse<DebtorFullData>;

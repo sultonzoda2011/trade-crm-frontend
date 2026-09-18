@@ -1,5 +1,6 @@
 import type { ApiResponse, PaginatedData } from '~/types/common';
-import type { MarketInfo } from '~/types/markets';
+import type { Market, MarketInfo } from '~/types/markets';
+import type { Transaction } from '~/types/transactions';
 
 export interface User {
   id: string;
@@ -28,3 +29,10 @@ export interface CreateUserRequest extends UserRequest {
 }
 export type UsersResponse = ApiResponse<PaginatedData<User>>;
 export type UserDetailResponse = ApiResponse<User>;
+export interface UserFullData {
+  user: User;
+  /** null для SELLER — маркеты в владении запрашиваются только для ADMIN/OWNER. */
+  markets: PaginatedData<Market> | null;
+  transactions: PaginatedData<Transaction>;
+}
+export type UserFullResponse = ApiResponse<UserFullData>;
