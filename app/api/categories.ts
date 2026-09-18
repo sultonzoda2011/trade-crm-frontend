@@ -1,7 +1,7 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
-import type { CategoriesResponse, CategoryDetailResponse } from '~/types/products';
+import type { CategoriesResponse, CategoryDetailResponse, CategoryFullResponse } from '~/types/products';
 
 export const categoriesApi = {
   getAll: async (
@@ -16,6 +16,10 @@ export const categoriesApi = {
 
   getById: async (id: string): Promise<CategoryDetailResponse> => {
     const { data } = await apiClient.get(`/categories/${id}`);
+    return data;
+  },
+  getFull: async (id: string): Promise<CategoryFullResponse> => {
+    const { data } = await apiClient.get(`/categories/${id}/full`);
     return data;
   },
   create: async (formData: FormData) => {

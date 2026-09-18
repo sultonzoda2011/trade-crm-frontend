@@ -1,7 +1,7 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
-import type { UserDetailResponse, UsersResponse } from '~/types/users';
+import type { UserDetailResponse, UserFullResponse, UsersResponse } from '~/types/users';
 
 export const usersApi = {
   getAll: async (
@@ -18,6 +18,10 @@ export const usersApi = {
 
   getById: async (id: string): Promise<UserDetailResponse> => {
     const { data } = await apiClient.get(`/users/${id}`);
+    return data;
+  },
+  getFull: async (id: string): Promise<UserFullResponse> => {
+    const { data } = await apiClient.get(`/users/${id}/full`);
     return data;
   },
   create: async (formData: FormData) => {

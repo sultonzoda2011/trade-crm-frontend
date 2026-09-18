@@ -7,6 +7,7 @@ import type {
   SellerCreditResponse,
   SellerCreditsResponse,
   SellerDetailResponse,
+  SellerFullResponse,
   SellersResponse,
 } from '~/types/sellers';
 
@@ -25,6 +26,10 @@ export const sellersApi = {
 
   getById: async (id: string): Promise<SellerDetailResponse> => {
     const { data } = await apiClient.get(`/sellers/${id}`);
+    return data;
+  },
+  getFull: async (id: string): Promise<SellerFullResponse> => {
+    const { data } = await apiClient.get(`/sellers/${id}/full`);
     return data;
   },
   create: async (formData: FormData) => {

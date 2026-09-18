@@ -1,6 +1,6 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
-import type { DebtorDetailResponse, DebtorRequest, DebtorsResponse } from '~/types/debtors';
+import type { DebtorDetailResponse, DebtorFullResponse, DebtorRequest, DebtorsResponse } from '~/types/debtors';
 import type { ActiveFilter } from '~/types/filters';
 
 export const debtorsApi = {
@@ -18,6 +18,11 @@ export const debtorsApi = {
 
   getById: async (id: string): Promise<DebtorDetailResponse> => {
     const { data } = await apiClient.get(`/debtors/${id}`);
+    return data;
+  },
+
+  getFull: async (id: string): Promise<DebtorFullResponse> => {
+    const { data } = await apiClient.get(`/debtors/${id}/full`);
     return data;
   },
 

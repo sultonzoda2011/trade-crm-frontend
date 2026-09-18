@@ -1,7 +1,7 @@
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
-import type { MarketDetailResponse, MarketsResponse } from '~/types/markets';
+import type { MarketDetailResponse, MarketFullResponse, MarketsResponse } from '~/types/markets';
 
 export const marketsApi = {
   getAll: async (
@@ -18,6 +18,10 @@ export const marketsApi = {
 
   getById: async (id: string): Promise<MarketDetailResponse> => {
     const { data } = await apiClient.get(`/markets/${id}`);
+    return data;
+  },
+  getFull: async (id: string): Promise<MarketFullResponse> => {
+    const { data } = await apiClient.get(`/markets/${id}/full`);
     return data;
   },
   create: async (formData: FormData) => {

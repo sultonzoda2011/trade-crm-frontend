@@ -1,9 +1,14 @@
 import { apiClient } from '~/lib/client';
-import type { ProfileResponse, UpdatePasswordRequest } from '~/types/profile';
+import type { ProfileFullResponse, ProfileResponse, UpdatePasswordRequest } from '~/types/profile';
 
 export const profileApi = {
   getProfile: async (): Promise<ProfileResponse> => {
     const { data } = await apiClient.get<ProfileResponse>('/profile');
+    return data;
+  },
+
+  getFullProfile: async (): Promise<ProfileFullResponse> => {
+    const { data } = await apiClient.get<ProfileFullResponse>('/profile/full');
     return data;
   },
 
