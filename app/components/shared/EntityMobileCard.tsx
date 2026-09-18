@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Badge } from '~/components/ui/badge';
+import { cldThumb } from '~/lib/cloudinary';
 import { cn } from '~/lib/utils';
 
 export interface EntityMobileCardStat {
@@ -71,7 +72,11 @@ export function EntityMobileCard({
           // а не почти невидимая иконка на фоне.
           image ? 'bg-muted bg-cover bg-center' : 'from-primary/25 via-primary/10 to-muted bg-linear-to-br'
         )}
-        style={image ? { backgroundImage: `url(${image})` } : undefined}>
+        style={
+          // Карточка на всю ширину экрана, но сама шапка ~140px высотой —
+          // оригинал с телефона (часто 3000×4000) сюда грузить незачем.
+          image ? { backgroundImage: `url(${cldThumb(image, { w: 480, h: 240 })})` } : undefined
+        }>
         {!image && (
           <FallbackIcon
             strokeWidth={1.25}

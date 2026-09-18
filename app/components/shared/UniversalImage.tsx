@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ImgHTMLAttributes, type ReactNode } from 'react';
+import { cldThumb } from '~/lib/cloudinary';
 import { cn } from '~/lib/utils';
 
 type ImageStatus = 'empty' | 'loading' | 'loaded' | 'error';
@@ -10,6 +11,9 @@ interface UniversalImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 
   fallback?: ReactNode | ((status: ImageStatus) => ReactNode);
   loadedClassName?: string;
   loadingClassName?: string;
+  /** Ширина/высота Cloudinary-превью в px (квадрат). Все текущие места
+   * использования — маленькие превью 24-32px, retina покрыта запасом. */
+  thumbSize?: number;
 }
 
 export function UniversalImage({
@@ -23,9 +27,11 @@ export function UniversalImage({
   onError,
   loadedClassName = 'opacity-100',
   loadingClassName = 'opacity-0',
+  thumbSize = 96,
   ...imgProps
 }: UniversalImageProps) {
   const [status, setStatus] = useState<ImageStatus>(src ? 'loading' : 'empty');
+  const thumbSrc = useMemo(() => cldThumb(src, { w: thumbSize }), [src, thumbSize]);
 
   useEffect(() => {
     setStatus(src ? 'loading' : 'empty');
@@ -43,7 +49,7 @@ export function UniversalImage({
       {src && status !== 'error' && (
         <img
           {...imgProps}
-          src={src}
+          src={thumbSrc}
           alt={alt}
           onLoad={(e) => {
             setStatus('loaded');
