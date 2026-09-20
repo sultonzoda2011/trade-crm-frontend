@@ -56,14 +56,14 @@ export function RevenueTrendChart({ data }: RevenueTrendChartProps) {
 
   if (data.length === 0) {
     return (
-      <Panel title={t('revenueTrend')} className="col-span-2">
+      <Panel title={t('revenueTrend')} className="lg:col-span-2">
         <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
       </Panel>
     );
   }
 
   return (
-    <Panel title={t('revenueTrend')} className="col-span-2">
+    <Panel title={t('revenueTrend')} className="lg:col-span-2">
       <ChartContainer config={chartConfig} initialDimension={{ width: 500, height: 250 }}>
         <LineChart data={formattedData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #e5e7eb)" />

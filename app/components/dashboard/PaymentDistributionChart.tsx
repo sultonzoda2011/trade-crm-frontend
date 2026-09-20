@@ -53,7 +53,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
 
   if (data.length === 0) {
     return (
-      <Panel title={t('paymentTypes')} className="col-span-1">
+      <Panel title={t('paymentTypes')} className="lg:col-span-1">
         <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
       </Panel>
     );
@@ -65,7 +65,7 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
   }));
 
   return (
-    <Panel title={t('paymentTypes')} className="col-span-1" bodyClassName="flex flex-col">
+    <Panel title={t('paymentTypes')} className="lg:col-span-1" bodyClassName="flex flex-col">
       <div className="flex flex-1 items-center justify-center">
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
