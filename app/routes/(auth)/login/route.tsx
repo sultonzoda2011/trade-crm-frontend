@@ -1,23 +1,23 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useMutation } from '@tanstack/react-query'
-import { Eye, EyeOff } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { redirect, useNavigate, useSearchParams } from 'react-router'
-import { toast } from 'sonner'
-import { authApi } from '~/api/auth'
-import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher'
-import { ModeToggle } from '~/components/layout/ModeToggle'
-import { Button } from '~/components/ui/button'
-import { FormInput } from '~/components/ui/form/FormInput'
-import { canAccess } from '~/config/permissions'
-import { useForm } from '~/hooks/useForm'
-import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils'
-import { cn } from '~/lib/utils'
-import { Role } from '~/types/common'
-import { createLoginSchema, type LoginForm } from '~/validations/auth'
-import darkLogo from '/dark-logo.png'
-import lightLogo from '/light-logo.png'
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation } from '@tanstack/react-query';
+import { Eye, EyeOff } from 'lucide-react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { redirect, useNavigate, useSearchParams } from 'react-router';
+import { toast } from 'sonner';
+import { authApi } from '~/api/auth';
+import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
+import { ModeToggle } from '~/components/layout/ModeToggle';
+import { Button } from '~/components/ui/button';
+import { FormInput } from '~/components/ui/form/FormInput';
+import { canAccess } from '~/config/permissions';
+import { useForm } from '~/hooks/useForm';
+import { getClientUser, setAccessToken, setUserInfo, type UserInfo } from '~/lib/auth-utils';
+import { cn } from '~/lib/utils';
+import { Role } from '~/types/common';
+import { createLoginSchema, type LoginForm } from '~/validations/auth';
+import darkLogo from '/logo-text-in-left-dark.png';
+import lightLogo from '/logo-text-in-left-light.png';
 
 /** Официальный многоцветный логотип Google «G». */
 function GoogleIcon({ className }: { className?: string }) {
@@ -121,8 +121,8 @@ export default function LoginPage() {
         />
 
         <div className="relative flex items-center">
-          <img className="h-30 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
-          <img className="hidden h-30 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
+          <img className="h-12 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
+          <img className="hidden h-12 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
         </div>
 
         <div className="relative max-w-md space-y-5">
@@ -154,8 +154,8 @@ export default function LoginPage() {
           <div className="w-full max-w-sm space-y-6">
             {/* Logo — mobile only; the hero carries it on desktop */}
             <div className="flex justify-center lg:hidden">
-              <img className="h-25 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
-              <img className="hidden h-25 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
+              <img className="h-10 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
+              <img className="hidden h-10 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
             </div>
 
             <div className="bg-card ring-foreground/10 rounded-2xl p-6 shadow-lg ring-1 sm:p-8">

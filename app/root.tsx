@@ -26,11 +26,11 @@ import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
-import lightLogo from '/light-logo.png';
-import darkLogo from '/dark-logo.png';
 import { getQueryClient } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
+import darkLogo from '/logo-text-in-left-dark.png';
+import lightLogo from '/logo-text-in-left-light.png';
 
 export async function clientLoader() {
   const fromCookie = Cookies.get('lng');
@@ -46,6 +46,10 @@ export async function clientLoader() {
 export const handle = { i18n: i18nConfig.ns };
 
 export const links: Route.LinksFunction = () => [
+  { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+  { rel: 'icon', type: 'image/png', href: '/light-favicon.png', media: '(prefers-color-scheme: light)' },
+  { rel: 'icon', type: 'image/png', href: '/dark-favicon.png', media: '(prefers-color-scheme: dark)' },
+  { rel: 'apple-touch-icon', href: '/light-favicon.png' },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',
