@@ -1,1 +1,11 @@
-(empty)
+.env
+/node_modules/
+.idea
+# React Router
+/.react-router/
+/build/
+.claude/settings.local.json
+.kilo/
+/android/
+/ios/
+/capacitor-cache/
