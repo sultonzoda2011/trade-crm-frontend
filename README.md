@@ -2,7 +2,7 @@
 
 SPA-система управления торговлей (CRM) на React Router 7.
 Работает и как веб-приложение, и как **Android-приложение** (обёртка Capacitor, сборка APK через GitHub Actions).
-Backend: NestJS + Prisma + PostgreSQL.
+Backend: NestJS + Prisma + PostgreSQL (отдельный репозиторий).
 
 ---
 
@@ -14,40 +14,40 @@ Backend: NestJS + Prisma + PostgreSQL.
 - **Продажи и долги**: продажа, продажа в долг, возвраты; частичные/полные оплаты; статусы транзакций
 - **Управление должниками**: карточки, метрики долга, уровень риска
 - **Каталог товаров**: единицы измерения, остатки, пороги дозаказа, категории
-- **Рынки**: свой рынок (Owner) и все рынки (Admin), сотрудники и товары рынка
+- **Рынки**: список всех рынков (Admin) и детальная страница рынка с сотрудниками и товарами
 - **Встроенное руководство** `/guide` — полный трилингвальный мануал по всем экранам с мощным поиском, работает офлайн (markdown вшит в бандл)
-- **Мультиязычность**: русский, английский, таджикский (react-i18next, 13 неймспейсов, `ru` — fallback)
+- **Мультиязычность**: русский, английский, таджикский (react-i18next, 14 неймспейсов, `ru` — fallback)
 - **Тёмная/светлая тема** с семантическими токенами (next-themes + TailwindCSS 4)
-- **Загрузка изображений** для рынков, продуктов и профиля (multipart/form-data)
+- **Загрузка изображений** для рынков, продуктов и профиля (multipart/form-data, Cloudinary-URL)
 - **Inline-фильтры** с debounce-поиском, `FilterSheet` для расширенных фильтров, виртуализированные таблицы
-- **Офлайн-кэш** серверного состояния (react-query-persist-client) — важно для мобильной обёртки
+- **Мобильная интеграция**: аппаратная кнопка «Назад» (`useCapacitorBackButton`), статус-бар, синхронизированный с темой (`useCapacitorStatusBar`)
 
 ---
 
 ## Технический стек
 
-| Категория     | Технологии                                                                                                          |
-| ------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Framework     | React Router 7 (SPA, `ssr: false`)                                                                                  |
-| View          | React 19 + TypeScript 5.9 + Vite 7                                                                                  |
-| Мобильное     | Capacitor 8 (Android): плагины StatusBar + Keyboard, статус-бар синхронизирован с темой                             |
-| Styling       | TailwindCSS 4 + tw-animate-css; шрифт Geist Variable                                                                |
-| UI primitives | shadcn/ui на **@base-ui/react** (не Radix; паттерн `render`-prop, не `asChild`)                                     |
-| Таблицы       | @tanstack/react-table + @tanstack/react-virtual (виртуализация)                                                     |
-| State         | Zustand (фабрики `createTableStore` / `createModalStore`)                                                           |
-| Server state  | @tanstack/react-query v5 (staleTime 60s, `keepPreviousData`) + персист в localStorage                              |
-| HTTP          | Axios (единый инстанс, `withCredentials`; интерцепторы: RBAC-предпроверка по `API_ROUTE_ACTIONS`, 401 → `/login`)   |
-| Forms         | react-hook-form + обёртка `useForm` (ревалидация при смене языка)                                                   |
-| Validation    | Zod (схемы-фабрики `createXxxSchema(t)` с i18n-сообщениями)                                                          |
-| Auth          | httpOnly cookie `accessToken` + читаемый `user` cookie (`withCredentials`); личность — `getClientUser()`, без Bearer |
-| i18n          | react-i18next + i18next-http-backend                                                                                |
-| Charts        | Recharts                                                                                                            |
-| Dates         | dayjs + customParseFormat (всё через `toDayjs()` / `toDate()`)                                                       |
-| Toasts        | sonner                                                                                                              |
-| Icons         | lucide-react                                                                                                        |
-| Overlays      | flatpickr (date pickers), cmdk (command palette)                                                                    |
-| Navigation    | NProgress (top bar), React Router                                                                                   |
-| Docs          | Встроенный `/guide` — no-dep markdown-рендерер, контент вшит через `import.meta.glob` (офлайн)                       |
+| Категория     | Технологии                                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Framework     | React Router 7 (SPA, `ssr: false`)                                                                                    |
+| View          | React 19 + TypeScript 5.9 + Vite 7                                                                                    |
+| Мобильное     | Capacitor 8 (Android): плагины StatusBar + Keyboard, Back Button                                                      |
+| Styling       | TailwindCSS 4 + tw-animate-css; шрифт Geist Variable                                                                  |
+| UI primitives | shadcn/ui на **@base-ui/react** (не Radix; паттерн `render`-prop, не `asChild`)                                       |
+| Таблицы       | @tanstack/react-table + @tanstack/react-virtual (виртуализация)                                                       |
+| State         | Zustand (фабрики `createModalStore`, табличный стор `useTableStore`)                                                  |
+| Server state  | @tanstack/react-query v5 (staleTime 60s, `keepPreviousData`)                                                          |
+| HTTP          | Axios (единый инстанс, `withCredentials`; интерцепторы: RBAC-предпроверка по `API_ROUTE_ACTIONS`, 401 → `/login`)     |
+| Forms         | react-hook-form + обёртка `useForm` (ревалидация при смене языка)                                                     |
+| Validation    | Zod (схемы-фабрики `createXxxSchema(t)` с i18n-сообщениями)                                                           |
+| Auth          | httpOnly cookie `accessToken` + читаемый `user` cookie (`withCredentials`); личность — `getClientUser()`, без Bearer   |
+| i18n          | react-i18next + i18next-http-backend + remix-i18next                                                                  |
+| Charts        | Recharts                                                                                                              |
+| Dates         | dayjs + customParseFormat (всё через `toDayjs()` / `toDate()`)                                                        |
+| Toasts        | sonner                                                                                                                |
+| Icons         | lucide-react                                                                                                          |
+| Overlays      | flatpickr (date pickers), cmdk (command palette)                                                                      |
+| Navigation    | NProgress (top bar), React Router                                                                                     |
+| Docs          | Встроенный `/guide` — no-dep markdown-рендерер, контент вшит через `import.meta.glob` (офлайн)                        |
 
 ---
 
@@ -68,7 +68,6 @@ Backend: NestJS + Prisma + PostgreSQL.
   /users                         — Users list      (только Admin)
   /users/:id                     — User detail
   /markets                       — Markets list    (только Admin)
-  /my-market                     — Свой рынок      (только Owner)
   /markets/:id                   — Market detail
   /sellers                       — Sellers list
   /sellers/:id                   — Seller detail
@@ -92,16 +91,16 @@ Backend: NestJS + Prisma + PostgreSQL.
 
 ## Команды
 
-| Команда             | Описание                                                     |
-| ------------------- | ------------------------------------------------------------ |
-| `npm run dev`       | Vite dev server с HMR (http://localhost:5173)                |
-| `npm run dev:fresh` | Очистка `.vite` кэша + dev (лечит «залипший» HMR)            |
-| `npm run build`     | Production сборка (`react-router build` → `build/client`)    |
-| `npm run typecheck` | `react-router typegen && tsc` — основной автоматический гейт |
-| `npm run start`     | Запуск production-сборки (`vite preview`, порт 3000)         |
-| `npm run test:e2e`  | Playwright e2e (каркас настроен, сценарии ещё не добавлены)   |
+| Команда            | Описание                                                      |
+| ------------------ | ------------------------------------------------------------- |
+| `npm run dev`      | Vite dev server с HMR (http://localhost:5173)                 |
+| `npm run dev:fresh`| Очистка `.vite` кэша + dev (лечит «залипший» HMR)             |
+| `npm run build`    | Production сборка (`react-router build` → `build/client`)     |
+| `npm run typecheck`| `react-router typegen && tsc` — основной автоматический гейт  |
+| `npm run start`    | Запуск production-сборки (`vite preview`, порт 3000)          |
+| `npm run test:e2e` | Playwright e2e (`playwright test`)                            |
 
-> Линтера нет; `typecheck` и `build` — единственные автоматические гейты.
+> Линтера нет; `typecheck` и `build` — основные автоматические гейты.
 > Форматирование: `npx prettier --write .` (сортировка Tailwind-классов через плагин).
 
 ---
@@ -116,19 +115,22 @@ npm install
 npm run dev
 ```
 
+Требуется запущенный backend TradeCRM API (NestJS) по адресу из `VITE_API_URL`.
+
 ---
 
 ## Мобильное приложение (Android / Capacitor)
 
 Веб-бандл упаковывается в нативную Android-обёртку через Capacitor.
 
-- **Конфиг**: `capacitor.config.ts` — `appId: com.tradecrm.app`, `appName: TradeCRM`, `webDir: build/client`.
-- **Плагины**: StatusBar (`overlaysWebView: false`, цвет/стиль синхронизируются с темой в `app/lib/capacitor-status-bar.ts`) и Keyboard (`resize: body`).
+- **Конфиг**: `capacitor.config.ts` — `appId: com.tradecrm.app`, `appName: TradeCRM`, `webDir: build/client`, `androidScheme: https`.
+- **Плагины**: StatusBar (`overlaysWebView: false`, цвет/стиль синхронизируются с темой в `app/hooks/useCapacitorStatusBar.ts`), Keyboard (`resize: body`) и обработка аппаратной кнопки «Назад» (`app/hooks/useCapacitorBackButton.ts`).
+- **Ассеты**: иконки и splash-экраны в `assets/` (генерация через `@capacitor/assets`).
 - **Локальная сборка**:
 
   ```bash
   npm run build            # статический SPA-бандл в build/client
-  npx cap add android      # один раз — создаёт папку android/
+  npx cap add android      # один раз — создаёт папку android/ (в .gitignore)
   npx cap sync android     # копирует бандл + плагины в нативный проект
   cd android && ./gradlew assembleDebug
   ```
@@ -155,34 +157,37 @@ npm run dev
 
 ```
 app/
-  routes/               # Маршруты + их компоненты (ручной роутинг в routes.ts)
+  routes.ts             # Роутинг (декларативная конфигурация)
+  routes/
     (auth)/             # Auth layout + login
     (crm)/              # CRM layout + все страницы
       dashboard/        # layout + overview/inventory/products/sellers-report
       guide/            # route.tsx + content/{ru,en,tg}/*.md + sections.ts + content-loader.ts
       <entity>/         # route.tsx, store.ts, id/route.tsx, create|edit
-  api/                  # API-модули (единый axios-инстанс)
+  api/                  # API-модули по сущностям (единый axios-инстанс)
   components/
-    ui/                 # Примитивы (~29 шт. на @base-ui/react)
+    ui/                 # Примитивы (~30 шт. на @base-ui/react)
     ui/form/            # Form-обёртки для react-hook-form (5 шт.)
     shared/             # Переиспользуемые компоненты (~39 шт., в т.ч. Markdown, DataTable)
     modals/             # Модальные окна (~15 шт.)
     dashboard/          # Виджеты дашборда (~11 шт.)
     layout/             # Header, Sidebar, NavMain, UserNav, ModeToggle, LanguageSwitcher
-  config/               # permissions, navigation, actions, period, enumOptions
-  hooks/                # useCan, useDataTable, useDebounce, useForm, useIsMobile
-  lib/                  # client, auth-utils, date, format, i18n, query-client, capacitor-status-bar, utils
-  store/                # Zustand-фабрики (createTableStore, createModalStore)
+  config/               # permissions, navigation, actions, period, enumOptions, *_badges
+  hooks/                # useCan, useDataTable, useDebounce, useForm, use-mobile, useCapacitor*
+  lib/                  # client, auth-utils, date, format, i18n, query-client, cloudinary, utils
+  store/                # Zustand-фабрики (createModalStore) + useTableStore
   types/                # TypeScript-типы сущностей
   validations/          # Zod-схемы
   styles/global.css     # Глобальные стили, тема, анимации
 public/
-  locales/{ru,en,tg}/   # Переводы (13 неймспейсов на язык)
+  locales/{ru,en,tg}/   # Переводы (14 неймспейсов на язык)
   locales/icons/        # Флаги для переключателя языка
+assets/                 # Иконки и splash для Capacitor (@capacitor/assets)
 capacitor.config.ts     # Конфиг мобильной обёртки
-android/                # Нативный Android-проект (генерируется cap add android)
+android/                # Нативный Android-проект (генерируется cap add android, в .gitignore)
 .github/workflows/      # android.yml — сборка APK
 Dockerfile              # Multi-stage сборка веб-версии
+vercel.json             # Конфиг деплоя на Vercel
 ```
 
 ---
