@@ -13,7 +13,6 @@ import { useUsersModals } from '~/routes/(crm)/users/store';
 
 function UserActionsCell({ row, t }: { row: User; t: TFunction }) {
   const deleteModal = useUsersModals((s) => s.delete);
-  const editModal = useUsersModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
@@ -28,7 +27,7 @@ function UserActionsCell({ row, t }: { row: User; t: TFunction }) {
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
-          onClick={() => editModal.open(row)}
+          render={<Link to={`/users/${row.id}/edit`} />}
         />
       )}
       {can(Action.USERS_DELETE) && (

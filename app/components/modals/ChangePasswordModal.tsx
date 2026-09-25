@@ -46,7 +46,7 @@ export function ChangePasswordModal() {
       onClose={passwordModal.close}
       title={t('sections.password')}
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={passwordModal.close}>
             {t('actions.cancel')}
           </Button>

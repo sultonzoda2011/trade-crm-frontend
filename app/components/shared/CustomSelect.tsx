@@ -68,7 +68,7 @@ export function CustomSelect(props: CustomSelectProps) {
     isMulti,
     value,
     onChange,
-    isClearable = true,
+    isClearable = !required,
     onSearch,
     loading,
   } = props;

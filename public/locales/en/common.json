@@ -200,6 +200,7 @@
   "endDate": "End date",
   "documentFile": "Document",
   "yearsUnit": "yr.",
+  "daysUnit": "d.",
   "breadcrumbs": {
     "create": "Create",
     "edit": "Edit"

@@ -131,7 +131,7 @@
     "collapse": "Гузордан",
     "expand": "Кшода кардан"
   },
-"fields": {
+  "fields": {
     "fullName": "Ному насаб",
     "phone": "Телефон",
     "email": "Почтаи электронӣ",
@@ -182,7 +182,7 @@
     "emptyText": "Ҳеҷ чиз ёфт нашуд",
     "loading": "Боркунӣ…"
   },
-"dateRangePicker": {
+  "dateRangePicker": {
     "placeholder": "Select period"
   },
   "input": {
@@ -200,6 +200,7 @@
   "endDate": "Санаи анҷом",
   "documentFile": "Ҳуҷҷат",
   "yearsUnit": "сол",
+  "daysUnit": "рӯз",
   "breadcrumbs": {
     "create": "Эҷод",
     "edit": "Таҳрир"

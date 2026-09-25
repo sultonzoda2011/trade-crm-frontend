@@ -3,10 +3,9 @@ import { flexRender } from '@tanstack/react-table';
 import { Package, Plus, Tag } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
-import { CreateCategoryModal } from '~/components/modals/CreateCategoryModal';
-import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
@@ -25,9 +24,9 @@ import { useCategoriesModals, useCategoriesStore } from '~/routes/(crm)/categori
 export default function CategoriesPage() {
   const { t } = useTranslation(['categories', 'common']);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useCategoriesModals((s) => s.delete);
-  const createModal = useCategoriesModals((s) => s.create);
 
   const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useCategoriesStore();
 
@@ -94,7 +93,7 @@ export default function CategoriesPage() {
             size="icon"
             aria-label={t('create')}
             className="w-auto shrink-0 gap-1.5 px-3"
-            onClick={() => createModal.open()}>
+            onClick={() => navigate('/categories/create')}>
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
           </Button>
@@ -131,8 +130,6 @@ export default function CategoriesPage() {
           );
         }}
       />
-      <CreateCategoryModal />
-      <EditCategoryModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => !open && deleteModal.close()}

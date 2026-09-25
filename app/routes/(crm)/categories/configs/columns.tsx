@@ -9,11 +9,10 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import { useCategoriesModals } from '~/routes/(crm)/categories/store';
-import type { Category, CategoryDetail } from '~/types/products';
+import type { Category } from '~/types/products';
 
 function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
   const deleteModal = useCategoriesModals((s) => s.delete);
-  const editModal = useCategoriesModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
@@ -28,7 +27,7 @@ function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
-          onClick={() => editModal.open(row as unknown as CategoryDetail)}
+          render={<Link to={`/categories/${row.id}/edit`} />}
         />
       )}
       {can(Action.CATEGORIES_MANAGE) && (

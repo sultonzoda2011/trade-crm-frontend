@@ -182,7 +182,7 @@
     "emptyText": "Ничего не найдено",
     "loading": "Загрузка…"
   },
-"dateRangePicker": {
+  "dateRangePicker": {
     "placeholder": "Select period"
   },
   "input": {
@@ -200,6 +200,7 @@
   "endDate": "Дата окончания",
   "documentFile": "Документ",
   "yearsUnit": "г.",
+  "daysUnit": "дн.",
   "breadcrumbs": {
     "create": "Создать",
     "edit": "Редактировать"

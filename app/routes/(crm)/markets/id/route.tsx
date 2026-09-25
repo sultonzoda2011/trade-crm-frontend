@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router';
 import { marketsApi } from '~/api/markets';
 
 import { MarketDetailView } from '~/components/markets/MarketDetailView';
-import { EditMarketModal } from '~/components/modals/EditMarketModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 
@@ -56,8 +55,6 @@ export default function MarketDetailPage() {
           transactions: response?.data?.transactions?.data ?? [],
         }}
       />
-
-      <EditMarketModal />
     </div>
   );
 }

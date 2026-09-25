@@ -3,11 +3,9 @@ import { flexRender } from '@tanstack/react-table';
 import { Package, Plus, Receipt, Store, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
-import { CreateMarketModal } from '~/components/modals/CreateMarketModal';
-import { EditMarketModal } from '~/components/modals/EditMarketModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
@@ -27,9 +25,9 @@ export default function MarketsPage() {
   const { t } = useTranslation(['markets', 'common']);
   const queryClient = useQueryClient();
   const location = useLocation();
+  const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useMarketsModals((s) => s.delete);
-  const createModal = useMarketsModals((s) => s.create);
 
   const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useMarketsStore();
 
@@ -97,7 +95,7 @@ export default function MarketsPage() {
             size="icon"
             aria-label={t('create')}
             className="w-auto shrink-0 gap-1.5 px-3"
-            onClick={() => createModal.open()}>
+            onClick={() => navigate('/markets/create')}>
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
           </Button>
@@ -144,8 +142,6 @@ export default function MarketsPage() {
           );
         }}
       />
-      <CreateMarketModal />
-      <EditMarketModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => !open && deleteModal.close()}

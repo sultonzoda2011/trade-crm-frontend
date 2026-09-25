@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { usersApi } from '~/api/users';
 import { Panel } from '~/components/layout/Panel';
-import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
@@ -22,7 +21,6 @@ import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
-import { useUsersModals } from '~/routes/(crm)/users/store';
 import { Role } from '~/types/common';
 
 export default function UserDetailPage() {
@@ -31,7 +29,6 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const editModal = useUsersModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['user-full', id],
@@ -118,20 +115,20 @@ export default function UserDetailPage() {
             <Panel title={t('fields.market')}>
               <div className="divide-border divide-y">
                 {ownedMarkets.slice(0, 5).map((m) => (
-                    <ListLink
-                      key={m.id}
-                      to={`/markets/${m.id}`}
-                      state={{ fromPath: location.pathname, fromName: user.name }}>
-                      <span className="flex min-w-0 items-center gap-2.5">
-                        <Avatar size="sm" className="shrink-0">
-                          {m.image ? <AvatarImage src={m.image} alt={m.name} /> : null}
-                          <AvatarFallback>{m.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate text-sm font-medium">{m.name}</span>
-                      </span>
-                      <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
-                    </ListLink>
-                  ))}
+                  <ListLink
+                    key={m.id}
+                    to={`/markets/${m.id}`}
+                    state={{ fromPath: location.pathname, fromName: user.name }}>
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <Avatar size="sm" className="shrink-0">
+                        {m.image ? <AvatarImage src={m.image} alt={m.name} /> : null}
+                        <AvatarFallback>{m.name.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-sm font-medium">{m.name}</span>
+                    </span>
+                    <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
+                  </ListLink>
+                ))}
               </div>
             </Panel>
           )}
@@ -174,7 +171,7 @@ export default function UserDetailPage() {
                       icon: Pencil,
                       label: t('actions.edit'),
                       variant: 'outline' as const,
-                      onClick: () => editModal.open(user),
+                      onClick: () => navigate(`/users/${id}/edit`),
                     },
                   ]
                 : []),
@@ -192,8 +189,6 @@ export default function UserDetailPage() {
           />
         </div>
       </div>
-
-      <EditUserModal />
     </div>
   );
 }

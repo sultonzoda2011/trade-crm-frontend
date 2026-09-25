@@ -83,8 +83,8 @@ export function EditProfileModal() {
             label={!isMobile ? t('avatar') : undefined}
             accept="image/*"
             aspectRatio="square"
-            size="compact"            className="m-auto"
-
+            size="compact"
+            className="m-auto"
           />
           <div className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />

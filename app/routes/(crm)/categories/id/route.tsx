@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { Panel } from '~/components/layout/Panel';
-import { EditCategoryModal } from '~/components/modals/EditCategoryModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
@@ -20,7 +19,6 @@ import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 
 export default function CategoryDetailPage() {
   const { t } = useTranslation(['categories', 'common']);
@@ -28,7 +26,6 @@ export default function CategoryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const editModal = useCategoriesModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['category-full', id],
@@ -160,7 +157,7 @@ export default function CategoryDetailPage() {
                       icon: Pencil,
                       label: t('actions.edit'),
                       variant: 'outline' as const,
-                      onClick: () => editModal.open(category),
+                      onClick: () => navigate(`/categories/${id}/edit`),
                     },
                   ]
                 : []),
@@ -178,8 +175,6 @@ export default function CategoryDetailPage() {
           />
         </div>
       </div>
-
-      <EditCategoryModal />
     </div>
   );
 }

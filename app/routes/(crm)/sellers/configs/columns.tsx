@@ -12,7 +12,6 @@ import { useSellersModals } from '~/routes/(crm)/sellers/store';
 
 function SellerActionsCell({ row, t }: { row: Seller; t: TFunction }) {
   const deleteModal = useSellersModals((s) => s.delete);
-  const editModal = useSellersModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
   // Owner-продавец может встретить самого себя в списке продавцов (бэкенд
@@ -36,7 +35,7 @@ function SellerActionsCell({ row, t }: { row: Seller; t: TFunction }) {
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
-          onClick={() => editModal.open(row)}
+          render={<Link to={`/sellers/${row.id}/edit`} />}
         />
       )}
       {can(Action.SELLERS_DELETE) && (

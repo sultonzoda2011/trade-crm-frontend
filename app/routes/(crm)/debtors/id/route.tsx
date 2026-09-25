@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
 import { Panel } from '~/components/layout/Panel';
-import { EditDebtorModal } from '~/components/modals/EditDebtorModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
 import { InfoItem } from '~/components/shared/InfoItem';
@@ -19,7 +18,6 @@ import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 
 export default function DebtorDetailPage() {
   const { t } = useTranslation(['debtors', 'transactions', 'common']);
@@ -27,7 +25,6 @@ export default function DebtorDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const editModal = useDebtorsModals((s) => s.edit);
 
   const { data: response, isLoading } = useQuery({
     queryKey: ['debtor-full', id],
@@ -211,7 +208,7 @@ export default function DebtorDetailPage() {
                       icon: Pencil,
                       label: t('actions.edit', { ns: 'common' }),
                       variant: 'outline' as const,
-                      onClick: () => editModal.open(debtor),
+                      onClick: () => navigate(`/debtors/${id}/edit`),
                     },
                   ]
                 : []),
@@ -233,8 +230,6 @@ export default function DebtorDetailPage() {
           />
         </div>
       </div>
-
-      <EditDebtorModal />
     </div>
   );
 }

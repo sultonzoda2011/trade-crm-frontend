@@ -43,7 +43,7 @@ export function CreateDebtorModal() {
       onClose={createModal.close}
       title={t('actions.create')}
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={createModal.close}>
             {t('actions.cancel')}
           </Button>

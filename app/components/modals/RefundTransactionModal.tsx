@@ -15,11 +15,7 @@ import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { RefundItemRequest } from '~/types/transactions';
-import {
-  refundTransactionSchema,
-  type RefundableMap,
-  type RefundTransactionInput,
-} from '~/validations/transactions';
+import { refundTransactionSchema, type RefundableMap, type RefundTransactionInput } from '~/validations/transactions';
 
 /**
  * Partial refund of a sale.
@@ -149,16 +145,11 @@ export function RefundTransactionModal() {
             render={({ field }) => (
               <div className="space-y-1.5">
                 <Label>{t('refundModal.mode')}</Label>
-                <RadioGroup
-                  value={field.value}
-                  onValueChange={(value) => field.onChange(value)}
-                  className="gap-2">
+                <RadioGroup value={field.value} onValueChange={(value) => field.onChange(value)} className="gap-2">
                   <Radio value="ALL">{t('refundModal.modeAll')}</Radio>
                   <Radio value="PARTIAL">{t('refundModal.modePartial')}</Radio>
                 </RadioGroup>
-                {field.value === 'ALL' && (
-                  <p className="text-muted-foreground text-xs">{t('refundModal.allHint')}</p>
-                )}
+                {field.value === 'ALL' && <p className="text-muted-foreground text-xs">{t('refundModal.allHint')}</p>}
               </div>
             )}
           />
@@ -226,9 +217,7 @@ export function RefundTransactionModal() {
                   <tr key={item.id}>
                     <td className="px-2.5 py-2 font-medium">{item.productName || item.product?.name}</td>
                     <td className="px-2.5 py-2 text-center font-mono">{item.quantity}</td>
-                    <td className="text-muted-foreground px-2.5 py-2 text-center font-mono">
-                      {item.refundedQuantity}
-                    </td>
+                    <td className="text-muted-foreground px-2.5 py-2 text-center font-mono">{item.refundedQuantity}</td>
                     <td className="text-success px-2.5 py-2 text-center font-mono font-semibold">
                       {item.refundableQuantity}
                     </td>
@@ -251,9 +240,7 @@ export function RefundTransactionModal() {
                                 aria-label={`${item.productName} — ${t('refundModal.columns.toRefund')}`}
                                 {...field}
                                 value={field.value ?? ''}
-                                onChange={(e) =>
-                                  field.onChange(e.target.value === '' ? '' : Number(e.target.value))
-                                }
+                                onChange={(e) => field.onChange(e.target.value === '' ? '' : Number(e.target.value))}
                               />
                               {fieldState.error && (
                                 <p className="text-destructive text-2xs">{fieldState.error.message}</p>

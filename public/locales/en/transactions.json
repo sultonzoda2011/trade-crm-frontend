@@ -123,5 +123,9 @@
   },
   "remaining": "Remaining",
   "stockError": "Not enough stock available",
-  "inStock": "In stock"
+  "inStock": "In stock",
+  "payModal": {
+    "half": "Half",
+    "full": "Full remaining"
+  }
 }

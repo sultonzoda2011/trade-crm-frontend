@@ -12,7 +12,6 @@ import type { Debtor } from '~/types/debtors';
 
 function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
-  const editModal = useDebtorsModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
@@ -27,7 +26,7 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
-          onClick={() => editModal.open(row)}
+          render={<Link to={`/debtors/${row.id}/edit`} />}
         />
       )}
       {can(Action.DEBTORS_DELETE) && (

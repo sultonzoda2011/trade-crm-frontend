@@ -3,12 +3,10 @@ import { flexRender } from '@tanstack/react-table';
 import { Plus, Store, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
 import { usersApi } from '~/api/users';
-import { CreateUserModal } from '~/components/modals/CreateUserModal';
-import { EditUserModal } from '~/components/modals/EditUserModal';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
@@ -30,9 +28,9 @@ export default function UsersPage() {
   const { t } = useTranslation(['users', 'common']);
   const queryClient = useQueryClient();
   const location = useLocation();
+  const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useUsersModals((s) => s.delete);
-  const createModal = useUsersModals((s) => s.create);
 
   const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useUsersStore();
 
@@ -108,7 +106,7 @@ export default function UsersPage() {
             size="icon"
             aria-label={t('create')}
             className="w-auto shrink-0 gap-1.5 px-3"
-            onClick={() => createModal.open()}>
+            onClick={() => navigate('/users/create')}>
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
           </Button>
@@ -150,8 +148,6 @@ export default function UsersPage() {
           );
         }}
       />
-      <CreateUserModal />
-      <EditUserModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => !open && deleteModal.close()}

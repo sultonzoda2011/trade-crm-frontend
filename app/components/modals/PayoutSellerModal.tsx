@@ -70,7 +70,7 @@ export function PayoutSellerModal() {
       onClose={payoutModal.close}
       title={t('sellers:payoutModalTitle')}
       footer={
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="outline" onClick={payoutModal.close}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
@@ -89,7 +89,7 @@ export function PayoutSellerModal() {
         </div>
       </div>
 
-      <form id="payout-seller-form" onSubmit={handleSubmit(onSubmit)} >
+      <form id="payout-seller-form" onSubmit={handleSubmit(onSubmit)}>
         <FormInput
           control={control}
           name="amount"

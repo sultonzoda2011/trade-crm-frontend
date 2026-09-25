@@ -117,7 +117,11 @@ export default function TransactionDetailPage() {
               <p className="text-muted-foreground text-2xs">{t('fields.remainingAmount')}</p>
               <p className="text-warning font-mono text-base font-bold">{fmtTJS(transaction.remainingAmount)}</p>
             </div>
-            <div className="flex flex-1 flex-wrap justify-end gap-2 sm:flex-none">
+            {/* На мобильном эти же действия дублируются full-width строками в
+                «Быстрые действия» ниже — компактные кнопки здесь только для md+,
+                где панель "Быстрые действия" появляется мельче, а тут они всегда
+                на виду рядом с суммой. */}
+            <div className="hidden flex-1 flex-wrap justify-end gap-2 sm:flex sm:flex-none">
               {can(Action.TRANSACTIONS_EDIT) && (
                 <Tooltip>
                   <TooltipTrigger
@@ -166,7 +170,49 @@ export default function TransactionDetailPage() {
                 {transaction.items?.length ?? 0}
               </Badge>
             }>
-            <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
+            {/* Таблица с 5 колонками не помещается по ширине на телефоне —
+                под md те же данные карточками (тот же приём, что в
+                RefundTransactionModal), таблица остаётся с md. */}
+            <div className="space-y-2 md:hidden">
+              {transaction.items.map((item) => (
+                <div key={item.id} className="rounded-lg border p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Avatar size="sm" className="shrink-0">
+                        {item.product?.image ? <AvatarImage src={item.product.image} alt={item.productName} /> : null}
+                        <AvatarFallback>
+                          {(item.productName || item.product?.name || '?').charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <Link
+                        to={`/products/${item.productId}`}
+                        className="text-primary truncate text-sm font-medium hover:underline">
+                        {item.productName || item.product?.name || item.productId}
+                      </Link>
+                    </span>
+                    <span className="shrink-0 font-mono text-sm font-semibold">
+                      {fmtTJS(item.totalPrice || item.price * item.quantity)}
+                    </span>
+                  </div>
+                  <div className="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
+                    <span>
+                      {fmtTJS(item.price)} × {item.quantity}
+                    </span>
+                    {item.refundedQuantity > 0 && (
+                      <span className="text-destructive font-medium">
+                        −{item.refundedQuantity} {t('fieldsRefund.refundedQuantity')}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
+                <span className="text-muted-foreground text-xs font-medium">{t('fields.totalPrice')}</span>
+                <span className="font-mono">{fmtTJS(summary.totalAmount)}</span>
+              </div>
+            </div>
+
+            <div className="scrollbar-thin hidden max-h-64 overflow-x-auto overflow-y-auto md:block">
               <table className="w-full text-left text-sm">
                 <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
                   <tr>
@@ -212,9 +258,7 @@ export default function TransactionDetailPage() {
                 </tbody>
                 <tfoot className="border-border border-t">
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium">
+                    <td colSpan={4} className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium">
                       {t('fields.totalPrice')}
                     </td>
                     <td className="px-2.5 py-2 text-right font-mono text-sm font-semibold">
@@ -233,40 +277,66 @@ export default function TransactionDetailPage() {
           {showPayments && (
             <Panel title={t('fields.payments')}>
               {hasPayments ? (
-                <div className="scrollbar-thin max-h-64 overflow-x-auto overflow-y-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
-                      <tr>
-                        <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
-                        <th className="px-2.5 py-1.5">{t('fields.note')}</th>
-                        <th className="px-2.5 py-1.5">{t('fields.createdBy')}</th>
-                        <th className="px-2.5 py-1.5 text-right">{t('fields.createdAt')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {transaction.payments.map((p) => (
-                        <tr key={p.id}>
-                          <td className="text-success px-2.5 py-2 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
-                          <td className="text-muted-foreground px-2.5 py-2">{p.note || '-'}</td>
-                          <td className="px-2.5 py-2">
-                            <span className="flex items-center gap-2">
-                              <Avatar size="sm" className="shrink-0">
-                                {p.createdBy?.image ? (
-                                  <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
-                                ) : null}
-                                <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
-                              </Avatar>
-                              <span className="truncate">{p.createdBy?.name || '-'}</span>
-                            </span>
-                          </td>
-                          <td className="text-muted-foreground px-2.5 py-2 text-right text-xs">
-                            {formatDate(p.createdAt, true)}
-                          </td>
+                <>
+                  <div className="space-y-2 md:hidden">
+                    {transaction.payments.map((p) => (
+                      <div key={p.id} className="rounded-lg border p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="flex min-w-0 items-center gap-2">
+                            <Avatar size="sm" className="shrink-0">
+                              {p.createdBy?.image ? (
+                                <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
+                              ) : null}
+                              <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <span className="truncate text-sm">{p.createdBy?.name || '-'}</span>
+                          </span>
+                          <span className="text-success shrink-0 font-mono text-sm font-semibold">
+                            +{fmtTJS(p.amount)}
+                          </span>
+                        </div>
+                        <div className="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
+                          <span className="truncate">{p.note || '-'}</span>
+                          <span className="shrink-0">{formatDate(p.createdAt, true)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="scrollbar-thin hidden max-h-64 overflow-x-auto overflow-y-auto md:block">
+                    <table className="w-full text-left text-sm">
+                      <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
+                        <tr>
+                          <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
+                          <th className="px-2.5 py-1.5">{t('fields.note')}</th>
+                          <th className="px-2.5 py-1.5">{t('fields.createdBy')}</th>
+                          <th className="px-2.5 py-1.5 text-right">{t('fields.createdAt')}</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y">
+                        {transaction.payments.map((p) => (
+                          <tr key={p.id}>
+                            <td className="text-success px-2.5 py-2 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
+                            <td className="text-muted-foreground px-2.5 py-2">{p.note || '-'}</td>
+                            <td className="px-2.5 py-2">
+                              <span className="flex items-center gap-2">
+                                <Avatar size="sm" className="shrink-0">
+                                  {p.createdBy?.image ? (
+                                    <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
+                                  ) : null}
+                                  <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span className="truncate">{p.createdBy?.name || '-'}</span>
+                              </span>
+                            </td>
+                            <td className="text-muted-foreground px-2.5 py-2 text-right text-xs">
+                              {formatDate(p.createdAt, true)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               ) : (
                 <p className="text-muted-foreground py-3 text-center text-sm">{t('table.noData', { ns: 'common' })}</p>
               )}
@@ -275,7 +345,11 @@ export default function TransactionDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <Panel title={t('detail.summary')} bodyClassName="p-4">
+          {/* Раньше «Итоги» и «Детали» были двумя отдельными карточками с
+              почти одинаковым padding и заголовком — визуально две трети
+              этой колонки занимали рамки, а не данные. Один Panel с
+              разделителем между секциями. */}
+          <Panel title={t('detail.summary')} bodyClassName="p-4 space-y-4">
             <div className="grid grid-cols-2 gap-x-4 gap-y-3">
               <InfoItem label={t('summary.totalAmount')} value={fmtTJS(summary.totalAmount)} />
               <InfoItem
@@ -302,31 +376,31 @@ export default function TransactionDetailPage() {
                 </>
               )}
             </div>
-          </Panel>
 
-          <Panel title={t('details')} bodyClassName="p-4">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
-              <InfoItem label={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
-              {transaction.createdBy && (
-                <div className="col-span-2">
-                  <InfoItem
-                    label={t('fields.createdBy')}
-                    value={
-                      <span className="flex items-center gap-2">
-                        <Avatar size="sm" className="shrink-0">
-                          {transaction.createdBy.image ? (
-                            <AvatarImage src={transaction.createdBy.image} alt={transaction.createdBy.name} />
-                          ) : null}
-                          <AvatarFallback>{transaction.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <span className="truncate">{transaction.createdBy.name}</span>
-                      </span>
-                    }
-                  />
-                </div>
-              )}
+            <div className="border-t pt-4">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
+                <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
+                <InfoItem label={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
+                {transaction.createdBy && (
+                  <div className="col-span-2">
+                    <InfoItem
+                      label={t('fields.createdBy')}
+                      value={
+                        <span className="flex items-center gap-2">
+                          <Avatar size="sm" className="shrink-0">
+                            {transaction.createdBy.image ? (
+                              <AvatarImage src={transaction.createdBy.image} alt={transaction.createdBy.name} />
+                            ) : null}
+                            <AvatarFallback>{transaction.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{transaction.createdBy.name}</span>
+                        </span>
+                      }
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </Panel>
           {transaction.debtor && (
@@ -366,6 +440,9 @@ export default function TransactionDetailPage() {
                       icon: CreditCard,
                       label: t('pay'),
                       variant: 'outline' as const,
+                      // Дублирует компактную кнопку в шапке (видна с sm) — здесь
+                      // оставляем только для мобильного full-width действия.
+                      className: 'sm:hidden',
                       onClick: () => payModal.open(transaction),
                     },
                   ]
@@ -376,7 +453,7 @@ export default function TransactionDetailPage() {
                       icon: Undo2,
                       label: t('refund'),
                       variant: 'outline' as const,
-                      className: 'text-destructive hover:bg-destructive/10',
+                      className: 'text-destructive hover:bg-destructive/10 sm:hidden',
                       onClick: () => refundModal.open(transaction),
                     },
                   ]

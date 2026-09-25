@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
 import { Panel } from '~/components/layout/Panel';
-import { EditSellerModal } from '~/components/modals/EditSellerModal';
 import { PayoutSellerModal } from '~/components/modals/PayoutSellerModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { DetailHeader } from '~/components/shared/DetailHeader';
@@ -29,7 +28,6 @@ export default function SellerDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const editModal = useSellersModals((s) => s.edit);
   const payoutModal = useSellersModals((s) => s.payout);
 
   const { data: response, isLoading } = useQuery({
@@ -195,7 +193,7 @@ export default function SellerDetailPage() {
                       icon: Pencil,
                       label: t('actions.edit'),
                       variant: 'outline' as const,
-                      onClick: () => editModal.open(seller),
+                      onClick: () => navigate(`/sellers/${id}/edit`),
                     },
                   ]
                 : []),
@@ -228,7 +226,6 @@ export default function SellerDetailPage() {
         </div>
       </div>
 
-      <EditSellerModal />
       <PayoutSellerModal />
     </div>
   );

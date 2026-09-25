@@ -13,7 +13,6 @@ import type { Market } from '~/types/markets';
 
 function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const deleteModal = useMarketsModals((s) => s.delete);
-  const editModal = useMarketsModals((s) => s.edit);
   const location = useLocation();
   const { can } = useCan();
 
@@ -22,18 +21,13 @@ function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
       <IconActionButton
         icon={<Eye className="size-4" />}
         label={t('actions.view')}
-        render={
-          <Link
-            to={`/markets/${row.id}`}
-            state={{ fromPath: location.pathname, fromName: t('title') }}
-          />
-        }
+        render={<Link to={`/markets/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
       />
       {can(Action.MARKETS_EDIT) && (
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit')}
-          onClick={() => editModal.open(row)}
+          render={<Link to={`/markets/${row.id}/edit`} />}
         />
       )}
       {can(Action.MARKETS_DELETE) && (

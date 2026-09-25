@@ -1,8 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { AlertTriangle, Banknote, Loader2, Package, Plus, ShoppingCart, Tag, Trash2, Wallet } from 'lucide-react';
-import { useEffect, useMemo } from 'react';
+import {
+  AlertTriangle,
+  Banknote,
+  CreditCard,
+  HandCoins,
+  Loader2,
+  Package,
+  Plus,
+  ShoppingCart,
+  SlidersHorizontal,
+  Tag,
+  Trash2,
+  UserPlus,
+  Wallet,
+} from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -11,7 +25,9 @@ import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
 import { Panel } from '~/components/layout/Panel';
+import { CreateDebtorModal } from '~/components/modals/CreateDebtorModal';
 import { CustomInput } from '~/components/shared/CustomInput';
+import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
@@ -19,11 +35,11 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormDateInput } from '~/components/ui/form/FormDateInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
-import { getPaymentTypeOptions, getTransactionTypeOptions } from '~/config/enumOptions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
   createTransactionSchema,
@@ -32,11 +48,28 @@ import {
   type CreateTransactionItemInput,
 } from '~/validations/transactions';
 
+const LAST_PAYMENT_METHOD_KEY = 'tx:lastPaymentMethod';
+
+// SPA-режим (ssr:false) — localStorage доступен сразу, без проверки на window.
+function getLastPaymentMethod(): 'CASH' | 'CARD' | 'DEBT' | null {
+  try {
+    const v = localStorage.getItem(LAST_PAYMENT_METHOD_KEY);
+    return v === 'CASH' || v === 'CARD' || v === 'DEBT' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { can } = useCan();
+  const debtorCreateModal = useDebtorsModals((s) => s.create);
+  // Скидка/надбавка нужны редко — по умолчанию скрыты, чтобы карточка товара
+  // занимала 2 строки на телефоне вместо 3. Разворачиваем по клику или если
+  // в строке уже стоят ненулевые значения (например, при копировании формы).
+  const [expandedAdjustments, setExpandedAdjustments] = useState<Record<string, boolean>>({});
 
   const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
 
@@ -73,11 +106,6 @@ export default function CreateTransactionPage() {
     return map;
   }, [products.byId]);
 
-  const typeOptions = useMemo(
-    () => getTransactionTypeOptions(t).filter((opt) => canCreateSale || opt.value !== 'SALE'),
-    [t, canCreateSale]
-  );
-
   const transactionSchema = useMemo(() => createTransactionSchema(t, stockMap, priceMap), [t, stockMap, priceMap]);
 
   const { control, handleSubmit, watch, setValue, formState } = useForm<CreateTransactionInput>({
@@ -92,8 +120,17 @@ export default function CreateTransactionPage() {
     defaultValues: {
       debtorId: '',
       customerName: '',
-      type: canCreateSale ? 'SALE' : 'DEBT',
-      paymentType: canCreateSale ? 'CASH' : 'CREDIT',
+      // Большинство продавцов день за днём принимают один и тот же способ
+      // оплаты — не заставляем каждый раз тапать по нему заново.
+      type: (() => {
+        const last = canCreateSale ? getLastPaymentMethod() : null;
+        return last === 'DEBT' || !canCreateSale ? 'DEBT' : 'SALE';
+      })(),
+      paymentType: (() => {
+        const last = canCreateSale ? getLastPaymentMethod() : null;
+        if (!canCreateSale || last === 'DEBT') return 'CREDIT';
+        return last === 'CARD' ? 'CARD' : 'CASH';
+      })(),
       dueDate: dayjs().format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0, markup: 0 }],
     },
@@ -108,10 +145,11 @@ export default function CreateTransactionPage() {
   const paymentType = watch('paymentType');
   const items = (watch('items') ?? []) as CreateTransactionItemInput[];
 
-  const paymentTypeOptions = useMemo(() => {
-    const base = getPaymentTypeOptions(t);
-    return type === 'DEBT' ? base.filter((o) => o.value === 'CREDIT') : base.filter((o) => o.value !== 'CREDIT');
-  }, [t, type]);
+  // Один сегмент вместо двух связанных селектов: "В долг" сразу выставляет
+  // и type=DEBT, и paymentType=CREDIT — их взаимную зависимость раньше
+  // приходилось держать в голове (см. useEffect ниже), теперь это один тап.
+  const paymentMethod: 'CASH' | 'CARD' | 'DEBT' =
+    type === 'DEBT' ? 'DEBT' : ((paymentType as 'CASH' | 'CARD') ?? 'CASH');
 
   useEffect(() => {
     if (type === 'DEBT') {
@@ -289,7 +327,7 @@ export default function CreateTransactionPage() {
                       required
                     />
 
-                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
+                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
                       <div>
                         <label className="mb-1.5 block text-sm font-medium">{t('fields.price')}</label>
                         <CustomInput readOnly value={product ? fmtTJS(product.price) : ''} placeholder="—" />
@@ -303,24 +341,6 @@ export default function CreateTransactionPage() {
                         min={1}
                         placeholder={t('fields.quantity')}
                         required
-                      />
-                      <FormInput
-                        control={control}
-                        label={t('fields.discount')}
-                        name={`items.${index}.discount`}
-                        type="number"
-                        inputMode="decimal"
-                        min={0}
-                        placeholder={t('fields.discount')}
-                      />
-                      <FormInput
-                        control={control}
-                        label={t('fields.markup')}
-                        name={`items.${index}.markup`}
-                        type="number"
-                        inputMode="decimal"
-                        min={0}
-                        placeholder={t('fields.markup')}
                       />
                       <div>
                         <label className="mb-1.5 block text-sm font-medium">{t('fields.totalPrice')}</label>
@@ -340,6 +360,41 @@ export default function CreateTransactionPage() {
                         </Button>
                       </div>
                     </div>
+
+                    {(() => {
+                      const isExpanded =
+                        expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0);
+                      return isExpanded ? (
+                        <div className="mt-3 grid grid-cols-2 gap-3 border-t pt-3">
+                          <FormInput
+                            control={control}
+                            label={t('fields.discount')}
+                            name={`items.${index}.discount`}
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            placeholder={t('fields.discount')}
+                          />
+                          <FormInput
+                            control={control}
+                            label={t('fields.markup')}
+                            name={`items.${index}.markup`}
+                            type="number"
+                            inputMode="decimal"
+                            min={0}
+                            placeholder={t('fields.markup')}
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setExpandedAdjustments((s) => ({ ...s, [field.id]: true }))}
+                          className="text-muted-foreground hover:text-foreground mt-2.5 flex items-center gap-1.5 text-xs font-medium">
+                          <SlidersHorizontal className="size-3.5" />
+                          {t('fields.discount')} / {t('fields.markup')}
+                        </button>
+                      );
+                    })()}
 
                     {product && (
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
@@ -432,14 +487,38 @@ export default function CreateTransactionPage() {
         <div className="space-y-6">
           <Panel title={t('details')}>
             <div className="space-y-4">
-              <FormCustomSelect control={control} name="type" label={t('fields.type')} options={typeOptions} required />
-              <FormCustomSelect
-                control={control}
-                name="paymentType"
-                label={t('fields.paymentType')}
-                options={paymentTypeOptions}
-                required
-              />
+              {canCreateSale ? (
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-medium">{t('fields.paymentType')}</label>
+                  <SegmentedControl
+                    value={paymentMethod}
+                    onChange={(next) => {
+                      try {
+                        localStorage.setItem(LAST_PAYMENT_METHOD_KEY, next);
+                      } catch {
+                        // приватный режим / квота — не критично, просто не запомнится
+                      }
+                      if (next === 'DEBT') {
+                        setValue('type', 'DEBT', { shouldValidate: true });
+                        setValue('paymentType', 'CREDIT', { shouldValidate: true });
+                      } else {
+                        setValue('type', 'SALE', { shouldValidate: true });
+                        setValue('paymentType', next, { shouldValidate: true });
+                      }
+                    }}
+                    options={[
+                      { value: 'CASH', label: t('paymentType.CASH'), icon: Banknote },
+                      { value: 'CARD', label: t('paymentType.CARD'), icon: CreditCard },
+                      { value: 'DEBT', label: t('type.DEBT'), icon: HandCoins },
+                    ]}
+                  />
+                </div>
+              ) : (
+                <div className="bg-muted/50 flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                  <HandCoins className="text-warning size-4" />
+                  {t('type.DEBT')}
+                </div>
+              )}
               {type === 'SALE' && (
                 <FormInput
                   control={control}
@@ -450,32 +529,58 @@ export default function CreateTransactionPage() {
               )}
 
               {type === 'DEBT' && (
-                <div>
-                  <FormCustomSelect
-                    control={control}
-                    name="debtorId"
-                    label={t('fields.debtor')}
-                    placeholder={t('fields.debtor')}
-                    options={debtorOptions}
-                    onSearch={debtors.onSearch}
-                    loading={debtors.loading}
-                    isClearable
-                    required
-                  />
-                  <FormDateInput
-                    control={control}
-                    name="dueDate"
-                    placeholder={t('fields.dueDate')}
-                    minDate={new Date()}
-                    label={t('fields.dueDate')}
-                    required
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <div className="mb-1.5 flex items-center justify-between">
+                      <label className="block text-sm font-medium">{t('fields.debtor')}</label>
+                      <button
+                        type="button"
+                        onClick={() => debtorCreateModal.open()}
+                        className="text-primary flex items-center gap-1 text-xs font-medium hover:underline">
+                        <UserPlus className="size-3.5" />
+                        {t('actions.create', { ns: 'common' })}
+                      </button>
+                    </div>
+                    <FormCustomSelect
+                      control={control}
+                      name="debtorId"
+                      placeholder={t('fields.debtor')}
+                      options={debtorOptions}
+                      onSearch={debtors.onSearch}
+                      loading={debtors.loading}
+                      isClearable
+                      required
+                    />
+                  </div>
+                  <div>
+                    <FormDateInput
+                      control={control}
+                      name="dueDate"
+                      placeholder={t('fields.dueDate')}
+                      minDate={new Date()}
+                      label={t('fields.dueDate')}
+                      required
+                    />
+                    <div className="mt-1.5 flex flex-wrap gap-1.5">
+                      {[7, 14, 30].map((days) => (
+                        <button
+                          key={days}
+                          type="button"
+                          onClick={() => setValue('dueDate', dayjs().add(days, 'day').format('YYYY-MM-DD'))}
+                          className="border-border hover:bg-muted rounded-full border px-2.5 py-1 text-xs font-medium">
+                          +{days} {t('daysUnit', { ns: 'common' })}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
           </Panel>
         </div>
       </form>
+
+      <CreateDebtorModal />
 
       {/*
        * Мобильная sticky-панель: итог + Cancel/Create всегда доступны, форма
