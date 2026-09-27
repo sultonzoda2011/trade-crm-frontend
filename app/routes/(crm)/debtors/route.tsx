@@ -11,13 +11,15 @@ import { DataTable } from '~/components/shared/DataTable';
 import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
+import { TransactionProducts } from '~/components/transactions/TransactionProducts';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
-import { fmtTJS } from '~/lib/format';
+import { fmtTJS, formatDate } from '~/lib/format';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
 import { useDebtorsModals, useDebtorsStore } from '~/routes/(crm)/debtors/store';
@@ -133,12 +135,31 @@ export default function DebtorsPage() {
               title={d.name}
               subtitle={d.phone}
               actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
+              media={
+                d.lastPurchase?.items.length ? (
+                  <TransactionProducts
+                    items={d.lastPurchase.items.map((it) => ({
+                      productName: it.name,
+                      quantity: it.quantity,
+                      product: { image: it.image },
+                    }))}
+                    size="sm"
+                    max={3}
+                  />
+                ) : undefined
+              }
               badges={[{ label: t(`risk.${d.risk}`), className: DEBTOR_RISK_BADGE[d.risk] }]}
-              stats={[{ label: t('totalDebtAmount'), value: fmtTJS(d.totalDebtAmount) }]}
+              stats={[
+                { label: t('totalDebtAmount'), value: fmtTJS(d.totalDebtAmount) },
+                ...(d.lastPurchase
+                  ? [{ label: t('profile.lastPurchaseAt'), value: formatDate(d.lastPurchase.at) }]
+                  : []),
+              ]}
             />
           );
         }}
       />
+      <CreatePaymentModal />
       <ConfirmDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => !open && deleteModal.close()}

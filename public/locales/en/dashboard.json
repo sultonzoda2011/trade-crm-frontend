@@ -120,5 +120,6 @@
   "period": {
     "from": "From",
     "to": "To"
-  }
+  },
+  "recentTransactions": "Recent transactions"
 }

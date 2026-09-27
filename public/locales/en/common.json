@@ -11,7 +11,15 @@
     "categories": "Categories",
     "sellersReport": "Sellers report",
     "guide": "Guide",
-    "sync": "Sync"
+    "sync": "Sync",
+    "groups": {
+      "control": "Administration",
+      "main": "Main",
+      "trade": "Trade",
+      "catalog": "Catalog",
+      "team": "Team"
+    },
+    "more": "More"
   },
   "palette": {
     "trigger": "Search",

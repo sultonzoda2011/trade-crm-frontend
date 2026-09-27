@@ -26,6 +26,14 @@ export interface DebtorDebtProfile {
   risk: DebtorRisk;
   score: number;
   factors: string[];
+  /** Заполнено только когда активный долг ровно один — тогда можно погасить в один тап из списка. */
+  activeDebtTransactionId: string | null;
+  lastPurchase: DebtorLastPurchase | null;
+}
+
+export interface DebtorLastPurchase {
+  at: string;
+  items: Array<{ productId: string; name: string; quantity: number; image: string | null }>;
 }
 
 export interface Debtor extends DebtorDebtProfile {

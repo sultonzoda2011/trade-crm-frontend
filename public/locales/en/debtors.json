@@ -50,6 +50,11 @@
     "lastPaymentAt": "Last payment",
     "nextDueDate": "Next due date",
     "never": "never",
-    "daysUnit": "{{count}} days"
+    "daysUnit": "{{count}} days",
+    "lastPurchaseAt": "Last purchase"
+  },
+  "actions": {
+    "pay": "Repay debt",
+    "payLoadError": "Failed to load the transaction"
   }
 }

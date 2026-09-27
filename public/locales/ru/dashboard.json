@@ -120,5 +120,6 @@
   "period": {
     "from": "С",
     "to": "По"
-  }
+  },
+  "recentTransactions": "Последние операции"
 }

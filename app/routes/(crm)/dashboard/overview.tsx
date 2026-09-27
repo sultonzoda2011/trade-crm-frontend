@@ -13,24 +13,31 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useOutletContext } from 'react-router';
+import { Link, useLocation, useOutletContext } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
+import { transactionsApi } from '~/api/transactions';
 import { InsightList } from '~/components/dashboard/InsightList';
 import { MetricCard } from '~/components/dashboard/MetricCard';
 import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
+import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { StatCard } from '~/components/shared/StatCard';
+import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS } from '~/lib/format';
 import type { DashboardFilters } from './layout';
 
+/** Сколько последних операций показывать на дашборде превью-списком. */
+const RECENT_TRANSACTIONS_LIMIT = 5;
+
 export default function DashboardOverviewPage() {
   const { t } = useTranslation(['dashboard', 'common']);
   const { user } = useCan();
+  const location = useLocation();
   const { period, sellerId } = useOutletContext<DashboardFilters>();
 
   const params = useMemo(() => {
@@ -45,6 +52,16 @@ export default function DashboardOverviewPage() {
     queryFn: () => dashboardApi.getOverview(params),
     staleTime: 30_000,
   });
+
+  // Своя, самая свежая выдача транзакций — не пересчитывается из overview,
+  // это просто "последние N по времени", как и на странице должника.
+  const { data: recentTx } = useQuery({
+    queryKey: ['dashboard', 'recent-transactions'],
+    queryFn: () => transactionsApi.getAll(1, RECENT_TRANSACTIONS_LIMIT, { sortBy: 'createdAt', sortOrder: 'desc' }),
+    staleTime: 30_000,
+  });
+  const recentTransactions = recentTx?.data?.data ?? [];
+  const recentTransactionsTotal = recentTx?.data?.meta?.total ?? 0;
 
   const overview = data?.data;
 
@@ -180,6 +197,27 @@ export default function DashboardOverviewPage() {
           )}
         </Panel>
       </div>
+
+      <Panel
+        title={t('recentTransactions')}
+        actions={<PanelViewAll to="/transactions" label={t('viewAll')} count={recentTransactionsTotal} />}
+        bodyClassName="p-0">
+        {recentTransactions.length === 0 ? (
+          <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>
+        ) : (
+          <div className="divide-border divide-y">
+            {recentTransactions.map((tx) => (
+              <TransactionRow
+                key={tx.id}
+                tx={tx}
+                t={t}
+                to={`/transactions/${tx.id}`}
+                state={{ fromPath: location.pathname, fromName: t('title') }}
+              />
+            ))}
+          </div>
+        )}
+      </Panel>
     </div>
   );
 }

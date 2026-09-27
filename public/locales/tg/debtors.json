@@ -50,6 +50,11 @@
     "lastPaymentAt": "Пардохти охирин",
     "nextDueDate": "Мӯҳлати навбатӣ",
     "never": "набуд",
-    "daysUnit": "{{count}} рӯз"
+    "daysUnit": "{{count}} рӯз",
+    "lastPurchaseAt": "Харидории охирин"
+  },
+  "actions": {
+    "pay": "Пардохти қарз",
+    "payLoadError": "Муомилот бор карда нашуд"
   }
 }

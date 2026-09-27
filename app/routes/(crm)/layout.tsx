@@ -1,4 +1,5 @@
 import { Outlet, redirect } from 'react-router';
+import { BottomNav } from '~/components/layout/BottomNav';
 import Header from '~/components/layout/Header';
 import { AppSidebar } from '~/components/layout/Sidebar';
 import { ScrollArea } from '~/components/ui/scroll-area';
@@ -31,12 +32,17 @@ export default function CrmLayout() {
         <Header />
         <ScrollArea className="bg-background min-h-0 flex-1">
           {/* Красная линия полей бухгалтерской книги — одна общая обёртка,
-              применяется сразу ко всем страницам (crm), без правок по каждой. */}
-          <div className="border-(--ledger-margin) p-3 md:p-6" style={{ borderLeftWidth: 2 }}>
+              применяется сразу ко всем страницам (crm), без правок по каждой.
+              pb на мобиле — место под фиксированный BottomNav (нижняя панель
+              со своим safe-area-inset-bottom не должна перекрывать контент). */}
+          <div
+            className="border-(--ledger-margin) p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] md:p-6"
+            style={{ borderLeftWidth: 2 }}>
             <Outlet />
           </div>
         </ScrollArea>
       </div>
+      <BottomNav />
     </SidebarProvider>
   );
 }

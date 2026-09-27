@@ -1,22 +1,44 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
+import { useMutation } from '@tanstack/react-query';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Banknote, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
+import { toast } from 'sonner';
+import { transactionsApi } from '~/api/transactions';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
+import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { Debtor } from '~/types/debtors';
 
 function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
+  const payModal = useTransactionsModals((s) => s.pay);
   const location = useLocation();
   const { can } = useCan();
 
+  // Карточка/строка знает только id транзакции (см. activeDebtTransactionId в
+  // профиле должника) — модалке оплаты нужен полный Transaction (товары,
+  // totalAmount), поэтому перед открытием дотягиваем его одним запросом.
+  const { mutate: openPay, isPending: isPayLoading } = useMutation({
+    mutationFn: (transactionId: string) => transactionsApi.getById(transactionId),
+    onSuccess: (response) => payModal.open(response.data),
+    onError: () => toast.error(t('actions.payLoadError', { ns: 'debtors' })),
+  });
+
   return (
     <RowActionsCell>
+      {row.activeDebtTransactionId && can(Action.TRANSACTIONS_EDIT) && (
+        <IconActionButton
+          icon={<Banknote className="size-4" />}
+          label={t('actions.pay', { ns: 'debtors' })}
+          disabled={isPayLoading}
+          onClick={() => row.activeDebtTransactionId && openPay(row.activeDebtTransactionId)}
+        />
+      )}
       <IconActionButton
         icon={<Eye className="size-4" />}
         label={t('actions.view')}

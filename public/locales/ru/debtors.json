@@ -50,6 +50,11 @@
     "lastPaymentAt": "Последний платёж",
     "nextDueDate": "Следующий срок",
     "never": "не было",
-    "daysUnit": "{{count}} дн."
+    "daysUnit": "{{count}} дн.",
+    "lastPurchaseAt": "Последняя покупка"
+  },
+  "actions": {
+    "pay": "Погасить долг",
+    "payLoadError": "Не удалось загрузить транзакцию"
   }
 }
