@@ -1,19 +1,14 @@
 {
   "emailInvalid": "Введите корректный email",
-  "passwordMin": "Минимум {{count}} символов",
   "required": "Обязательное поле",
-  "stringMin": "Минимум {{count}} символов",
   "stringMax": "Максимум {{count}} символов",
   "emailRequired": "Введите email",
   "nameRequired": "Введите имя",
   "passwordMismatch": "Пароли не совпадают",
-  "usernameRequired": "Введите логин",
   "passwordRequired": "Введите пароль",
   "oldPassRequired": "Введите текущий пароль",
   "passwordMinLength": "Пароль должен содержать не менее 8 символов",
-  "invalidEmail": "Неверный формат email",
   "invalidDate": "Некорректная дата",
-  "fileMustBeImage": "Файл должен быть изображением",
   "quantityMin": "Минимум 1",
   "discountMin": "Минимум 0",
   "discountExceedsTotal": "Скидка не может быть больше суммы позиции ({{max}} TJS)",
@@ -26,9 +21,5 @@
   "stockExceeded": "Превышает остаток (доступно {{count}})",
   "stockUnavailable": "Товар недоступен для проверки остатка",
   "paymentTypeMismatch": "Тип оплаты не подходит для данного типа сделки",
-  "priceRequired": "Цена обязательна",
-  "priceMin": "Цена должна быть больше 0",
-  "nameMin": "Название должно содержать минимум 2 символа",
-  "nameMax": "Название не должно превышать 100 символов",
-  "emailUnique": "Этот email уже используется"
+  "priceMin": "Цена должна быть больше 0"
 }

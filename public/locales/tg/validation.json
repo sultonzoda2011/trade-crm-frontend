@@ -1,19 +1,14 @@
 {
   "emailInvalid": "Email-и нодуруст",
-  "passwordMin": "Ҳадди аққал {{count}} аломат",
   "required": "Майдони ҳатмӣ",
-  "stringMin": "Ҳадди аққал {{count}} аломат",
   "stringMax": "Ҳадди аксар {{count}} аломат",
   "emailRequired": "Email-ро ворид кунед",
   "nameRequired": "Номро ворид кунед",
   "passwordMismatch": "Рамзҳо мувофиқ нестанд",
-  "usernameRequired": "Логинро ворид кунед",
   "passwordRequired": "Рамзро ворид кунед",
   "oldPassRequired": "Рамзи феълиро ворид кунед",
   "passwordMinLength": "Рамз бояд ҳадди аққал 8 аломат бошад",
-  "invalidEmail": "Формати email нодуруст",
   "invalidDate": "Санаи нодуруст",
-  "fileMustBeImage": "Файл бояд тасвир бошад",
   "quantityMin": "Ҳадди аққал 1",
   "discountMin": "Ҳадди аққал 0",
   "discountExceedsTotal": "Тахфиф аз маблағи мол зиёд буда наметавонад ({{max}} TJS)",
@@ -26,9 +21,5 @@
   "stockExceeded": "Аз захира зиёд (дастрас {{count}})",
   "stockUnavailable": "Захираи мол дастрас нест",
   "paymentTypeMismatch": "Намуди пардохт барои ин намуди муомилот мувофиқ нест",
-  "priceRequired": "Нарх обязателен",
-  "priceMin": "Нарх бояд аз 0 қисми калон бошад",
-  "nameMin": "Ном бояд ҳадди аққал 2 аломат бошад",
-  "nameMax": "Ном бояд аз 100 аломат этил мебошвед",
-  "emailUnique": "Эйmaiл ин бори вақтист дорад"
+  "priceMin": "Нарх бояд аз 0 қисми калон бошад"
 }

@@ -106,14 +106,7 @@
     "thu": "Пш",
     "fri": "Ҷм",
     "sat": "Шб",
-    "sun": "Яш",
-    "monday": "Душанбе",
-    "tuesday": "Сешанбе",
-    "wednesday": "Чоршанбе",
-    "thursday": "Панҷшанбе",
-    "friday": "Ҷумъа",
-    "saturday": "Шанбе",
-    "sunday": "Якшанбе"
+    "sun": "Яш"
   },
   "actions": {
     "create": "Эҷод кардан",
@@ -173,11 +166,6 @@
   "emailInvalid": "Почтаи электронӣ нодуруст аст",
   "common": {
     "datePlaceholder": "рр.мм.сссс"
-  },
-  "status": {
-    "active": "Фаъол",
-    "inactive": "Ғайрифаъол",
-    "completed": "Ба анҷом расидааст"
   },
   "fileInput": {
     "selectFile": "Файлро интихоб кунед...",

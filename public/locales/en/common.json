@@ -106,14 +106,7 @@
     "thu": "Th",
     "fri": "Fr",
     "sat": "Sa",
-    "sun": "Su",
-    "monday": "Monday",
-    "tuesday": "Tuesday",
-    "wednesday": "Wednesday",
-    "thursday": "Thursday",
-    "friday": "Friday",
-    "saturday": "Saturday",
-    "sunday": "Sunday"
+    "sun": "Su"
   },
   "actions": {
     "create": "Create",
@@ -173,11 +166,6 @@
   "emailInvalid": "Invalid email",
   "common": {
     "datePlaceholder": "dd.mm.yyyy"
-  },
-  "status": {
-    "active": "Active",
-    "inactive": "Inactive",
-    "completed": "Completed"
   },
   "fileInput": {
     "selectFile": "Select file...",

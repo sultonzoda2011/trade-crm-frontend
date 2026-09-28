@@ -106,14 +106,7 @@
     "thu": "Чт",
     "fri": "Пт",
     "sat": "Сб",
-    "sun": "Вс",
-    "monday": "Понедельник",
-    "tuesday": "Вторник",
-    "wednesday": "Среда",
-    "thursday": "Четверг",
-    "friday": "Пятница",
-    "saturday": "Суббота",
-    "sunday": "Воскресенье"
+    "sun": "Вс"
   },
   "actions": {
     "create": "Создать",
@@ -173,11 +166,6 @@
   "emailInvalid": "Некорректный адрес электронной почты",
   "common": {
     "datePlaceholder": "дд.мм.гггг"
-  },
-  "status": {
-    "active": "Активен",
-    "inactive": "Неактивен",
-    "completed": "Завершено"
   },
   "fileInput": {
     "selectFile": "Выберите файл...",

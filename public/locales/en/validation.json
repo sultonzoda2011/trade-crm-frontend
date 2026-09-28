@@ -1,19 +1,14 @@
 {
   "emailInvalid": "Invalid email",
-  "passwordMin": "Minimum {{count}} characters",
   "required": "Required field",
-  "stringMin": "Minimum {{count}} characters",
   "stringMax": "Maximum {{count}} characters",
   "emailRequired": "Email is required",
   "nameRequired": "Name is required",
   "passwordMismatch": "Passwords do not match",
-  "usernameRequired": "Username is required",
   "passwordRequired": "Password is required",
   "oldPassRequired": "Current password is required",
   "passwordMinLength": "Password must be at least 8 characters",
-  "invalidEmail": "Invalid email address",
   "invalidDate": "Invalid date",
-  "fileMustBeImage": "File must be an image",
   "quantityMin": "Minimum 1",
   "discountMin": "Minimum 0",
   "discountExceedsTotal": "Discount can't exceed the item total ({{max}} TJS)",
@@ -26,9 +21,5 @@
   "stockExceeded": "Exceeds stock ({{count}} available)",
   "stockUnavailable": "Product stock is unavailable",
   "paymentTypeMismatch": "Payment type is not allowed for this transaction type",
-  "priceRequired": "Price is required",
-  "priceMin": "Price must be greater than 0",
-  "nameMin": "Name must be at least 2 characters",
-  "nameMax": "Name must not exceed 100 characters",
-  "emailUnique": "This email is already in use"
+  "priceMin": "Price must be greater than 0"
 }
