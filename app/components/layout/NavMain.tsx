@@ -2,7 +2,6 @@ import { ChevronRight } from 'lucide-react';
 import { Fragment, useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router';
-import { Badge } from '~/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '~/components/ui/collapsible';
 import {
   SidebarGroupLabel,
@@ -71,7 +70,8 @@ export function NavMain({ items }: NavMainProps) {
           item.section && item.section !== prevSection ? (
             <SidebarGroupLabel key={`section-${item.section}`}>{t(SECTION_LABEL_KEY[item.section])}</SidebarGroupLabel>
           ) : null;
-        const tailSeparator = !item.section && prevSection ? <SidebarSeparator key="section-end" className="my-1" /> : null;
+        const tailSeparator =
+          !item.section && prevSection ? <SidebarSeparator key="section-end" className="my-1" /> : null;
         prevSection = item.section;
 
         const hasSubItems = !!(item.items && item.items.length > 0);
@@ -87,48 +87,32 @@ export function NavMain({ items }: NavMainProps) {
                 open={isCurrentGroupOpen}
                 onOpenChange={(isOpen) => handleGroupTrigger(item.title, isOpen)}
                 className="group/collapsible">
-              <SidebarMenuItem>
-                <CollapsibleTrigger
-                  render={<SidebarMenuButton tooltip={item.title} isActive={isCurrentGroupOpen || isGroupActive} />}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
-                </CollapsibleTrigger>
+                <SidebarMenuItem>
+                  <CollapsibleTrigger
+                    render={<SidebarMenuButton tooltip={item.title} isActive={isCurrentGroupOpen || isGroupActive} />}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+                  </CollapsibleTrigger>
 
-                <CollapsibleContent className="sidebar-collapsible-content">
-                  <SidebarMenuSub>
-                    {item.items!.map((subItem) => (
-                      <SidebarMenuSubItem key={subItem.title}>
-                        <NavLink
-                          to={subItem.comingSoon ? '#' : subItem.url || '#'}
-                          className="block w-full"
-                          onClick={(e) => {
-                            if (subItem.comingSoon) e.preventDefault();
-                          }}>
-                          {({ isActive }) => (
-                            <SidebarMenuSubButton
-                              isActive={isActive && !subItem.comingSoon}
-                              render={
-                                <div
-                                  className={`flex w-full items-center justify-between ${
-                                    subItem.comingSoon ? 'pointer-events-none opacity-50' : ''
-                                  }`}
-                                />
-                              }>
-                              <span className="truncate">{subItem.title}</span>
-                              {subItem.comingSoon && (
-                                <Badge variant="secondary" className="text-2xs h-4 px-1.5">
-                                  {t('navigation.comingSoon')}
-                                </Badge>
-                              )}
-                            </SidebarMenuSubButton>
-                          )}
-                        </NavLink>
-                      </SidebarMenuSubItem>
-                    ))}
-                  </SidebarMenuSub>
-                </CollapsibleContent>
-              </SidebarMenuItem>
+                  <CollapsibleContent className="sidebar-collapsible-content">
+                    <SidebarMenuSub>
+                      {item.items!.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <NavLink to={subItem.url || '#'} className="block w-full">
+                            {({ isActive }) => (
+                              <SidebarMenuSubButton
+                                isActive={isActive}
+                                render={<div className="flex w-full items-center justify-between" />}>
+                                <span className="truncate">{subItem.title}</span>
+                              </SidebarMenuSubButton>
+                            )}
+                          </NavLink>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
               </Collapsible>
             </Fragment>
           );
@@ -139,32 +123,18 @@ export function NavMain({ items }: NavMainProps) {
             {sectionHeader}
             {tailSeparator}
             <SidebarMenuItem>
-            <NavLink
-              to={item.comingSoon ? '#' : item.url || '#'}
-              end={item.url === '/'}
-              className="block w-full"
-              onClick={(e) => {
-                if (item.comingSoon) {
-                  e.preventDefault();
-                } else {
-                  setOpenGroup(null);
-                }
-              }}>
-              {({ isActive }) => (
-                <SidebarMenuButton
-                  isActive={isActive && !item.comingSoon && openGroup === null}
-                  tooltip={item.title}
-                  className={item.comingSoon ? 'opacity-50' : ''}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  {item.comingSoon && (
-                    <Badge variant="outline" className="text-2xs ml-auto h-4 px-1.5">
-                      {t('navigation.comingSoon')}
-                    </Badge>
-                  )}
-                </SidebarMenuButton>
-              )}
-            </NavLink>
+              <NavLink
+                to={item.url || '#'}
+                end={item.url === '/'}
+                className="block w-full"
+                onClick={() => setOpenGroup(null)}>
+                {({ isActive }) => (
+                  <SidebarMenuButton isActive={isActive && openGroup === null} tooltip={item.title}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                )}
+              </NavLink>
             </SidebarMenuItem>
           </Fragment>
         );
