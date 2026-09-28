@@ -6,40 +6,6 @@ import type {
   ReorderPriority,
 } from '~/types/analytics';
 import type { ApiResponse } from '~/types/common';
-import type { MarketInfo } from '~/types/markets';
-
-export interface DashboardStats {
-  totalMarkets: number;
-  totalUsers: number;
-  totalDebtors: number;
-  totalTransactions: number;
-  activeDebts: number;
-  partialDebts: number;
-  totalDebtAmount: number;
-  totalSaleAmount: number;
-  todayTransactions: number;
-}
-
-export interface DashboardRecentTransaction {
-  id: string;
-  type: 'DEBT' | 'SALE' | 'REFUND';
-  status: 'ACTIVE' | 'PARTIAL' | 'PAID' | 'REFUNDED';
-  totalAmount: number;
-  remainingAmount: number;
-  createdAt: string;
-  debtor: { id: string; name: string } | null;
-  market: { id: string; name: string; image: string | null };
-  createdBy: { id: string; name: string; image: string | null };
-}
-
-export interface DashboardTopDebtor {
-  id: string;
-  name: string;
-  phone: string;
-  market?: MarketInfo;
-  totalDebt: number;
-  activeTransactions: number;
-}
 
 export interface RevenueTrendData {
   date: string; // YYYY-MM-DD format
@@ -54,18 +20,8 @@ export interface PaymentTypeDistribution {
   percentage: number;
 }
 
-export interface DashboardData {
-  stats: DashboardStats;
-  recentTransactions: DashboardRecentTransaction[];
-  topDebtors: DashboardTopDebtor[];
-  revenueTrend: RevenueTrendData[];
-  paymentDistribution: PaymentTypeDistribution[];
-}
-
-export type DashboardResponse = ApiResponse<DashboardData>;
-
 export interface SellerReportRow {
-  seller: { id: string; name: string; email: string; role: string; image: string | null } | null;
+  seller: { id: string; name: string; email: string; image: string | null } | null;
   salesCount: number;
   salesAmount: number;
   refundsCount: number;
@@ -79,12 +35,6 @@ export type SellersReportResponse = ApiResponse<SellerReportRow[]>;
 /* Business overview — GET /dashboard/overview                         */
 /* ------------------------------------------------------------------ */
 
-export interface OverviewPeriod {
-  current: { gte: string; lte: string };
-  previous: { gte: string; lte: string };
-  durationDays: number;
-}
-
 export interface OverviewSales {
   /** Revenue from cash/card sales, net of refunds. */
   saleRevenue: number;
@@ -92,9 +42,6 @@ export interface OverviewSales {
   debtIssued: number;
   /** Everything that left the shelves in money terms: sales + debts. */
   netRevenue: number;
-  /** Before refunds — needed to show what returns cost. */
-  grossRevenue: number;
-  refundedRevenue: number;
   unitsSold: number;
   refundedUnits: number;
   discountAmount: number;
@@ -102,12 +49,10 @@ export interface OverviewSales {
   saleCount: number;
   debtCount: number;
   averageCheck: number;
-  returnRate: number;
   comparison: {
     netRevenue: MetricComparison;
     transactionCount: MetricComparison;
     averageCheck: MetricComparison;
-    unitsSold: MetricComparison;
   };
 }
 
@@ -122,15 +67,12 @@ export interface OverviewDebts {
   dueSoonCount: number;
   /** Collected within the selected period — the one period-scoped figure here. */
   collectedAmount: number;
-  collectedCount: number;
 }
 
 export interface ReturnedProductRow {
   productId: string;
   productName: string;
   refundedUnits: number;
-  refundedAmount: number;
-  unitsSold: number;
   returnRate: number;
 }
 
@@ -138,8 +80,6 @@ export interface OverviewReturns {
   amount: number;
   units: number;
   returnRate: number;
-  /** What the period would have earned without refunds. */
-  revenueImpact: number;
   topProducts: ReturnedProductRow[];
   comparison: {
     amount: MetricComparison;
@@ -194,12 +134,10 @@ export interface OverviewCategoryRow {
   categoryId: string | null;
   categoryName: string | null;
   netRevenue: number;
-  netUnits: number;
   comparison: MetricComparison;
 }
 
 export interface OverviewData {
-  period: OverviewPeriod;
   sales: OverviewSales;
   debts: OverviewDebts;
   returns: OverviewReturns;
@@ -216,4 +154,3 @@ export type OverviewResponse = ApiResponse<OverviewData>;
 
 /** Re-exported so dashboard components need one import, not two. */
 export type { ProductHealth, ReorderPriority };
-

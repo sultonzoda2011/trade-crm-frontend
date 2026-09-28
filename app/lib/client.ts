@@ -88,10 +88,20 @@ function matchApiPath(urlPath: string, pattern: string): boolean {
   return patternParts.every((part, i) => part.startsWith(':') || part === urlParts[i]);
 }
 
+function staticSegmentCount(pattern: string): number {
+  return pattern
+    .split('/')
+    .filter(Boolean)
+    .filter((part) => !part.startsWith(':')).length;
+}
+
 function getApiAction(urlPath: string, method: Method): Action | null {
   const path = urlPath.split('?')[0];
-  const matched = API_ROUTE_ACTIONS.find((r) => r.methods.includes(method) && matchApiPath(path, r.pattern));
-  return matched?.action ?? null;
+  const matches = API_ROUTE_ACTIONS.filter((r) => r.methods.includes(method) && matchApiPath(path, r.pattern));
+  if (matches.length === 0) return null;
+  // Most specific pattern wins: a literal segment beats a `:param`, so adding a
+  // narrower row can never be shadowed by a broader one that happens to come first.
+  return matches.sort((a, b) => staticSegmentCount(b.pattern) - staticSegmentCount(a.pattern))[0].action;
 }
 
 function canAccessApi(action: Action): boolean {
@@ -102,7 +112,7 @@ function canAccessApi(action: Action): boolean {
 }
 
 // ---------- request interceptor ----------
-apiClient.interceptors.request.use(async (config) => {
+apiClient.interceptors.request.use((config) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -130,7 +140,7 @@ apiClient.interceptors.request.use(async (config) => {
 // ---------- response interceptor ----------
 apiClient.interceptors.response.use(
   (response) => response,
-  async (error) => {
+  (error) => {
     const status: number | undefined = error.response?.status;
     const config = error.config;
     const requestUrl: string | undefined = config?.url;

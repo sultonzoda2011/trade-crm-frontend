@@ -8,11 +8,6 @@ export interface BaseFilterConfig {
   label: string;
 }
 
-export interface InputFilterConfig extends BaseFilterConfig {
-  type: 'input';
-  placeholder?: string;
-}
-
 export interface SelectFilterConfig extends BaseFilterConfig {
   type: 'select';
   options: { value: unknown; label: string }[];
@@ -27,11 +22,6 @@ export interface NumberRangeFilterConfig {
   label: string;
   placeholderFrom?: string;
   placeholderTo?: string;
-}
-
-export interface DateFilterConfig extends BaseFilterConfig {
-  type: 'date';
-  placeholder?: string;
 }
 
 export interface DateRangeFilterConfig {
@@ -52,10 +42,4 @@ export interface BooleanFilterConfig {
   falseLabel?: string;
 }
 
-export type FilterConfig =
-  | InputFilterConfig
-  | SelectFilterConfig
-  | NumberRangeFilterConfig
-  | DateFilterConfig
-  | DateRangeFilterConfig
-  | BooleanFilterConfig;
+export type FilterConfig = SelectFilterConfig | NumberRangeFilterConfig | DateRangeFilterConfig | BooleanFilterConfig;

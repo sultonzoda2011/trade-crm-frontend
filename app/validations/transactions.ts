@@ -150,17 +150,6 @@ export const createTransactionSchema = (t: TFunction, stockMap?: StockMap, price
 export type CreateTransactionSchema = z.infer<ReturnType<typeof createTransactionSchema>>;
 export type CreateTransactionInput = z.input<ReturnType<typeof createTransactionSchema>>;
 
-export const updateTransactionSchema = (t: TFunction) =>
-  z.object({
-    debtorId: z.string().optional(),
-    customerName: z.string().optional(),
-    type: z.enum(['DEBT', 'SALE']),
-    paymentType: z.enum(['CASH', 'CARD', 'CREDIT']),
-    dueDate: z.string().optional(),
-  });
-
-export type UpdateTransactionSchema = z.infer<ReturnType<typeof updateTransactionSchema>>;
-
 export const createPaymentSchema = (t: TFunction) =>
   z.object({
     amount: z.number().min(1, t('required', { ns: 'validation' })),

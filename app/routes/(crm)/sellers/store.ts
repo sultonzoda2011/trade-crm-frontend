@@ -6,9 +6,7 @@ export const useSellersStore = createTableStore();
 
 type SellersModals = {
   delete: string;
-  create: null;
-  edit: Seller;
   payout: Seller;
 };
 
-export const useSellersModals = createModalStore<SellersModals>(['delete', 'create', 'edit', 'payout']);
+export const useSellersModals = createModalStore<SellersModals>(['delete', 'payout']);
