@@ -11,6 +11,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { useProfileModals } from '~/routes/(crm)/profile/store';
 import { updateProfileSchema, type UpdateProfileSchema } from '~/validations/profile';
 
@@ -45,7 +46,7 @@ export function EditProfileModal() {
       return profileApi.updateProfile(appendToFormData(payload));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['profile'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profile() });
       toast.success(t('updateSuccess'));
       editModal.close();
       reset();

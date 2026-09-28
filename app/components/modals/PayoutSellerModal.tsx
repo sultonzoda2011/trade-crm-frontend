@@ -9,6 +9,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 import { createSellerCreditSchema, type CreateSellerCreditSchema } from '~/validations/seller';
 
@@ -25,7 +26,7 @@ export function PayoutSellerModal() {
   const seller = payoutModal.data;
 
   const { data: balanceRes } = useQuery({
-    queryKey: ['seller-balance', seller?.id],
+    queryKey: queryKeys.sub('sellers', 'balance', seller?.id),
     queryFn: () => sellersApi.getBalance(seller!.id),
     enabled: !!seller && payoutModal.isOpen,
     staleTime: 0,
@@ -47,8 +48,8 @@ export function PayoutSellerModal() {
       });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['seller-balance', seller?.id] });
-      void queryClient.invalidateQueries({ queryKey: ['seller-credits', seller?.id] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sub('sellers', 'balance', seller?.id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sub('sellers', 'credits', seller?.id) });
       toast.success(t('sellers:payoutSuccess'));
       payoutModal.close();
       reset();

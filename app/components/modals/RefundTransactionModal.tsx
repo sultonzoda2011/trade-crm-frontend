@@ -13,6 +13,7 @@ import { Radio, RadioGroup } from '~/components/ui/radio-group';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { RefundItemRequest } from '~/types/transactions';
 import { refundTransactionSchema, type RefundableMap, type RefundTransactionInput } from '~/validations/transactions';
@@ -90,10 +91,10 @@ export function RefundTransactionModal() {
       });
     },
     onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
-      void queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       if (transaction?.id) {
-        void queryClient.invalidateQueries({ queryKey: ['transaction', transaction.id] });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
       toast.success(t('refundSuccess'));
       refundModal.close();

@@ -7,6 +7,7 @@ import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
+import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
 
@@ -23,7 +24,7 @@ export function CreateDebtorModal() {
   const { mutate, isPending } = useMutation({
     mutationFn: debtorsApi.create,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['debtors'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       toast.success(t('debtors:createSuccess'));
       createModal.close();
       reset();

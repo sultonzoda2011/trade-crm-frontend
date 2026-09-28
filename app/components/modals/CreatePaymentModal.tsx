@@ -10,6 +10,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import { createPaymentSchema, type CreatePaymentSchema } from '~/validations/transactions';
@@ -47,9 +48,9 @@ export function CreatePaymentModal() {
       return transactionsApi.pay({ request: data, id: transaction.id });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       if (transaction?.id) {
-        void queryClient.invalidateQueries({ queryKey: ['transaction', transaction.id] });
+        void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
       toast.success(t('transactions:paySuccess'));
       payModal.close();
