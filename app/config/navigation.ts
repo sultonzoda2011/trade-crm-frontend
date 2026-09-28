@@ -1,7 +1,17 @@
 import type { TFunction } from 'i18next';
-import { BookOpen, Building2, HandCoins, LayoutDashboard, Package, ReceiptText, Store, Tag, UserRound, Users } from 'lucide-react';
+import {
+  BookOpen,
+  Building2,
+  HandCoins,
+  LayoutDashboard,
+  Package,
+  ReceiptText,
+  Store,
+  Tag,
+  UserRound,
+  Users,
+} from 'lucide-react';
 import type { Permission } from '~/hooks/useCan';
-import { Role } from '~/types/common';
 import { Action } from '~/config/actions';
 
 /** Стабильный id пункта — используется для группировки в сайдбаре и выбора вкладок BottomNav (title уже переведён и для этого не подходит). */
@@ -26,9 +36,7 @@ export interface NavItem {
   url?: string;
   icon?: any;
   action?: Action | Action[];
-  roles?: Role[];
   items?: NavItem[];
-  comingSoon?: boolean;
   section?: NavSection;
 }
 
@@ -106,7 +114,7 @@ export const getSidebarConfig = (t: TFunction, marketId?: string): NavItem[] => 
     section: 'team',
   },
   {
-    // Справочник виден всем ролям — ни action, ни roles не задаём. Без section — рисуется под разделителем, как отдельный пункт.
+    // Справочник виден всем ролям — action не задаём. Без section — рисуется под разделителем, как отдельный пункт.
     key: 'guide',
     title: t('navigation.guide'),
     url: '/guide',
@@ -128,10 +136,6 @@ export function getVisibleNavigation(items: NavItem[], can: (p: Permission) => b
 
       if (item.action) {
         return can(item.action);
-      }
-
-      if (item.roles) {
-        return can(item.roles);
       }
 
       return true;

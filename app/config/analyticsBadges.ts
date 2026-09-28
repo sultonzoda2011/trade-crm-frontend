@@ -1,11 +1,5 @@
 import type { TFunction } from 'i18next';
-import type {
-  DebtorRisk,
-  DebtStatusFilter,
-  InsightSeverity,
-  ProductHealth,
-  ReorderPriority,
-} from '~/types/analytics';
+import type { DebtorRisk, InsightSeverity, ProductHealth, ReorderPriority } from '~/types/analytics';
 
 /**
  * Semantic colours for computed business states.
@@ -75,18 +69,7 @@ export const getProductHealthOptions = (t: TFunction) =>
   ).map((value) => ({ value, label: t(`health.${value}`) }));
 
 export const getReorderPriorityOptions = (t: TFunction) =>
-  (['OUT_OF_STOCK', 'CRITICAL', 'WARNING', 'OK', 'NOT_NEEDED'] satisfies ReorderPriority[]).map(
-    (value) => ({ value, label: t(`reorderPriority.${value}`) })
-  );
-
-export const getDebtorRiskOptions = (t: TFunction) =>
-  (['HIGH', 'MEDIUM', 'LOW'] satisfies DebtorRisk[]).map((value) => ({
+  (['OUT_OF_STOCK', 'CRITICAL', 'WARNING', 'OK', 'NOT_NEEDED'] satisfies ReorderPriority[]).map((value) => ({
     value,
-    label: t(`risk.${value}`),
-  }));
-
-export const getDebtStatusOptions = (t: TFunction) =>
-  (['OVERDUE', 'DUE_SOON', 'OUTSTANDING', 'SETTLED'] satisfies DebtStatusFilter[]).map((value) => ({
-    value,
-    label: t(`debtStatus.${value}`),
+    label: t(`reorderPriority.${value}`),
   }));
