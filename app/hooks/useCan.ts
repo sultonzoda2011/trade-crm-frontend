@@ -38,9 +38,5 @@ export function useCan() {
     return userRole === (permission as Role);
   };
 
-  const canAny = (permissions: Permission[]): boolean => {
-    return permissions.some((p) => can(p));
-  };
-
-  return { can, canAny, role: userRole, user };
+  return { can, role: userRole, user };
 }

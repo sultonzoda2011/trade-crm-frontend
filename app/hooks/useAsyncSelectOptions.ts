@@ -65,14 +65,9 @@ export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSel
 
   const results = (query.data ?? EMPTY) as T[];
 
-  // Accumulate every entity we've ever seen so a row that already picked an item keeps its
-  // label/price/stock even after the search narrows `results` to something else.
-  //
-  // This is done *synchronously during render* (not in a useEffect) on purpose: consumers like
-  // the transaction form read a selected product's price straight out of `byId` to compute the
-  // payment total. An effect-based update lands one render late, so the total could read a
-  // still-empty map and compute 0. Updating the ref inline keeps `byId` in lockstep with
-  // `results` — same guarantee the old synchronous `productMap` had.
+  // Накопление идёт синхронно в рендере, а не в useEffect: потребители читают цену/остаток
+  // выбранного товара из `byId` в этом же рендере, и effect-обновление пришло бы на рендер
+  // позже — итог посчитался бы по пустой карте.
   const seenRef = React.useRef<Map<string, T>>(new Map());
   const versionRef = React.useRef(0);
   let grew = false;

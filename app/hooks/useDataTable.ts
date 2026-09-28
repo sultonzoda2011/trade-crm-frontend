@@ -1,7 +1,6 @@
 import {
   type ColumnDef,
   type VisibilityState,
-  type RowSelectionState,
   type RowData,
   getCoreRowModel,
   useReactTable,
@@ -15,9 +14,6 @@ interface UseDataTableOptions<TData extends RowData, TValue> {
   storageKey?: string;
   /** Initial visibility state if no persisted state exists */
   initialVisibility?: VisibilityState;
-  rowSelection?: RowSelectionState;
-  onRowSelectionChange?: React.Dispatch<React.SetStateAction<RowSelectionState>>;
-  getRowId?: (row: TData) => string;
 }
 
 function loadVisibility(storageKey: string): VisibilityState {
@@ -34,9 +30,6 @@ export function useDataTable<TData extends RowData, TValue>({
   data,
   storageKey,
   initialVisibility = {},
-  rowSelection,
-  onRowSelectionChange,
-  getRowId,
 }: UseDataTableOptions<TData, TValue>) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
     if (storageKey) {
@@ -55,15 +48,8 @@ export function useDataTable<TData extends RowData, TValue>({
   const table = useReactTable({
     data,
     columns,
-    initialState: { columnVisibility: initialVisibility },
-    state: {
-      columnVisibility,
-      ...(rowSelection ? { rowSelection } : {}),
-    },
+    state: { columnVisibility },
     onColumnVisibilityChange: setColumnVisibility,
-    ...(onRowSelectionChange ? { onRowSelectionChange } : {}),
-    enableRowSelection: onRowSelectionChange ? true : undefined,
-    ...(getRowId ? { getRowId } : {}),
     getCoreRowModel: getCoreRowModel(),
   });
 
