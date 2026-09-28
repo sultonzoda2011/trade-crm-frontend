@@ -1,42 +1,12 @@
-import { apiClient } from '~/lib/client';
-import { filtersToParams } from '~/lib/filtersToParams';
-import type { ActiveFilter } from '~/types/filters';
+import { deleteRequest, detailRequest, listRequest, multipartWrites, nestedDetailRequest } from '~/api/crud';
 import type { MarketDetailResponse, MarketFullResponse, MarketsResponse } from '~/types/markets';
 
-export const marketsApi = {
-  getAll: async (
-    page = 1,
-    limit = 20,
-    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
-    filters: ActiveFilter[] = []
-  ): Promise<MarketsResponse> => {
-    const { data } = await apiClient.get('/markets', {
-      params: { page, limit, ...options, ...filtersToParams(filters) },
-    });
-    return data;
-  },
+const BASE = '/markets';
 
-  getById: async (id: string): Promise<MarketDetailResponse> => {
-    const { data } = await apiClient.get(`/markets/${id}`);
-    return data;
-  },
-  getFull: async (id: string): Promise<MarketFullResponse> => {
-    const { data } = await apiClient.get(`/markets/${id}/full`);
-    return data;
-  },
-  create: async (formData: FormData) => {
-    const { data } = await apiClient.post('/markets', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data;
-  },
-  update: async ({ formData, id }: { formData: FormData; id: string }) => {
-    const { data } = await apiClient.patch(`/markets/${id}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return data;
-  },
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/markets/${id}`);
-  },
+export const marketsApi = {
+  getAll: listRequest<MarketsResponse>(BASE),
+  getById: detailRequest<MarketDetailResponse>(BASE),
+  getFull: nestedDetailRequest<MarketFullResponse>(BASE),
+  delete: deleteRequest(BASE),
+  ...multipartWrites(BASE),
 };

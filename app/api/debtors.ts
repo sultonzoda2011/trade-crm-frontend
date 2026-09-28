@@ -1,40 +1,12 @@
-import { apiClient } from '~/lib/client';
-import { filtersToParams } from '~/lib/filtersToParams';
+import { deleteRequest, detailRequest, jsonWrites, listRequest, nestedDetailRequest } from '~/api/crud';
 import type { DebtorDetailResponse, DebtorFullResponse, DebtorRequest, DebtorsResponse } from '~/types/debtors';
-import type { ActiveFilter } from '~/types/filters';
+
+const BASE = '/debtors';
 
 export const debtorsApi = {
-  getAll: async (
-    page = 1,
-    limit = 20,
-    options: { search?: string; dateFrom?: string; dateTo?: string; sortBy?: string; sortOrder?: 'asc' | 'desc' } = {},
-    filters: ActiveFilter[] = []
-  ): Promise<DebtorsResponse> => {
-    const { data } = await apiClient.get('/debtors', {
-      params: { page, limit, ...options, ...filtersToParams(filters) },
-    });
-    return data;
-  },
-
-  getById: async (id: string): Promise<DebtorDetailResponse> => {
-    const { data } = await apiClient.get(`/debtors/${id}`);
-    return data;
-  },
-
-  getFull: async (id: string): Promise<DebtorFullResponse> => {
-    const { data } = await apiClient.get(`/debtors/${id}/full`);
-    return data;
-  },
-
-  create: async (request: DebtorRequest) => {
-    const { data } = await apiClient.post(`/debtors`, request);
-    return data;
-  },
-  update: async ({ request, id }: { request: DebtorRequest; id: string }) => {
-    const { data } = await apiClient.patch(`/debtors/${id}`, request);
-    return data;
-  },
-  delete: async (id: string): Promise<void> => {
-    await apiClient.delete(`/debtors/${id}`);
-  },
+  getAll: listRequest<DebtorsResponse>(BASE),
+  getById: detailRequest<DebtorDetailResponse>(BASE),
+  getFull: nestedDetailRequest<DebtorFullResponse>(BASE),
+  delete: deleteRequest(BASE),
+  ...jsonWrites<DebtorRequest>(BASE),
 };
