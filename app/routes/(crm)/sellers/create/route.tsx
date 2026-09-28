@@ -12,6 +12,7 @@ import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { createSellerSchema, type CreateSellerSchema } from '~/validations/seller';
 
 export default function CreateSellerPage() {
@@ -31,7 +32,7 @@ export default function CreateSellerPage() {
       return sellersApi.create(appendToFormData(payload));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sellers'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('sellers') });
       navigate('/sellers');
     },
     onError: () => {},

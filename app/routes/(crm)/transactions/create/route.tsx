@@ -39,6 +39,7 @@ import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
@@ -76,14 +77,14 @@ export default function CreateTransactionPage() {
   // Server-side search: the debtor/product lists can exceed any fixed page, so instead of
   // loading a capped first page and filtering locally we query the API as the user types.
   const debtors = useAsyncSelectOptions({
-    queryKey: ['debtors', 'select'],
+    queryKey: queryKeys.options('debtors', { scope: 'form', limit: 20 }),
     fetcher: async (search) => (await debtorsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
     getValue: (d) => d.id,
     getLabel: (d) => d.name,
   });
 
   const products = useAsyncSelectOptions({
-    queryKey: ['products', 'select'],
+    queryKey: queryKeys.options('products', { scope: 'form', limit: 20 }),
     fetcher: async (search) => (await productsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
     getValue: (p) => p.id,
     getLabel: (p) => p.name,
@@ -111,12 +112,6 @@ export default function CreateTransactionPage() {
   const { control, handleSubmit, watch, setValue, formState } = useForm<CreateTransactionInput>({
     resolver: zodResolver(transactionSchema),
     mode: 'onChange',
-    // shouldUnregister: true конфликтует с useFieldArray (задокументированная
-    // проблема RHF) — при добавлении/удалении строки товара значения массива
-    // items могли кратковременно рассинхронизироваться, из-за чего сводка
-    // платежа не подхватывала первую позицию сразу. dueDate (единственное
-    // поле, что рендерится условно) и без unregister корректно отсекается в
-    // mutationFn ниже, поэтому реальной необходимости в этой опции не было.
     defaultValues: {
       debtorId: '',
       customerName: '',
@@ -161,31 +156,13 @@ export default function CreateTransactionPage() {
 
   const productMap = products.byId;
 
-  // ВАЖНО: раньше это была цепочка useMemo-мемоизированных функций
-  // (getProduct → getItemTotal → calculatedTotal), каждая со своим списком
-  // зависимостей. Когда items и productMap менялись в одном и том же рендере
-  // (типичный случай: только что выбрали товар — сразу пришли и новый
-  // productId, и подрос byId), memo-кэш каждого уровня инвалидировался
-  // независимо, и итоговая сумма могла на один рендер отстать от реальных
-  // items/productMap — с одной позицией это отставание никогда не
-  // "догонялось" (следующего триггера для пересчёта не было), и итог
-  // застревал на 0. Считаем всё напрямую в один проход, без промежуточных
-  // мемоизированных функций-замыканий.
   const getProduct = (productId?: string | null) => (productId ? productMap.get(productId) : undefined);
 
   const itemsList = Array.isArray(items) ? items : [];
 
-  // ВАЖНО: раньше это было завёрнуто в useMemo([itemsList, productMap]).
-  // Реальная причина бага — не в этой мемоизации самой по себе, а в том,
-  // что react-hook-form's watch('items') не гарантирует новую ссылку на
-  // массив при изменении вложенного поля через Controller (известная
-  // особенность RHF: массив может мутироваться "на месте"). Из-за этого
-  // useMemo решал, что зависимости не изменились, и отдавал закэшированный
-  // (устаревший) итог — а строка "Итого" в самой карточке товара (обычная
-  // функция, без memo) всегда пересчитывалась верно, отсюда расхождение:
-  // в карточке видно 15 000, а в сводке платежа — 0. Расчёт тут дешёвый
-  // (цикл по нескольким позициям), поэтому просто считаем каждый рендер,
-  // без useMemo — синхронность важнее микрооптимизации.
+  // Считаем каждый рендер, без useMemo: watch('items') не гарантирует новую ссылку
+  // на массив при правке вложенного поля через Controller, поэтому мемоизация
+  // отдавала бы устаревший итог.
   let calculatedTotal = 0;
   let totalDiscount = 0;
   let totalMarkup = 0;
@@ -238,7 +215,7 @@ export default function CreateTransactionPage() {
       return transactionsApi.create(payload);
     },
     onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       toast.success(t('createSuccess'));
       navigate('/transactions');
     },

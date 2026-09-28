@@ -25,6 +25,7 @@ import { Action } from '~/config/actions';
 import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
 export default function TransactionDetailPage() {
@@ -37,7 +38,7 @@ export default function TransactionDetailPage() {
   const refundModal = useTransactionsModals((s) => s.refund);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['transaction', id],
+    queryKey: queryKeys.full('transactions', id),
     queryFn: () => transactionsApi.getDetail(id!),
     enabled: !!id,
     staleTime: 30_000,

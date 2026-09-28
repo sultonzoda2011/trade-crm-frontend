@@ -18,6 +18,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { getClientUser } from '~/lib/auth-utils';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/sellers/configs/columns';
 import { getSellerFilters } from '~/routes/(crm)/sellers/configs/filters';
 import { useSellersModals, useSellersStore } from '~/routes/(crm)/sellers/store';
@@ -40,7 +41,7 @@ export default function SellersPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['sellers', page, limit, debouncedSearch, filters],
+    queryKey: queryKeys.list('sellers', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
       const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
       const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
@@ -60,7 +61,7 @@ export default function SellersPage() {
   const { mutate: deleteSeller, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => sellersApi.delete(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sellers'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('sellers') });
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },
@@ -122,9 +123,6 @@ export default function SellersPage() {
                 state: { fromPath: location.pathname, fromName: t('title') },
               }
         }
-        mobileFields={{
-          'market.name': 'secondary',
-        }}
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const s = row.original;

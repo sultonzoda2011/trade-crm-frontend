@@ -11,6 +11,7 @@ import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
 import { formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 
 export interface DashboardFilters {
@@ -53,7 +54,7 @@ export default function DashboardLayout() {
 
   // Продавцов может быть много — фильтр ищет по имени на сервере, а не грузит первые 100.
   const sellers = useAsyncSelectOptions({
-    queryKey: ['sellers', 'list'],
+    queryKey: queryKeys.options('sellers', { scope: 'filter-bar', limit: 20 }),
     fetcher: async (search) => (await sellersApi.getAll(1, 20, { search: search || undefined }, []))?.data?.data ?? [],
     getValue: (s) => s.id,
     getLabel: (s) => s.name,

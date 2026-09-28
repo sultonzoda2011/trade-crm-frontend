@@ -10,6 +10,7 @@ import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
+import { queryKeys } from '~/lib/query-keys';
 import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function CreateDebtorPage() {
@@ -25,7 +26,7 @@ export default function CreateDebtorPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: debtorsApi.create,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['debtors'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       navigate('/debtors');
     },
     onError: () => {},

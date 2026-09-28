@@ -21,6 +21,7 @@ import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function ProductDetailPage() {
   const { t } = useTranslation(['products', 'common']);
@@ -30,7 +31,7 @@ export default function ProductDetailPage() {
   const { can } = useCan();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['product', id],
+    queryKey: queryKeys.detail('products', id),
     queryFn: () => productsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,

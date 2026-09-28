@@ -16,12 +16,12 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
+import { getUnitOptions } from '~/config/enumOptions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { updateProductSchema, type UpdateProductSchema } from '~/validations/product';
-
-const UNIT_VALUES = ['PCS', 'KG', 'L', 'M', 'BOX'] as const;
 
 export default function EditProductPage() {
   const { t } = useTranslation(['products', 'common', 'validation']);
@@ -30,7 +30,7 @@ export default function EditProductPage() {
   const queryClient = useQueryClient();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['product', id],
+    queryKey: queryKeys.detail('products', id),
     queryFn: () => productsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
@@ -45,15 +45,18 @@ export default function EditProductPage() {
   );
 
   const categories = useAsyncSelectOptions({
-    queryKey: ['categories', 'list'],
+    queryKey: queryKeys.options('categories', { scope: 'form', limit: 20 }),
     fetcher: async (search) =>
-      ((await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? []).map((c) => ({ id: c.id, name: c.name })),
+      ((await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? []).map((c) => ({
+        id: c.id,
+        name: c.name,
+      })),
     getValue: (c) => c.id,
     getLabel: (c) => c.name,
     seed: categorySeed,
   });
 
-  const unitOptions = useMemo(() => UNIT_VALUES.map((u) => ({ value: u, label: t(`unit.${u}`) })), [t]);
+  const unitOptions = useMemo(() => getUnitOptions(t), [t]);
 
   const { control, handleSubmit, reset } = useForm<UpdateProductSchema>({
     resolver: zodResolver(updateProductSchema(t)),
@@ -92,8 +95,8 @@ export default function EditProductPage() {
       return productsApi.update({ formData: appendToFormData(payload), id: id! });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['products'] });
-      void queryClient.invalidateQueries({ queryKey: ['product', id] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.detail('products', id) });
       navigate(`/products/${id}`);
     },
     onError: () => {},
@@ -219,10 +222,10 @@ export default function EditProductPage() {
         className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-9" onClick={() => navigate(`/products/${id}`)}>
+          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate(`/products/${id}`)}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="edit-product-page-form" className="flex-1 h-9" disabled={isPending}>
+          <Button type="submit" form="edit-product-page-form" className="h-9 flex-1" disabled={isPending}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.save')}
           </Button>

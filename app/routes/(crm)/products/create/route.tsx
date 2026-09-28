@@ -14,12 +14,12 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { Panel } from '~/components/layout/Panel';
 import { FormGrid } from '~/components/shared/FormGrid';
+import { getUnitOptions } from '~/config/enumOptions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { createProductSchema, type CreateProductSchema } from '~/validations/product';
-
-const UNIT_VALUES = ['PCS', 'KG', 'L', 'M', 'BOX'] as const;
 
 export default function CreateProductPage() {
   const { t } = useTranslation(['products', 'common', 'validation']);
@@ -27,13 +27,13 @@ export default function CreateProductPage() {
   const queryClient = useQueryClient();
 
   const categories = useAsyncSelectOptions({
-    queryKey: ['categories', 'list'],
+    queryKey: queryKeys.options('categories', { scope: 'form', limit: 20 }),
     fetcher: async (search) => (await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
     getValue: (c) => c.id,
     getLabel: (c) => c.name,
   });
 
-  const unitOptions = useMemo(() => UNIT_VALUES.map((u) => ({ value: u, label: t(`unit.${u}`) })), [t]);
+  const unitOptions = useMemo(() => getUnitOptions(t), [t]);
 
   const { control, handleSubmit } = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema(t)),
@@ -66,7 +66,7 @@ export default function CreateProductPage() {
       return productsApi.create(appendToFormData(payload));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['products'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       navigate('/products');
     },
     onError: () => {},
@@ -179,10 +179,10 @@ export default function CreateProductPage() {
         className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
         <div className="flex gap-3">
-          <Button variant="outline" className="flex-1 h-9" onClick={() => navigate('/products')}>
+          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate('/products')}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-product-page-form" className="flex-1 h-9" disabled={isPending}>
+          <Button type="submit" form="create-product-page-form" className="h-9 flex-1" disabled={isPending}>
             {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             {t('actions.create')}
           </Button>

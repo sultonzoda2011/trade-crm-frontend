@@ -20,6 +20,7 @@ import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 
 export default function SellerDetailPage() {
@@ -31,7 +32,7 @@ export default function SellerDetailPage() {
   const payoutModal = useSellersModals((s) => s.payout);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['seller-full', id],
+    queryKey: queryKeys.full('sellers', id),
     queryFn: () => sellersApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,

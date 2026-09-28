@@ -13,6 +13,7 @@ import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
+import { queryKeys } from '~/lib/query-keys';
 import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function EditDebtorPage() {
@@ -22,7 +23,7 @@ export default function EditDebtorPage() {
   const queryClient = useQueryClient();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['debtor', id],
+    queryKey: queryKeys.detail('debtors', id),
     queryFn: () => debtorsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
@@ -42,8 +43,8 @@ export default function EditDebtorPage() {
   const { mutate, isPending } = useMutation({
     mutationFn: (request: RequestDebtorSchema) => debtorsApi.update({ request, id: id! }),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['debtors'] });
-      void queryClient.invalidateQueries({ queryKey: ['debtor', id] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.detail('debtors', id) });
       navigate(`/debtors/${id}`);
     },
     onError: () => {},

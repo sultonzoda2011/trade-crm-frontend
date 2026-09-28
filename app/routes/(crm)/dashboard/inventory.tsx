@@ -9,6 +9,7 @@ import { InventoryHealth, ReorderList } from '~/components/dashboard/InventoryHe
 import { ReturnsPanel } from '~/components/dashboard/ReturnsPanel';
 import { Skeleton } from '~/components/ui/skeleton';
 import type { DashboardFilters } from './layout';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function DashboardInventoryPage() {
   const { t } = useTranslation('dashboard');
@@ -22,7 +23,7 @@ export default function DashboardInventoryPage() {
   }, [period, sellerId]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['dashboard', 'overview', params],
+    queryKey: queryKeys.dashboard('overview', params),
     queryFn: () => dashboardApi.getOverview(params),
     staleTime: 30_000,
   });

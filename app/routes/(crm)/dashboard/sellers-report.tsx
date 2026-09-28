@@ -12,8 +12,8 @@ import { Skeleton } from '~/components/ui/skeleton';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
-import { getClientUser } from '~/lib/auth-utils';
 import { fmtTJS } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/dashboard/configs/columns';
 import type { SellerReportRow } from '~/types/dashboard';
 import type { DashboardFilters } from './layout';
@@ -31,7 +31,7 @@ export default function SellersReportPage() {
   }, [period, sellerId]);
 
   const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['sellers-report', params],
+    queryKey: queryKeys.dashboard('sellers-report', params),
     queryFn: () => dashboardApi.getSellersReport(params),
     staleTime: 30_000,
   });
@@ -51,9 +51,7 @@ export default function SellersReportPage() {
 
   const { can } = useCan();
   const canViewSellers = can(Action.SELLERS_VIEW);
-  const currentUserId = useMemo(() => getClientUser()?.id, []);
-
-  const columns = useMemo(() => getColumns({ t, currentUserId, canViewSellers }), [t, currentUserId, canViewSellers]);
+  const columns = useMemo(() => getColumns({ t, canViewSellers }), [t, canViewSellers]);
 
   // Эндпоинт отчёта отдаёт все строки одним массивом, серверной пагинации у
   // него нет — нарезаем страницы на клиенте. Раньше пагинации не было вообще:

@@ -19,6 +19,7 @@ import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function CategoryDetailPage() {
   const { t } = useTranslation(['categories', 'common']);
@@ -28,7 +29,7 @@ export default function CategoryDetailPage() {
   const { can } = useCan();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['category-full', id],
+    queryKey: queryKeys.full('categories', id),
     queryFn: () => categoriesApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,

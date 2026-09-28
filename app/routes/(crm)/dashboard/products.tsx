@@ -8,6 +8,7 @@ import { CategoryPerformance } from '~/components/dashboard/CategoryPerformance'
 import { TopProducts } from '~/components/dashboard/TopProducts';
 import { Skeleton } from '~/components/ui/skeleton';
 import type { DashboardFilters } from './layout';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function DashboardProductsPage() {
   const { t } = useTranslation('dashboard');
@@ -21,7 +22,7 @@ export default function DashboardProductsPage() {
   }, [period, sellerId]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['dashboard', 'overview', params],
+    queryKey: queryKeys.dashboard('overview', params),
     queryFn: () => dashboardApi.getOverview(params),
     staleTime: 30_000,
   });

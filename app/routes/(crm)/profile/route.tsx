@@ -29,6 +29,7 @@ import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { getClientUser } from '~/lib/auth-utils';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { useProfileModals } from '~/routes/(crm)/profile/store';
 
 export default function ProfilePage() {
@@ -38,7 +39,7 @@ export default function ProfilePage() {
   const passwordModal = useProfileModals((s) => s.password);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['profile-full'],
+    queryKey: queryKeys.profile(),
     queryFn: () => profileApi.getFullProfile(),
     staleTime: 30_000,
   });
@@ -56,14 +57,14 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState('transactions');
 
   const { data: productsResponse, isLoading: isProductsLoading } = useQuery({
-    queryKey: ['products', 'profile', user?.marketId],
+    queryKey: queryKeys.options('products', { scope: 'profile', marketId: user?.marketId, limit: 5 }),
     queryFn: () => productsApi.getAll(1, 5, {}, []),
     enabled: !!user?.marketId && canViewProducts && activeTab === 'products',
     staleTime: 30_000,
   });
 
   const { data: debtorsResponse, isLoading: isDebtorsLoading } = useQuery({
-    queryKey: ['debtors', 'profile', user?.marketId],
+    queryKey: queryKeys.options('debtors', { scope: 'profile', marketId: user?.marketId, limit: 5 }),
     queryFn: () => debtorsApi.getAll(1, 5, {}, []),
     enabled: !!user?.marketId && canViewDebtors && activeTab === 'debtors',
     staleTime: 30_000,

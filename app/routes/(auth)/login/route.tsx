@@ -87,13 +87,7 @@ export default function LoginPage() {
       setUserInfo(user);
       toast.success(t('loginSuccess'));
       const redirectTo = searchParams.get('redirectTo') || '/';
-
-      try {
-        const path = getRedirectPath(user.role, redirectTo);
-        navigate(path);
-      } catch {
-        navigate('/');
-      }
+      navigate(getRedirectPath(user.role, redirectTo));
     },
     onError: (error: any) => {
       toast.error(t('loginError'));

@@ -17,6 +17,7 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/markets/configs/columns';
 import { getMarketFilters } from '~/routes/(crm)/markets/configs/filters';
 import { useMarketsModals, useMarketsStore } from '~/routes/(crm)/markets/store';
@@ -39,7 +40,7 @@ export default function MarketsPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['markets', page, limit, debouncedSearch, filters],
+    queryKey: queryKeys.list('markets', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
       const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
       const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
@@ -59,7 +60,7 @@ export default function MarketsPage() {
   const { mutate: deleteMarket, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => marketsApi.delete(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['markets'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('markets') });
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },
@@ -116,12 +117,6 @@ export default function MarketsPage() {
           to: `/markets/${row.original.id}`,
           state: { fromPath: location.pathname, fromName: t('title') },
         })}
-        mobileFields={{
-          'count.products': 'primary',
-          'count.debtors': 'primary',
-          'count.transactions': 'primary',
-          'owner.name': 'secondary',
-        }}
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const m = row.original;

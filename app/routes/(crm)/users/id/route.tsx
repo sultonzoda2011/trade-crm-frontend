@@ -21,6 +21,7 @@ import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { Role } from '~/types/common';
 
 export default function UserDetailPage() {
@@ -31,7 +32,7 @@ export default function UserDetailPage() {
   const { can } = useCan();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['user-full', id],
+    queryKey: queryKeys.full('users', id),
     queryFn: () => usersApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,

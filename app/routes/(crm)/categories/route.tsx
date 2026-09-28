@@ -17,6 +17,7 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/categories/configs/columns';
 import { getCategoryFilters } from '~/routes/(crm)/categories/configs/filters';
 import { useCategoriesModals, useCategoriesStore } from '~/routes/(crm)/categories/store';
@@ -38,7 +39,7 @@ export default function CategoriesPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['categories', page, limit, debouncedSearch, filters],
+    queryKey: queryKeys.list('categories', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
       const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
       const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
@@ -58,7 +59,7 @@ export default function CategoriesPage() {
   const { mutate: deleteCategory, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => categoriesApi.delete(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['categories'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('categories') });
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },
@@ -110,11 +111,6 @@ export default function CategoriesPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        mobileFields={{
-          '_count.products': 'primary',
-          created: 'primary',
-          description: 'secondary',
-        }}
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const c = row.original;

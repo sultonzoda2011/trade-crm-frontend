@@ -15,6 +15,7 @@ import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { updateSellerSchema, type UpdateSellerSchema } from '~/validations/seller';
 
 export default function EditSellerPage() {
@@ -24,7 +25,7 @@ export default function EditSellerPage() {
   const queryClient = useQueryClient();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['seller', id],
+    queryKey: queryKeys.detail('sellers', id),
     queryFn: () => sellersApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
@@ -49,8 +50,8 @@ export default function EditSellerPage() {
       return sellersApi.update({ formData: appendToFormData(payload), id: id! });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['sellers'] });
-      void queryClient.invalidateQueries({ queryKey: ['seller', id] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('sellers') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.detail('sellers', id) });
       navigate(`/sellers/${id}`);
     },
     onError: () => {},

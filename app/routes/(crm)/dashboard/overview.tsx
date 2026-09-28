@@ -30,6 +30,7 @@ import { Skeleton } from '~/components/ui/skeleton';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS } from '~/lib/format';
 import type { DashboardFilters } from './layout';
+import { queryKeys } from '~/lib/query-keys';
 
 /** Сколько последних операций показывать на дашборде превью-списком. */
 const RECENT_TRANSACTIONS_LIMIT = 5;
@@ -48,7 +49,7 @@ export default function DashboardOverviewPage() {
   }, [period, sellerId]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['dashboard', 'overview', params],
+    queryKey: queryKeys.dashboard('overview', params),
     queryFn: () => dashboardApi.getOverview(params),
     staleTime: 30_000,
   });
@@ -56,7 +57,7 @@ export default function DashboardOverviewPage() {
   // Своя, самая свежая выдача транзакций — не пересчитывается из overview,
   // это просто "последние N по времени", как и на странице должника.
   const { data: recentTx } = useQuery({
-    queryKey: ['dashboard', 'recent-transactions'],
+    queryKey: queryKeys.dashboard('recent-transactions'),
     queryFn: () => transactionsApi.getAll(1, RECENT_TRANSACTIONS_LIMIT, { sortBy: 'createdAt', sortOrder: 'desc' }),
     staleTime: 30_000,
   });

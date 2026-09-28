@@ -20,6 +20,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
 import { useDebtorsModals, useDebtorsStore } from '~/routes/(crm)/debtors/store';
@@ -43,7 +44,7 @@ export default function DebtorsPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['debtors', page, limit, debouncedSearch, filters],
+    queryKey: queryKeys.list('debtors', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
       const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
       const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
@@ -63,7 +64,7 @@ export default function DebtorsPage() {
   const { mutate: deleteDebtor, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => debtorsApi.delete(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['debtors'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },
@@ -120,11 +121,6 @@ export default function DebtorsPage() {
           to: `/debtors/${row.original.id}`,
           state: { fromPath: location.pathname, fromName: t('title') },
         })}
-        mobileFields={{
-          totalDebtAmount: 'primary',
-          'market.name': 'secondary',
-          '_count.transactions': 'secondary',
-        }}
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const d = row.original;

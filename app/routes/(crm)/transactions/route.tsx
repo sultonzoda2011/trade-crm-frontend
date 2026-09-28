@@ -24,6 +24,7 @@ import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
 import { mapToOptions } from '~/lib/mapToOptions';
+import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/transactions/configs/columns';
 import { getTransactionFilters } from '~/routes/(crm)/transactions/configs/filters';
 import { useTransactionsModals, useTransactionsStore } from '~/routes/(crm)/transactions/store';
@@ -67,23 +68,20 @@ export default function TransactionsPage() {
   }, []);
 
   const { data: debtorsResponse } = useQuery({
-    queryKey: ['debtors', 'list'],
+    queryKey: queryKeys.options('debtors', { scope: 'filters', limit: 100 }),
     queryFn: () => debtorsApi.getAll(1, 100, {}, []),
-    staleTime: 60_000,
   });
 
   const debtorOptions = useMemo(() => mapToOptions(debtorsResponse?.data?.data ?? [], 'id', 'name'), [debtorsResponse]);
 
   const { data: categoriesResponse } = useQuery({
-    queryKey: ['categories', 'list'],
+    queryKey: queryKeys.options('categories', { scope: 'filters', limit: 100 }),
     queryFn: () => categoriesApi.getAll(1, 100, {}, []),
-    staleTime: 60_000,
   });
 
   const { data: productsResponse } = useQuery({
-    queryKey: ['products', 'list'],
+    queryKey: queryKeys.options('products', { scope: 'filters', limit: 100 }),
     queryFn: () => productsApi.getAll(1, 100, {}, []),
-    staleTime: 60_000,
   });
 
   const categoryOptions = useMemo(
@@ -102,7 +100,7 @@ export default function TransactionsPage() {
     isFetching,
     isError,
   } = useQuery({
-    queryKey: ['transactions', page, limit, debouncedSearch, filters],
+    queryKey: queryKeys.list('transactions', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
       const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
       const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
@@ -122,7 +120,7 @@ export default function TransactionsPage() {
   const { mutate: deleteTransaction, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => transactionsApi.delete(id),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },
@@ -196,14 +194,6 @@ export default function TransactionsPage() {
           to: `/transactions/${row.original.id}`,
           state: { fromPath: location.pathname, fromName: t('title') },
         })}
-        mobileFields={{
-          totalAmount: 'primary',
-          status: 'primary',
-          type: 'secondary',
-          paymentType: 'secondary',
-          debtor: 'secondary',
-          customerName: 'secondary',
-        }}
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           return (

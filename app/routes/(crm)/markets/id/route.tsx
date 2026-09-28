@@ -9,6 +9,7 @@ import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 
 import { useCan } from '~/hooks/useCan';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function MarketDetailPage() {
   const { t } = useTranslation(['markets', 'common']);
@@ -18,7 +19,7 @@ export default function MarketDetailPage() {
   const { user } = useCan();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['market-full', id],
+    queryKey: queryKeys.full('markets', id),
     queryFn: () => marketsApi.getFull(id!),
     enabled: Boolean(id),
     staleTime: 30_000,

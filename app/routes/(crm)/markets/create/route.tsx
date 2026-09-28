@@ -15,6 +15,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { Role } from '~/types/common';
 import { createMarketSchema, type CreateMarketSchema } from '~/validations/market';
 
@@ -24,7 +25,7 @@ export default function CreateMarketPage() {
   const queryClient = useQueryClient();
 
   const owners = useAsyncSelectOptions({
-    queryKey: ['users', 'owners'],
+    queryKey: queryKeys.options('users', { scope: 'owners', limit: 20 }),
     fetcher: async (search) =>
       (await usersApi.getAll(1, 20, { search: search || undefined }, [{ key: 'role', value: Role.Owner }]))?.data
         ?.data ?? [],
@@ -44,7 +45,7 @@ export default function CreateMarketPage() {
       return marketsApi.create(appendToFormData(payload));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['markets'] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('markets') });
       navigate('/markets');
     },
     onError: () => {},

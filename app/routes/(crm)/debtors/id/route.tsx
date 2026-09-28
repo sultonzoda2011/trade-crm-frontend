@@ -18,6 +18,7 @@ import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { queryKeys } from '~/lib/query-keys';
 
 export default function DebtorDetailPage() {
   const { t } = useTranslation(['debtors', 'transactions', 'common']);
@@ -27,7 +28,7 @@ export default function DebtorDetailPage() {
   const { can } = useCan();
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['debtor-full', id],
+    queryKey: queryKeys.full('debtors', id),
     queryFn: () => debtorsApi.getFull(id!),
     enabled: !!id,
     staleTime: 30_000,

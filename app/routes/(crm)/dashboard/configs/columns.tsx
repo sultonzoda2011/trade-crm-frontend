@@ -8,29 +8,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip
 import { fmtTJS } from '~/lib/format';
 import type { SellerReportRow } from '~/types/dashboard';
 
-function SellerNameCell({
-  row,
-  t,
-  currentUserId,
-  canViewSellers,
-}: {
-  row: SellerReportRow;
-  t: TFunction;
-  currentUserId?: string;
-  canViewSellers: boolean;
-}) {
+function SellerNameCell({ row }: { row: SellerReportRow }) {
   const seller = row.seller;
 
   if (!seller) return <span className="text-muted-foreground font-medium">—</span>;
-
-  const isSelf = currentUserId === seller.id;
-  if (!isSelf && !canViewSellers) {
-    return (
-      <div className="flex items-center gap-2">
-        <UserAvatar fullName={seller.name} subInfo={seller.email} imagePath={seller.image ?? undefined} />
-      </div>
-    );
-  }
 
   return (
     <div className="flex items-center gap-2">
@@ -81,19 +62,15 @@ const columnHelper = createColumnHelper<SellerReportRow>();
 
 export const getColumns = ({
   t,
-  currentUserId,
   canViewSellers,
 }: {
   t: TFunction;
-  currentUserId?: string;
   canViewSellers: boolean;
 }): ColumnDef<SellerReportRow, any>[] => [
   columnHelper.accessor('seller.name', {
     header: t('table.seller'),
     enableHiding: false,
-    cell: (info) => (
-      <SellerNameCell row={info.row.original} t={t} currentUserId={currentUserId} canViewSellers={canViewSellers} />
-    ),
+    cell: (info) => <SellerNameCell row={info.row.original} />,
   }),
   columnHelper.accessor('salesCount', {
     header: t('table.salesCount'),

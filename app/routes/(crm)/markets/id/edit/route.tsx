@@ -20,6 +20,7 @@ import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { appendToFormData } from '~/lib/form-data';
+import { queryKeys } from '~/lib/query-keys';
 import { Role } from '~/types/common';
 import { updateMarketSchema, type UpdateMarketSchema } from '~/validations/market';
 
@@ -32,7 +33,7 @@ export default function EditMarketPage() {
   const canManageUsers = can(Action.USERS_VIEW);
 
   const { data: response, isLoading } = useQuery({
-    queryKey: ['market', id],
+    queryKey: queryKeys.detail('markets', id),
     queryFn: () => marketsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
@@ -46,7 +47,7 @@ export default function EditMarketPage() {
   );
 
   const owners = useAsyncSelectOptions({
-    queryKey: ['users', 'owners'],
+    queryKey: queryKeys.options('users', { scope: 'owners', limit: 20 }),
     fetcher: async (search) =>
       (
         (await usersApi.getAll(1, 20, { search: search || undefined }, [{ key: 'role', value: Role.Owner }]))?.data
@@ -74,8 +75,8 @@ export default function EditMarketPage() {
       return marketsApi.update({ formData: appendToFormData(payload), id: id! });
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['markets'] });
-      void queryClient.invalidateQueries({ queryKey: ['market', id] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('markets') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.detail('markets', id) });
       navigate(`/markets/${id}`);
     },
     onError: () => {},
