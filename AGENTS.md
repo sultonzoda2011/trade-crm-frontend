@@ -16,11 +16,12 @@
 | i18n | react-i18next + i18next-http-backend | Locales: `public/locales/{ru,en,tg}/` |
 | Icons | lucide-react | Import by name |
 | Forms | react-hook-form + `@hookform/resolvers/zod` | Zod schemas with i18n messages |
-| Auth | httpOnly `accessToken` cookie; non-httpOnly `user` JSON cookie | RBAC reads the `user` cookie via `getClientUser()` — **not** `jwt-decode` |
+| Auth | Bearer token + `UserInfo`, both in **localStorage** | `/auth/login` returns `accessToken` in the response body; the client stores it and sends `Authorization: Bearer <token>`. RBAC reads the stored user via `getClientUser()` — **not** `jwt-decode`, **not** cookies |
 | Charts | recharts | Via `~/components/ui/chart.tsx`; used by `app/components/dashboard/` |
 | Toasts | sonner | `<Toaster>` in `root.tsx`; flips to `top-center` on mobile |
 | Font | Manrope (Google Fonts) | `200..800` weight range |
 | Navigation | NProgress (top bar) | Triggered by `useNavigation().state` |
+| Mobile shell | Capacitor | `~/hooks/useCapacitorBackButton`, `~/hooks/useCapacitorStatusBar` (guarded native calls); `BottomNav` for the mobile tab bar. Sessions live in `localStorage`, not cookies, precisely because WebView cookies do not survive a process kill |
 | Overlays | flatpickr (date pickers), cmdk (command palette) | Themed via CSS variables |
 | Formatting | prettier + `prettier-plugin-tailwindcss` | Config at `.prettierrc.mjs`. **No** eslint, no biome, no prettier npm script, no test runner |
 
@@ -66,22 +67,26 @@ Routes are defined **manually** in `app/routes.ts` (no file-system routing despi
 | `/login` | `app/routes/(auth)/login/route.tsx` |
 | *(layout)* | `app/routes/(crm)/layout.tsx` |
 | `/` (index) | `app/routes/(crm)/index.tsx` — **redirect only** |
-| `/dashboard` | `app/routes/(crm)/dashboard/route.tsx` |
-| `/sellers-report` | `app/routes/(crm)/dashboard/sellers-report.tsx` |
+| *(layout)* | `app/routes/(crm)/dashboard/layout.tsx` — owns the period/seller filter bar and provides it to children via `useOutletContext` |
+| `/dashboard` (index) | `app/routes/(crm)/dashboard/overview.tsx` |
+| `/dashboard/inventory` | `app/routes/(crm)/dashboard/inventory.tsx` |
+| `/dashboard/products` | `app/routes/(crm)/dashboard/products.tsx` |
+| `/dashboard/sellers` | `app/routes/(crm)/dashboard/sellers-report.tsx` |
 | `/profile` | `app/routes/(crm)/profile/route.tsx` |
-| `/users`, `/users/:id` | `app/routes/(crm)/users/route.tsx`, `users/id/route.tsx` |
-| `/markets`, `/markets/:id` | `app/routes/(crm)/markets/route.tsx`, `markets/id/route.tsx` |
-| `/my-market` | `app/routes/(crm)/my-market/route.tsx` |
-| `/sellers`, `/sellers/:id` | `app/routes/(crm)/sellers/route.tsx`, `sellers/id/route.tsx` |
+| `/users`, `/users/create`, `/users/:id`, `/users/:id/edit` | `app/routes/(crm)/users/…` |
+| `/markets`, `/markets/create`, `/markets/:id`, `/markets/:id/edit` | `app/routes/(crm)/markets/…` |
+| `/sellers`, `/sellers/create`, `/sellers/:id`, `/sellers/:id/edit` | `app/routes/(crm)/sellers/…` |
 | `/products`, `/products/create`, `/products/:id`, `/products/:id/edit` | `app/routes/(crm)/products/…` |
-| `/categories`, `/categories/:id` | `app/routes/(crm)/categories/route.tsx`, `categories/id/route.tsx` |
-| `/debtors`, `/debtors/:id` | `app/routes/(crm)/debtors/route.tsx`, `debtors/id/route.tsx` |
+| `/categories`, `/categories/create`, `/categories/:id`, `/categories/:id/edit` | `app/routes/(crm)/categories/…` |
+| `/debtors`, `/debtors/create`, `/debtors/:id`, `/debtors/:id/edit` | `app/routes/(crm)/debtors/…` |
 | `/transactions`, `/transactions/create`, `/transactions/:id` | `app/routes/(crm)/transactions/…` |
+| `/guide` | `app/routes/(crm)/guide/route.tsx` — markdown reference, open to all three roles |
 | `/403` | `app/routes/(crm)/forbidden/route.tsx` |
 | `*` | `app/routes/(crm)/notfound/route.tsx` |
 
 - **`/` is not the dashboard.** `(crm)/index.tsx` renders `null`; its `clientLoader` redirects `Role.Seller` → `/transactions`, everyone else → `/dashboard`.
-- `/sellers-report` is registered **flat**, but its file lives under `dashboard/`. The nested-looking file path is not the URL — link to `/sellers-report`, never `/dashboard/sellers-report`.
+- **Dashboard children are nested URLs, not flat aliases.** The seller report is `/dashboard/sellers`; there is no `/sellers-report` route and no `/my-market` route (the "My Market" nav item points at `/markets/${marketId}`).
+- **Every entity has `create` and `:id/edit` page routes** — CUD is page-based for all of them, not just products.
 - **AuthLayout** (`app/routes/(auth)/layout.tsx`): `min-h-screen grid lg:grid-cols-2`, left panel has branding + quote, right panel has `<Outlet />`. Includes `LanguageSwitcher` + `ModeToggle`.
 - **CrmLayout** (`app/routes/(crm)/layout.tsx`): calls `getClientUser()` then `canAccess(user.role, pathname)` in `clientLoader` — it does **not** call `requireAuth` (in SPA mode `request.headers` carries no Cookie). Denied access redirects to **`/403`**.
 
@@ -127,32 +132,34 @@ There are **three** permission surfaces. A new gated feature usually needs all t
 
 | Concept | Implementation | Location |
 |---------|---------------|----------|
-| Credential | httpOnly `accessToken` cookie (15 min), set by the backend | — |
-| Client identity | non-httpOnly `user` cookie: URL-encoded JSON `UserInfo`, written by `setUserCookie()` on login | `~/lib/auth-utils.ts` |
-| Read identity | `getClientUser()` — parses the `user` cookie, validates the role | `~/lib/auth-utils.ts` |
+| Credential | `accessToken` string in `localStorage['accessToken']`, taken from the `/auth/login` response body and saved by `setAccessToken()` | `~/lib/auth-utils.ts` |
+| Client identity | JSON `UserInfo` in `localStorage['user']`, written by `setUserInfo()` on login | `~/lib/auth-utils.ts` |
+| Read identity | `getClientUser()` — requires a stored token **and** valid `UserInfo` with a known role; returns `null` otherwise | `~/lib/auth-utils.ts` |
 | Route guard | `getClientUser()` + `canAccess(role, pathname)` in `(crm)/layout.tsx` `clientLoader` | `~/config/permissions.ts` |
 | Action map | `ACTION_PERMISSIONS` — `Action` → `Role[]` | `~/config/actions.ts` |
 | API pre-flight | `API_ROUTE_ACTIONS` — checked in the axios **request** interceptor | `~/lib/client.ts` |
 | UI gate | `useCan()` → `can(Action.X)` or `can(Role.X)` | `~/hooks/useCan.ts` |
 | Role enum | `Admin`, `Owner`, `Seller` | `~/types/common.ts` |
 
-**Session flow**: login → backend sets 2 cookies (`accessToken`, `user`) → `setUserCookie()` → role-aware redirect via `getRedirectPath`. On a 401, `~/lib/client.ts` surfaces the error and calls `navigateTo('/login')` — an SPA navigation through the `setNavigate`-injected router callback, not a page reload.
+**Session flow**: login → backend responds with `accessToken` + `user` in the JSON body → `setAccessToken()` + `setUserInfo()` write both to `localStorage` → role-aware redirect via `getRedirectPath`. Every later request carries `Authorization: Bearer <token>`, added by the axios request interceptor. On a 401, `~/lib/client.ts` calls `clearSession()` and `redirectToLogin()` — an SPA navigation through the `setNavigate`-injected router callback, not a page reload.
 
 **`canAccess(role, pathname)`** collects *all* patterns matching `matchPath({ path, end: true })`, sorts by descending pattern length, and checks the longest. Unmatched routes still return `true` (open to every authenticated role).
 
-`auth-utils.ts` deliberately contains **no** header-reading or token-expiry helpers: in SPA mode `request.headers` carries no Cookie, and `accessToken` is httpOnly so its expiry cannot be inspected from JS. Expiry is handled reactively — a 401 triggers  in `~/lib/client.ts`. Do not reintroduce a `requireAuth(request)` or `isTokenExpired(token)` helper; they cannot work here.
+Storage is `localStorage`, **not cookies**, and that is deliberate: under Capacitor an Android WebView drops session cookies (a cookie with no `max-age`) when the app is killed, so the next launch found no `user` and bounced the guard to `/login`. `localStorage` survives process restarts, so the session does too. `auth-utils.ts` still carries a one-time legacy migration path (`readLegacyCookie`/`clearLegacyCookie`) that moves an old cookie session into storage and deletes the cookie — it is dead once every install has logged in on the new flow.
+
+There are **no** header-reading or token-expiry helpers: `request.headers` carries no Cookie in SPA mode, and expiry is handled reactively — a 401 clears the session in `~/lib/client.ts`. Do not reintroduce a `requireAuth(request)` or `isTokenExpired(token)` helper; they cannot work here.
 
 **How `useCan` works** (`app/hooks/useCan.ts`):
 
-- Reads `getClientUser()` (the `user` cookie) — no API call, no JWT decode
+- Reads `getClientUser()` (token + `UserInfo` from `localStorage`) — no API call, no JWT decode
 - `can(Action.USERS_CREATE)` → looks up `ACTION_PERMISSIONS[Action.USERS_CREATE]` → checks if the user's role is in the allowed list
 - `can(Role.Admin)` → direct role comparison
 - `can([Action.USERS_VIEW, Action.USERS_EDIT])` → checks if ANY match
-- Returns `{ can, canAny, role, user }`; also exports `type Permission = Role | Role[] | Action | Action[]`
+- Returns `{ can, role, user }`; also exports `type Permission = Role | Role[] | Action | Action[]`
 
 ### Client-side API RBAC pre-flight
 
-The axios **request** interceptor checks the outgoing URL against `API_ROUTE_ACTIONS` and rejects locally with `new Error('Access denied: <ACTION>')` plus a toast, before any network call. It does **not** attach an `Authorization` header — the instance uses `withCredentials: true` and the browser sends the cookie.
+The axios **request** interceptor attaches `Authorization: Bearer <accessToken>` from `localStorage`, then checks the outgoing URL against `API_ROUTE_ACTIONS` and rejects locally with `new Error('Access denied: <ACTION>')` plus a toast, before any network call.
 
 Consequences worth knowing: a new endpoint with no row in `API_ROUTE_ACTIONS` is silently **allowed**, and a mismatched row **blocks a legitimate call** before it leaves the browser.
 
@@ -161,10 +168,10 @@ Consequences worth knowing: a new endpoint with no row in `API_ROUTE_ACTIONS` is
 **Every** HTTP call goes through `app/lib/client.ts` — an Axios instance:
 
 ```
-apiClient = axios.create({ baseURL: VITE_API_URL + '/api', withCredentials: true })
+apiClient = axios.create({ baseURL: VITE_API_URL + '/api', timeout: 15000 })
 ```
 
-- **Request interceptor**: performs the client-side RBAC pre-flight against `API_ROUTE_ACTIONS` (see Auth & RBAC). It does **not** set an `Authorization` header — auth rides on the httpOnly cookie.
+- **Request interceptor**: attaches `Authorization: Bearer <token>` when a token is stored, then performs the client-side RBAC pre-flight against `API_ROUTE_ACTIONS` (see Auth & RBAC).
 - **Response interceptor**:
   
   - **Network error** → toast `errors.noConnection`
@@ -183,15 +190,16 @@ Query params are assembled as `{ page, limit, ...options, ...filtersToParams(fil
 
 | File | Export | Endpoints | Body |
 |------|--------|-----------|------|
+| `api/crud.ts` | `listRequest`, `detailRequest`, `nestedDetailRequest`, `deleteRequest`, `multipartWrites`, `jsonWrites`, `ListOptions` | Building blocks for the standard REST surface. Seven `getAll` bodies used to be copy-pasted; **new entity modules compose these** rather than re-writing the parameter object and the `filtersToParams` spread |
 | `api/auth.ts` | `authApi` | `login(payload)` → POST `/auth/login`; `logout()` → POST `/auth/logout` | JSON |
-| `api/users.ts` | `usersApi` | `getAll`, `getById(id)`, `create(formData)`, `update({formData, id})`, `delete(id)` → `/users` | multipart |
-| `api/markets.ts` | `marketsApi` | same five → `/markets` | multipart |
-| `api/products.ts` | `productsApi` | same five → `/products` | multipart |
-| `api/categories.ts` | `categoriesApi` | same five → `/categories` | multipart |
-| `api/sellers.ts` | `sellersApi` | same five → `/sellers` | multipart |
-| `api/debtors.ts` | `debtorsApi` | `getAll`, `getById`, `create(request)`, `update({request, id})`, `delete` → `/debtors` | JSON |
+| `api/users.ts` | `usersApi` | `getAll`, `getById(id)`, `getFull(id)`, `create(formData)`, `update({formData, id})`, `delete(id)` → `/users` | multipart |
+| `api/markets.ts` | `marketsApi` | same six → `/markets` | multipart |
+| `api/products.ts` | `productsApi` | the six minus `getFull` → `/products` | multipart |
+| `api/categories.ts` | `categoriesApi` | same six → `/categories` | multipart |
+| `api/sellers.ts` | `sellersApi` | same six, plus `getBalance(id)`, `getCredits(id, page, limit)`, `createCredit({id, request})` → `/sellers` | multipart |
+| `api/debtors.ts` | `debtorsApi` | the six (`create(request)`, `update({request, id})`) → `/debtors` | JSON |
 | `api/transactions.ts` | `transactionsApi` | the five, plus `pay({request, id})` → PATCH `/transactions/:id/pay` and `refund(id)` → POST `/transactions/:id/refund` | JSON |
-| `api/dashboard.ts` | `dashboardApi`, `DashboardParams` | `get(params?)` → `/dashboard`; `getSellersReport(params?)` → `/dashboard/sellers-report`. Params `{ period?, sellerId?, dateFrom?, dateTo? }` | — |
+| `api/dashboard.ts` | `dashboardApi`, `DashboardParams` | `getOverview(params?)` → `/dashboard/overview`; `getSellersReport(params?)` → `/dashboard/sellers-report`. Params `{ period?, sellerId?, dateFrom?, dateTo? }` | — |
 | `api/profile.ts` | `profileApi` | `getProfile()` → GET `/profile`; `updateProfile(formData)` → PATCH `/profile` (multipart); `updatePassword(payload)` → PATCH `/profile/password` | mixed |
 
 Convention: **image-bearing entities take `FormData`; pure-data entities take typed request objects.**
@@ -220,9 +228,13 @@ new QueryClient({
 Factory in `~/store/useTableStore.ts`. Creates a Zustand store with:
 
 ```ts
-{ page, limit, search, filters: ActiveFilter[], activeFiltersCount }
+{ page, limit, search, filters: ActiveFilter[] }
 { setPage, setLimit, setSearch, setFilter, removeFilter, setFilters, resetFilters }
 ```
+
+`DEFAULT_PAGE_LIMIT` and `applyFilter` are also exported from this module. `applyFilter` is the single add/replace/drop-by-key implementation — `FilterSheet` keeps its own draft state and used to carry a second copy of it. `DEFAULT_PAGE_LIMIT` is the only encoding of "the page size when nobody chose one": read it instead of writing `10` (the table store default, the query-string writer's "is this the default?" test, and `DataTable`'s `limit` prop default all referenced the same number separately, while every `api.getAll` defaulted to 20).
+
+There is no `activeFiltersCount` in the store — it was derived state stored twice; display sites read `filters.length`.
 
 **Every table page must have its own scoped store** in a `store.ts` file inside the route folder:
 
@@ -232,7 +244,7 @@ import { createTableStore } from '~/store/useTableStore';
 export const useUsersStore = createTableStore();
 ```
 
-Config: `createTableStore({ initiallimit: 12 })` — use when default page size (10) doesn't match design.
+`createTableStore()` takes no arguments — page size comes from `DEFAULT_PAGE_LIMIT`.
 
 **Behavior**: `setLimit`, `setSearch`, `setFilter`, `setFilters` and `resetFilters` all reset `page` to 1. `removeFilter` does not.
 
@@ -240,29 +252,33 @@ Eight `store.ts` files exist today, each in its route folder, exporting a table 
 
 | File | Exports |
 |---|---|
-| `users/store.ts` | `useUsersStore`, `useUsersModals` — `{delete: string, create: null, edit: User}` |
-| `markets/store.ts` | `useMarketsStore`, `useMarketsModals` — `{delete, create, edit: Market}` |
-| `sellers/store.ts` | `useSellersStore`, `useSellersModals` — `{delete, create, edit: Seller}` |
-| `debtors/store.ts` | `useDebtorsStore`, `useDebtorsModals` — `{delete, create, edit: Debtor}` |
-| `categories/store.ts` | `useCategoriesStore`, `useCategoriesModals` — `{delete, create, edit: CategoryDetail}` |
-| `products/store.ts` | `useProductsStore`, `useProductsModals` — `{delete: string}` only (create/edit are pages) |
-| `transactions/store.ts` | `useTransactionsStore`, `useTransactionsModals` — `{delete: string, pay: Transaction}` |
+| `users/store.ts` | `useUsersStore`, `useUsersModals` — `{delete: string}` |
+| `markets/store.ts` | `useMarketsStore`, `useMarketsModals` — `{delete, edit: Market}` |
+| `sellers/store.ts` | `useSellersStore`, `useSellersModals` — `{delete, payout: Seller}` |
+| `debtors/store.ts` | `useDebtorsStore`, `useDebtorsModals` — `{delete, create: null}` |
+| `categories/store.ts` | `useCategoriesStore`, `useCategoriesModals` — `{delete: string}` |
+| `products/store.ts` | `useProductsStore`, `useProductsModals` — `{delete: string}` |
+| `transactions/store.ts` | `useTransactionsStore`, `useTransactionsModals` — `{delete: string, pay: Transaction, refund: TransactionDetail}` |
 | `profile/store.ts` | `useProfileModals` only — `{edit: Profile, password: null}` (no table) |
 
 Two conventions this encodes: the modal-key set **tracks whether CUD is modal-based or page-based**, and a `store.ts` may contain a modal store with no table store at all.
+
+**Only four slices are actually read today**: `delete` (every entity), `debtors.create`, `sellers.payout`, `transactions.pay`/`refund`, `profile.edit`/`password`. `markets.edit` is read but its consumer is broken — `MarketDetailView`'s Edit quick-action calls `editModal.open(market)` and no market-edit modal is mounted anywhere, so the button opens nothing (see the Track B findings; `/markets/:id/edit` exists as a page route and is almost certainly what it should link to).
 
 #### Modal store (`createModalStore`)
 
 Factory in `~/store/createModalStore.ts`. Creates a Zustand store from a typed map:
 
 ```ts
-type UsersModals = {
-  delete: string;    // deleteModal gets a string id
-  create: null;      // createModal gets nothing
-  edit: User;        // editModal gets full User object
+// app/routes/(crm)/sellers/store.ts
+type SellersModals = {
+  delete: string;      // deleteModal gets a string id
+  payout: Seller;      // payoutModal gets a full Seller
 };
-export const useUsersModals = createModalStore<UsersModals>(['delete', 'create', 'edit']);
+export const useSellersModals = createModalStore<SellersModals>(['delete', 'payout']);
 ```
+
+Declare only the keys something actually reads — `create`/`edit` slices lingered in four stores long after those flows moved to page routes.
 
 Each key produces `{ isOpen: boolean, data: T | null, open(data?: T) => void, close() => void }`.
 
@@ -380,11 +396,13 @@ Note on chart tokens: `--chart-2/3/4` are **aliases** of `--success`/`--warning`
 
 | Hook | Location | Signature | Purpose |
 |------|----------|-----------|---------|
-| `useDataTable` | `~/hooks/useDataTable` | `({ columns, data, storageKey?, initialVisibility?, rowSelection?, onRowSelectionChange?, getRowId? })` → `{ table }` | Wraps `useReactTable`; column visibility persisted to `localStorage[storageKey]`. Also supports row selection and custom row ids |
+| `useDataTable` | `~/hooks/useDataTable` | `({ columns, data, storageKey?, initialVisibility? })` → `{ table }` | Wraps `useReactTable`; column visibility persisted to `localStorage[storageKey]` |
+| `useEntityList` | `~/hooks/useEntityList` | `({ entity, store, api, t, deleteModal })` → `{ rows, totalPages, isLoading, isFetching, isError, page…filters, setters…, deleteDialog }` | The list page pipeline: store slices, debounced search, list query, delete mutation. Used by `users` and `products` so far — the other five list pages still hand-roll it |
+| `useEntityForm` | `~/hooks/useEntityForm` | `({ entity, id?, fetcher, api, toForm, toPayload, reset, redirectTo })` → `{ detail, isLoading, submit, isPending }` | The create/edit round-trip: load → seed → `buildMultipart` → save → invalidate → navigate. Returns `submit` (not `mutate`) for `handleSubmit`. Used by `users` and `categories` pages so far |
 | `useForm` | `~/hooks/useForm` | `(options: UseFormProps<T>)` → RHF return | i18n-aware wrapper — `form.trigger()` on `i18n.language` change, but only if `formState.isSubmitted` |
 | `useDebounce` | `~/hooks/useDebounce` | `(value: T, delay = 300)` → `debouncedValue` | Standard debounce, used for search inputs before sending to API |
-| `useCan` | `~/hooks/useCan` | `()` → `{ can, canAny, role, user }` | Reads `getClientUser()` (the `user` cookie), checks `Action`/`Role` against `ACTION_PERMISSIONS` |
-| `useFilterParams` | `~/hooks/useFilterParams` | `({ page, limit, search, filters, setPage, setLimit, setSearch, setFilters, filterConfigs })` | Two-way sync between a table store and URL search params — hydrates from the URL once on mount, then writes back with `{ replace: true }`. Omits `page` when 1 and `limit` when 10 |
+| `useCan` | `~/hooks/useCan` | `()` → `{ can, role, user }` | Reads `getClientUser()` (token + `UserInfo` in `localStorage`), checks `Action`/`Role` against `ACTION_PERMISSIONS` |
+| `useFilterParams` | `~/hooks/useFilterParams` | `({ page, limit, search, filters, setPage, setLimit, setSearch, setFilters, filterConfigs })` | Two-way sync between a table store and URL search params. Hydrates on mount **and again when the config gains hydratable keys** (so late-arriving option filters keep deep links), then writes back with `{ replace: true }`. Omits `page` when 1 and `limit` when `DEFAULT_PAGE_LIMIT` |
 | `useFlatpickr` | `~/hooks/useFlatpickr` | `(options: Partial<Options>)` → `{ inputRef, fpRef }` | Shared flatpickr lifecycle (init once, destroy on unmount); backs the date field components |
 | `useIsMobile` | `~/hooks/use-mobile` | `(breakpoint = 767)` → `boolean` | `matchMedia` listener, used for responsive toaster position + layout |
 
@@ -499,14 +517,16 @@ window.history.replaceState({}, document.title);
 | `CommandPalette` | `~/components/shared/CommandPalette` | Global Ctrl+K search — 3 tiers: quick actions (RBAC-filtered), pages (from sidebar), entity search (API queries) |
 | `ConfirmDialog` | `~/components/shared/ConfirmDialog` | Confirmation modal; types: `danger`/`warning`/`success`/`info`; loading spinner |
 | `CustomInput` | `~/components/shared/CustomInput` | `<InputGroup>` with optional `startIcon`/`endIcon` |
-| `CustomSelect` | `~/components/shared/CustomSelect` | Combo-box select (base-ui Combobox); supports single/multi, chips, search, clearable |
+| `CustomSelect` | `~/components/shared/CustomSelect` | Combo-box select (base-ui Combobox); single-value, searchable, clearable, optional server-side search via `onSearch` |
 | `DataTable` | `~/components/shared/DataTable` | Full-featured tanstack-table wrapper; handles loading skeletons, empty state, error state, pagination, dimmed rows during isFetching, sticky pinned columns |
 | `DateInputField` | `~/components/shared/DateInputField` | Flatpickr date picker with ru/en/tg locale; emits `YYYY-MM-DD` |
 | `EmptyState` | `~/components/shared/EmptyState` | Centered "no data" display with Inbox icon + message (falls back to `t('table.noData')`) |
 | `FileInputField` | `~/components/shared/FileInputField` | File/image upload; variants: `dropzone` (drag & drop + preview) and `simple` (button + filename); `compact` size for modals |
 | `FilterField` | `~/components/shared/FilterField` | Renders a single filter input based on `FilterConfig` type discriminator |
 | `FilterSheet` | `~/components/shared/FilterSheet` | Slide-over sheet with filter form; handles flatpickr portal interaction; reset + apply buttons |
-| `FormSection` | `~/components/shared/FormSection` | Section wrapper with icon + title + divider for form pages |
+| `ListPageLayout` | `~/components/shared/ListPageLayout` | The list-page frame: toolbar + filter sheet + column toggle + create action + filter pills + `DataTable` + delete `ConfirmDialog`, plus optional URL sync. Consumed by `users` and `products`; the other five list pages still assemble these parts by hand |
+| `EntityFormPage` | `~/components/shared/EntityFormPage` | The form-page frame: breadcrumbs, title with desktop cancel/submit, optional image `Panel`, and the sticky mobile action bar (including `env(safe-area-inset-bottom)`). Consumed by `users`/`categories` create+edit |
+| `renderActionsCell` | `~/components/shared/ListPageLayout` | Renders a row's `actions` cell for a mobile card, so pages stop repeating the `getVisibleCells().find(...)` + `flexRender` pair |
 | `InfoItem` | `~/components/shared/InfoItem` | Label-value display pair (uppercase label, bold value) for detail pages |
 | `Modal` | `~/components/shared/Modal` | Base modal using shadcn `Dialog` with `modal={false}` (fixes base-ui ComboBox portal inside dialog) |
 | `UniversalImage` | `~/components/shared/UniversalImage` | Image component with loading/error/empty states; custom fallback render function; fades in on load |
@@ -533,8 +553,8 @@ window.history.replaceState({}, document.title);
 **Other component folders:**
 
 - `app/components/layout/` — `Header`, `LanguageSwitcher`, `ModeToggle`, `NavMain`, `Panel`, `Sidebar`, `UserNav`. `Panel` (props `children`, `className`, `title`, `actions`) is the standard card wrapper. `Header` composes `SidebarTrigger`, the palette trigger button, `LanguageSwitcher`, `ModeToggle`, `UserNav`, and now **owns `CommandPalette` state** (`<CommandPalette open onOpenChange>`).
-- `app/components/dashboard/` — `DebtorRiskBadge`, `OverdueAlertCard`, `PaymentDistributionChart`, `RevenueTrendChart`.
-- `app/components/modals/` — 13 modals: `ChangePasswordModal`, `CreateCategoryModal`, `CreateDebtorModal`, `CreateMarketModal`, `CreatePaymentModal`, `CreateSellerModal`, `CreateUserModal`, `EditCategoryModal`, `EditDebtorModal`, `EditMarketModal`, `EditProfileModal`, `EditSellerModal`, `EditUserModal`. There are **no product modals** — products are full-page routes.
+- `app/components/dashboard/` — `CategoryPerformance`, `ComparisonIndicator`, `InsightList`, `InventoryHealth`, `MetricCard`, `OverdueAlertCard`, `PaymentDistributionChart`, `ReturnsPanel`, `RevenueTrendChart`, `TopProducts`.
+- `app/components/modals/` — 6 modals: `ChangePasswordModal`, `CreateDebtorModal`, `CreatePaymentModal`, `EditProfileModal`, `PayoutSellerModal`, `RefundTransactionModal`. Everything else that creates or edits an entity is a **full-page route** (`/users/create`, `/markets/:id/edit`, …), not a modal.
 
 **Form components** (`~/components/ui/form/`): `FormInput`, `FormCustomSelect`, `FormDateInput`, `FormFileInput`, `FormTextarea` — all `<Controller>` wrappers that accept `control` from react-hook-form and render label + input + error message.
 
@@ -582,24 +602,28 @@ Note the split inside transactions: a Seller may create a transaction but only a
 
 ### `~/config/permissions.ts`
 
-`ROUTE_PERMISSIONS` — 20 entries:
+`ROUTE_PERMISSIONS` — 24 entries:
 
 ```
-'/dashboard'            [Admin, Owner]        '/products/create'      [Admin, Owner]
-'/sellers-report'       [Admin, Owner]        '/products/:id'         [Admin, Owner, Seller]
-'/profile'              [Admin, Owner, Seller]'/products/:id/edit'    [Admin, Owner]
-'/users'                [Admin]               '/products'             [Admin, Owner, Seller]
-'/users/:id'            [Admin]               '/transactions/create'  [Admin, Owner, Seller]
-'/markets'              [Admin]               '/transactions/:id'     [Admin, Owner, Seller]
-'/markets/:id'          [Admin, Owner]        '/transactions'         [Admin, Owner, Seller]
-'/my-market'            [Owner]  ← Owner ONLY '/categories'           [Admin, Owner]
-'/sellers'              [Admin, Owner]        '/categories/:id'       [Admin, Owner]
-'/sellers/:id'          [Admin, Owner]        '/403'                  [Admin, Owner, Seller]
+'/dashboard'            [Admin, Owner]         '/products/:id'         [Admin, Owner, Seller]
+'/dashboard/inventory'  [Admin, Owner]         '/products/:id/edit'    [Admin, Owner]
+'/dashboard/products'   [Admin, Owner]         '/products'             [Admin, Owner, Seller]
+'/dashboard/sellers'    [Admin, Owner]         '/transactions/create'  [Admin, Owner, Seller]
+'/profile'              [Admin, Owner, Seller] '/transactions/:id'     [Admin, Owner, Seller]
+'/users'                [Admin]                '/transactions'         [Admin, Owner, Seller]
+'/users/:id'            [Admin]                '/categories'           [Admin, Owner]
+'/markets'              [Admin]                '/categories/:id'       [Admin, Owner]
+'/markets/:id'          [Admin, Owner, Seller] '/debtors'              [Admin, Owner, Seller]
+'/sellers'              [Admin, Owner]         '/debtors/:id'          [Admin, Owner, Seller]
+'/sellers/:id'          [Admin, Owner]         '/guide'                [Admin, Owner, Seller]
+'/products/create'      [Admin, Owner]         '/403'                  [Admin, Owner, Seller]
 ```
 
 `canAccess(role, pathname)`: collects every `matchPath({ path, end: true })` hit, sorts by descending pattern length, checks the longest. No match → `true`.
 
-**`/debtors` and `/debtors/:id` are guarded for all three roles** (`[Admin, Owner, Seller]`), matching `DEBTORS_VIEW`. Note the failure mode this closes: `canAccess` returns `true` when *no* pattern matches, so an unlisted route is open to every authenticated role.
+**Ten routes are missing from this table and are therefore open to every role:** `/users/create`, `/users/:id/edit`, `/markets/create`, `/markets/:id/edit`, `/sellers/create`, `/sellers/:id/edit`, `/categories/create`, `/categories/:id/edit`, `/debtors/create`, `/debtors/:id/edit`. Because `canAccess` returns `true` when *no* pattern matches, a Seller can open all of them; only the axios pre-flight stops the save afterwards. When you add a route, **add its row in the same commit** — an unlisted route is not "unrestricted for now", it is a fail-open hole. (Full analysis, including what tightening each one revokes, is in `TradeCRM A8 — RBAC 影响清单.md`.)
+
+The length-based sort is arithmetic, not precedence: `/users/create` (12) beats `/users/:id` (10) only because it happens to be longer. Prefer more static segments when adding a row.
 
 ### `~/config/navigation.ts`
 
@@ -608,24 +632,24 @@ getSidebarConfig(t): NavItem[]       // sidebar menu items with icons and action
 getVisibleNavigation(items, can): NavItem[]  // filters items recursively by RBAC
 ```
 
-Ten items, none commented out:
+Ten items, grouped by `section` (`control` → `main` → `trade` → `catalog` → `team`, then `guide` unsectioned):
 
 | Title key | url | icon | action |
 |---|---|---|---|
-| `navigation.dashboard` | `/` | `LayoutDashboard` | `DASHBOARDS_VIEW` |
 | `navigation.users` | `/users` | `Users` | `USERS_VIEW` |
-| `navigation.markets` | `/markets` | `StoreIcon` | `MARKETS_VIEW` |
-| `navigation.myMarket` | `/my-market` | `StoreIcon` | gated by `roles: [Role.Owner]`, not by an action — `MARKETS_VIEW_BY_ID` is broader (Admin + Owner) than the route |
-| `navigation.sellers` | `/sellers` | `Store` | `SELLERS_VIEW` |
+| `navigation.markets` | `/markets` | `Store` | `MARKETS_VIEW` |
+| `navigation.dashboard` | `/dashboard` | `LayoutDashboard` | `DASHBOARDS_VIEW` |
+| `navigation.myMarket` | `marketId ? /markets/${marketId} : /markets` | `Building2` | `MY_MARKET` (`[Owner, Seller]`) — a UI-only action: it decides whether the entry shows, and has no `API_ROUTE_ACTIONS` row behind it |
+| `navigation.transactions` | `/transactions` | `ReceiptText` | `TRANSACTIONS_VIEW` |
+| `navigation.debtors` | `/debtors` | `HandCoins` | `DEBTORS_VIEW` |
 | `navigation.products` | `/products` | `Package` | `PRODUCTS_VIEW` |
 | `navigation.categories` | `/categories` | `Tag` | `CATEGORIES_MANAGE` |
-| `navigation.debtors` | `/debtors` | `Store` | `DEBTORS_VIEW` |
-| `navigation.transactions` | `/transactions` | `ReceiptText` | `TRANSACTIONS_VIEW` |
-| `navigation.sellersReport` | `/sellers-report` | `BarChart3` | `SELLERS_VIEW` |
+| `navigation.sellers` | `/sellers` | `UserRound` | `SELLERS_VIEW` |
+| `navigation.guide` | `/guide` | `BookOpen` | none — deliberately open to all three roles |
 
-`NavItem` supports: `title`, `url`, `icon`, `action`, `roles`, `items` (nested), `comingSoon` (renders disabled with badge).
+`getSidebarConfig(t, marketId?)` takes the signed-in user's `marketId` so `myMarket` can resolve. `NavItem` supports: `key`, `title`, `url`, `icon`, `action`, `items` (nested), `section`. (`roles` and `comingSoon` were removed — nothing ever set them, so `NavMain`'s disabled-badge branches were dead.)
 
-**Every `url` here must be a path registered in `routes.ts`, and its `action` must gate the same roles as that route's `ROUTE_PERMISSIONS` entry.** Both invariants have been violated before: the sellers-report link pointed at the non-existent `/dashboard/sellers-report`, and "My Market" was gated by `MARKETS_VIEW_BY_ID` (Admin + Owner) while `/my-market` is Owner-only, so an Admin saw the link and landed on `/403`. When adding a nav item, check the route table and the permission table together.
+**Every `url` here must be a path registered in `routes.ts`, and its `action` must gate the same roles as that route's `ROUTE_PERMISSIONS` entry.** This has drifted before (a sellers-report link aimed at a non-existent URL; an entry gated by a broader action than its own route). When adding a nav item, check the route table and the permission table together — and note that `/categories` is `[Admin, Owner]` while `GET /categories` is also allowed for Sellers, because Sellers need category options on the products and transactions pages.
 
 ### `~/config/period.ts`
 
@@ -641,14 +665,12 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 
 | Export | Type | Purpose |
 |--------|------|---------|
-| `STATUS_CONFIG` | `Record<Status, { label: (t) => string; className: string }>` | Badge styling for Active/Inactive/Completed — note `label` is a **function** |
-| `ROLE_CONFIG` | `Record<Role, …>` | Badge styling per role |
-| `getStatusOptions(t)` | `{value, label}[]` | Select options for Status filter |
-| `getDayLabels(t)` | `string[]` | Mon-Sun day labels |
-| `getDayOptions(t)` | `{value, label}[]` | Day-of-week select options (1=Mon..7=Sun) |
+| `UNIT_VALUES` | `ProductUnit[]` | The five units as a `satisfies`-checked tuple — product create/edit used to each declare their own copy |
+| `getUnitOptions(t)` | `{value, label}[]` | Unit select options (`unit.*` labels) |
+| `ROLE_CONFIG` | `Record<string, …>` | Badge styling per role |
 | `getRoleOptions(t)` | `{value, label}[]` | Role select options |
 | `getRoleFilterOptions(t)` | `{value, label}[]` | Role options including the "all" filter entry |
-| `getTransactionTypeOptions(t)` | `{value, label}[]` | DEBT/SALE/REFUND select options |
+| `getTransactionTypeOptions(t)` | `{value, label}[]` | **SALE and DEBT only** — `REFUND` exists in `TransactionType` and in the badge map but is absent here, so the transaction filter can't ask for refunds (known defect B11, left unfixed) |
 | `getPaymentTypeOptions(t)` | `{value, label}[]` | CASH/CARD/CREDIT select options |
 
 ---
@@ -657,13 +679,14 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 
 | File | Exports | Purpose |
 |------|---------|---------|
-| `~/lib/auth-utils` | `UserInfo`, `getUserFromCookie`, `setUserCookie`, `removeUserCookie`, `getClientUser` | `user` cookie ops only. **`getClientUser()` is the real guard primitive.** No `Request.headers` readers — SPA mode makes them impossible |
+| `~/lib/auth-utils` | `UserInfo`, `getAccessToken`/`setAccessToken`/`removeAccessToken`, `getUserInfo`/`setUserInfo`/`removeUserInfo`, `clearSession`, `getClientUser` | `localStorage` session ops. **`getClientUser()` is the real guard primitive** (token *and* valid role must both exist) |
 | `~/lib/client` | `apiClient` | Axios instance with RBAC pre-flight + error-toast interceptors |
 | `~/lib/navigation` | `setNavigate(fn)`, `navigateTo(path)`, `redirectToLogin(redirectTo?)` | Module-level holder for the router `navigate`, injected once from `root.tsx` so non-React code (the axios interceptor) can navigate without a page reload |
 | `~/lib/date` | `DateValue`, `toDayjs(value)`, `toDate(value)` | Parse dates in DD-MM-YYYY / DD.MM.YYYY / ISO / Date |
 | `~/lib/filtersToParams` | `filtersToParams(filters)` | Convert `ActiveFilter[]` to flat query params |
-| `~/lib/form-data` | `appendToFormData(data)` | Object → FormData (handles File, Date, null/undefined) |
-| `~/lib/format` | `fmtTJS(v)`, `fmtTime(s)`, `formatDate(date, withTime?)` | TJS currency string (e.g. "1 234 TJS"), time slice, date formatter |
+| `~/lib/form-data` | `appendToFormData(data)`, `buildMultipart(data, fileKey?)` | Object → FormData; `buildMultipart` additionally keeps only a real `File` under `fileKey` and drops empty fields |
+| `~/lib/format` | `fmtTJS(v)`, `formatDate(date, withTime?)` | TJS currency string (e.g. "1 234 TJS"), date formatter |
+| `~/lib/query-keys` | `queryKeys.entity/list/options/detail/full/sub/dashboard/profile`, `Entity`, `ListQuery` | **The only place a react-query key is written.** Every key starts with its entity so `invalidateQueries({ queryKey: queryKeys.entity('users') })` covers that entity's list, options, detail and full caches |
 | `~/lib/i18n` | `defaultNS`, `fallbackLng`, `supportedLngs`, `SupportedLng`, `i18nConfig` | i18n configuration |
 | `~/lib/mapToOptions` | `mapToOptions(data, valueKey, labelKey)` | Entity array → `{value, label}[]` for selects |
 | `~/lib/query-client` | `makeQueryClient`, `getQueryClient` | QueryClient singleton with keepPreviousData |
@@ -675,10 +698,10 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 
 | File | Key Types |
 |------|-----------|
-| `~/types/common` | `Status` enum (Inactive/Active/Completed), `Role` enum (Admin/Owner/Seller), `ApiResponse<T>`, `PaginatedData<T>`, `PaginationMeta` |
+| `~/types/common` | `Role` enum (Admin/Owner/Seller), `ApiResponse<T>`, `PaginatedData<T>`, `PaginationMeta` |
 | `~/types/auth` | `User`, `Login`, `LoginResponse` |
 | `~/types/users` | `User`, `UserRequest`, `UserInfo`, `CreateUserRequest`, `UsersResponse`, `UserDetailResponse` |
-| `~/types/filters` | `ActiveFilter`, `FilterConfig` — **six** variants: input/select/number-range/date/date-range/**boolean** |
+| `~/types/filters` | `ActiveFilter`, `FilterConfig` — **four** variants: select / number-range / date-range / **boolean** (`input` and `date` were removed; no filter config ever emitted them) |
 | `~/types/markets` | `Market`, `MarketInfo`, `MarketCount`, `MarketsResponse`, `MarketDetailResponse` |
 | `~/types/products` | `Product`, `ProductInfo`, `ProductCount`, `ProductUnit` (`'PCS'\|'KG'\|'L'\|'M'\|'BOX'`), `ProductsResponse`, `ProductDetailResponse`, plus **all category types** (`Category`, `CategoryDetail`, `CategoryInfo`, `CategoriesResponse`, `CategoryDetailResponse`, `CreateCategoryRequest`, `UpdateCategoryRequest`) — there is no `types/categories.ts` |
 | `~/types/sellers` | `Seller`, `SellerRequest`, `SellersResponse`, `SellerDetailResponse` |
@@ -702,7 +725,7 @@ Partial exception to the semantic-token rule: `PARTIAL` uses raw palette classes
 | Create a scoped store per route: `app/routes/(crm)/entity/store.ts` | Import `createTableStore` directly in a page component |
 | Subscribe to individual Zustand slices: `useStore((s) => s.field)` | Subscribe to the whole store object (`useStore()`) — causes unnecessary re-renders |
 | Use `createModalStore<T>(['delete', 'create', 'edit'])` with a typed discriminated union | Use separate `useState` calls for modal open/close |
-| Pass `createTableStore({ initiallimit: 12 })` when design requires non-default page size | Hardcode page size values in the component |
+| Pass `DEFAULT_PAGE_LIMIT` (or the store's own `limit`) when a page size needs to be referenced | Hardcode `10`/`12`/`20` as a page size in a component |
 
 ### Modals
 
@@ -816,7 +839,7 @@ Naming holds across `app/validations/` (`createXxxSchema(t)` / `updateXxxSchema(
 | Database | PostgreSQL |
 | API base | `http://localhost:4000/api/` (set via `VITE_API_URL` in `.env`) |
 | Docs | `/api/docs` (Swagger, dev only) |
-| Auth | Cookie-based. Backend sets httpOnly `accessToken` (15 min) + non-httpOnly `user` cookie. A Bearer header will **not** authenticate |
+| Auth | Bearer token. `/auth/login` returns `accessToken` in the response body; the client stores it in `localStorage` and sends `Authorization: Bearer <token>` |
 | Roles | `ADMIN`, `OWNER`, `SELLER` |
 | 401 behavior | FE surfaces the error and navigates to `/login` |
 | Rate limits | Global 100 req/60s per IP; login 5/60s |
