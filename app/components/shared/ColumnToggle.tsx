@@ -25,8 +25,8 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
 
   const toggleableColumns = table.getAllColumns().filter((col) => col.getCanHide());
 
-  // На мобильном карточка уже показывает продуманный, фиксированный набор
-  // полей (mobileFields в DataTable) — понятия "показать/скрыть колонку" там
+  // На мобильном каждая таблица рисует свою карточку (renderMobileCard) с
+  // фиксированным набором полей — понятия "показать/скрыть колонку" там
   // нет, это десктопная механика таблицы.
   if (isMobile || toggleableColumns.length === 0) return null;
 

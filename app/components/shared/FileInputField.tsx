@@ -21,13 +21,6 @@ export interface FileInputFieldProps {
   className?: string;
 }
 
-function resolveUrl(value: string): string {
-  if (value.startsWith('http') || value.startsWith('blob:') || value.startsWith('data:')) {
-    return value;
-  }
-  return value;
-}
-
 function acceptsImages(accept: string) {
   return accept.includes('image');
 }
@@ -60,7 +53,7 @@ export function FileInputField({
     return () => URL.revokeObjectURL(url);
   }, [value]);
 
-  const previewUrl = typeof value === 'string' ? resolveUrl(value) : objectUrl;
+  const previewUrl = typeof value === 'string' ? value : objectUrl;
   const hasPreview = Boolean(previewUrl);
   const showAsImage = hasPreview && acceptsImages(accept);
   const aspectClass = aspectRatio === 'square' ? 'aspect-square' : 'aspect-video';
@@ -108,7 +101,7 @@ export function FileInputField({
         // ── Simple variant ────────────────────────────────────────────────
         <div
           className={cn(
-            'flex h-8 w-full items-center gap-2 rounded-lg border bg-background px-2.5 text-sm transition-colors',
+            'bg-background flex h-8 w-full items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors',
             'dark:bg-input/30',
             error ? 'border-destructive' : 'border-border',
             !value && 'hover:bg-muted/40 cursor-pointer'

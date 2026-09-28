@@ -18,19 +18,6 @@ function getValue(filters: ActiveFilter[], key: string): any {
 export function FilterField({ field, draft, onChange }: FilterFieldProps) {
   const { t } = useTranslation('common');
 
-  if (field.type === 'input') {
-    return (
-      <div className="space-y-1.5">
-        <Label>{field.label}</Label>
-        <CustomInput
-          placeholder={field.placeholder}
-          value={getValue(draft, field.key)}
-          onChange={(e) => onChange(field.key, e.target.value)}
-        />
-      </div>
-    );
-  }
-
   if (field.type === 'select') {
     const options = field.options.map((opt) => ({
       value: String(opt.value),
@@ -74,17 +61,6 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
           />
         </div>
       </div>
-    );
-  }
-
-  if (field.type === 'date') {
-    return (
-      <DateInputField
-        label={field.label}
-        placeholder={field.placeholder}
-        value={getValue(draft, field.key)}
-        onChange={(date) => onChange(field.key, date)}
-      />
     );
   }
 

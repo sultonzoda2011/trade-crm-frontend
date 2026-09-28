@@ -22,6 +22,7 @@ import { canAccess } from '~/config/permissions';
 import { useCan } from '~/hooks/useCan';
 import { useDebounce } from '~/hooks/useDebounce';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { queryKeys } from '~/lib/query-keys';
 
 interface CommandPaletteProps {
   open: boolean;
@@ -59,7 +60,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
     const flat: PageEntry[] = [];
     const walk = (items: NavItem[]) => {
       for (const item of items) {
-        if (item.url && !item.comingSoon) flat.push({ title: item.title, url: item.url, icon: item.icon });
+        if (item.url) flat.push({ title: item.title, url: item.url, icon: item.icon });
         if (item.items) walk(item.items);
       }
     };
@@ -100,21 +101,21 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
   }, [quickActions, query]);
 
   const usersQuery = useQuery({
-    queryKey: ['palette-users', search],
+    queryKey: queryKeys.options('users', { scope: 'palette', limit: 5, search }),
     queryFn: () => usersApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/users'),
     staleTime: 30_000,
   });
 
   const marketQuery = useQuery({
-    queryKey: ['palette-market', search],
+    queryKey: queryKeys.options('markets', { scope: 'palette', limit: 5, search }),
     queryFn: () => marketsApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/markets'),
     staleTime: 30_000,
   });
 
   const productQuery = useQuery({
-    queryKey: ['palette-product', search],
+    queryKey: queryKeys.options('products', { scope: 'palette', limit: 5, search }),
     queryFn: () => productsApi.getAll(1, 5, { search }, []),
     enabled: searchEnabled && !!role && canAccess(role, '/products'),
     staleTime: 30_000,

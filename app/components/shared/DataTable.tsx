@@ -20,10 +20,10 @@ import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table as UITabl
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
+import { DEFAULT_PAGE_LIMIT } from '~/store/useTableStore';
 
 interface DataTableProps<TData> {
   table: Table<TData>;
-  pinFirstColumn?: boolean;
   pinLastColumn?: boolean;
   isLoading?: boolean;
   /** Dims current rows while the next page/filter result is in flight (keepPreviousData) */
@@ -34,25 +34,13 @@ interface DataTableProps<TData> {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   onLimitChange?: (size: number) => void;
-  getRowClassName?: (row: Row<TData>) => string;
-  onRowClick?: (row: Row<TData>) => void;
-  /**
-   * Приоритет полей в мобильной карточке (id колонки → уровень).
-   * Первая колонка (обычно имя/аватар) — уже всегда шапка карточки, сюда её
-   * добавлять не нужно. Всё, что не перечислено, на карточке не показывается
-   * (доступно на странице деталей записи). Не передан вовсе — старое
-   * поведение (показать все колонки компактным списком), чтобы не ломать
-   * таблицы, для которых приоритет ещё не расписан.
-   */
-  mobileFields?: Record<string, 'primary' | 'secondary'>;
   /**
    * Полностью кастомная мобильная карточка для конкретной таблицы (напр.
-   * товары — фото на фон, показатели здоровья остатка). Когда задан, обходит
-   * generic-раскладку (headerCell/primary/secondary) целиком — компонент сам
-   * решает, что и как показывать. Скелетон/ошибка/пустое состояние и
-   * пагинация остаются общими.
+   * товары — фото на фон, показатели здоровья остатка). Обязательна: каждая
+   * таблица в приложении рисует свою карточку, а generic-раскладка, которая
+   * раньше использовалась как запасной вариант, была недостижимым кодом.
    */
-  renderMobileCard?: (row: Row<TData>) => ReactNode;
+  renderMobileCard: (row: Row<TData>) => ReactNode;
   /**
    * Ссылка на страницу деталей строки. Если задана, вся мобильная карточка
    * становится тапабельной.
@@ -175,33 +163,21 @@ function PageControls({
 
 export function DataTable<TData>({
   table,
-  pinFirstColumn,
   pinLastColumn,
   isLoading,
   isFetching,
   isError,
   page = 1,
-  limit = 10,
+  limit = DEFAULT_PAGE_LIMIT,
   totalPages = 1,
   onPageChange,
   onLimitChange,
-  getRowClassName,
-  onRowClick,
-  mobileFields,
   renderMobileCard,
   getRowLink,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const visibleColumns = table.getVisibleLeafColumns();
   const isMobile = useIsMobile();
-
-  // Первая колонка обычно чекбокс/аватар без заголовка, последняя — действия
-  // (пиновая, pinLastColumn) — их в карточке не показываем отдельной строкой,
-  // они уже есть как заголовок карточки/кнопка действий.
-  const cardColumns = visibleColumns.filter((col) => {
-    const header = col.columnDef.header;
-    return typeof header === 'string' ? header.trim().length > 0 : true;
-  });
 
   if (isMobile) {
     return (
@@ -225,99 +201,7 @@ export function DataTable<TData>({
           ) : (
             table.getRowModel().rows.map((row) => {
               const link = getRowLink?.(row);
-              const card = renderMobileCard
-                ? renderMobileCard(row)
-                : (() => {
-                    const cells = row.getVisibleCells().filter((cell) => cardColumns.includes(cell.column));
-                    const lastCell = pinLastColumn ? row.getVisibleCells().at(-1) : undefined;
-                    const bodyCells = cells.filter((cell) => !(lastCell && cell.id === lastCell.id));
-
-                    // Пустые значения (напр. "Должник" у сделки без должника) не
-                    // показываем вовсе — иначе на карточке остаётся лейбл без
-                    // значения, который выглядит как незаполненные/битые данные.
-                    const isFilled = (cell: (typeof bodyCells)[number]) => {
-                      const accessorKey = (cell.column.columnDef as { accessorKey?: string }).accessorKey;
-                      if (!accessorKey) return true;
-                      const raw = cell.getValue();
-                      return !(raw === null || raw === undefined || raw === '');
-                    };
-
-                    // Первая колонка (обычно UserAvatar с именем) — всегда шапка
-                    // карточки, не строка списка. Остальные раскладываются по
-                    // приоритету: primary — крупный чип-ряд, secondary — компактная
-                    // сетка 2 колонки, всё, чего нет в mobileFields — скрыто (доступно
-                    // на странице деталей). mobileFields не задан вовсе — старое
-                    // поведение (все колонки одним списком), чтобы не ломать таблицы,
-                    // для которых приоритет ещё не расписан.
-                    const [headerCell, ...restCells] = bodyCells;
-                    const filledRest = restCells.filter(isFilled);
-                    const primaryCells = mobileFields
-                      ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'primary')
-                      : [];
-                    const secondaryCells = mobileFields
-                      ? filledRest.filter((cell) => mobileFields[cell.column.id] === 'secondary')
-                      : filledRest;
-
-                    return (
-                      <div
-                        onClick={() => onRowClick?.(row)}
-                        className={cn(
-                          'bg-card min-h-11 rounded-xl border p-3 shadow-sm',
-                          onRowClick && 'active:bg-muted/50 cursor-pointer',
-                          getRowClassName?.(row)
-                        )}>
-                        <div className="flex items-start justify-between gap-2">
-                          {headerCell && (
-                            <div className="min-w-0 flex-1">
-                              {flexRender(headerCell.column.columnDef.cell, headerCell.getContext())}
-                            </div>
-                          )}
-                          {lastCell && (
-                            <div className="relative z-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                              {flexRender(lastCell.column.columnDef.cell, lastCell.getContext())}
-                            </div>
-                          )}
-                        </div>
-
-                        {primaryCells.length > 0 && (
-                          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                            {primaryCells.map((cell) => (
-                              <span key={cell.id} className="min-w-0 truncate text-sm font-semibold">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {secondaryCells.length > 0 && (
-                          <div
-                            className={cn(
-                              'grid grid-cols-2 gap-x-3 gap-y-1',
-                              primaryCells.length > 0 ? 'border-border/60 mt-2 border-t pt-2' : 'mt-2'
-                            )}>
-                            {secondaryCells.map((cell) => {
-                              const header = cell.column.columnDef.header;
-                              const label = typeof header === 'string' ? header : undefined;
-                              return (
-                                // Иерархия была перевёрнута: подпись колонки шла
-                                // крупнее (text-sm), чем само значение (text-xs) —
-                                // взгляд цеплялся за «Рынок»/«Телефон», а не за
-                                // данные. Приводим к тем же ролям, что в
-                                // EntityMobileCard: лейбл — мелкий muted, значение —
-                                // акцент.
-                                <div key={cell.id} className="min-w-0">
-                                  {label && <p className="text-muted-foreground truncate text-xs">{label}</p>}
-                                  <div className="min-w-0 truncate text-sm font-semibold">
-                                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })();
+              const card = renderMobileCard(row);
 
               return (
                 <div key={row.id} className="relative shrink-0">
@@ -371,9 +255,6 @@ export function DataTable<TData>({
                     <TableHead
                       key={header.id}
                       className={cn(
-                        index === 0 &&
-                          pinFirstColumn &&
-                          'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                         index === headerGroup.headers.length - 1 &&
                           pinLastColumn &&
                           'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
@@ -389,7 +270,6 @@ export function DataTable<TData>({
                 Array.from({ length: limit }).map((_, rowIndex) => (
                   <TableRow key={rowIndex}>
                     {visibleColumns.map((_, colIndex) => {
-                      const isFirst = colIndex === 0;
                       const isLast = colIndex === visibleColumns.length - 1;
                       const isLastPinned = isLast && pinLastColumn;
                       const widths = ['w-3/4', 'w-1/2', 'w-4/5', 'w-2/3', 'w-3/5', 'w-2/5'];
@@ -397,9 +277,6 @@ export function DataTable<TData>({
                         <TableCell
                           key={colIndex}
                           className={cn(
-                            isFirst &&
-                              pinFirstColumn &&
-                              'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                             isLastPinned &&
                               'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
                           )}>
@@ -430,17 +307,11 @@ export function DataTable<TData>({
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className={cn(getRowClassName?.(row), onRowClick && 'cursor-pointer')}
-                    onClick={() => onRowClick?.(row)}>
+                  <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell, index) => (
                       <TableCell
                         key={cell.id}
                         className={cn(
-                          index === 0 &&
-                            pinFirstColumn &&
-                            'bg-card sticky left-0 z-10 shadow-[2px_0_0_0_rgba(0,0,0,0.06)]',
                           index === row.getVisibleCells().length - 1 &&
                             pinLastColumn &&
                             'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'

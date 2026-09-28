@@ -16,6 +16,7 @@ import {
   SheetTrigger,
 } from '~/components/ui/sheet';
 import { FilterField } from '~/components/shared/FilterField';
+import { applyFilter } from '~/store/useTableStore';
 
 interface FilterSheetProps {
   config: FilterConfig[];
@@ -44,13 +45,6 @@ function isFlatpickrInteraction(event?: Event): boolean {
   }
   const nodes = [event?.target, (event as FocusEvent | undefined)?.relatedTarget];
   return nodes.some((n) => n instanceof Element && n.closest('.flatpickr-calendar'));
-}
-
-function setValue(filters: ActiveFilter[], key: string, value: any): ActiveFilter[] {
-  const isEmpty = value === '' || value == null;
-  if (isEmpty) return filters.filter((f) => f.key !== key);
-  const exists = filters.some((f) => f.key === key);
-  return exists ? filters.map((f) => (f.key === key ? { key, value } : f)) : [...filters, { key, value }];
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -87,8 +81,8 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
     setOpen(false);
   };
 
-  const setDraftValue = (key: string, value: any) => {
-    setDraft((prev) => setValue(prev, key, value));
+  const setDraftValue = (key: string, value: unknown) => {
+    setDraft((prev) => applyFilter(prev, key, value));
   };
 
   return (

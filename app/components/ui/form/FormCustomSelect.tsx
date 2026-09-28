@@ -11,7 +11,6 @@ interface FormCustomSelectProps<T extends FieldValues> {
   required?: boolean;
   className?: string;
   disabled?: boolean;
-  isMulti?: boolean;
   isClearable?: boolean;
   /** Enable server-side (API) search — forwards each keystroke (see `useAsyncSelectOptions`). */
   onSearch?: (query: string) => void;
@@ -31,12 +30,7 @@ export function FormCustomSelect<T extends FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <div className={className}>
-          <CustomSelect
-            {...props}
-            isMulti={props.isMulti as any}
-            value={field.value ?? (props.isMulti ? [] : null)}
-            onChange={field.onChange}
-          />
+          <CustomSelect {...props} value={field.value ?? null} onChange={field.onChange} />
           {fieldState.error && <p className="text-destructive mt-1 text-sm">{fieldState.error.message}</p>}
         </div>
       )}
