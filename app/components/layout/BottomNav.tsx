@@ -50,7 +50,7 @@ export function BottomNav() {
   return (
     <>
       <nav
-        className="bg-sidebar border-sidebar-border fixed inset-x-0 bottom-0 z-30 flex border-t pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="bg-card/95 border-border/80 fixed inset-x-3 bottom-3 z-30 flex rounded-2xl border pb-[env(safe-area-inset-bottom)] shadow-[0_12px_35px_-18px_rgba(16,33,61,0.55)] backdrop-blur md:hidden"
         aria-label={t('navigation.bottomNav', { defaultValue: 'Навигация' })}>
         {primary.map((item) => (
           <NavLink

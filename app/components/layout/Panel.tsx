@@ -22,7 +22,7 @@ interface PanelProps extends ComponentProps<'div'> {
 export function Panel({ children, className, bodyClassName, title, actions, ...rest }: PanelProps) {
   return (
     <div
-      className={cn('bg-card text-card-foreground ring-foreground/10 rounded-xl shadow-sm ring-1', className)}
+      className={cn('bg-card text-card-foreground border-border/70 rounded-[1.5rem] border shadow-[0_10px_35px_-24px_rgba(16,33,61,0.35)]', className)}
       {...rest}>
       {(title || actions) && (
         <div className="border-border flex flex-col items-start gap-2 border-b px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6">

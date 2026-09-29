@@ -23,7 +23,7 @@ html {
     'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
     'Noto Color Emoji';
 
-  --font-heading: 'PT Serif', Georgia, 'Times New Roman', serif;
+  --font-heading: 'Manrope', ui-sans-serif, system-ui, sans-serif;
 
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
@@ -44,45 +44,45 @@ html {
 }
 
 :root {
-  --background: #fdfbf7;
-  --foreground: #1a1a1a;
-  --card: #fffefb;
-  --card-foreground: #1a1a1a;
-  --popover: #fffefb;
-  --popover-foreground: #1a1a1a;
-  --elevated: #f7f3ea;
-  --primary: #1a1a1a;
-  --primary-foreground: #fdfbf7;
-  --secondary: #efe9db;
-  --secondary-foreground: #2b2620;
-  --muted: #f3efe4;
-  --muted-foreground: #6b6255;
-  --accent: #efe9db;
-  --accent-foreground: #2b2620;
-  --destructive: #b33a3a;
-  --destructive-foreground: #fdfbf7;
-  --success: #059669;
-  --success-foreground: #fdfbf7;
-  --warning: oklch(0.6658 0.1574 58.3183);
-  --warning-foreground: #fdfbf7;
-  --border: #e5e1d8;
-  --input: #ded7c7;
-  --ring: #1a1a1a;
+  --background: #f4f7fb;
+  --foreground: #10213d;
+  --card: #ffffff;
+  --card-foreground: #10213d;
+  --popover: #ffffff;
+  --popover-foreground: #10213d;
+  --elevated: #edf3fb;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f0fb;
+  --secondary-foreground: #244064;
+  --muted: #eef3f8;
+  --muted-foreground: #6b7b91;
+  --accent: #dbeafe;
+  --accent-foreground: #1e40af;
+  --destructive: #dc4f5f;
+  --destructive-foreground: #ffffff;
+  --success: #159570;
+  --success-foreground: #ffffff;
+  --warning: #d9822b;
+  --warning-foreground: #ffffff;
+  --border: #dce5f0;
+  --input: #ccd9e8;
+  --ring: #2563eb;
   --chart-1: #1a1a1a;
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
   --chart-5: #6b6255;
-  --sidebar: #f3efe4;
-  --sidebar-foreground: #2b2620;
-  --sidebar-primary: #1a1a1a;
-  --sidebar-primary-foreground: #fdfbf7;
-  --sidebar-accent: #e9e2d1;
-  --sidebar-accent-foreground: #2b2620;
-  --sidebar-border: #e5e1d8;
-  --sidebar-ring: #1a1a1a;
-  --ledger-margin: #b33a3a;
-  --radius: 0.15rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #29415f;
+  --sidebar-primary: #2563eb;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eaf2ff;
+  --sidebar-accent-foreground: #1d4ed8;
+  --sidebar-border: #e2eaf4;
+  --sidebar-ring: #2563eb;
+  --ledger-margin: transparent;
+  --radius: 1.25rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
   --shadow-blur: 10px;
@@ -105,30 +105,30 @@ html {
 }
 
 .dark {
-  --background: #211b14;
-  --foreground: #f3efe4;
-  --card: #2a231a;
-  --card-foreground: #f3efe4;
-  --popover: #2f281e;
-  --popover-foreground: #f3efe4;
-  --elevated: #342c21;
-  --primary: #f3efe4;
-  --primary-foreground: #211b14;
-  --secondary: #342c21;
-  --secondary-foreground: #e5ddc9;
-  --muted: #2a231a;
-  --muted-foreground: #b3a892;
-  --accent: #342c21;
-  --accent-foreground: #f3efe4;
-  --destructive: #c9584f;
-  --destructive-foreground: #211b14;
-  --success: #2fb589;
-  --success-foreground: #211b14;
-  --warning: oklch(0.8369 0.1644 84.4286);
-  --warning-foreground: #211b14;
-  --border: #3d3527;
-  --input: #453c2c;
-  --ring: #f3efe4;
+  --background: #0b1424;
+  --foreground: #e8f0fb;
+  --card: #111f33;
+  --card-foreground: #e8f0fb;
+  --popover: #162943;
+  --popover-foreground: #e8f0fb;
+  --elevated: #172c47;
+  --primary: #6ea1ff;
+  --primary-foreground: #081326;
+  --secondary: #1c3552;
+  --secondary-foreground: #dce9fb;
+  --muted: #15263d;
+  --muted-foreground: #99abc2;
+  --accent: #1e3b63;
+  --accent-foreground: #dbeafe;
+  --destructive: #f07a86;
+  --destructive-foreground: #0b1424;
+  --success: #4fc7a0;
+  --success-foreground: #0b1424;
+  --warning: #e9a35b;
+  --warning-foreground: #0b1424;
+  --border: #27415f;
+  --input: #355372;
+  --ring: #6ea1ff;
   --chart-1: #f3efe4;
   --chart-2: var(--success);
   --chart-3: var(--warning);
@@ -243,12 +243,11 @@ html {
     letter-spacing: var(--tracking-normal);
   }
 
-  /* Заголовки страниц отдельной гарнитурой (--font-heading) — один раз здесь,
-     PageHeader.tsx везде использует <h1>, править по компонентам не нужно. */
   h1,
   h2,
   h3 {
     font-family: var(--font-heading);
+    letter-spacing: -0.025em;
   }
 
   /*

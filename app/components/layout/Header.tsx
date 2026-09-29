@@ -27,7 +27,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-30 flex min-h-14 w-full items-center gap-2 border-b px-2.5 pt-[env(safe-area-inset-top)] backdrop-blur sm:px-3 lg:min-h-16 lg:px-5">
+    <header className="bg-background/90 supports-backdrop-filter:bg-background/60 sticky top-0 z-30 flex min-h-16 w-full items-center gap-2 border-b px-4 pt-[env(safe-area-inset-top)] backdrop-blur sm:px-5 lg:px-8">
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         {/* На мобиле основная навигация — BottomNav, полноценный off-canvas
             Sidebar через триггер не нужен параллельно (см. layout.tsx). */}

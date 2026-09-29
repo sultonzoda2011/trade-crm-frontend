@@ -18,8 +18,8 @@ export function PageHeader({ title, description, actions, className }: PageHeade
   return (
     <div className={cn('flex flex-wrap items-center justify-between gap-3', className)}>
       <div className="min-w-0">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && <div className="text-muted-foreground mt-0.5 text-xs">{description}</div>}
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{title}</h1>
+        {description && <div className="text-muted-foreground mt-1 text-sm">{description}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
     </div>

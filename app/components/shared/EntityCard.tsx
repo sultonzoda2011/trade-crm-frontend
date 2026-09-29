@@ -44,7 +44,7 @@ export function EntityCard({
 }: EntityCardProps) {
   return (
     <Panel title={title} className={className}>
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <UserAvatar fullName={fullName} subInfo={subInfo} imagePath={imagePath} />
         <Button
           variant="outline"

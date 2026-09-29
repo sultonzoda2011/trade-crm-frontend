@@ -28,7 +28,7 @@ export default function CrmLayout() {
   return (
     <SidebarProvider className="bg-sidebar h-dvh">
       <AppSidebar />
-      <div className="m-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
+      <div className="bg-background m-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.75rem] border shadow-sm">
         <Header />
         <ScrollArea className="bg-background min-h-0 flex-1">
           {/* Красная линия полей бухгалтерской книги — одна общая обёртка,
@@ -36,7 +36,7 @@ export default function CrmLayout() {
               pb на мобиле — место под фиксированный BottomNav (нижняя панель
               со своим safe-area-inset-bottom не должна перекрывать контент). */}
           <div
-            className="border-(--ledger-margin) p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] md:p-6"
+            className="p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:p-5 md:p-8 md:pb-8"
             style={{ borderLeftWidth: 2 }}>
             <Outlet />
           </div>

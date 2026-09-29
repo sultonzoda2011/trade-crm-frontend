@@ -21,7 +21,7 @@ export function ListPageToolbar({
   return (
     <>
       <PageHeader title={title} />
-      <div className="space-y-2">
+      <div className="mt-6 flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CustomInput
             placeholder={`${searchPlaceholder}...`}
