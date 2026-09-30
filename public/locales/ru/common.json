@@ -1,4 +1,6 @@
 {
+  "bottomNav": "Навигация",
+  "newTransaction": "Новая транзакция",
   "navigation": {
     "dashboard": "Панель управления",
     "users": "Пользователи",

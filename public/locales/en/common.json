@@ -21,6 +21,8 @@
     },
     "more": "More"
   },
+  "bottomNav": "Navigation",
+  "newTransaction": "New transaction",
   "palette": {
     "trigger": "Search",
     "placeholder": "Search the CRM…",

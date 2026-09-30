@@ -21,6 +21,8 @@
     },
     "more": "Бештар"
   },
+  "bottomNav": "Навигатсия",
+  "newTransaction": "Муомилаи нав",
   "palette": {
     "trigger": "Ҷустуҷӯ",
     "placeholder": "Ҷустуҷӯ дар CRM…",
