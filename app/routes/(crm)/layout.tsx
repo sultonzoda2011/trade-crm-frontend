@@ -36,7 +36,7 @@ export default function CrmLayout() {
               pb на мобиле — место под фиксированный BottomNav (нижняя панель
               со своим safe-area-inset-bottom не должна перекрывать контент). */}
           <div
-            className="border-(--ledger-margin) p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] md:p-6"
+            className="border-(--ledger-margin) p-3 pb-[calc(7rem+env(safe-area-inset-bottom))] md:p-6"
             style={{ borderLeftWidth: 2 }}>
             <Outlet />
           </div>

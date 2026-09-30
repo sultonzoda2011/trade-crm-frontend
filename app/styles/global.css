@@ -836,3 +836,73 @@ span.flatpickr-weekday {
   cursor: not-allowed;
   opacity: 0.35;
 }
+/* ─── Liquid Glass (iOS 26 style) ────────────────────────────────────────────
+   Полупрозрачная «стеклянная» поверхность: blur + насыщение фона, световой
+   блик по верхней кромке и мягкая тень. Цвета берутся из токенов темы, поэтому
+   стекло само подстраивается под light/dark. Элемент должен быть positioned
+   (fixed/relative) — блик рисуется через ::before. */
+@layer components {
+  .liquid-glass {
+    background: linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--card) 62%, transparent),
+      color-mix(in srgb, var(--card) 34%, transparent)
+    );
+    -webkit-backdrop-filter: blur(24px) saturate(190%) brightness(1.04);
+    backdrop-filter: blur(24px) saturate(190%) brightness(1.04);
+    box-shadow:
+      0 0 0 0.5px rgb(0 0 0 / 0.08),
+      0 14px 34px -10px rgb(0 0 0 / 0.28),
+      0 2px 8px rgb(0 0 0 / 0.06),
+      inset 0 1px 0.5px rgb(255 255 255 / 0.75),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.25),
+      inset 0 0 16px rgb(255 255 255 / 0.2);
+  }
+
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / 0.32), transparent 55%),
+      radial-gradient(100% 80% at 100% 100%, rgb(255 255 255 / 0.12), transparent 60%);
+  }
+
+  .dark .liquid-glass {
+    background: linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--elevated) 58%, transparent),
+      color-mix(in srgb, var(--card) 32%, transparent)
+    );
+    box-shadow:
+      0 0 0 0.5px rgb(255 255 255 / 0.1),
+      0 14px 34px -10px rgb(0 0 0 / 0.6),
+      inset 0 1px 0.5px rgb(255 255 255 / 0.28),
+      inset 0 -1px 0.5px rgb(255 255 255 / 0.06),
+      inset 0 0 16px rgb(255 255 255 / 0.05);
+  }
+
+  .dark .liquid-glass::before {
+    background:
+      radial-gradient(120% 90% at 0% 0%, rgb(255 255 255 / 0.12), transparent 55%),
+      radial-gradient(100% 80% at 100% 100%, rgb(255 255 255 / 0.04), transparent 60%);
+  }
+
+  /* Без поддержки backdrop-filter или при «уменьшить прозрачность» в системе —
+     почти непрозрачная поверхность, чтобы текст оставался читаемым. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .liquid-glass {
+      background: color-mix(in srgb, var(--card) 96%, transparent);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .liquid-glass {
+      background: var(--card);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
