@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
   return (
     <div
       role="radiogroup"
-      className={cn('bg-muted grid gap-1 rounded-lg p-1', className)}
+      className={cn('bg-muted grid gap-0.5 rounded-[10px] p-0.5', className)}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((opt) => {
         const selected = opt.value === value;
@@ -36,8 +36,8 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             aria-checked={selected}
             onClick={() => onChange(opt.value)}
             className={cn(
-              'flex h-10 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors',
-              selected ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              'flex h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors md:h-9',
+              selected ? 'bg-card text-foreground shadow-sm dark:bg-white/20' : 'text-muted-foreground hover:text-foreground'
             )}>
             {Icon && <Icon className="size-4" />}
             {opt.label}
