@@ -159,7 +159,7 @@ export function RefundTransactionModal() {
               показываем те же данные карточками, таблица остаётся с md. */}
           <div className="space-y-2 md:hidden">
             {refundableItems.map((item, index) => (
-              <div key={item.id} className="space-y-2 rounded-lg border p-3">
+              <div key={item.id} className="space-y-2 rounded-xl border p-3">
                 <p className="text-sm font-medium">{item.productName || item.product?.name}</p>
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
                   <div>
@@ -202,7 +202,7 @@ export function RefundTransactionModal() {
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto rounded-lg border md:block">
+          <div className="hidden overflow-x-auto rounded-xl border md:block">
             <table className="w-full text-left text-sm">
               <thead className="text-muted-foreground bg-sidebar border-b text-xs">
                 <tr>
