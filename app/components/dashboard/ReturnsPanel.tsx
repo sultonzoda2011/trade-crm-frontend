@@ -31,7 +31,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
       ">
       {/* Summary */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
+        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.amount')}</p>
 
           <p className="mt-1 truncate font-mono text-lg font-bold sm:text-xl">{fmtTJS(returns.amount)}</p>
@@ -39,7 +39,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
           <ComparisonIndicator comparison={returns.comparison.amount} invert className="mt-1" />
         </div>
 
-        <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
+        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.rate')}</p>
 
           <p className="mt-1 font-mono text-lg font-bold sm:text-xl">{percent(returns.returnRate)}</p>
@@ -47,7 +47,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
           <ComparisonIndicator comparison={returns.comparison.returnRate} invert className="mt-1" />
         </div>
 
-        <div className="min-w-0 rounded-lg border p-3 sm:border-0 sm:p-0">
+        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.units')}</p>
 
           <p className="mt-1 font-mono text-lg font-bold sm:text-xl">{returns.units}</p>
@@ -69,7 +69,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
                 to={`/products/${product.productId}`}
                 className={cn(
                   'hover:bg-muted/40',
-                  'flex min-w-0 items-center gap-3 rounded-md px-2.5 py-2.5',
+                  'flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2.5',
                   'transition-colors',
                   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
                 )}>
