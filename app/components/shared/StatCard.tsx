@@ -55,7 +55,7 @@ export function StatCard({
     // без него содержимое (длинный лейбл или крупная сумма) может распирать
     // родительскую ячейку и вылезать за её границы вместо того чтобы аккуратно
     // обрезаться многоточием внутри своей же плитки.
-    'bg-muted/50 ring-foreground/5 flex min-w-0 rounded-xl ring-1 transition-colors',
+    'bg-muted/50 flex min-w-0 rounded-2xl transition-colors',
     to && 'hover:bg-muted',
     align === 'center'
       ? size === 'md'
@@ -96,7 +96,7 @@ export function StatCard({
       <>
         <span
           className={cn(
-            'bg-primary/10 text-primary flex shrink-0 items-center justify-center rounded-lg',
+            'bg-primary/10 text-primary flex shrink-0 items-center justify-center rounded-full',
             size === 'md' ? 'size-10' : 'size-9',
             iconClassName
           )}>
