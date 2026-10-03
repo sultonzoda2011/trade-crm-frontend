@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 interface BreadCrumbLink {
   label: string;
@@ -11,18 +11,25 @@ interface BreadCrumbProps {
 }
 
 const BreadCrumbs = ({ items }: BreadCrumbProps) => {
+  const navigate = useNavigate();
   const backItem = items.length >= 2 ? items[items.length - 2] : null;
+  const backClass =
+    'text-primary -ml-1 flex min-h-11 items-center gap-0.5 text-base transition-opacity active:opacity-60 sm:hidden';
 
   return (
     <nav aria-label="Breadcrumb">
       {/* Mobile: back button */}
-      {backItem?.link && (
-        <Link
-          to={backItem.link}
-          className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm transition-colors sm:hidden">
-          <ChevronLeft className="size-4" />
+      {backItem?.link ? (
+        <Link to={backItem.link} className={backClass}>
+          <ChevronLeft className="size-6" />
           {backItem.label}
         </Link>
+      ) : (
+        // Зашли по прямой ссылке — родителя в state нет, идём назад по истории.
+        <button type="button" onClick={() => navigate(-1)} className={backClass}>
+          <ChevronLeft className="size-6" />
+          {backItem?.label ?? ''}
+        </button>
       )}
 
       {/* Desktop: full breadcrumb trail */}
