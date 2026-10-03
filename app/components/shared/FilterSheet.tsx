@@ -93,15 +93,18 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
             variant="outline"
             size="icon"
             aria-label={t('filters.title')}
-            className="relative w-auto shrink-0 gap-1.5 px-3">
+            className="relative shrink-0 gap-1.5 md:w-auto md:px-3">
             <Filter />
-            <span>{t('filters.title')}</span>
+            {/* На телефоне — только иконка (место нужно главной кнопке рядом), счётчик остаётся. */}
+            <span className="hidden md:inline">{t('filters.title')}</span>
             {/*
               Подпись видна на всех размерах, кнопка тянется по контенту — счётчик
               всегда в потоке рядом с подписью, а не индикатором в углу.
             */}
             {activeCount > 0 && (
-              <Badge className="text-2xs ml-1 min-h-4 min-w-4 shrink-0 rounded-full px-1">{activeCount}</Badge>
+              <Badge className="text-2xs min-h-4 min-w-4 shrink-0 rounded-full px-1 max-md:absolute max-md:-top-1 max-md:-right-1 md:ml-1">
+                {activeCount}
+              </Badge>
             )}
           </Button>
         }
