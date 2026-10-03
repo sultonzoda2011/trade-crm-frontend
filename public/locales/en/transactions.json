@@ -1,5 +1,6 @@
 {
   "title": "Transactions",
+  "listSubtitle": "All your financial operations",
   "create": "Create Transaction",
   "createSuccess": "Transaction created successfully",
   "createQueuedOffline": "No connection — transaction saved and will be sent automatically once you're back online",
@@ -56,7 +57,10 @@
     "discount": "Discount",
     "markup": "Markup",
     "credited": "Credited",
-    "dueDate": "Due date"
+    "dueDate": "Due date",
+    "pickProduct": "Choose product",
+    "pickDebtor": "Choose debtor",
+    "newDebtor": "New debtor"
   },
   "filters": {
     "debtor": "Debtor",
@@ -127,5 +131,7 @@
   "payModal": {
     "half": "Half",
     "full": "Full remaining"
-  }
+  },
+  "submitSale": "Complete sale",
+  "submitDebt": "Record debt"
 }
