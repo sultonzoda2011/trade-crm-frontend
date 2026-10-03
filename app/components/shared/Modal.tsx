@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '~/components/ui/dialog';
-import { Sheet, SheetFooter, SheetHeader, SheetTitle } from '~/components/ui/sheet';
+import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 
@@ -32,15 +32,16 @@ export function Modal({ open, onClose, title, children, footer, className }: Mod
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={(o) => !o && onClose()} modal={false}>
-        <DialogContent className={cn('max-h-[88vh] rounded-t-xl', className)}>
-          <SheetHeader className="pb-0">
-            <SheetTitle>{title}</SheetTitle>
+        {/* Настоящая нижняя шторка (раньше тут был DialogContent — он рисовался по центру). */}
+        <SheetContent side="bottom" className={cn('bg-background max-h-[90dvh] gap-0 p-0', className)}>
+          <SheetHeader className="px-4 pt-2 pb-3">
+            <SheetTitle className="pr-8 text-lg font-semibold">{title}</SheetTitle>
           </SheetHeader>
 
-          <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto px-4">{children}</div>
+          <div className="scrollbar-thin flex-1 overflow-x-hidden overflow-y-auto px-4 pb-3">{children}</div>
 
-          {footer && <SheetFooter className="pt-0">{footer}</SheetFooter>}
-        </DialogContent>
+          {footer && <SheetFooter className="border-border bg-background border-t px-4 pt-3 pb-4">{footer}</SheetFooter>}
+        </SheetContent>
       </Sheet>
     );
   }
