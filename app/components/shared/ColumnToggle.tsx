@@ -48,7 +48,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
           <span className="text-muted-foreground text-2xs min-w-0 truncate font-semibold">
             {t('table.columnVisibility')}
           </span>
-          <div className="bg-muted/50 flex shrink-0 items-center gap-0.5 rounded-lg p-0.5">
+          <div className="bg-muted/50 flex shrink-0 items-center gap-0.5 rounded-xl p-0.5">
             <Tooltip>
               <TooltipTrigger
                 render={
@@ -114,7 +114,7 @@ export function ColumnToggle<TData>({ table }: ColumnToggleProps<TData>) {
                 <DropdownMenuItem
                   key={column.id}
                   closeOnClick={false}
-                  className="focus:bg-accent flex items-center justify-between gap-3 rounded-md px-2.5 py-2"
+                  className="focus:bg-accent flex items-center justify-between gap-3 rounded-xl px-2.5 py-2"
                   onClick={() => column.toggleVisibility(!column.getIsVisible())}>
                   <Label
                     htmlFor={`col-${column.id}`}
