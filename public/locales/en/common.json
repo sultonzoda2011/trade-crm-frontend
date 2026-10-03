@@ -19,10 +19,9 @@
       "catalog": "Catalog",
       "team": "Team"
     },
-    "more": "More"
+    "more": "More",
+    "home": "Home"
   },
-  "bottomNav": "Navigation",
-  "newTransaction": "New transaction",
   "palette": {
     "trigger": "Search",
     "placeholder": "Search the CRM…",

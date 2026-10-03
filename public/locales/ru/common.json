@@ -1,6 +1,4 @@
 {
-  "bottomNav": "Навигация",
-  "newTransaction": "Новая транзакция",
   "navigation": {
     "dashboard": "Панель управления",
     "users": "Пользователи",
@@ -21,7 +19,8 @@
       "catalog": "Каталог",
       "team": "Команда"
     },
-    "more": "Ещё"
+    "more": "Ещё",
+    "home": "Главная"
   },
   "palette": {
     "trigger": "Поиск",

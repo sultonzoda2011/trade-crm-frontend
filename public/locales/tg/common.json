@@ -19,10 +19,9 @@
       "catalog": "Каталог",
       "team": "Гурӯҳ"
     },
-    "more": "Бештар"
+    "more": "Бештар",
+    "home": "Асосӣ"
   },
-  "bottomNav": "Навигатсия",
-  "newTransaction": "Муомилаи нав",
   "palette": {
     "trigger": "Ҷустуҷӯ",
     "placeholder": "Ҷустуҷӯ дар CRM…",
