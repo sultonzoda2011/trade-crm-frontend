@@ -152,7 +152,7 @@ export default function LoginPage() {
               <img className="hidden h-10 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
             </div>
 
-            <div className="bg-card ring-foreground/10 rounded-2xl p-6 shadow-lg ring-1 sm:p-8">
+            <div className="bg-card rounded-3xl p-6 shadow-xl sm:p-8">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-1.5">
                   <h2 className="text-2xl font-bold tracking-tight">{t('signIn')}</h2>
