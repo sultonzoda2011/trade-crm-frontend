@@ -20,17 +20,25 @@ interface PanelProps extends ComponentProps<'div'> {
 }
 
 export function Panel({ children, className, bodyClassName, title, actions, ...rest }: PanelProps) {
+  // Без заголовка — просто белая карточка.
+  if (!title && !actions) {
+    return (
+      <div className={cn('bg-card text-card-foreground rounded-2xl', className)} {...rest}>
+        <div className={cn('p-4', bodyClassName)}>{children}</div>
+      </div>
+    );
+  }
+
+  // С заголовком — как секция в iOS «Настройках»: мелкая серая подпись НАД
+  // карточкой, а не рамка с линией внутри. Классы раскладки (`lg:col-span-2`,
+  // `h-full`) остаются на внешнем блоке, карточка растягивается на всю высоту.
   return (
-    <div
-      className={cn('bg-card text-card-foreground ring-foreground/10 rounded-xl shadow-sm ring-1', className)}
-      {...rest}>
-      {(title || actions) && (
-        <div className="border-border flex flex-col items-start gap-2 border-b px-4 py-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:px-6">
-          {title && <h3 className="min-w-0 truncate leading-none font-semibold tracking-tight">{title}</h3>}
-          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
-        </div>
-      )}
-      <div className={cn('p-4', bodyClassName)}>{children}</div>
+    <div className={cn('flex flex-col', className)} {...rest}>
+      <div className="mb-1.5 flex items-end justify-between gap-3 px-1">
+        {title && <h3 className="text-muted-foreground min-w-0 truncate text-xs font-medium tracking-wide uppercase">{title}</h3>}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm">{actions}</div>}
+      </div>
+      <div className={cn('bg-card text-card-foreground flex-1 rounded-2xl p-4', bodyClassName)}>{children}</div>
     </div>
   );
 }
