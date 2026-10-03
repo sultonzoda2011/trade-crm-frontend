@@ -83,7 +83,7 @@ export default function UserDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
               <InfoItem
                 label={t('fields.name')}
                 value={
@@ -140,6 +140,7 @@ export default function UserDetailPage() {
 
           {userTransactions.length > 0 && (
             <Panel
+            bodyClassName="p-0"
               title={t('transactionsHistory')}
               actions={
                 <PanelViewAll
