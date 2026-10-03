@@ -2,6 +2,7 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import 'flatpickr/dist/flatpickr.min.css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -20,83 +21,105 @@ html {
 
 @theme {
   --font-sans:
-    'Manrope', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-    'Noto Color Emoji';
+    'Inter Variable', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+  --font-heading: var(--font-sans);
+  /* Цифры тоже Inter (табличные) — моноширинный шрифт для сумм выглядит «кодом», не iOS. */
+  --font-mono: var(--font-sans);
 
-  --font-heading: 'PT Serif', Georgia, 'Times New Roman', serif;
-
-  --text-2xs: 0.6875rem;
+  /* Шкала как в iOS: 17pt основной текст, 15 — второстепенный, 13 — сноски.
+     На десктопе (≥768px) ниже возвращается компактная — таблицам нужна плотность. */
+  --text-2xs: 0.75rem;
   --text-2xs--line-height: 1rem;
-  --text-xs: 0.75rem;
-  --text-xs--line-height: 1rem;
-  --text-sm: 0.8125rem;
-  --text-sm--line-height: 1.25rem;
-  --text-base: 0.9375rem;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1.0625rem;
   --text-base--line-height: 1.5rem;
-  --text-lg: 1.0625rem;
+  --text-lg: 1.1875rem;
   --text-lg--line-height: 1.625rem;
-  --text-xl: 1.25rem;
+  --text-xl: 1.3125rem;
   --text-xl--line-height: 1.75rem;
-  --text-2xl: 1.5rem;
+  --text-2xl: 1.625rem;
   --text-2xl--line-height: 2rem;
-  --text-3xl: 1.875rem;
-  --text-3xl--line-height: 2.25rem;
+  --text-3xl: 2.125rem;
+  --text-3xl--line-height: 2.5rem;
 }
 
+@media (min-width: 768px) {
+  :root {
+    --text-2xs: 0.6875rem;
+    --text-xs: 0.75rem;
+    --text-xs--line-height: 1rem;
+    --text-sm: 0.8125rem;
+    --text-sm--line-height: 1.25rem;
+    --text-base: 0.9375rem;
+    --text-base--line-height: 1.5rem;
+    --text-lg: 1.0625rem;
+    --text-lg--line-height: 1.625rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-2xl--line-height: 2rem;
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: 2.25rem;
+  }
+}
+
+/* Палитра — системные цвета iOS (grouped-фон + белые карточки, заливки-полупрозрачки). */
 :root {
-  --background: #fdfbf7;
-  --foreground: #1a1a1a;
-  --card: #fffefb;
-  --card-foreground: #1a1a1a;
-  --popover: #fffefb;
-  --popover-foreground: #1a1a1a;
-  --elevated: #f7f3ea;
-  --primary: #1a1a1a;
-  --primary-foreground: #fdfbf7;
-  --secondary: #efe9db;
-  --secondary-foreground: #2b2620;
-  --muted: #f3efe4;
-  --muted-foreground: #6b6255;
-  --accent: #efe9db;
-  --accent-foreground: #2b2620;
-  --destructive: #b33a3a;
-  --destructive-foreground: #fdfbf7;
-  --success: #059669;
-  --success-foreground: #fdfbf7;
-  --warning: oklch(0.6658 0.1574 58.3183);
-  --warning-foreground: #fdfbf7;
-  --border: #e5e1d8;
-  --input: #ded7c7;
-  --ring: #1a1a1a;
-  --chart-1: #1a1a1a;
+  --background: #f2f2f7;
+  --foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #000000;
+  --elevated: #ffffff;
+  --primary: #007aff;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(118, 118, 128, 0.12);
+  --secondary-foreground: #000000;
+  --muted: rgba(118, 118, 128, 0.12);
+  --muted-foreground: #6c6c70;
+  --accent: rgba(118, 118, 128, 0.12);
+  --accent-foreground: #000000;
+  --destructive: #ff3b30;
+  --destructive-foreground: #ffffff;
+  --success: #2a9d4b;
+  --success-foreground: #ffffff;
+  --warning: #d17800;
+  --warning-foreground: #ffffff;
+  --border: rgba(60, 60, 67, 0.16);
+  --input: rgba(118, 118, 128, 0.12);
+  --ring: #007aff;
+  --chart-1: #007aff;
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
-  --chart-5: #6b6255;
-  --sidebar: #f3efe4;
-  --sidebar-foreground: #2b2620;
-  --sidebar-primary: #1a1a1a;
-  --sidebar-primary-foreground: #fdfbf7;
-  --sidebar-accent: #e9e2d1;
-  --sidebar-accent-foreground: #2b2620;
-  --sidebar-border: #e5e1d8;
-  --sidebar-ring: #1a1a1a;
-  --ledger-margin: #b33a3a;
-  --radius: 0.15rem;
+  --chart-5: #8e8e93;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #000000;
+  --sidebar-primary: #007aff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(118, 118, 128, 0.12);
+  --sidebar-accent-foreground: #000000;
+  --sidebar-border: rgba(60, 60, 67, 0.16);
+  --sidebar-ring: #007aff;
+  --radius: 0.625rem;
   --shadow-x: 0px;
   --shadow-y: 4px;
-  --shadow-blur: 10px;
+  --shadow-blur: 12px;
   --shadow-spread: 0px;
-  --shadow-opacity: 0.1;
+  --shadow-opacity: 0.08;
   --shadow-color: #000000;
-  --shadow-2xs: 0px 2px 10px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0px 2px 10px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 2px 10px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow: 0px 2px 10px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px hsl(0 0% 0% / 0.1);
-  --shadow-md: 0px 2px 10px 0px hsl(0 0% 0% / 0.1), 0px 2px 4px -1px hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0px 2px 10px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0px 2px 10px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px hsl(0 0% 0% / 0.1);
-  --shadow-2xl: 0px 2px 10px 0px hsl(0 0% 0% / 0.25);
+  --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.03);
+  --shadow-xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.06);
+  --shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.07);
+  --shadow-md: 0px 6px 16px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0px 10px 28px -4px rgba(0, 0, 0, 0.14);
+  --shadow-xl: 0px 16px 40px -6px rgba(0, 0, 0, 0.18);
+  --shadow-2xl: 0px 24px 56px -8px rgba(0, 0, 0, 0.22);
   --tracking-normal: 0px;
   --spacing: 0.25rem;
   --shadow-offset-x: 0px;
@@ -105,59 +128,58 @@ html {
 }
 
 .dark {
-  --background: #211b14;
-  --foreground: #f3efe4;
-  --card: #2a231a;
-  --card-foreground: #f3efe4;
-  --popover: #2f281e;
-  --popover-foreground: #f3efe4;
-  --elevated: #342c21;
-  --primary: #f3efe4;
-  --primary-foreground: #211b14;
-  --secondary: #342c21;
-  --secondary-foreground: #e5ddc9;
-  --muted: #2a231a;
-  --muted-foreground: #b3a892;
-  --accent: #342c21;
-  --accent-foreground: #f3efe4;
-  --destructive: #c9584f;
-  --destructive-foreground: #211b14;
-  --success: #2fb589;
-  --success-foreground: #211b14;
-  --warning: oklch(0.8369 0.1644 84.4286);
-  --warning-foreground: #211b14;
-  --border: #3d3527;
-  --input: #453c2c;
-  --ring: #f3efe4;
-  --chart-1: #f3efe4;
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #1c1c1e;
+  --card-foreground: #ffffff;
+  --popover: #2c2c2e;
+  --popover-foreground: #ffffff;
+  --elevated: #2c2c2e;
+  --primary: #0a84ff;
+  --primary-foreground: #ffffff;
+  --secondary: rgba(118, 118, 128, 0.24);
+  --secondary-foreground: #ffffff;
+  --muted: rgba(118, 118, 128, 0.24);
+  --muted-foreground: #98989f;
+  --accent: rgba(118, 118, 128, 0.24);
+  --accent-foreground: #ffffff;
+  --destructive: #ff453a;
+  --destructive-foreground: #ffffff;
+  --success: #30d158;
+  --success-foreground: #000000;
+  --warning: #ff9f0a;
+  --warning-foreground: #000000;
+  --border: rgba(84, 84, 88, 0.6);
+  --input: rgba(118, 118, 128, 0.24);
+  --ring: #0a84ff;
+  --chart-1: #0a84ff;
   --chart-2: var(--success);
   --chart-3: var(--warning);
   --chart-4: var(--destructive);
-  --chart-5: #b3a892;
-  --sidebar: #1b1610;
-  --sidebar-foreground: #e5ddc9;
-  --sidebar-primary: #f3efe4;
-  --sidebar-primary-foreground: #211b14;
-  --sidebar-accent: #342c21;
-  --sidebar-accent-foreground: #f3efe4;
-  --sidebar-border: #3d3527;
-  --sidebar-ring: #f3efe4;
-  --ledger-margin: #c9584f;
-  --radius: 0.15rem;
+  --chart-5: #98989f;
+  --sidebar: #1c1c1e;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #0a84ff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(118, 118, 128, 0.24);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(84, 84, 88, 0.6);
+  --sidebar-ring: #0a84ff;
+  --radius: 0.625rem;
   --shadow-x: 0px;
-  --shadow-y: 10px;
-  --shadow-blur: 15px;
+  --shadow-y: 4px;
+  --shadow-blur: 12px;
   --shadow-spread: 0px;
-  --shadow-opacity: 0.5;
+  --shadow-opacity: 0.4;
   --shadow-color: #000000;
-  --shadow-2xs: 0px 4px 15px 0px hsl(0 0% 0% / 0.25);
-  --shadow-xs: 0px 4px 15px 0px hsl(0 0% 0% / 0.25);
-  --shadow-sm: 0px 4px 15px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow: 0px 4px 15px 0px hsl(0 0% 0% / 0.5), 0px 1px 2px -1px hsl(0 0% 0% / 0.5);
-  --shadow-md: 0px 4px 15px 0px hsl(0 0% 0% / 0.5), 0px 2px 4px -1px hsl(0 0% 0% / 0.5);
-  --shadow-lg: 0px 4px 15px 0px hsl(0 0% 0% / 0.5), 0px 4px 6px -1px hsl(0 0% 0% / 0.5);
-  --shadow-xl: 0px 4px 15px 0px hsl(0 0% 0% / 0.5), 0px 8px 10px -1px hsl(0 0% 0% / 0.5);
-  --shadow-2xl: 0px 4px 15px 0px hsl(0 0% 0% / 1.25);
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0px 6px 16px -2px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0px 10px 28px -4px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0px 16px 40px -6px rgba(0, 0, 0, 0.6);
+  --shadow-2xl: 0px 24px 56px -8px rgba(0, 0, 0, 0.65);
   --shadow-offset-x: 0px;
   --shadow-offset-y: 4px;
   --letter-spacing: 0px;
@@ -203,10 +225,6 @@ html {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
-
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -241,6 +259,14 @@ html {
   body {
     @apply bg-background text-foreground;
     letter-spacing: var(--tracking-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Суммы и числа — Inter с табличными цифрами (колонки не «прыгают»). */
+  .font-mono {
+    font-variant-numeric: tabular-nums;
   }
 
   /* Заголовки страниц отдельной гарнитурой (--font-heading) — один раз здесь,
