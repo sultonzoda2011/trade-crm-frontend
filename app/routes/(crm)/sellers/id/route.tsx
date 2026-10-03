@@ -76,7 +76,7 @@ export default function SellerDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
               <InfoItem
                 label={t('fields.name')}
                 value={
@@ -95,6 +95,7 @@ export default function SellerDetailPage() {
           </Panel>
 
           <Panel
+            bodyClassName="p-0"
             title={t('transactionsHistory')}
             actions={
               transactions.length > 0 ? (
@@ -137,7 +138,7 @@ export default function SellerDetailPage() {
               <p className="text-muted-foreground py-6 text-center text-sm">{t('noBalance')}</p>
             ) : (
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-1 gap-x-3 gap-y-0 sm:grid-cols-4 sm:gap-y-3">
                   <InfoItem label={t('earned')} value={<span className="font-mono">{fmtTJS(balance.earned)}</span>} />
                   {balance.refunded > 0 && (
                     <InfoItem
