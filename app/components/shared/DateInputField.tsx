@@ -122,7 +122,7 @@ export function DateInputField({
       {label && (
         <Label>
           {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
+          {required && <span className="text-muted-foreground ml-0.5">*</span>}
         </Label>
       )}
 
@@ -134,7 +134,7 @@ export function DateInputField({
           aria-invalid={!!error}
           className={cn(
             // mirrors shadcn Input styles
-            'border-border h-8 w-full cursor-pointer rounded-lg border bg-background px-2.5 py-1 pr-16 text-sm',
+            'bg-input h-12 w-full cursor-pointer rounded-[10px] border-0 px-3.5 py-1 pr-16 text-base md:h-10 md:px-3 md:text-sm',
             'placeholder:text-muted-foreground transition-colors outline-none',
             'focus:border-ring focus:ring-ring/50 focus:ring-3',
             'aria-invalid:border-destructive aria-invalid:ring-destructive/20 aria-invalid:ring-3',
