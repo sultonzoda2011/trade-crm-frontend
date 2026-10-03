@@ -28,7 +28,7 @@ export function FormTextarea<T extends FieldValues>({
           {label && (
             <Label className="mt-3" htmlFor={name}>
               {label}
-              {required && <span className="text-destructive ml-0.5">*</span>}
+              {required && <span className="text-muted-foreground ml-0.5">*</span>}
             </Label>
           )}
           <Textarea
