@@ -19,9 +19,17 @@ import { cn } from '~/lib/utils';
  */
 export function InfoItem({ label, value, className }: { label: string; value: ReactNode; className?: string }) {
   return (
-    <div className={cn('min-w-0 space-y-1.5', className)}>
-      <p className="text-muted-foreground truncate text-xs font-medium">{label}</p>
-      <div className="min-w-0 text-sm font-semibold [overflow-wrap:anywhere]">{value}</div>
+    <div
+      className={cn(
+        // Телефон: строка списка iOS (подпись слева, значение справа, линия между строками).
+        // sm+: прежняя пара «подпись → значение» в колонках карточки.
+        'border-border flex min-w-0 items-center justify-between gap-4 border-b py-3 last:border-b-0 sm:block sm:space-y-1.5 sm:border-b-0 sm:py-0',
+        className
+      )}>
+      <p className="shrink-0 text-base sm:truncate sm:text-xs sm:font-medium sm:text-muted-foreground">{label}</p>
+      <div className="text-muted-foreground min-w-0 text-right text-base [overflow-wrap:anywhere] sm:text-foreground sm:text-left sm:text-sm sm:font-semibold">
+        {value}
+      </div>
     </div>
   );
 }
