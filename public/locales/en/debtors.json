@@ -55,6 +55,11 @@
   },
   "actions": {
     "pay": "Repay debt",
-    "payLoadError": "Failed to load the transaction"
-  }
+    "payLoadError": "Failed to load the transaction",
+    "giveDebt": "Give on credit",
+    "acceptPayment": "Accept payment",
+    "pickDebtTitle": "Which debt to pay?"
+  },
+  "noDebt": "No debt",
+  "viewAll": "View all"
 }
