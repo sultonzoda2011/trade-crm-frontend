@@ -31,7 +31,7 @@ export function UserAvatar({ fullName, imagePath, subInfo, shape = 'circle' }: U
         <UniversalImage
           src={imagePath}
           alt={fullName}
-          containerClassName="bg-muted size-8 shrink-0 rounded-md"
+          containerClassName="bg-muted size-8 shrink-0 rounded-full"
           imgClassName="size-full object-cover"
           fallback={
             <div className="text-muted-foreground flex size-full items-center justify-center text-sm font-medium">
