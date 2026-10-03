@@ -165,18 +165,19 @@ export default function TransactionsPage() {
         searchPlaceholder={t('filters.search', { ns: 'common' })}
         searchValue={search}
         onSearchChange={setSearch}>
-        <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
         <ColumnToggle table={table} />
-        {can(Action.TRANSACTIONS_CREATE) && (
-          <Button
-            size="icon"
-            aria-label={t('create')}
-            className="w-auto shrink-0 gap-1.5 px-3"
-            render={<Link to="/transactions/create" />}>
-            <Plus data-icon="inline-start" />
-            <span>{t('create')}</span>
-          </Button>
-        )}
+        <div className="flex w-full items-center gap-2 sm:w-auto">
+          <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
+          {can(Action.TRANSACTIONS_CREATE) && (
+            <Button
+              aria-label={t('create')}
+              className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
+              render={<Link to="/transactions/create" />}>
+              <Plus data-icon="inline-start" />
+              <span className="truncate">{t('create')}</span>
+            </Button>
+          )}
+        </div>
       </ListPageToolbar>
       <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
       <DataTable
