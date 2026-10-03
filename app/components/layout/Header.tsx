@@ -27,7 +27,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-background/95 supports-backdrop-filter:bg-background/60 sticky top-0 z-30 flex min-h-14 w-full items-center gap-2 border-b px-2.5 pt-[env(safe-area-inset-top)] backdrop-blur sm:px-3 lg:min-h-16 lg:px-5">
+    <header className="bg-background/95 sticky top-0 z-30 flex min-h-14 w-full items-center gap-2 px-3 pt-[env(safe-area-inset-top)] md:border-b lg:min-h-16 lg:px-5">
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         {/* На мобиле основная навигация — BottomNav, полноценный off-canvas
             Sidebar через триггер не нужен параллельно (см. layout.tsx). */}
@@ -44,10 +44,10 @@ export default function Header() {
           size="icon"
           aria-label={t('palette.trigger')}
           onClick={() => setPaletteOpen(true)}
-          className="text-muted-foreground xl:h-9 xl:w-56 xl:justify-start xl:gap-2 xl:px-2.5 2xl:w-64">
+          className="text-muted-foreground hidden md:inline-flex xl:h-10 xl:w-56 xl:justify-start xl:gap-2 xl:px-3 2xl:w-64">
           <Search className="size-4 shrink-0" />
           <span className="hidden flex-1 truncate text-left xl:inline">{t('palette.trigger')}...</span>
-          <kbd className="bg-muted text-2xs pointer-events-none hidden h-5 items-center gap-0.5 rounded border px-1.5 font-mono font-medium xl:flex">
+          <kbd className="bg-muted text-2xs pointer-events-none hidden h-5 items-center gap-0.5 rounded-md border px-1.5 font-mono font-medium xl:flex">
             Ctrl K
           </kbd>
         </Button>
@@ -58,11 +58,12 @@ export default function Header() {
           <TooltipTrigger
             render={
               <Button
-                variant="outline"
+                variant="ghost"
                 size="icon"
+                className="text-primary md:text-foreground"
                 aria-label={t('navigation.guide')}
                 onClick={() => navigate('/guide')}>
-                <HelpCircle className="size-4" />
+                <HelpCircle className="size-6 md:size-4" strokeWidth={1.75} />
               </Button>
             }
           />
@@ -77,7 +78,7 @@ export default function Header() {
           <LanguageSwitcher />
         </div>
 
-        <div className="bg-border h-6 w-px shrink-0" aria-hidden="true" />
+        <div className="bg-border hidden h-6 w-px shrink-0 md:block" aria-hidden="true" />
         <UserNav />
       </div>
 
