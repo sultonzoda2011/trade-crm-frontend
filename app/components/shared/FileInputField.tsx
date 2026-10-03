@@ -84,7 +84,7 @@ export function FileInputField({
       {label && (
         <Label>
           {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
+          {required && <span className="text-muted-foreground ml-0.5">*</span>}
         </Label>
       )}
 
@@ -101,7 +101,7 @@ export function FileInputField({
         // ── Simple variant ────────────────────────────────────────────────
         <div
           className={cn(
-            'bg-background flex h-8 w-full items-center gap-2 rounded-lg border px-2.5 text-sm transition-colors',
+            'bg-input flex h-12 w-full items-center gap-2 rounded-[10px] px-3.5 text-base transition-colors md:h-10 md:px-3 md:text-sm',
             'dark:bg-input/30',
             error ? 'border-destructive' : 'border-border',
             !value && 'hover:bg-muted/40 cursor-pointer'
