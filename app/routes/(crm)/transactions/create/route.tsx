@@ -4,43 +4,45 @@ import dayjs from 'dayjs';
 import {
   AlertTriangle,
   Banknote,
+  ChevronRight,
   CreditCard,
   HandCoins,
   Loader2,
   Package,
   Plus,
-  ShoppingCart,
   SlidersHorizontal,
-  Tag,
   Trash2,
   UserPlus,
-  Wallet,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
-import { Panel } from '~/components/layout/Panel';
 import { CreateDebtorModal } from '~/components/modals/CreateDebtorModal';
-import { CustomInput } from '~/components/shared/CustomInput';
+import { InitialAvatar } from '~/components/shared/InitialAvatar';
+import { ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { SegmentedControl } from '~/components/shared/SegmentedControl';
-import { Badge } from '~/components/ui/badge';
+import { DebtorPickerSheet } from '~/components/transactions/DebtorPickerSheet';
+import { ProductPickerSheet } from '~/components/transactions/ProductPickerSheet';
+import { QuantityStepper } from '~/components/transactions/QuantityStepper';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormDateInput } from '~/components/ui/form/FormDateInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
-import { fmtTJS } from '~/lib/format';
+import { cldThumb } from '~/lib/cloudinary';
+import { fmtNum, fmtTJS } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
+import type { Debtor } from '~/types/debtors';
+import type { Product } from '~/types/products';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
   createTransactionSchema,
@@ -64,13 +66,21 @@ function getLastPaymentMethod(): 'CASH' | 'CARD' | 'DEBT' | null {
 export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { can } = useCan();
+  // «Дать долг» со страницы должника приходит с уже выбранным человеком —
+  // не заставляем искать его заново.
+  const prefill = location.state as { debtorId?: string; debtorName?: string; fromPath?: string } | null;
   const debtorCreateModal = useDebtorsModals((s) => s.create);
   // Скидка/надбавка нужны редко — по умолчанию скрыты, чтобы карточка товара
   // занимала 2 строки на телефоне вместо 3. Разворачиваем по клику или если
   // в строке уже стоят ненулевые значения (например, при копировании формы).
   const [expandedAdjustments, setExpandedAdjustments] = useState<Record<string, boolean>>({});
+  // Индекс строки товара, для которой открыт полноэкранный пикер (null — закрыт).
+  // Sheet один на всю форму, а не по одному на строку.
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
+  const [debtorPickerOpen, setDebtorPickerOpen] = useState(false);
 
   const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
 
@@ -81,6 +91,7 @@ export default function CreateTransactionPage() {
     fetcher: async (search) => (await debtorsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
     getValue: (d) => d.id,
     getLabel: (d) => d.name,
+    seed: prefill?.debtorId ? [{ id: prefill.debtorId, name: prefill.debtorName ?? '' } as Debtor] : undefined,
   });
 
   const products = useAsyncSelectOptions({
@@ -92,6 +103,15 @@ export default function CreateTransactionPage() {
 
   const debtorOptions = debtors.options;
   const productOptions = products.options;
+
+  // Текущая выдача поиска для пикера: options хранит только value/label, а
+  // фото/цена/остаток лежат в byId (туда попадает всё, что когда-либо пришло
+  // с сервера, включая текущую выдачу) — раскрываем одно через другое, не
+  // трогая общий хук useAsyncSelectOptions.
+  const pickerItems = useMemo(
+    () => productOptions.map((o) => products.byId.get(String(o.value))).filter((p): p is Product => Boolean(p)),
+    [productOptions, products.byId]
+  );
 
   // Read stock/price from the accumulated set (products.byId), not just the latest search —
   // a row that already picked a product must keep its data even after the results narrow.
@@ -113,15 +133,17 @@ export default function CreateTransactionPage() {
     resolver: zodResolver(transactionSchema),
     mode: 'onChange',
     defaultValues: {
-      debtorId: '',
+      debtorId: prefill?.debtorId ?? '',
       customerName: '',
       // Большинство продавцов день за днём принимают один и тот же способ
       // оплаты — не заставляем каждый раз тапать по нему заново.
       type: (() => {
+        if (prefill?.debtorId) return 'DEBT';
         const last = canCreateSale ? getLastPaymentMethod() : null;
         return last === 'DEBT' || !canCreateSale ? 'DEBT' : 'SALE';
       })(),
       paymentType: (() => {
+        if (prefill?.debtorId) return 'CREDIT';
         const last = canCreateSale ? getLastPaymentMethod() : null;
         if (!canCreateSale || last === 'DEBT') return 'CREDIT';
         return last === 'CARD' ? 'CARD' : 'CASH';
@@ -191,12 +213,6 @@ export default function CreateTransactionPage() {
     return Math.max(q * p - d + m, 0);
   };
 
-  // Тот же риск устаревания ссылки на itemsList, что и у calculatedTotal
-  // выше — считаем напрямую, без useMemo.
-  const hasStockIssue = itemsList.some((item) =>
-    isOverStock(item?.quantity, item?.productId ? stockMap[item.productId] : undefined)
-  );
-
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateTransactionInput) => {
       const payload: CreateTransactionRequest = {
@@ -214,10 +230,14 @@ export default function CreateTransactionPage() {
       };
       return transactionsApi.create(payload);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
+      // Продажа списывает остатки, долг меняет сумму у должника — без этого списки
+      // до конца staleTime показывали бы старые цифры.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       toast.success(t('createSuccess'));
-      navigate('/transactions');
+      navigate(prefill?.fromPath ?? '/transactions');
     },
     onError: () => {
       toast.error(t('createError'));
@@ -232,34 +252,42 @@ export default function CreateTransactionPage() {
     mutate(data);
   }
 
+  const debtorId = watch('debtorId');
+  const selectedDebtor = debtorId ? debtors.byId.get(debtorId) : undefined;
+  const debtorError = formState.errors.debtorId?.message;
+  const pickerDebtors = debtorOptions
+    .map((o) => debtors.byId.get(String(o.value)))
+    .filter((d): d is Debtor => Boolean(d));
+  const canSubmit = !isPending && formState.isValid;
+  const submitLabel = type === 'DEBT' ? t('submitDebt') : t('submitSale');
+
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-24 md:pb-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-44 md:max-w-none md:pb-8">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-          { label: t('title'), link: '/transactions' },
+          {
+            // Пришли со страницы должника — «назад» ведёт к нему, а не в общий список.
+            label: prefill?.fromPath && prefill.debtorName ? prefill.debtorName : t('title'),
+            link: prefill?.fromPath ?? '/transactions',
+          },
           { label: t('create') },
         ]}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('create')}</h1>
-          <p className="text-muted-foreground text-sm">{t('createSubtitle')}</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t('create')}</h1>
+          <p className="text-muted-foreground mt-1 hidden text-sm sm:block">{t('createSubtitle')}</p>
         </div>
-        {/*
-         * На телефоне это же действие продублировано в sticky-панели снизу
-         * (форма длинная, скроллить наверх к кнопке после заполнения — плохой UX).
-         * Здесь оставляем только для md+, где форма умещается в 2 колонки и
-         * кнопка сверху всегда в поле зрения.
-         */}
+        {/* На телефоне те же действия живут в нижней панели; здесь — только для md+. */}
         <div className="hidden gap-3 md:flex">
-          <Button variant="outline" onClick={() => navigate('/transactions')}>
+          <Button variant="outline" onClick={() => navigate(prefill?.fromPath ?? '/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button type="submit" form="create-transaction-page-form" disabled={isPending || !formState.isValid}>
-            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
-            {t('actions.create', { ns: 'common' })}
+          <Button type="submit" form="create-transaction-page-form" disabled={!canSubmit}>
+            {isPending && <Loader2 className="animate-spin" />}
+            {submitLabel}
           </Button>
         </div>
       </div>
@@ -267,323 +295,285 @@ export default function CreateTransactionPage() {
       <form
         id="create-transaction-page-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[5fr_3fr]">
-        <div className="space-y-6">
-          <Panel
-            title={t('fields.items')}
-            actions={
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="gap-1 text-xs"
-                onClick={() => append({ productId: '', quantity: 1, discount: 0, markup: 0 })}>
-                <Plus className="size-3.5" />
-                {t('fields.addItem')}
-              </Button>
-            }
-            className="p-4">
-            <div className="space-y-3">
-              {fields.map((field, index) => {
-                const item = items[index];
-                const product = getProduct(item?.productId);
-                const itemTotal = getItemTotal(item);
-                const overStock = isOverStock(item?.quantity, product?.quantity);
-                const qty = Number(item?.quantity) || 0;
-
-                return (
-                  <div key={field.id} className="bg-card rounded-xl border p-4 shadow-sm">
-                    <FormCustomSelect
-                      control={control}
-                      label={t('fields.product')}
-                      name={`items.${index}.productId`}
-                      placeholder={t('fields.product')}
-                      options={productOptions}
-                      onSearch={products.onSearch}
-                      loading={products.loading}
-                      required
-                    />
-
-                    <div className="mt-3 grid grid-cols-2 items-end gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto]">
-                      <div>
-                        <label className="mb-1.5 block text-sm font-medium">{t('fields.price')}</label>
-                        <CustomInput readOnly value={product ? fmtTJS(product.price) : ''} placeholder="—" />
-                      </div>
-                      <FormInput
-                        control={control}
-                        label={t('fields.quantity')}
-                        name={`items.${index}.quantity`}
-                        type="number"
-                        inputMode="decimal"
-                        min={1}
-                        placeholder={t('fields.quantity')}
-                        required
-                      />
-                      <div>
-                        <label className="mb-1.5 block text-sm font-medium">{t('fields.totalPrice')}</label>
-                        <div className="bg-muted/40 flex h-8 items-center justify-end rounded-lg border px-2.5 font-mono text-sm font-semibold">
-                          {fmtTJS(itemTotal)}
-                        </div>
-                      </div>
-                      <div className="flex items-end justify-end">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:bg-destructive/10 size-8"
-                          disabled={fields.length === 1}
-                          onClick={() => remove(index)}>
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {(() => {
-                      const isExpanded =
-                        expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0);
-                      return isExpanded ? (
-                        <div className="mt-3 grid grid-cols-2 gap-3 border-t pt-3">
-                          <FormInput
-                            control={control}
-                            label={t('fields.discount')}
-                            name={`items.${index}.discount`}
-                            type="number"
-                            inputMode="decimal"
-                            min={0}
-                            placeholder={t('fields.discount')}
-                          />
-                          <FormInput
-                            control={control}
-                            label={t('fields.markup')}
-                            name={`items.${index}.markup`}
-                            type="number"
-                            inputMode="decimal"
-                            min={0}
-                            placeholder={t('fields.markup')}
-                          />
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => setExpandedAdjustments((s) => ({ ...s, [field.id]: true }))}
-                          className="text-muted-foreground hover:text-foreground mt-2.5 flex items-center gap-1.5 text-xs font-medium">
-                          <SlidersHorizontal className="size-3.5" />
-                          {t('fields.discount')} / {t('fields.markup')}
-                        </button>
-                      );
-                    })()}
-
-                    {product && (
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-xs">
-                        <div className="flex items-center gap-2">
-                          <Package className="text-muted-foreground size-3.5" />
-                          <span className={overStock ? 'text-destructive font-medium' : 'text-muted-foreground'}>
-                            {t('inStock')}: {product.quantity}
-                          </span>
-                          {overStock && (
-                            <span className="text-destructive flex items-center gap-1 font-medium">
-                              <AlertTriangle className="size-3.5" />
-                              {t('stockError')}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-muted-foreground font-mono">
-                          {fmtTJS(product.price)} × {qty}
-                          {Number(item?.discount) > 0 && <> − {fmtTJS(Number(item?.discount) || 0)}</>}
-                          {Number(item?.markup) > 0 && <> + {fmtTJS(Number(item?.markup) || 0)}</>}
-                          {' = '}
-                          <span className="text-foreground font-semibold">{fmtTJS(itemTotal)}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+        className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[5fr_3fr] lg:gap-6">
+        {/* На телефоне сначала «как платят / кому», потом товары; на десктопе — слева товары. */}
+        <div className="order-first space-y-5 lg:order-last">
+          {canCreateSale ? (
+            <SegmentedControl
+              value={paymentMethod}
+              onChange={(next) => {
+                try {
+                  localStorage.setItem(LAST_PAYMENT_METHOD_KEY, next);
+                } catch {
+                  // приватный режим / квота — не критично, просто не запомнится
+                }
+                if (next === 'DEBT') {
+                  setValue('type', 'DEBT', { shouldValidate: true });
+                  setValue('paymentType', 'CREDIT', { shouldValidate: true });
+                } else {
+                  setValue('type', 'SALE', { shouldValidate: true });
+                  setValue('paymentType', next, { shouldValidate: true });
+                }
+              }}
+              options={[
+                { value: 'CASH', label: t('paymentType.CASH'), icon: Banknote },
+                { value: 'CARD', label: t('paymentType.CARD'), icon: CreditCard },
+                { value: 'DEBT', label: t('type.DEBT'), icon: HandCoins },
+              ]}
+            />
+          ) : (
+            <div className="bg-card flex items-center gap-2 rounded-2xl px-4 py-3 text-base font-medium">
+              <HandCoins className="text-warning size-5" />
+              {t('type.DEBT')}
             </div>
-          </Panel>
+          )}
 
-          <Panel title={t('paymentSummary')}>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <ShoppingCart className="size-3.5" />
-                  {t('fields.totalAmount')}
-                </span>
-                <span className="font-mono font-semibold">{fmtTJS(calculatedTotal)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Tag className="size-3.5" />
-                  {t('fields.discount')}
-                </span>
-                {totalDiscount > 0 && <span className="font-mono font-semibold">− {fmtTJS(totalDiscount)}</span>}
-              </div>
-              {totalMarkup > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1.5">
-                    <Tag className="size-3.5" />
-                    {t('fields.markup')}
-                  </span>
-                  <span className="font-mono font-semibold">+ {fmtTJS(totalMarkup)}</span>
+          {type === 'DEBT' && (
+            <>
+              <ListGroup
+                title={t('fields.debtor')}
+                footer={debtorError ? <span className="text-destructive">{debtorError}</span> : undefined}>
+                <ListRow
+                  leading={
+                    selectedDebtor ? (
+                      <InitialAvatar name={selectedDebtor.name} className="size-10" />
+                    ) : (
+                      <span className="bg-primary/12 text-primary flex size-10 items-center justify-center rounded-full">
+                        <UserPlus className="size-5" />
+                      </span>
+                    )
+                  }
+                  title={
+                    selectedDebtor ? (
+                      <span className="font-semibold">{selectedDebtor.name}</span>
+                    ) : (
+                      <span className="text-primary font-medium">{t('fields.pickDebtor')}</span>
+                    )
+                  }
+                  subtitle={selectedDebtor?.phone}
+                  chevron
+                  onClick={() => setDebtorPickerOpen(true)}
+                />
+              </ListGroup>
+
+              <div className="bg-card space-y-3 rounded-2xl p-4">
+                <FormDateInput
+                  control={control}
+                  name="dueDate"
+                  placeholder={t('fields.dueDate')}
+                  minDate={new Date()}
+                  label={t('fields.dueDate')}
+                  required
+                />
+                <div className="flex flex-wrap gap-2 px-1">
+                  {[7, 14, 30].map((days) => (
+                    <button
+                      key={days}
+                      type="button"
+                      onClick={() => setValue('dueDate', dayjs().add(days, 'day').format('YYYY-MM-DD'))}
+                      className="bg-primary/12 text-primary h-9 rounded-[10px] px-3.5 text-sm font-semibold active:opacity-60">
+                      +{days} {t('daysUnit', { ns: 'common' })}
+                    </button>
+                  ))}
                 </div>
-              )}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Wallet className="size-3.5" />
-                  {t('fields.credited')}
-                </span>
-                <span className="text-success font-mono font-semibold">
-                  {fmtTJS(type === 'DEBT' ? 0 : calculatedTotal)}
-                </span>
               </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground flex items-center gap-1.5">
-                  <Banknote className="size-3.5" />
-                  {t('fields.remainingAmount')}
-                </span>
-                <span className="text-warning font-mono font-semibold">
-                  {fmtTJS(type === 'DEBT' ? calculatedTotal : 0)}
-                </span>
-              </div>
-              <div className="bg-border h-px" />
-              <p className="text-muted-foreground text-xs leading-relaxed">
-                {type === 'DEBT' ? t('debtHint') : t('creditedHint')}
-              </p>
-              {hasStockIssue && (
-                <Badge
-                  variant="outline"
-                  className="border-destructive/40 bg-destructive/10 text-destructive w-full justify-center gap-1.5 py-1.5">
-                  <AlertTriangle className="size-3.5" />
-                  {t('stockError')}
-                </Badge>
-              )}
+            </>
+          )}
+
+          {type === 'SALE' && (
+            <div className="bg-card rounded-2xl p-4">
+              <FormInput
+                control={control}
+                name="customerName"
+                label={t('fields.customer')}
+                placeholder={t('fields.customer')}
+              />
             </div>
-          </Panel>
+          )}
         </div>
 
-        <div className="space-y-6">
-          <Panel title={t('details')}>
-            <div className="space-y-4">
-              {canCreateSale ? (
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium">{t('fields.paymentType')}</label>
-                  <SegmentedControl
-                    value={paymentMethod}
-                    onChange={(next) => {
-                      try {
-                        localStorage.setItem(LAST_PAYMENT_METHOD_KEY, next);
-                      } catch {
-                        // приватный режим / квота — не критично, просто не запомнится
-                      }
-                      if (next === 'DEBT') {
-                        setValue('type', 'DEBT', { shouldValidate: true });
-                        setValue('paymentType', 'CREDIT', { shouldValidate: true });
-                      } else {
-                        setValue('type', 'SALE', { shouldValidate: true });
-                        setValue('paymentType', next, { shouldValidate: true });
-                      }
-                    }}
-                    options={[
-                      { value: 'CASH', label: t('paymentType.CASH'), icon: Banknote },
-                      { value: 'CARD', label: t('paymentType.CARD'), icon: CreditCard },
-                      { value: 'DEBT', label: t('type.DEBT'), icon: HandCoins },
-                    ]}
-                  />
-                </div>
-              ) : (
-                <div className="bg-muted/50 flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
-                  <HandCoins className="text-warning size-4" />
-                  {t('type.DEBT')}
-                </div>
-              )}
-              {type === 'SALE' && (
-                <FormInput
-                  control={control}
-                  name="customerName"
-                  label={t('fields.customer')}
-                  placeholder={t('fields.customer')}
-                />
-              )}
+        <div className="space-y-5 lg:order-first">
+          <div className="space-y-3">
+            {fields.map((field, index) => {
+              const item = items[index];
+              const product = getProduct(item?.productId);
+              const itemTotal = getItemTotal(item);
+              const overStock = isOverStock(item?.quantity, product?.quantity);
+              const rowErrors = (
+                formState.errors.items as unknown as Array<{ productId?: { message?: string } } | undefined> | undefined
+              )?.[index];
+              const productError = rowErrors?.productId?.message;
+              const isExpanded =
+                expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0);
 
-              {type === 'DEBT' && (
-                <div className="space-y-3">
-                  <div>
-                    <div className="mb-1.5 flex items-center justify-between">
-                      <label className="block text-sm font-medium">{t('fields.debtor')}</label>
+              return (
+                <div key={field.id} className="bg-card divide-border divide-y overflow-hidden rounded-2xl">
+                  <div className="flex items-stretch">
+                    <button
+                      type="button"
+                      onClick={() => setPickerIndex(index)}
+                      className="active:bg-muted/70 flex min-h-16 min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left transition-colors">
+                      <span className="bg-muted flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
+                        {product?.image ? (
+                          <img
+                            src={cldThumb(product.image, { w: 96, h: 96 })}
+                            alt=""
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <Package className="text-muted-foreground size-5" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        {product ? (
+                          <>
+                            <span className="line-clamp-2 block text-base leading-snug font-semibold">
+                              {product.name}
+                            </span>
+                            <span className="text-muted-foreground block text-sm leading-snug">
+                              {fmtNum(product.price)} TJS · {t('inStock')} {product.quantity}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-primary block text-base font-medium">{t('fields.pickProduct')}</span>
+                        )}
+                      </span>
+                      <ChevronRight className="text-muted-foreground/50 size-5 shrink-0" />
+                    </button>
+                    {fields.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => debtorCreateModal.open()}
-                        className="text-primary flex items-center gap-1 text-xs font-medium hover:underline">
-                        <UserPlus className="size-3.5" />
-                        {t('actions.create', { ns: 'common' })}
+                        aria-label={t('actions.delete', { ns: 'common' })}
+                        onClick={() => remove(index)}
+                        className="text-destructive active:bg-destructive/10 flex w-12 shrink-0 items-center justify-center border-l">
+                        <Trash2 className="size-5" />
                       </button>
-                    </div>
-                    <FormCustomSelect
-                      control={control}
-                      name="debtorId"
-                      placeholder={t('fields.debtor')}
-                      options={debtorOptions}
-                      onSearch={debtors.onSearch}
-                      loading={debtors.loading}
-                      isClearable
-                      required
-                    />
+                    )}
                   </div>
-                  <div>
-                    <FormDateInput
-                      control={control}
-                      name="dueDate"
-                      placeholder={t('fields.dueDate')}
-                      minDate={new Date()}
-                      label={t('fields.dueDate')}
-                      required
-                    />
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                      {[7, 14, 30].map((days) => (
-                        <button
-                          key={days}
-                          type="button"
-                          onClick={() => setValue('dueDate', dayjs().add(days, 'day').format('YYYY-MM-DD'))}
-                          className="border-border hover:bg-muted rounded-full border px-2.5 py-1 text-xs font-medium">
-                          +{days} {t('daysUnit', { ns: 'common' })}
-                        </button>
-                      ))}
-                    </div>
+
+                  {productError && <p className="text-destructive px-4 py-2 text-sm">{productError}</p>}
+
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <QuantityStepper control={control} name={`items.${index}.quantity`} />
+                    <span className="font-mono text-xl font-semibold">{fmtNum(itemTotal)}</span>
                   </div>
+
+                  {overStock && (
+                    <p className="text-destructive flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium">
+                      <AlertTriangle className="size-4 shrink-0" />
+                      {t('stockError')}
+                    </p>
+                  )}
+
+                  {isExpanded ? (
+                    <div className="grid grid-cols-2 gap-3 px-3 py-3">
+                      <FormInput
+                        control={control}
+                        label={t('fields.discount')}
+                        name={`items.${index}.discount`}
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        placeholder="0"
+                      />
+                      <FormInput
+                        control={control}
+                        label={t('fields.markup')}
+                        name={`items.${index}.markup`}
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        placeholder="0"
+                      />
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedAdjustments((s) => ({ ...s, [field.id]: true }))}
+                      className="text-primary active:bg-muted/70 flex min-h-11 w-full items-center gap-2 px-4 text-sm font-medium">
+                      <SlidersHorizontal className="size-4" />
+                      {t('fields.discount')} / {t('fields.markup')}
+                    </button>
+                  )}
                 </div>
-              )}
-            </div>
-          </Panel>
+              );
+            })}
+          </div>
+
+          <Button
+            type="button"
+            variant="secondary"
+            size="lg"
+            className="w-full"
+            onClick={() => append({ productId: '', quantity: 1, discount: 0, markup: 0 })}>
+            <Plus />
+            {t('fields.addItem')}
+          </Button>
+
+          {(totalDiscount > 0 || totalMarkup > 0) && (
+            <ListGroup>
+              {totalDiscount > 0 && <ListRow title={t('fields.discount')} value={`− ${fmtTJS(totalDiscount)}`} />}
+              {totalMarkup > 0 && <ListRow title={t('fields.markup')} value={`+ ${fmtTJS(totalMarkup)}`} />}
+            </ListGroup>
+          )}
         </div>
       </form>
 
       <CreateDebtorModal />
 
+      <ProductPickerSheet
+        open={pickerIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setPickerIndex(null);
+        }}
+        items={pickerItems}
+        loading={products.loading}
+        onSearch={products.onSearch}
+        onSelect={(productId) => {
+          if (pickerIndex !== null) {
+            setValue(`items.${pickerIndex}.productId`, productId, { shouldValidate: true, shouldDirty: true });
+          }
+          setPickerIndex(null);
+        }}
+      />
+
+      <DebtorPickerSheet
+        open={debtorPickerOpen}
+        onOpenChange={setDebtorPickerOpen}
+        items={pickerDebtors}
+        loading={debtors.loading}
+        onSearch={debtors.onSearch}
+        onSelect={(debtor) => {
+          setValue('debtorId', debtor.id, { shouldValidate: true, shouldDirty: true });
+          setDebtorPickerOpen(false);
+        }}
+        onCreateNew={() => {
+          setDebtorPickerOpen(false);
+          debtorCreateModal.open();
+        }}
+      />
+
       {/*
-       * Мобильная sticky-панель: итог + Cancel/Create всегда доступны, форма
-       * может быть длинной (несколько позиций товара), скроллить к кнопке
-       * наверх — плохой UX. pb учитывает safe-area (жестовая навигация Android).
+       * Нижняя панель на телефоне (вкладки на этом экране скрыты): итог и одна
+       * главная кнопка на всю ширину — отмена не нужна, есть «назад» сверху.
+       * Отступ снизу учитывает жестовую навигацию (safe-area).
        */}
       <div
-        className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
+        className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t('fields.totalAmount')}</span>
-          <span className="font-mono text-base font-semibold">{fmtTJS(calculatedTotal)}</span>
+        <div className="mb-2.5 flex items-baseline justify-between">
+          <span className="text-muted-foreground text-base">{t('fields.totalAmount')}</span>
+          <span className="font-mono text-2xl font-bold">{fmtTJS(calculatedTotal)}</span>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate('/transactions')}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button
-            type="submit"
-            form="create-transaction-page-form"
-            className="h-9 flex-1"
-            disabled={isPending || !formState.isValid}>
-            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
-            {t('actions.create', { ns: 'common' })}
-          </Button>
-        </div>
+        <Button
+          type="submit"
+          form="create-transaction-page-form"
+          size="lg"
+          className="w-full"
+          disabled={!canSubmit}>
+          {isPending && <Loader2 className="animate-spin" />}
+          {submitLabel}
+        </Button>
       </div>
     </div>
   );
