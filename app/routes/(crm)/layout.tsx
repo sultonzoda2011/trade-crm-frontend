@@ -26,18 +26,14 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
 
 export default function CrmLayout() {
   return (
-    <SidebarProvider className="bg-sidebar h-dvh">
+    <SidebarProvider className="bg-background md:bg-sidebar h-dvh">
       <AppSidebar />
-      <div className="m-2 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:m-2 md:rounded-2xl md:border md:shadow-sm">
         <Header />
         <ScrollArea className="bg-background min-h-0 flex-1">
-          {/* Красная линия полей бухгалтерской книги — одна общая обёртка,
-              применяется сразу ко всем страницам (crm), без правок по каждой.
-              pb на мобиле — место под фиксированный BottomNav (нижняя панель
-              со своим safe-area-inset-bottom не должна перекрывать контент). */}
-          <div
-            className="border-(--ledger-margin) p-3 pb-[calc(7rem+env(safe-area-inset-bottom))] md:p-6"
-            style={{ borderLeftWidth: 2 }}>
+          {/* pb на мобиле — место под плавающий BottomNav (сам бар + отступ от
+              края + вылет центральной FAB-кнопки над баром). */}
+          <div className="p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] md:p-6">
             <Outlet />
           </div>
         </ScrollArea>
