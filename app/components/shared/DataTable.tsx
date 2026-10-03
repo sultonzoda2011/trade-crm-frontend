@@ -88,10 +88,12 @@ function PageControls({
   compact?: boolean;
 }) {
   const pages = getpages(page, totalPages || 1);
+  // На телефоне при единственной странице панель — просто шум.
+  if (compact && (totalPages || 1) <= 1) return null;
 
   return (
     <div className="flex w-full flex-row items-center justify-between gap-2 px-3 py-2">
-      <div className="text-muted-foreground flex shrink-0 items-center gap-2 text-sm">
+      <div className={cn('text-muted-foreground flex shrink-0 items-center gap-2 text-sm', compact && 'hidden')}>
         <span className="sm:inline">{t('table.list')}</span>
         <CustomSelect
           value={limit}
@@ -101,7 +103,7 @@ function PageControls({
           isClearable={false}
         />
       </div>
-      <Pagination className="mx-0 w-auto">
+      <Pagination className={cn('mx-0 w-auto', compact && 'mx-auto')}>
         <PaginationContent className="flex-nowrap gap-0.5">
           <PaginationItem>
             <Tooltip>
@@ -110,7 +112,7 @@ function PageControls({
                   <PaginationPrevious
                     onClick={() => onPageChange(Math.max(1, page - 1))}
                     text=""
-                    className={cn('size-8', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+                    className={cn('size-9', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
                   />
                 }
               />
@@ -134,7 +136,7 @@ function PageControls({
                   <PaginationLink
                     isActive={pageNumber === page}
                     onClick={() => onPageChange(pageNumber)}
-                    className="size-8 cursor-pointer tabular-nums">
+                    className="size-9 cursor-pointer tabular-nums">
                     {pageNumber}
                   </PaginationLink>
                 </PaginationItem>
@@ -148,7 +150,7 @@ function PageControls({
                   <PaginationNext
                     onClick={() => onPageChange(Math.min(totalPages, page + 1))}
                     text=""
-                    className={cn('size-8', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
+                    className={cn('size-9', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
                   />
                 }
               />
@@ -188,9 +190,18 @@ export function DataTable<TData>({
             isFetching && !isLoading && 'pointer-events-none opacity-60'
           )}>
           {isLoading ? (
-            Array.from({ length: Math.min(limit, 6) }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full shrink-0 rounded-xl" />
-            ))
+            <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
+              {Array.from({ length: Math.min(limit, 6) }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  <Skeleton className="size-11 shrink-0 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-3 w-1/3" />
+                  </div>
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              ))}
+            </div>
           ) : isError ? (
             <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
               <AlertCircle className="text-destructive size-8" />
@@ -199,29 +210,34 @@ export function DataTable<TData>({
           ) : table.getRowModel().rows.length === 0 ? (
             <EmptyState />
           ) : (
-            table.getRowModel().rows.map((row) => {
-              const link = getRowLink?.(row);
-              const card = renderMobileCard(row);
+            // Все строки — одна сгруппированная карточка с разделителями с отступом
+            // слева (как в iOS «Настройках»), а не стопка отдельных карточек.
+            <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
+              {table.getRowModel().rows.map((row) => {
+                const link = getRowLink?.(row);
+                const card = renderMobileCard(row);
 
-              return (
-                <div key={row.id} className="relative shrink-0">
-                  {link && (
-                    <Link
-                      to={link.to}
-                      state={link.state}
-                      aria-label={t('actions.view')}
-                      // z-1, потому что шапка карточки и её кнопка действий
-                      // позиционированы (relative) — без слоя оверлей уходил
-                      // под них и тап по верхней половине карточки не работал.
-                      // Кнопки действий поднимаются выше (z-2) внутри самой
-                      // карточки, чтобы ⋮ оставался нажимаемым.
-                      className="focus-visible:ring-ring/50 absolute inset-0 z-1 rounded-xl focus-visible:ring-2 focus-visible:outline-none"
-                    />
-                  )}
-                  {card}
-                </div>
-              );
-            })
+                return (
+                  <div
+                    key={row.id}
+                    className="relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:bg-border not-last:after:content-['']">
+                    {link && (
+                      <Link
+                        to={link.to}
+                        state={link.state}
+                        aria-label={t('actions.view')}
+                        // z-1: шапка строки и её кнопка действий позиционированы
+                        // (relative), без слоя оверлей уходил бы под них; кнопки
+                        // действий внутри строки поднимаются выше (z-2), чтобы ⋮
+                        // оставался нажимаемым. active — iOS-подсветка нажатия.
+                        className="focus-visible:ring-ring/50 active:bg-muted/70 absolute inset-0 z-1 transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+                      />
+                    )}
+                    {card}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
         {onPageChange && onLimitChange && (
@@ -243,7 +259,7 @@ export function DataTable<TData>({
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <div
         className={cn(
-          'bg-card relative min-h-0 flex-1 overflow-hidden rounded-xl border shadow-sm transition-opacity duration-200',
+          'bg-card relative min-h-0 flex-1 overflow-hidden rounded-2xl shadow-sm transition-opacity duration-200',
           isFetching && !isLoading && 'pointer-events-none opacity-60'
         )}>
         <ScrollArea className="absolute inset-0">
