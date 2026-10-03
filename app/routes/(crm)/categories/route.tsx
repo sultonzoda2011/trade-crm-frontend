@@ -91,9 +91,8 @@ export default function CategoriesPage() {
         <ColumnToggle table={table} />
         {can(Action.CATEGORIES_MANAGE) && (
           <Button
-            size="icon"
             aria-label={t('create')}
-            className="w-auto shrink-0 gap-1.5 px-3"
+            className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
             onClick={() => navigate('/categories/create')}>
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
