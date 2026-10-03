@@ -73,7 +73,7 @@ export function CustomSelect(props: CustomSelectProps) {
       {label && (
         <Label>
           {label}
-          {required && <span className="text-destructive ml-0.5">*</span>}
+          {required && <span className="text-muted-foreground ml-0.5">*</span>}
         </Label>
       )}
       <ComboboxPrimitive
