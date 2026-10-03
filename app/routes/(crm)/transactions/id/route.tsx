@@ -1,17 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, CreditCard, Undo2 } from 'lucide-react';
+import { CreditCard, Package, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { transactionsApi } from '~/api/transactions';
-import { Panel } from '~/components/layout/Panel';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
+import { InitialAvatar } from '~/components/shared/InitialAvatar';
+import { ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
-import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
 import { RefundHistory } from '~/components/transactions/RefundHistory';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
@@ -20,11 +18,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { Action } from '~/config/actions';
 import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
-import { fmtTJS, formatDate } from '~/lib/format';
+import { cldThumb } from '~/lib/cloudinary';
+import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
@@ -74,8 +72,11 @@ export default function TransactionDetailPage() {
   const isCredit = transaction.paymentType === 'CREDIT' || transaction.type === 'DEBT' || !!transaction.debtor;
   const showPayments = hasPayments || isCredit;
 
+  const canPay = can(Action.TRANSACTIONS_EDIT) && transaction.remainingAmount > 0;
+  const owed = transaction.remainingAmount > 0;
+
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col space-y-5 pb-6">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -87,147 +88,110 @@ export default function TransactionDetailPage() {
         ]}
       />
 
-      <Panel>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <TransactionProducts items={transaction.items} size="lg" max={4} />
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h2 className="text-lg font-bold">{getTransactionTitle(transaction, t)}</h2>
-                <TransactionStatusBadge status={transaction.status} t={t} />
-                <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[transaction.type]}>
-                  {t(`type.${transaction.type}`)}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground text-2xs">
-                {t('fields.createdAt')}: {formatDate(transaction.createdAt, true)}
-                {transaction.dueDate && (
-                  <>
-                    {' '}
-                    · {t('fields.dueDate')}: {formatDate(transaction.dueDate, false)}
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-
-          {/* На узких экранах сумма остатка и кнопки не помещаются в один ряд —
-              переносим кнопки на новую строку и даём им растягиваться. */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="text-left sm:text-right">
-              <p className="text-muted-foreground text-2xs">{t('fields.remainingAmount')}</p>
-              <p className="text-warning font-mono text-base font-bold">{fmtTJS(transaction.remainingAmount)}</p>
-            </div>
-            {/* На мобильном эти же действия дублируются full-width строками в
-                «Быстрые действия» ниже — компактные кнопки здесь только для md+,
-                где панель "Быстрые действия" появляется мельче, а тут они всегда
-                на виду рядом с суммой. */}
-            <div className="hidden flex-1 flex-wrap justify-end gap-2 sm:flex sm:flex-none">
-              {can(Action.TRANSACTIONS_EDIT) && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        size="sm"
-                        onClick={() => payModal.open(transaction)}
-                        className="gap-2"
-                        disabled={transaction.remainingAmount <= 0}>
-                        <CreditCard className="size-4" />
-                        {t('pay')}
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="bottom">{t('pay')}</TooltipContent>
-                </Tooltip>
-              )}
-              {canRefund && (
-                <Tooltip>
-                  <TooltipTrigger
-                    render={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive hover:bg-destructive/10 gap-2"
-                        onClick={() => refundModal.open(transaction)}>
-                        <Undo2 className="size-4" />
-                        {t('refund')}
-                      </Button>
-                    }
-                  />
-                  <TooltipContent side="bottom">{t('refund')}</TooltipContent>
-                </Tooltip>
-              )}
+      <div className="bg-card rounded-2xl p-5">
+        <div className="flex items-start gap-3">
+          <TransactionProducts items={transaction.items} size="lg" max={3} />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate text-xl leading-tight font-bold">{getTransactionTitle(transaction, t)}</h1>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              {formatDate(transaction.createdAt, true)}
+              {transaction.dueDate && ` · ${t('fields.dueDate')}: ${formatDate(transaction.dueDate, false)}`}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <TransactionStatusBadge status={transaction.status} t={t} />
+              <Badge variant="outline" className={TRANSACTION_TYPE_BADGE[transaction.type]}>
+                {t(`type.${transaction.type}`)}
+              </Badge>
             </div>
           </div>
         </div>
-      </Panel>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Panel
-            title={t('fields.items')}
-            actions={
-              <Badge variant="secondary" className="text-xs font-normal">
-                {transaction.items?.length ?? 0}
-              </Badge>
-            }>
-            {/* Таблица с 5 колонками не помещается по ширине на телефоне —
-                под md те же данные карточками (тот же приём, что в
-                RefundTransactionModal), таблица остаётся с md. */}
-            <div className="space-y-2 md:hidden">
-              {transaction.items.map((item) => (
-                <div key={item.id} className="rounded-lg border p-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="flex min-w-0 items-center gap-2">
-                      <Avatar size="sm" className="shrink-0">
-                        {item.product?.image ? <AvatarImage src={item.product.image} alt={item.productName} /> : null}
-                        <AvatarFallback>
-                          {(item.productName || item.product?.name || '?').charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Link
-                        to={`/products/${item.productId}`}
-                        className="text-primary truncate text-sm font-medium hover:underline">
-                        {item.productName || item.product?.name || item.productId}
-                      </Link>
-                    </span>
-                    <span className="shrink-0 font-mono text-sm font-semibold">
-                      {fmtTJS(item.totalPrice || item.price * item.quantity)}
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
-                    <span>
-                      {fmtTJS(item.price)} × {item.quantity}
-                    </span>
+        <div className="mt-5">
+          <p className="text-muted-foreground text-sm">
+            {owed ? t('fields.remainingAmount') : t('fields.totalAmount')}
+          </p>
+          <p className={`font-mono text-4xl leading-tight font-bold ${owed ? 'text-warning' : ''}`}>
+            {fmtNum(owed ? transaction.remainingAmount : summary.totalAmount)}
+            <span className="text-muted-foreground ml-1.5 text-lg font-semibold">TJS</span>
+          </p>
+        </div>
+
+        {(canPay || canRefund) && (
+          <div className="mt-5 flex flex-col gap-2.5 sm:flex-row">
+            {canPay && (
+              <Button size="lg" className="w-full sm:w-auto" onClick={() => payModal.open(transaction)}>
+                <CreditCard />
+                {t('pay')}
+              </Button>
+            )}
+            {canRefund && (
+              <Button
+                size="lg"
+                variant={canPay ? 'destructive' : 'secondary'}
+                className="w-full sm:w-auto"
+                onClick={() => refundModal.open(transaction)}>
+                <Undo2 />
+                {t('refund')}
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+        <div className="space-y-5 lg:col-span-2">
+          <ListGroup title={`${t('fields.items')} · ${transaction.items?.length ?? 0}`}>
+            {transaction.items.map((item) => (
+              <Link
+                key={item.id}
+                to={`/products/${item.productId}`}
+                className="active:bg-muted/70 flex min-h-16 items-center gap-3 px-4 py-3 md:hidden">
+                <span className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
+                  {item.product?.image ? (
+                    <img src={cldThumb(item.product.image, { w: 88, h: 88 })} alt="" className="size-full object-cover" />
+                  ) : (
+                    <Package className="text-muted-foreground size-5" />
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="line-clamp-2 block text-base leading-snug font-semibold">
+                    {item.productName || item.product?.name || item.productId}
+                  </span>
+                  <span className="text-muted-foreground block text-sm leading-snug">
+                    {fmtNum(item.price)} × {item.quantity}
                     {item.refundedQuantity > 0 && (
                       <span className="text-destructive font-medium">
-                        −{item.refundedQuantity} {t('fieldsRefund.refundedQuantity')}
+                        {' '}
+                        · −{item.refundedQuantity} {t('fieldsRefund.refundedQuantity')}
                       </span>
                     )}
-                  </div>
-                </div>
-              ))}
-              <div className="flex items-center justify-between border-t pt-2 text-sm font-semibold">
-                <span className="text-muted-foreground text-xs font-medium">{t('fields.totalPrice')}</span>
-                <span className="font-mono">{fmtTJS(summary.totalAmount)}</span>
-              </div>
+                  </span>
+                </span>
+                <span className="shrink-0 font-mono text-base font-semibold">
+                  {fmtNum(item.totalPrice || item.price * item.quantity)}
+                </span>
+              </Link>
+            ))}
+            <div className="flex min-h-12 items-center justify-between px-4 py-2.5 md:hidden">
+              <span className="text-muted-foreground text-base">{t('fields.totalPrice')}</span>
+              <span className="font-mono text-lg font-bold">{fmtTJS(summary.totalAmount)}</span>
             </div>
 
-            <div className="scrollbar-thin hidden max-h-64 overflow-x-auto overflow-y-auto md:block">
+            <div className="scrollbar-thin hidden max-h-72 overflow-x-auto overflow-y-auto md:block">
               <table className="w-full text-left text-sm">
-                <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
+                <thead className="text-muted-foreground bg-card sticky top-0 z-10 border-b text-xs">
                   <tr>
-                    <th className="px-2.5 py-1.5">{t('fields.product')}</th>
-                    <th className="px-2.5 py-1.5 text-right">{t('fields.price')}</th>
-                    <th className="px-2.5 py-1.5 text-center">{t('fields.quantity')}</th>
-                    <th className="px-2.5 py-1.5 text-center">{t('fieldsRefund.refundedQuantity')}</th>
-                    <th className="px-2.5 py-1.5 text-right">{t('fields.totalPrice')}</th>
+                    <th className="px-4 py-2.5 font-medium">{t('fields.product')}</th>
+                    <th className="px-3 py-2.5 text-right font-medium">{t('fields.price')}</th>
+                    <th className="px-3 py-2.5 text-center font-medium">{t('fields.quantity')}</th>
+                    <th className="px-3 py-2.5 text-center font-medium">{t('fieldsRefund.refundedQuantity')}</th>
+                    <th className="px-4 py-2.5 text-right font-medium">{t('fields.totalPrice')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {transaction.items.map((item) => (
                     <tr key={item.id}>
-                      <td className="px-2.5 py-2 font-medium">
+                      <td className="px-4 py-2.5 font-medium">
                         <span className="flex items-center gap-2">
                           <Avatar size="sm" className="shrink-0">
                             {item.product?.image ? (
@@ -242,16 +206,16 @@ export default function TransactionDetailPage() {
                           </Link>
                         </span>
                       </td>
-                      <td className="px-2.5 py-2 text-right font-mono">{fmtTJS(item.price)}</td>
-                      <td className="px-2.5 py-2 text-center font-mono">{item.quantity}</td>
-                      <td className="px-2.5 py-2 text-center font-mono">
+                      <td className="px-3 py-2.5 text-right font-mono">{fmtTJS(item.price)}</td>
+                      <td className="px-3 py-2.5 text-center font-mono">{item.quantity}</td>
+                      <td className="px-3 py-2.5 text-center font-mono">
                         {item.refundedQuantity > 0 ? (
                           <span className="text-destructive font-semibold">−{item.refundedQuantity}</span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}
                       </td>
-                      <td className="px-2.5 py-2 text-right font-mono font-semibold">
+                      <td className="px-4 py-2.5 text-right font-mono font-semibold">
                         {fmtTJS(item.totalPrice || item.price * item.quantity)}
                       </td>
                     </tr>
@@ -259,66 +223,55 @@ export default function TransactionDetailPage() {
                 </tbody>
                 <tfoot className="border-border border-t">
                   <tr>
-                    <td colSpan={4} className="text-muted-foreground px-2.5 py-2 text-right text-xs font-medium">
+                    <td colSpan={4} className="text-muted-foreground px-4 py-2.5 text-right text-xs font-medium">
                       {t('fields.totalPrice')}
                     </td>
-                    <td className="px-2.5 py-2 text-right font-mono text-sm font-semibold">
+                    <td className="px-4 py-2.5 text-right font-mono text-sm font-semibold">
                       {fmtTJS(summary.totalAmount)}
                     </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
-          </Panel>
+          </ListGroup>
 
           <RefundHistory refundOf={transaction.refundOf} refunds={transaction.refunds} />
 
-          <TransactionTimeline events={transaction.timeline} currentId={transaction.id} />
-
           {showPayments && (
-            <Panel title={t('fields.payments')}>
+            <ListGroup title={t('fields.payments')}>
               {hasPayments ? (
                 <>
-                  <div className="space-y-2 md:hidden">
-                    {transaction.payments.map((p) => (
-                      <div key={p.id} className="rounded-lg border p-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="flex min-w-0 items-center gap-2">
-                            <Avatar size="sm" className="shrink-0">
-                              {p.createdBy?.image ? (
-                                <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
-                              ) : null}
-                              <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <span className="truncate text-sm">{p.createdBy?.name || '-'}</span>
-                          </span>
-                          <span className="text-success shrink-0 font-mono text-sm font-semibold">
-                            +{fmtTJS(p.amount)}
-                          </span>
-                        </div>
-                        <div className="text-muted-foreground mt-1.5 flex items-center justify-between text-xs">
-                          <span className="truncate">{p.note || '-'}</span>
-                          <span className="shrink-0">{formatDate(p.createdAt, true)}</span>
-                        </div>
+                  {transaction.payments.map((p) => (
+                    <div key={p.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5 md:hidden">
+                      <InitialAvatar name={p.createdBy?.name ?? '?'} className="size-10" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-base leading-snug font-medium">{p.createdBy?.name || '-'}</p>
+                        <p className="text-muted-foreground truncate text-sm leading-snug">
+                          {formatDate(p.createdAt, true)}
+                          {p.note && ` · ${p.note}`}
+                        </p>
                       </div>
-                    ))}
-                  </div>
-                  <div className="scrollbar-thin hidden max-h-64 overflow-x-auto overflow-y-auto md:block">
+                      <span className="text-success shrink-0 font-mono text-base font-semibold">
+                        +{fmtNum(p.amount)}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="scrollbar-thin hidden max-h-72 overflow-x-auto overflow-y-auto md:block">
                     <table className="w-full text-left text-sm">
-                      <thead className="text-muted-foreground bg-sidebar sticky top-0 z-10 border-b text-xs">
+                      <thead className="text-muted-foreground bg-card sticky top-0 z-10 border-b text-xs">
                         <tr>
-                          <th className="px-2.5 py-1.5">{t('fields.amount')}</th>
-                          <th className="px-2.5 py-1.5">{t('fields.note')}</th>
-                          <th className="px-2.5 py-1.5">{t('fields.createdBy')}</th>
-                          <th className="px-2.5 py-1.5 text-right">{t('fields.createdAt')}</th>
+                          <th className="px-4 py-2.5 font-medium">{t('fields.amount')}</th>
+                          <th className="px-3 py-2.5 font-medium">{t('fields.note')}</th>
+                          <th className="px-3 py-2.5 font-medium">{t('fields.createdBy')}</th>
+                          <th className="px-4 py-2.5 text-right font-medium">{t('fields.createdAt')}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
                         {transaction.payments.map((p) => (
                           <tr key={p.id}>
-                            <td className="text-success px-2.5 py-2 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
-                            <td className="text-muted-foreground px-2.5 py-2">{p.note || '-'}</td>
-                            <td className="px-2.5 py-2">
+                            <td className="text-success px-4 py-2.5 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
+                            <td className="text-muted-foreground px-3 py-2.5">{p.note || '-'}</td>
+                            <td className="px-3 py-2.5">
                               <span className="flex items-center gap-2">
                                 <Avatar size="sm" className="shrink-0">
                                   {p.createdBy?.image ? (
@@ -329,7 +282,7 @@ export default function TransactionDetailPage() {
                                 <span className="truncate">{p.createdBy?.name || '-'}</span>
                               </span>
                             </td>
-                            <td className="text-muted-foreground px-2.5 py-2 text-right text-xs">
+                            <td className="text-muted-foreground px-4 py-2.5 text-right text-xs">
                               {formatDate(p.createdAt, true)}
                             </td>
                           </tr>
@@ -339,89 +292,61 @@ export default function TransactionDetailPage() {
                   </div>
                 </>
               ) : (
-                <p className="text-muted-foreground py-3 text-center text-sm">{t('table.noData', { ns: 'common' })}</p>
+                <p className="text-muted-foreground px-4 py-6 text-center text-sm">
+                  {t('table.noData', { ns: 'common' })}
+                </p>
               )}
-            </Panel>
+            </ListGroup>
           )}
+
+          <TransactionTimeline events={transaction.timeline} currentId={transaction.id} />
         </div>
 
-        <div className="space-y-4">
-          {/* Раньше «Итоги» и «Детали» были двумя отдельными карточками с
-              почти одинаковым padding и заголовком — визуально две трети
-              этой колонки занимали рамки, а не данные. Один Panel с
-              разделителем между секциями. */}
-          <Panel title={t('detail.summary')} bodyClassName="p-4 space-y-4">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-              <InfoItem label={t('summary.totalAmount')} value={fmtTJS(summary.totalAmount)} />
-              <InfoItem
-                label={t('summary.paidAmount')}
-                value={<span className="text-success font-mono">{fmtTJS(summary.paidAmount)}</span>}
-              />
-              {summary.discountAmount > 0 && (
-                <InfoItem label={t('summary.discountAmount')} value={fmtTJS(summary.discountAmount)} />
-              )}
-              <InfoItem
-                label={t('summary.remainingAmount')}
-                value={<span className="text-warning font-mono">{fmtTJS(summary.remainingAmount)}</span>}
-              />
-              {summary.refundedAmount > 0 && (
-                <>
-                  <InfoItem
-                    label={t('summary.refundedAmount')}
-                    value={<span className="text-destructive font-mono">−{fmtTJS(summary.refundedAmount)}</span>}
-                  />
-                  <InfoItem
-                    label={t('summary.netAmount')}
-                    value={<span className="font-mono font-semibold">{fmtTJS(summary.netAmount)}</span>}
-                  />
-                </>
-              )}
-            </div>
-
-            <div className="border-t pt-4">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <InfoItem label={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
-                <InfoItem label={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
-                <InfoItem label={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
-                {transaction.createdBy && (
-                  <div className="col-span-2">
-                    <InfoItem
-                      label={t('fields.createdBy')}
-                      value={
-                        <span className="flex items-center gap-2">
-                          <Avatar size="sm" className="shrink-0">
-                            {transaction.createdBy.image ? (
-                              <AvatarImage src={transaction.createdBy.image} alt={transaction.createdBy.name} />
-                            ) : null}
-                            <AvatarFallback>{transaction.createdBy.name.charAt(0).toUpperCase()}</AvatarFallback>
-                          </Avatar>
-                          <span className="truncate">{transaction.createdBy.name}</span>
-                        </span>
-                      }
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          </Panel>
-          {transaction.debtor && (
-            <Panel title={t('fields.debtor')} bodyClassName="p-4">
-              <div className="space-y-2.5">
-                <InfoItem
-                  label={t('fields.debtor')}
-                  value={
-                    <InfoLink
-                      to={`/debtors/${transaction.debtor.id}`}
-                      state={{ fromPath: location.pathname, fromName: t('title') }}>
-                      {transaction.debtor.name}
-                    </InfoLink>
-                  }
+        <div className="space-y-5">
+          <ListGroup title={t('detail.summary')}>
+            <ListRow title={t('summary.totalAmount')} value={fmtTJS(summary.totalAmount)} valueClassName="text-foreground font-semibold" />
+            <ListRow title={t('summary.paidAmount')} value={fmtTJS(summary.paidAmount)} valueClassName="text-success font-semibold" />
+            {summary.discountAmount > 0 && (
+              <ListRow title={t('summary.discountAmount')} value={fmtTJS(summary.discountAmount)} />
+            )}
+            <ListRow
+              title={t('summary.remainingAmount')}
+              value={fmtTJS(summary.remainingAmount)}
+              valueClassName={summary.remainingAmount > 0 ? 'text-warning font-semibold' : undefined}
+            />
+            {summary.refundedAmount > 0 && (
+              <>
+                <ListRow
+                  title={t('summary.refundedAmount')}
+                  value={`−${fmtTJS(summary.refundedAmount)}`}
+                  valueClassName="text-destructive font-semibold"
                 />
-                {transaction.debtor.phone && (
-                  <InfoItem label={t('fields.phone', { ns: 'common' })} value={transaction.debtor.phone} />
-                )}
-              </div>
-            </Panel>
+                <ListRow
+                  title={t('summary.netAmount')}
+                  value={fmtTJS(summary.netAmount)}
+                  valueClassName="text-foreground font-semibold"
+                />
+              </>
+            )}
+          </ListGroup>
+
+          <ListGroup>
+            <ListRow title={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />
+            <ListRow title={t('fields.createdAt')} value={formatDate(transaction.createdAt, true)} />
+            <ListRow title={t('fields.updatedAt')} value={formatDate(transaction.updatedAt, true)} />
+            {transaction.createdBy && <ListRow title={t('fields.createdBy')} value={transaction.createdBy.name} />}
+          </ListGroup>
+
+          {transaction.debtor && (
+            <ListGroup title={t('fields.debtor')}>
+              <ListRow
+                leading={<InitialAvatar name={transaction.debtor.name} className="size-10" />}
+                title={<span className="font-semibold">{transaction.debtor.name}</span>}
+                subtitle={transaction.debtor.phone}
+                to={`/debtors/${transaction.debtor.id}`}
+                state={{ fromPath: location.pathname, fromName: t('title') }}
+              />
+            </ListGroup>
           )}
 
           {transaction.market && (
@@ -431,45 +356,6 @@ export default function TransactionDetailPage() {
               viewState={{ fromPath: location.pathname, fromName: t('title') }}
             />
           )}
-
-          <QuickActions
-            title={t('quickActions')}
-            actions={[
-              ...(transaction.remainingAmount > 0 && can(Action.TRANSACTIONS_EDIT)
-                ? [
-                    {
-                      icon: CreditCard,
-                      label: t('pay'),
-                      variant: 'outline' as const,
-                      // Дублирует компактную кнопку в шапке (видна с sm) — здесь
-                      // оставляем только для мобильного full-width действия.
-                      className: 'sm:hidden',
-                      onClick: () => payModal.open(transaction),
-                    },
-                  ]
-                : []),
-              ...(canRefund
-                ? [
-                    {
-                      icon: Undo2,
-                      label: t('refund'),
-                      variant: 'outline' as const,
-                      className: 'text-destructive hover:bg-destructive/10 sm:hidden',
-                      onClick: () => refundModal.open(transaction),
-                    },
-                  ]
-                : []),
-              ...(transaction.debtor
-                ? [
-                    {
-                      icon: ArrowUpRight,
-                      label: t('fields.debtor'),
-                      render: <Link to={`/debtors/${transaction.debtor.id}`} />,
-                    },
-                  ]
-                : []),
-            ]}
-          />
         </div>
       </div>
 
