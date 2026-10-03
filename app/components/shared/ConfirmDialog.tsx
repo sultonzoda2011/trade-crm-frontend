@@ -28,22 +28,22 @@ interface ConfirmDialogProps {
 const typeConfigs = {
   danger: {
     icon: Trash2,
-    color: 'text-destructive bg-destructive/10',
+    color: 'text-destructive bg-destructive/12',
     buttonVariant: 'destructive' as const,
   },
   warning: {
     icon: AlertTriangle,
-    color: 'text-warning bg-warning/10',
+    color: 'text-warning bg-warning/12',
     buttonVariant: 'default' as const,
   },
   success: {
     icon: CheckCircle2,
-    color: 'text-success bg-success/10',
+    color: 'text-success bg-success/12',
     buttonVariant: 'default' as const,
   },
   info: {
     icon: Info,
-    color: 'text-primary bg-primary/10',
+    color: 'text-primary bg-primary/12',
     buttonVariant: 'default' as const,
   },
 };
@@ -65,11 +65,11 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="gap-6 p-6 sm:max-w-100">
+      <DialogContent className="gap-5 p-5 sm:max-w-100">
         <div className="flex flex-col items-center gap-4 text-center">
           {/* Иконка с красивым фоном */}
-          <div className={cn('flex size-14 items-center justify-center rounded-full', config.color)}>
-            <Icon className="size-7" />
+          <div className={cn('flex size-12 items-center justify-center rounded-full', config.color)}>
+            <Icon className="size-6" />
           </div>
 
           <DialogHeader className="gap-2">
@@ -80,11 +80,11 @@ export function ConfirmDialog({
           </DialogHeader>
         </div>
 
-        <DialogFooter className="mt-2 flex flex-row justify-center gap-3 sm:justify-center">
+        <DialogFooter className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center sm:gap-3">
           <Button
             type="button"
-            variant="ghost"
-            className="hover:bg-muted h-10 flex-1"
+            variant="outline"
+            className="sm:flex-1"
             onClick={() => onOpenChange(false)}
             disabled={isLoading}>
             {cancelText || t('actions.cancel')}
@@ -92,7 +92,7 @@ export function ConfirmDialog({
           <Button
             type="button"
             variant={config.buttonVariant}
-            className="h-10 flex-1"
+            className="sm:flex-1"
             onClick={onConfirm}
             disabled={isLoading}>
             {isLoading ? (
