@@ -52,7 +52,8 @@ export function PickerSheet<T>({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="bg-background flex h-[88dvh] flex-col gap-0 p-0 md:mx-auto md:max-w-lg">
+        showCloseButton={false}
+        className="bg-background flex flex-col gap-0 p-0 data-[side=bottom]:h-[88dvh] data-[side=bottom]:max-h-[88dvh] md:mx-auto md:max-w-lg">
         <SheetHeader className="shrink-0 space-y-3 px-4 pt-2 pb-3">
           <SheetTitle className="text-center text-lg">{title}</SheetTitle>
           <CustomInput
@@ -67,7 +68,7 @@ export function PickerSheet<T>({
           />
         </SheetHeader>
 
-        <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-6">
+        <div className="min-h-0 flex-1 touch-pan-y space-y-3 overflow-y-auto overscroll-contain px-4 pb-6 [-webkit-overflow-scrolling:touch]">
           {header && <div className="bg-card overflow-hidden rounded-2xl">{header}</div>}
           {items.length === 0 ? (
             <p className="text-muted-foreground py-10 text-center text-sm">

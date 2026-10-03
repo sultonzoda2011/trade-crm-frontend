@@ -1,13 +1,15 @@
 import { HelpCircle, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { UserNav } from '~/components/layout/UserNav';
 import { CommandPalette } from '~/components/shared/CommandPalette';
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
+import darkLogo from '/logo-text-in-left-dark.png';
+import lightLogo from '/logo-text-in-left-light.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 
 export default function Header() {
@@ -31,6 +33,11 @@ export default function Header() {
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         {/* На мобиле основная навигация — BottomNav, полноценный off-canvas
             Sidebar через триггер не нужен параллельно (см. layout.tsx). */}
+        {/* Мобильный: логотип слева, как в шапке нативного приложения. */}
+        <Link to="/" aria-label="Trade CRM" className="flex h-9 shrink-0 items-center md:hidden">
+          <img src={lightLogo} alt="Trade CRM" className="h-8 w-auto object-contain dark:hidden" />
+          <img src={darkLogo} alt="Trade CRM" className="hidden h-8 w-auto object-contain dark:block" />
+        </Link>
         <SidebarTrigger className="hidden shrink-0 md:flex" />
         <div className="bg-border hidden h-6 w-px shrink-0 md:block" aria-hidden="true" />
         {/*

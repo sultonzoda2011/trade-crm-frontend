@@ -1,5 +1,6 @@
 import { Outlet, redirect } from 'react-router';
 import { BottomNav } from '~/components/layout/BottomNav';
+import { PageNote } from '~/components/layout/PageNote';
 import Header from '~/components/layout/Header';
 import { AppSidebar } from '~/components/layout/Sidebar';
 import { ScrollArea } from '~/components/ui/scroll-area';
@@ -33,8 +34,9 @@ export default function CrmLayout() {
         <ScrollArea className="bg-background min-h-0 flex-1">
           {/* pb на мобиле — место под плавающий BottomNav (сам бар + отступ от
               края + вылет центральной FAB-кнопки над баром). */}
-          <div className="p-3 pb-[calc(5rem+env(safe-area-inset-bottom))] md:p-6">
+          <div className="p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-6">
             <Outlet />
+            <PageNote />
           </div>
         </ScrollArea>
       </div>

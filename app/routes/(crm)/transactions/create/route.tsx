@@ -87,16 +87,16 @@ export default function CreateTransactionPage() {
   // Server-side search: the debtor/product lists can exceed any fixed page, so instead of
   // loading a capped first page and filtering locally we query the API as the user types.
   const debtors = useAsyncSelectOptions({
-    queryKey: queryKeys.options('debtors', { scope: 'form', limit: 20 }),
-    fetcher: async (search) => (await debtorsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
+    queryKey: queryKeys.options('debtors', { scope: 'form', limit: 100 }),
+    fetcher: async (search) => (await debtorsApi.getAll(1, 100, { search: search || undefined }))?.data?.data ?? [],
     getValue: (d) => d.id,
     getLabel: (d) => d.name,
     seed: prefill?.debtorId ? [{ id: prefill.debtorId, name: prefill.debtorName ?? '' } as Debtor] : undefined,
   });
 
   const products = useAsyncSelectOptions({
-    queryKey: queryKeys.options('products', { scope: 'form', limit: 20 }),
-    fetcher: async (search) => (await productsApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
+    queryKey: queryKeys.options('products', { scope: 'form', limit: 100 }),
+    fetcher: async (search) => (await productsApi.getAll(1, 100, { search: search || undefined }))?.data?.data ?? [],
     getValue: (p) => p.id,
     getLabel: (p) => p.name,
   });

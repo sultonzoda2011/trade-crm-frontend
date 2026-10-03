@@ -84,13 +84,16 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
     const sellersMap = new Map<string, UserInfo[]>();
 
     for (const transaction of previews.transactions) {
-      for (const item of transaction.items) {
+      // Автор может отсутствовать в ответе (удалённый пользователь, урезанное
+      // превью) — такую транзакцию просто не учитываем среди продавцов.
+      const author = transaction.createdBy;
+      if (!author) continue;
+
+      for (const item of transaction.items ?? []) {
         const sellers = sellersMap.get(item.productId) ?? [];
 
-        const alreadyExists = sellers.some((seller) => seller.id === transaction.createdBy.id);
-
-        if (!alreadyExists) {
-          sellers.push(transaction.createdBy);
+        if (!sellers.some((seller) => seller.id === author.id)) {
+          sellers.push(author);
           sellersMap.set(item.productId, sellers);
         }
       }

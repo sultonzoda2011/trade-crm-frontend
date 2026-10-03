@@ -29,7 +29,7 @@ const PRIMARY_SLOTS = 3;
 const FORM_ROUTE = /\/(create|edit)$/;
 
 /** Высота стеклянной капсулы (px). Под неё рассчитан отступ в (crm)/layout.tsx. */
-const CAPSULE_HEIGHT = 68;
+const CAPSULE_HEIGHT = 64;
 
 type Slot = { kind: 'link'; item: NavItem; active: boolean } | { kind: 'more'; active: boolean } | { kind: 'create' };
 
@@ -70,7 +70,7 @@ function haptic() {
 }
 
 const TAB_CLASS =
-  'relative z-10 flex h-full min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 rounded-full transition-transform duration-150 select-none active:scale-95 [-webkit-tap-highlight-color:transparent]';
+  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-transform duration-150 select-none active:scale-95 [-webkit-tap-highlight-color:transparent]';
 
 function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; active: boolean }) {
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
@@ -78,12 +78,12 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
     <>
       <Icon
         aria-hidden
-        className={cn('size-6 transition-colors duration-200', tone)}
+        className={cn('size-[26px] shrink-0 transition-colors duration-200', tone)}
         strokeWidth={active ? 2.25 : 1.75}
       />
       <span
         className={cn(
-          'text-2xs max-w-full truncate leading-3 font-medium tracking-tight transition-colors duration-200',
+          'block w-full overflow-hidden text-center text-[10px] leading-[12px] font-medium tracking-tight text-ellipsis whitespace-nowrap transition-colors duration-200',
           tone
         )}>
         {label}
@@ -138,16 +138,20 @@ export function BottomNav() {
   const slots: Slot[] = canCreate ? [...tabs.slice(0, middle), { kind: 'create' }, ...tabs.slice(middle)] : tabs;
   const activeIndex = slots.findIndex((slot) => slot.kind !== 'create' && slot.active);
 
+  // Короткая подпись, чтобы не вылезала из ячейки: «Панель управления» → «Главная».
+  const tabLabel = (item: NavItem) =>
+    item.key === 'dashboard' ? t('navigation.home', { defaultValue: item.title }) : item.title;
+
   const renderSlot = (slot: Slot) => {
     if (slot.kind === 'create') {
       return (
-        <div key="create" className="flex min-w-0 flex-1 items-center justify-center">
+        <div key="create" className="flex min-w-0 flex-1 basis-0 items-center justify-center">
           <Link
             to="/transactions/create"
             onClick={haptic}
             aria-label={t('navigation.newTransaction', { defaultValue: 'Новая транзакция' })}
-            className="bg-primary text-primary-foreground relative z-10 flex size-15 -translate-y-3.5 touch-manipulation items-center justify-center rounded-full bg-[linear-gradient(to_bottom,rgb(255_255_255/0.22),transparent_55%)] shadow-[0_12px_22px_-6px_rgb(0_0_0/0.45),inset_0_1px_1px_rgb(255_255_255/0.4),inset_0_-2px_5px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none [-webkit-tap-highlight-color:transparent] active:scale-90">
-            <Plus aria-hidden className="size-8" strokeWidth={2.5} />
+            className="bg-primary text-primary-foreground relative z-10 flex size-14 -translate-y-2.5 touch-manipulation items-center justify-center rounded-full bg-[linear-gradient(to_bottom,rgb(255_255_255/0.22),transparent_55%)] shadow-[0_12px_22px_-6px_rgb(0_0_0/0.45),inset_0_1px_1px_rgb(255_255_255/0.4),inset_0_-2px_5px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none [-webkit-tap-highlight-color:transparent] active:scale-90">
+            <Plus aria-hidden className="size-7" strokeWidth={2.5} />
           </Link>
         </div>
       );
@@ -162,7 +166,7 @@ export function BottomNav() {
     const { item } = slot;
     return (
       <Link key={item.key} to={item.url || '#'} aria-current={slot.active ? 'page' : undefined} className={TAB_CLASS}>
-        <TabFace Icon={item.icon as LucideIcon} label={item.title} active={slot.active} />
+        <TabFace Icon={item.icon as LucideIcon} label={tabLabel(item)} active={slot.active} />
       </Link>
     );
   };
