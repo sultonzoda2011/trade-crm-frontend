@@ -5,7 +5,7 @@ const Progress = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
   ({ className, value, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('bg-secondary relative h-4 w-full overflow-hidden rounded-full', className)}
+      className={cn('bg-secondary relative h-2 w-full overflow-hidden rounded-full', className)}
       {...props}>
       <div
         className="bg-primary h-full w-full flex-1 transition-all"
