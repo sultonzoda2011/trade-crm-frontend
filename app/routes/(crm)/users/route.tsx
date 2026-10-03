@@ -59,9 +59,8 @@ export default function UsersPage() {
       createAction={
         can(Action.USERS_CREATE) ? (
           <Button
-            size="icon"
             aria-label={t('create')}
-            className="w-auto shrink-0 gap-1.5 px-3"
+            className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
             onClick={() => navigate('/users/create')}>
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
