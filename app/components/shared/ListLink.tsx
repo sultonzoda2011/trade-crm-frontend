@@ -16,7 +16,7 @@ export function ListLink({ className, ...props }: ComponentProps<typeof Link>) {
     <Link
       {...props}
       className={cn(
-        'hover:bg-muted/40 -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-md px-2 py-2 transition-colors',
+        'hover:bg-muted/40 -mx-2 flex min-h-11 items-center justify-between gap-3 rounded-xl px-2 py-2 transition-colors',
         className
       )}
     />
