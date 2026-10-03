@@ -1,8 +1,6 @@
-import { ChevronRight, type LucideIcon, User } from 'lucide-react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
 import { Link } from 'react-router';
-import { Panel } from '~/components/layout/Panel';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { Button } from '~/components/ui/button';
 
 interface EntityCardProps {
   title: string;
@@ -10,7 +8,7 @@ interface EntityCardProps {
   subInfo?: string;
   imagePath?: string;
   viewTo: string;
-  viewLabel: string;
+  viewLabel?: string;
   viewState?: unknown;
   /** Ведущая иконка строки перехода — по смыслу сущности (владелец, товар, рынок). */
   viewIcon?: LucideIcon;
@@ -37,27 +35,19 @@ export function EntityCard({
   subInfo,
   imagePath,
   viewTo,
-  viewLabel,
   viewState,
-  viewIcon: ViewIcon = User,
   className,
 }: EntityCardProps) {
   return (
-    <Panel title={title} className={className}>
-      <div className="space-y-4">
+    <section className={className}>
+      <h3 className="text-muted-foreground px-4 pb-1.5 text-xs font-medium tracking-wide uppercase">{title}</h3>
+      <Link
+        to={viewTo}
+        state={viewState}
+        className="bg-card active:bg-muted/70 flex min-h-16 items-center gap-3 rounded-2xl px-4 py-3 transition-colors">
         <UserAvatar fullName={fullName} subInfo={subInfo} imagePath={imagePath} />
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full justify-between gap-2"
-          render={<Link to={viewTo} state={viewState} />}>
-          <span className="flex min-w-0 items-center gap-2">
-            <ViewIcon className="size-3.5 shrink-0" />
-            <span className="truncate">{viewLabel}</span>
-          </span>
-          <ChevronRight className="text-muted-foreground size-3.5 shrink-0" />
-        </Button>
-      </div>
-    </Panel>
+        <ChevronRight className="text-muted-foreground/50 ml-auto size-5 shrink-0" />
+      </Link>
+    </section>
   );
 }
