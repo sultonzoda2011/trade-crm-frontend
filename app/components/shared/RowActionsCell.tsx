@@ -66,8 +66,8 @@ export function RowActionsCell({ children }: { children: ReactNode }) {
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="size-4" />
+              <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
+                <MoreVertical className="size-5" />
               </Button>
             }
           />
