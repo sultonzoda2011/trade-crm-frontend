@@ -86,7 +86,7 @@ export default function ProfilePage() {
       isEmpty: transactions.length === 0,
       emptyMessage: t('noTransactions'),
       rows: transactions.map((tx) => (
-        <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} />
+        <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} flush />
       )),
       viewAll: {
         to: '/transactions',
@@ -184,7 +184,7 @@ export default function ProfilePage() {
           </Panel>
 
           <Panel title={t('sections.profile')}>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-3">
               <InfoItem label={t('fields.role')} value={roleBadge} />
               <InfoItem label={t('fields.email')} value={profile.email} />
               <InfoItem label={t('fields.createdAt')} value={formatDate(profile.createdAt, true)} />
@@ -193,7 +193,7 @@ export default function ProfilePage() {
 
           {market && (
             <Panel title={t('sections.market')}>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
                 <InfoItem
                   label={t('fields.market')}
                   value={
@@ -226,9 +226,9 @@ export default function ProfilePage() {
             <Panel title={t('sections.market')}>
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <Avatar className="size-10 shrink-0 rounded-lg">
+                  <Avatar className="size-10 shrink-0 rounded-full">
                     {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
-                    <AvatarFallback className="bg-muted rounded-lg">
+                    <AvatarFallback className="bg-muted rounded-full">
                       {market.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
