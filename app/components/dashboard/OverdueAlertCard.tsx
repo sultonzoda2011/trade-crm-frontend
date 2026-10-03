@@ -28,13 +28,13 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
 
   return (
     <Panel
-      className={cn(hasOverdue && 'border-destructive/20 bg-destructive/5 border', className)}
+      className={className}
       bodyClassName="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <div
             className={cn(
-              'flex size-7 shrink-0 items-center justify-center rounded-md',
+              'flex size-7 shrink-0 items-center justify-center rounded-full',
               hasOverdue ? 'bg-destructive/10' : 'bg-muted'
             )}>
             {hasOverdue ? (
@@ -56,7 +56,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
         <Link
           to="/transactions?debtStatus=OVERDUE"
           className={cn(
-            'flex items-center justify-between gap-2 rounded-md px-2.5 py-2 transition-colors',
+            'flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors',
             hasOverdue ? 'bg-destructive/10 hover:bg-destructive/15' : 'bg-muted/50 hover:bg-muted/80'
           )}>
           <span className="flex min-w-0 items-center gap-2">
@@ -76,7 +76,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
 
         <Link
           to="/transactions?debtStatus=DUE_SOON"
-          className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-md px-2.5 py-2 transition-colors">
+          className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors">
           <span className="flex min-w-0 items-center gap-2">
             <Clock className="text-muted-foreground size-3.5 shrink-0" />
             <span className="min-w-0 truncate text-sm">{t('debts.dueSoon', { count: debts.dueSoonCount })}</span>
