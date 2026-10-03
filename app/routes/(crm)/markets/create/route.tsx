@@ -56,7 +56,7 @@ export default function CreateMarketPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-24 md:pb-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-32 md:max-w-none md:pb-8">
       <BreadCrumbs
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
@@ -66,7 +66,7 @@ export default function CreateMarketPage() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">{t('create')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('create')}</h1>
         <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate('/markets')}>
             {t('actions.cancel', { ns: 'common' })}
@@ -90,7 +90,7 @@ export default function CreateMarketPage() {
           />
         </Panel>
 
-        <Panel bodyClassName="p-6">
+        <Panel bodyClassName="p-4 md:p-6">
           <form id="create-market-page-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <FormInput control={control} name="name" label={t('fields.name')} placeholder={t('fields.name')} required />
             <FormGrid>
@@ -116,18 +116,14 @@ export default function CreateMarketPage() {
         </Panel>
       </div>
 
+      {/* Нижняя панель на телефоне (вкладки на экранах форм скрыты): одна главная кнопка на всю ширину. */}
       <div
-        className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
+        className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate('/markets')}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button type="submit" form="create-market-page-form" className="h-9 flex-1" disabled={isPending}>
-            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
-            {t('actions.create', { ns: 'common' })}
-          </Button>
-        </div>
+        <Button type="submit" form="create-market-page-form" size="lg" className="w-full" disabled={isPending}>
+          {isPending && <Loader2 className="animate-spin" />}
+          {t('actions.create', { ns: 'common' })}
+        </Button>
       </div>
     </div>
   );
