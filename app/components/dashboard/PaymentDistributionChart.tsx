@@ -28,7 +28,7 @@ function PaymentTooltip({ active, payload, labels, transactionsLabel }: PaymentT
   if (!item) return null;
 
   return (
-    <div className="border-border/50 bg-background rounded-lg border px-3 py-2 text-xs shadow-xl">
+    <div className="border-border/50 bg-background rounded-xl border px-3 py-2 text-xs shadow-xl">
       <p className="font-medium">{labels[item.type] ?? item.type}</p>
       <p className="text-muted-foreground">{fmtTJS(item.amount)}</p>
       <p className="text-muted-foreground">
