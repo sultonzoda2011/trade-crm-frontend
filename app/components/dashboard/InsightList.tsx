@@ -49,7 +49,7 @@ function InsightRow({ insight }: { insight: BusinessInsight }) {
       )}>
       <span
         className={cn(
-          'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md border',
+          'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full border',
           INSIGHT_SEVERITY_BADGE[insight.severity]
         )}>
         <Icon className="size-3.5" />
