@@ -1,44 +1,53 @@
 import type { TFunction } from 'i18next';
-import type { ComponentProps, ReactNode } from 'react';
-import { ListLink } from '~/components/shared/ListLink';
-import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
-import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
-import { fmtTJS, formatDate } from '~/lib/format';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router';
+import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
+import { fmtNum, formatDateShort } from '~/lib/format';
+import { cn } from '~/lib/utils';
 import type { Transaction } from '~/types/transactions';
 
-interface TransactionRowProps extends ComponentProps<typeof ListLink> {
+interface TransactionRowProps {
   tx: Transaction;
   t: TFunction;
+  to: string;
+  state?: unknown;
+  /** Своя вторая строка вместо «товары · дата». */
   subtitle?: ReactNode;
   showDebtor?: boolean;
+  /** Внутри карточки с собственными отступами: строка выравнивается по её контенту (как ListLink). */
+  flush?: boolean;
 }
 
-export function TransactionRow({ tx, t, subtitle, showDebtor = true, ...linkProps }: TransactionRowProps) {
-  // Заголовок вместо #id: должник/покупатель, а товары показываем аватарками
-  // рядом. На странице самого должника имя дублировать не нужно — skipDebtor.
+/** Компактная строка транзакции (дашборд, страницы должника/продавца/товара). */
+export function TransactionRow({ tx, t, to, state, subtitle, showDebtor = true, flush }: TransactionRowProps) {
   const title = getTransactionTitle(tx, t, { skipDebtor: !showDebtor });
-  const defaultSubtitle = formatDate(tx.createdAt, true);
+  const first = tx.items[0];
+  const products = first ? `${first.productName} × ${first.quantity}${tx.items.length > 1 ? ` +${tx.items.length - 1}` : ''}` : '';
+  const isDebt = tx.remainingAmount > 0;
+  const statusText = isDebt
+    ? `${t('remaining', { ns: 'transactions' })} ${fmtNum(tx.remainingAmount)}`
+    : t(`status.${tx.status}`, { ns: 'transactions' });
+  const statusTone =
+    tx.status === 'REFUNDED' ? 'text-destructive' : isDebt || tx.status === 'PARTIALLY_REFUNDED' ? 'text-warning' : 'text-success';
 
   return (
-    <ListLink {...linkProps} className="px-3">
-      <div className="flex min-w-0 items-center gap-2.5">
-        <TransactionProducts items={tx.items} size="sm" max={3} />
-        <div className="min-w-0">
-          <p className="flex items-center gap-2 text-sm font-medium">
-            <span className="truncate">{title}</span>
-            <TransactionStatusBadge status={tx.status} t={t} />
-          </p>
-          <p className="text-muted-foreground truncate text-xs">{subtitle ?? defaultSubtitle}</p>
-        </div>
+    <Link
+      to={to}
+      state={state}
+      className={cn(
+        'active:bg-muted/70 flex min-h-14 items-center gap-3 py-2.5 transition-colors',
+        flush ? '-mx-2 rounded-xl px-2' : 'px-4'
+      )}>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-base leading-snug font-semibold">{title}</p>
+        <p className="text-muted-foreground truncate text-sm leading-snug">
+          {subtitle ?? [products, formatDateShort(tx.createdAt)].filter(Boolean).join(' · ')}
+        </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-mono text-sm font-semibold">{fmtTJS(tx.totalAmount)}</p>
-        {tx.remainingAmount > 0 && (
-          <p className="text-warning font-mono text-xs">
-            {t('remaining', { ns: 'transactions' })}: {fmtTJS(tx.remainingAmount)}
-          </p>
-        )}
+        <p className="font-mono text-base leading-snug font-semibold">{fmtNum(tx.totalAmount)}</p>
+        <p className={cn('text-xs leading-snug font-medium', statusTone)}>{statusText}</p>
       </div>
-    </ListLink>
+    </Link>
   );
 }
