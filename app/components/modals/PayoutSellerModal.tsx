@@ -80,7 +80,7 @@ export function PayoutSellerModal() {
           </Button>
         </div>
       }>
-      <div className="bg-muted/50 mb-4 space-y-1 rounded-lg p-3 text-sm">
+      <div className="bg-muted/50 mb-4 space-y-1 rounded-xl p-3 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">{seller.name}</span>
         </div>
