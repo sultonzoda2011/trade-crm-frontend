@@ -33,16 +33,18 @@ function SubmitButton({
   submitDisabled,
   submitLabel,
   className,
+  size,
 }: {
   formId: string;
   isPending: boolean;
   submitDisabled?: boolean;
   submitLabel: string;
   className?: string;
+  size?: 'lg';
 }) {
   return (
-    <Button type="submit" form={formId} disabled={isPending || submitDisabled} className={className}>
-      {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
+    <Button type="submit" form={formId} size={size} disabled={isPending || submitDisabled} className={className}>
+      {isPending && <Loader2 className="animate-spin" />}
       {submitLabel}
     </Button>
   );
@@ -76,11 +78,11 @@ export function EntityFormPage({
   const form = <form id={formId} onSubmit={onFormSubmit} className="space-y-4">{children}</form>;
 
   return (
-    <div className="flex flex-1 flex-col space-y-6 pb-24 md:pb-8">
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-32 md:max-w-none md:pb-8">
       <BreadCrumbs items={breadcrumbs} />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate(cancelTo)}>
             {t('actions.cancel')}
@@ -95,29 +97,30 @@ export function EntityFormPage({
       </div>
 
       {imageField ? (
-        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-[3.5fr_6.5fr]">
+        <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-[3.5fr_6.5fr] md:gap-6">
           <Panel>{imageField}</Panel>
-          <Panel bodyClassName="p-6">{form}</Panel>
+          <Panel bodyClassName="p-4 md:p-6">{form}</Panel>
         </div>
       ) : (
-        <Panel bodyClassName="p-6">{form}</Panel>
+        <Panel bodyClassName="p-4 md:p-6">{form}</Panel>
       )}
 
+      {/*
+       * Нижняя панель на телефоне: вкладки на экранах форм скрыты, поэтому она
+       * стоит у самого низа. Одна кнопка на всю ширину — «Отмена» не нужна, есть
+       * «назад» сверху (как у push-экрана в iOS).
+       */}
       <div
-        className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 backdrop-blur md:hidden"
+        className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <div className="flex gap-3">
-          <Button variant="outline" className="h-9 flex-1" onClick={() => navigate(cancelTo)}>
-            {t('actions.cancel')}
-          </Button>
-          <SubmitButton
-            formId={formId}
-            isPending={isPending}
-            submitDisabled={submitDisabled}
-            submitLabel={submitLabel}
-            className="h-9 flex-1"
-          />
-        </div>
+        <SubmitButton
+          formId={formId}
+          isPending={isPending}
+          submitDisabled={submitDisabled}
+          submitLabel={submitLabel}
+          size="lg"
+          className="w-full"
+        />
       </div>
     </div>
   );
