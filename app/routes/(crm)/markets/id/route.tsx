@@ -27,8 +27,6 @@ export default function MarketDetailPage() {
 
   const market = response?.data?.market;
 
-  // Товары/должники/сделки отдаются только по своему рынку — для чужого
-  // маркета бэкенд возвращает null и запросов внутри не делает.
   const isOwnMarket = Boolean(user?.marketId) && user?.marketId === id;
 
   if (isLoading) {
