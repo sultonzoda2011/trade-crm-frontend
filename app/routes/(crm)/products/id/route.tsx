@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, Pencil, Store } from 'lucide-react';
+import { Pencil, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
@@ -11,9 +11,7 @@ import { InfoLink } from '~/components/shared/InfoLink';
 import { MarketCard } from '~/components/shared/MarketCard';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { QuickActions } from '~/components/shared/QuickActions';
-import { StatCard } from '~/components/shared/StatCard';
 import { TrendBadge } from '~/components/shared/TrendBadge';
-import { UniversalImage } from '~/components/shared/UniversalImage';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
@@ -113,29 +111,8 @@ export default function ProductDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
           <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
-              <InfoItem
-                label={t('fields.name')}
-                value={
-                  <span className="flex items-center gap-2">
-                    {/* Квадратное превью вместо круглого Avatar — фото товара,
-                        не аватар человека. */}
-                    <UniversalImage
-                      src={product.image}
-                      alt={product.name}
-                      containerClassName="bg-muted size-6 shrink-0 rounded-md"
-                      imgClassName="size-full object-cover"
-                      fallback={
-                        <div className="text-muted-foreground flex size-full items-center justify-center text-xs font-medium">
-                          {product.name.charAt(0).toUpperCase()}
-                        </div>
-                      }
-                    />
-                    <span className="truncate">{product.name}</span>
-                  </span>
-                }
-              />
-              <InfoItem label={t('fields.description')} value={product.description} />
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
+              {product.description && <InfoItem label={t('fields.description')} value={product.description} />}
               <InfoItem label={t('fields.price')} value={fmtTJS(product.price)} />
               <InfoItem
                 label={t('fields.quantity')}
@@ -180,7 +157,7 @@ export default function ProductDetailPage() {
           </Panel>
 
           <Panel title={t('metrics.title')}>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-3 sm:gap-y-3">
               <InfoItem
                 label={t('metrics.revenue')}
                 value={
@@ -229,16 +206,11 @@ export default function ProductDetailPage() {
           </Panel>
 
           <Panel title={t('metrics.allTime')}>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <StatCard icon={Package} label={t('metrics.transactionCount')} value={product.sales.count} />
-              <StatCard icon={Package} label={t('metrics.netUnitsSold')} value={product.sales.unitsSold} />
-              <StatCard icon={Package} label={t('metrics.refundedUnits')} value={product.sales.refundedUnits} />
-              <StatCard
-                icon={Package}
-                label={t('metrics.revenue')}
-                value={fmtTJS(product.sales.revenue)}
-                to={`/transactions?productId=${product.id}`}
-              />
+            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-2 sm:gap-y-3">
+              <InfoItem label={t('metrics.transactionCount')} value={product.sales.count} />
+              <InfoItem label={t('metrics.netUnitsSold')} value={product.sales.unitsSold} />
+              <InfoItem label={t('metrics.refundedUnits')} value={product.sales.refundedUnits} />
+              <InfoItem label={t('metrics.revenue')} value={fmtTJS(product.sales.revenue)} />
             </div>
           </Panel>
         </div>
