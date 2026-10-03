@@ -6,7 +6,6 @@ import { NavLink, Outlet, useSearchParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { CustomSelect } from '~/components/shared/CustomSelect';
-import { Label } from '~/components/ui/label';
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
@@ -89,51 +88,46 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <PageHeader
-        title={t('title')}
-        actions={
-          <>
-            <div className="flex items-center gap-2">
-              <Label className="text-xs">{t('period.from')}</Label>
+      <PageHeader title={t('title')} />
 
-              <CustomSelect
-                options={PERIOD_OPTIONS.map((option) => ({
-                  value: option.value,
-                  label: t(option.labelKey),
-                }))}
-                value={period}
-                onChange={(value) => updateParam('period', value ? String(value) : '')}
-              />
-            </div>
+      {/* Период — кнопками в один ряд (быстрее выпадающего списка), продавец — одним полем. */}
+      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+        <div role="tablist" className="bg-muted flex gap-0.5 rounded-[10px] p-0.5 md:w-auto">
+          {PERIOD_OPTIONS.map((option) => {
+            const active = option.value === validPeriod;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => updateParam('period', option.value)}
+                className={cn(
+                  'h-10 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
+                  active ? 'bg-card text-foreground shadow-sm dark:bg-white/20' : 'text-muted-foreground'
+                )}>
+                {t(option.labelKey)}
+              </button>
+            );
+          })}
+        </div>
 
-            <div className="flex items-center gap-2">
-              <Label className="text-xs">{t('seller')}</Label>
+        <CustomSelect
+          className="md:w-56"
+          options={[{ value: '', label: t('allSellers') }, ...sellers.options]}
+          value={sellerId ?? ''}
+          onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
+          onSearch={sellers.onSearch}
+          loading={sellers.loading}
+          isClearable={false}
+        />
 
-              <CustomSelect
-                options={[
-                  {
-                    value: '',
-                    label: t('allSellers'),
-                  },
-                  ...sellers.options,
-                ]}
-                value={sellerId ?? ''}
-                onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
-                onSearch={sellers.onSearch}
-                loading={sellers.loading}
-              />
-            </div>
-
-            <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
-              <CalendarDays className="size-3.5 shrink-0" />
-
-              {formatDate(range.from.toDate())}
-
-              {range.to ? ` - ${formatDate(range.to.toDate())}` : ''}
-            </span>
-          </>
-        }
-      />
+        <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
+          <CalendarDays className="size-3.5 shrink-0" />
+          {formatDate(range.from.toDate())}
+          {range.to ? ` - ${formatDate(range.to.toDate())}` : ''}
+        </span>
+      </div>
 
       <nav
         className="border-border -mx-3 flex gap-1 overflow-x-auto border-b px-3 md:-mx-6 md:px-6"
@@ -148,9 +142,9 @@ export default function DashboardLayout() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                'shrink-0 border-b-2 px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors',
+                'shrink-0 border-b-2 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2.5 md:text-sm',
                 isActive
-                  ? 'border-primary text-foreground'
+                  ? 'border-primary text-primary'
                   : 'text-muted-foreground hover:text-foreground border-transparent'
               )
             }>
