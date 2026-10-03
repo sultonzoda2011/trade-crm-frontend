@@ -213,6 +213,7 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
 
     rows: previews.transactions.map((transaction) => (
       <TransactionRow
+        flush
         key={transaction.id}
         tx={transaction}
         t={t}
@@ -301,7 +302,7 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="min-w-0 space-y-4 lg:col-span-2">
-          <Panel bodyClassName="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-2">
+          <Panel bodyClassName="grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-2 sm:gap-y-3">
             <InfoItem
               label={t('fields.name')}
               value={
