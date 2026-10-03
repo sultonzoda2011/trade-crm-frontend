@@ -82,13 +82,13 @@ export default function DashboardOverviewPage() {
       <div className="space-y-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
+            <Skeleton key={i} className="h-28 rounded-2xl" />
           ))}
         </div>
-        <Skeleton className="h-56 w-full rounded-xl" />
+        <Skeleton className="h-56 w-full rounded-2xl" />
         <div className="grid gap-6 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+            <Skeleton key={i} className="h-40 rounded-2xl" />
           ))}
         </div>
       </div>
@@ -101,8 +101,9 @@ export default function DashboardOverviewPage() {
     <div className="space-y-6">
       <InsightList insights={insights} />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
+          className="col-span-2 lg:col-span-1"
           icon={Banknote}
           label={t('metrics.revenue')}
           value={fmtTJS(sales.netRevenue)}
