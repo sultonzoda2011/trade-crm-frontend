@@ -9,7 +9,7 @@ import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
-import { fmtTJS } from '~/lib/format';
+import { fmtNum, fmtTJS } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
@@ -37,8 +37,8 @@ export function CreatePaymentModal() {
   const quickAmounts =
     remaining > 0
       ? [
-          { label: t('payModal.half', { ns: 'transactions' }), value: Math.round(remaining / 2) },
           { label: t('payModal.full', { ns: 'transactions' }), value: remaining },
+          { label: t('payModal.half', { ns: 'transactions' }), value: Math.round(remaining / 2) },
         ]
       : [];
 
@@ -49,6 +49,8 @@ export function CreatePaymentModal() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
+      // Оплата меняет долг должника — его список и карточка тоже устаревают.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
@@ -82,7 +84,7 @@ export function CreatePaymentModal() {
           </Button>
         </div>
       }>
-      <div className="bg-muted/50 mb-4 space-y-2 rounded-lg p-3 text-sm">
+      <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
         <div className="flex items-center gap-2.5">
           <TransactionProducts items={transaction.items} size="sm" max={3} />
           <span className="truncate font-medium">{getTransactionTitle(transaction, t)}</span>
@@ -118,12 +120,10 @@ export function CreatePaymentModal() {
                   type="button"
                   onClick={() => setValue('amount', q.value, { shouldValidate: true })}
                   className={cn(
-                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-                    amount === q.value
-                      ? 'border-primary bg-primary text-primary-foreground'
-                      : 'border-border hover:bg-muted'
+                    'h-10 rounded-[10px] px-3.5 text-sm font-semibold transition-opacity active:opacity-60',
+                    amount === q.value ? 'bg-primary text-primary-foreground' : 'bg-primary/12 text-primary'
                   )}>
-                  {q.label} · {fmtTJS(q.value)}
+                  {q.label} · {fmtNum(q.value)}
                 </button>
               ))}
             </div>
