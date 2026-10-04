@@ -50,7 +50,7 @@ export function ChangePasswordModal() {
           <Button variant="outline" onClick={passwordModal.close}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="change-password-form" disabled={isPending}>
+          <Button type="submit" form="change-password-form" loading={isPending}>
             {t('actions.savePassword')}
           </Button>
         </div>

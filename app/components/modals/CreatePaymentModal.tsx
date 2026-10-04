@@ -79,7 +79,7 @@ export function CreatePaymentModal() {
           <Button variant="outline" onClick={payModal.close}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button type="submit" form="create-payment-form" disabled={isPending || amount <= 0}>
+          <Button type="submit" form="create-payment-form" loading={isPending} disabled={amount <= 0}>
             {t('pay')} · {fmtTJS(amount)}
           </Button>
         </div>

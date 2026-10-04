@@ -1,4 +1,3 @@
-import { Loader2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -43,8 +42,7 @@ function SubmitButton({
   size?: 'lg';
 }) {
   return (
-    <Button type="submit" form={formId} size={size} disabled={isPending || submitDisabled} className={className}>
-      {isPending && <Loader2 className="animate-spin" />}
+    <Button type="submit" form={formId} size={size} loading={isPending} disabled={submitDisabled} className={className}>
       {submitLabel}
     </Button>
   );

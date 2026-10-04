@@ -192,7 +192,7 @@ export default function LoginPage() {
                   <Button variant={'link'}>{t('forgotPassword')}</Button>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full text-sm font-semibold" disabled={isSubmitting}>
+                <Button type="submit" size="lg" className="w-full text-sm font-semibold" loading={isSubmitting}>
                   {isSubmitting ? t('submitting') : t('signIn')}
                 </Button>
               </form>

@@ -71,7 +71,7 @@ export function EditProfileModal() {
           <Button variant="outline" className="flex-1 sm:flex-initial" onClick={editModal.close}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="edit-profile-form" className="flex-1 sm:flex-initial" disabled={isPending}>
+          <Button type="submit" form="edit-profile-form" className="flex-1 sm:flex-initial" loading={isPending}>
             {t('actions.save')}
           </Button>
         </div>

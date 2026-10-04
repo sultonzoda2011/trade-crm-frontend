@@ -7,7 +7,6 @@ import {
   ChevronRight,
   CreditCard,
   HandCoins,
-  Loader2,
   Package,
   Plus,
   SlidersHorizontal,
@@ -285,8 +284,7 @@ export default function CreateTransactionPage() {
           <Button variant="outline" onClick={() => navigate(prefill?.fromPath ?? '/transactions')}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button type="submit" form="create-transaction-page-form" disabled={!canSubmit}>
-            {isPending && <Loader2 className="animate-spin" />}
+          <Button type="submit" form="create-transaction-page-form" disabled={!canSubmit} loading={isPending}>
             {submitLabel}
           </Button>
         </div>
@@ -570,8 +568,7 @@ export default function CreateTransactionPage() {
           form="create-transaction-page-form"
           size="lg"
           className="w-full"
-          disabled={!canSubmit}>
-          {isPending && <Loader2 className="animate-spin" />}
+          disabled={!canSubmit} loading={isPending}>
           {submitLabel}
         </Button>
       </div>

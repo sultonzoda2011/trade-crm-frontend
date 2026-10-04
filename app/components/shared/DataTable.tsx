@@ -213,14 +213,15 @@ export function DataTable<TData>({
             // Все строки — одна сгруппированная карточка с разделителями с отступом
             // слева (как в iOS «Настройках»), а не стопка отдельных карточек.
             <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
-              {table.getRowModel().rows.map((row) => {
+              {table.getRowModel().rows.map((row, index) => {
                 const link = getRowLink?.(row);
                 const card = renderMobileCard(row);
 
                 return (
                   <div
                     key={row.id}
-                    className="relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:bg-border not-last:after:content-['']">
+                    style={{ '--stagger-index': index } as React.CSSProperties}
+                    className="animate-card-enter relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:bg-border not-last:after:content-['']">
                     {link && (
                       <Link
                         to={link.to}

@@ -117,7 +117,7 @@ export default function DashboardOverviewPage() {
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <MetricCard
-          className="col-span-2 lg:col-span-1"
+          className="animate-card-enter col-span-2 [--stagger-index:0] lg:col-span-1"
           icon={Banknote}
           label={t('metrics.revenue')}
           value={fmtTJS(sales.netRevenue)}
@@ -129,6 +129,7 @@ export default function DashboardOverviewPage() {
           to={transactionsLink(scope)}
         />
         <MetricCard
+          className="animate-card-enter [--stagger-index:1]"
           icon={Receipt}
           label={t('metrics.transactions')}
           value={sales.transactionCount}
@@ -137,6 +138,7 @@ export default function DashboardOverviewPage() {
           to={transactionsLink(scope)}
         />
         <MetricCard
+          className="animate-card-enter [--stagger-index:2]"
           icon={ShoppingCart}
           label={t('metrics.averageCheck')}
           value={fmtTJS(sales.averageCheck)}
@@ -144,6 +146,7 @@ export default function DashboardOverviewPage() {
           comparison={sales.comparison.averageCheck}
         />
         <MetricCard
+          className="animate-card-enter [--stagger-index:3]"
           icon={Undo2}
           label={t('metrics.returns')}
           value={fmtTJS(returns.amount)}

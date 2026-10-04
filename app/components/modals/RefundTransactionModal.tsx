@@ -128,7 +128,8 @@ export function RefundTransactionModal() {
               form="refund-transaction-form"
               variant="destructive"
               className="flex-1 sm:flex-initial"
-              disabled={isPending || refundableItems.length === 0}>
+              loading={isPending}
+              disabled={refundableItems.length === 0}>
               {t('refundModal.submit')}
             </Button>
           </div>

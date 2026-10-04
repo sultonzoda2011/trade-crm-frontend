@@ -75,7 +75,7 @@ export function PayoutSellerModal() {
           <Button variant="outline" onClick={payoutModal.close}>
             {t('actions.cancel', { ns: 'common' })}
           </Button>
-          <Button type="submit" form="payout-seller-form" disabled={isPending || balance <= 0}>
+          <Button type="submit" form="payout-seller-form" loading={isPending} disabled={balance <= 0}>
             {t('sellers:payout')}
           </Button>
         </div>

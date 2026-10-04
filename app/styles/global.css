@@ -324,13 +324,16 @@ html {
 }
 
 /* Route content enter — applied to the wrapper around <Outlet /> */
+/* `backwards`, not `both`: with `both` the finished animation would leave a
+   permanent `transform` on the wrapper, which turns it into the containing
+   block for every `position: fixed` descendant (the sticky mobile form bars). */
 .animate-page-enter {
-  animation: content-enter 0.22s ease-out both;
+  animation: content-enter 0.22s ease-out backwards;
 }
 
 /* Card grid enter with stagger — set `--stagger-index` per item */
 .animate-card-enter {
-  animation: content-enter 0.3s ease-out both;
+  animation: content-enter 0.3s ease-out backwards;
   animation-delay: calc(min(var(--stagger-index, 0), 11) * 45ms);
 }
 
