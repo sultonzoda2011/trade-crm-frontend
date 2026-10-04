@@ -70,26 +70,22 @@ function haptic() {
 }
 
 const TAB_CLASS =
-  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
+  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
 
 function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; active: boolean }) {
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
   return (
     <>
-      <span
-        className={cn(
-          'grid size-7 place-items-center rounded-full transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-          active && 'bg-foreground/[0.08] scale-110 dark:bg-foreground/[0.12]'
-        )}>
+      <span className="grid size-7 place-items-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
         <Icon
           aria-hidden
-          className={cn('size-[22px] shrink-0 transition-[color,transform,stroke-width] duration-300', tone)}
+          className={cn('size-[22px] shrink-0 transition-[color,transform,stroke-width] duration-300', tone, active && 'scale-110')}
           strokeWidth={active ? 2.35 : 1.75}
         />
       </span>
       <span
         className={cn(
-          'block w-full text-center text-[11px] leading-[13px] font-medium tracking-tight break-words hyphens-auto transition-[color,opacity,transform] duration-300',
+          'block w-full min-w-0 max-w-full truncate text-center text-[10px] leading-[12px] font-medium tracking-tight transition-[color,opacity,transform] duration-300',
           tone,
           active ? 'translate-y-0 opacity-100' : 'opacity-80'
         )}>
@@ -100,8 +96,8 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
 }
 
 /**
- * Плавающая навигация в стиле iOS 26 «Liquid Glass»: стеклянная капсула с
- * отступами от краёв экрана, активная вкладка подсвечена скользящей стеклянной
+ * Плавающая навигация в стиле iOS 27 «Liquid Glass»: стеклянная капсула с
+ * отступами от краёв экрана, активная вкладка подсвечена единой нейтральной
  * «таблеткой», по центру — крупная кнопка «+» (новая транзакция).
  * Список вкладок и «Ещё» берутся из того же getSidebarConfig/getVisibleNavigation,
  * что и десктопный сайдбар — один источник правды на роль пользователя.
@@ -239,7 +235,7 @@ export function BottomNav() {
                           active && 'font-semibold'
                         )}>
                         {Icon && (
-                          <span className="bg-primary text-primary-foreground grid size-9 shrink-0 place-items-center rounded-full">
+                          <span className="text-muted-foreground grid size-9 shrink-0 place-items-center">
                             <Icon aria-hidden className="size-[18px]" />
                           </span>
                         )}
