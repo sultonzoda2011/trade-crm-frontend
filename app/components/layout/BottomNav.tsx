@@ -70,21 +70,28 @@ function haptic() {
 }
 
 const TAB_CLASS =
-  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-transform duration-150 select-none active:scale-95 [-webkit-tap-highlight-color:transparent]';
+  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
 
 function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; active: boolean }) {
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
   return (
     <>
-      <Icon
-        aria-hidden
-        className={cn('size-6 shrink-0 transition-colors duration-200', tone)}
-        strokeWidth={active ? 2.25 : 1.75}
-      />
       <span
         className={cn(
-          'block w-full text-center text-[11px] leading-[13px] font-medium tracking-tight break-words hyphens-auto transition-colors duration-200',
-          tone
+          'grid size-7 place-items-center rounded-full transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          active && 'bg-foreground/[0.08] scale-110 dark:bg-foreground/[0.12]'
+        )}>
+        <Icon
+          aria-hidden
+          className={cn('size-[22px] shrink-0 transition-[color,transform,stroke-width] duration-300', tone)}
+          strokeWidth={active ? 2.35 : 1.75}
+        />
+      </span>
+      <span
+        className={cn(
+          'block w-full text-center text-[11px] leading-[13px] font-medium tracking-tight break-words hyphens-auto transition-[color,opacity,transform] duration-300',
+          tone,
+          active ? 'translate-y-0 opacity-100' : 'opacity-80'
         )}>
         {label}
       </span>
@@ -150,7 +157,7 @@ export function BottomNav() {
             to="/transactions/create"
             onClick={haptic}
             aria-label={t('navigation.newTransaction', { defaultValue: 'Новая транзакция' })}
-            className="bg-primary text-primary-foreground relative z-10 flex size-14 -translate-y-2.5 touch-manipulation items-center justify-center rounded-full bg-[linear-gradient(to_bottom,rgb(255_255_255/0.22),transparent_55%)] shadow-[0_12px_22px_-6px_rgb(0_0_0/0.45),inset_0_1px_1px_rgb(255_255_255/0.4),inset_0_-2px_5px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none [-webkit-tap-highlight-color:transparent] active:scale-90">
+            className="bg-primary text-primary-foreground relative z-10 flex size-14 -translate-y-2.5 touch-manipulation items-center justify-center rounded-full bg-[linear-gradient(to_bottom,rgb(255_255_255/0.28),transparent_55%)] shadow-[0_14px_26px_-7px_rgb(0_0_0/0.48),inset_0_1px_1px_rgb(255_255_255/0.5),inset_0_-2px_5px_rgb(0_0_0/0.25)] transition-[transform,filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] select-none [-webkit-tap-highlight-color:transparent] hover:brightness-105 active:scale-[0.84] active:brightness-90">
             <Plus aria-hidden className="size-7" strokeWidth={2.5} />
           </Link>
         </div>
@@ -165,7 +172,12 @@ export function BottomNav() {
     }
     const { item } = slot;
     return (
-      <Link key={item.key} to={item.url || '#'} aria-current={slot.active ? 'page' : undefined} className={TAB_CLASS}>
+      <Link
+        key={item.key}
+        to={item.url || '#'}
+        onClick={haptic}
+        aria-current={slot.active ? 'page' : undefined}
+        className={TAB_CLASS}>
         <TabFace Icon={item.icon as LucideIcon} label={tabLabel(item)} active={slot.active} />
       </Link>
     );
