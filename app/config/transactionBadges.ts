@@ -12,6 +12,6 @@ export const TRANSACTION_STATUS_BADGE: Record<TransactionStatus, string> = {
   // Часть товара вернулась, продажа осталась действующей — это не полный
   // возврат, поэтому и цвет мягче destructive.
   PARTIALLY_REFUNDED: 'border-warning/40 bg-warning/15 text-warning',
-  PARTIAL: 'border-sky-500/30 bg-sky-500/15 text-sky-500',
+  PARTIAL: 'border-primary/30 bg-primary/15 text-primary',
   ACTIVE: 'border-warning/40 bg-warning/15 text-warning',
 };
