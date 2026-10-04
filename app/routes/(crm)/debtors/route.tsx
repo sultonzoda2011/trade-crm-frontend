@@ -10,6 +10,7 @@ import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
 import { DebtorMobileCard } from '~/components/debtors/DebtorMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
+import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { Button } from '~/components/ui/button';
@@ -17,6 +18,7 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useFilterParams } from '~/hooks/useFilterParams';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
@@ -31,7 +33,7 @@ export default function DebtorsPage() {
   const { can } = useCan();
   const deleteModal = useDebtorsModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useDebtorsStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } = useDebtorsStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -73,6 +75,19 @@ export default function DebtorsPage() {
   const columns = useMemo(() => getColumns({ t }), [t]);
 
   const filterConfig = useMemo(() => getDebtorFilters(t), [t]);
+
+  // Фильтры из ссылки (с дашборда, из карточек) и из адресной строки при перезагрузке.
+  useFilterParams({
+    page,
+    limit,
+    search,
+    filters,
+    setPage,
+    setLimit,
+    setSearch,
+    setFilters,
+    filterConfigs: filterConfig,
+  });
   const debtors = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
 
@@ -102,6 +117,7 @@ export default function DebtorsPage() {
           </Button>
         )}
       </ListPageToolbar>
+      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
       <DataTable
         table={table}
         pinLastColumn

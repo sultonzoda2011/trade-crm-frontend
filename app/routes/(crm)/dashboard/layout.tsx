@@ -14,7 +14,7 @@ import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 
 export interface DashboardFilters {
-  period: string;
+  period: Period;
   sellerId: string | undefined;
 }
 
@@ -125,7 +125,7 @@ export default function DashboardLayout() {
         <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
           <CalendarDays className="size-3.5 shrink-0" />
           {formatDate(range.from.toDate())}
-          {range.to ? ` - ${formatDate(range.to.toDate())}` : ''}
+          {range.to && !range.to.isSame(range.from, 'day') ? ` - ${formatDate(range.to.toDate())}` : ''}
         </span>
       </div>
 
@@ -153,7 +153,7 @@ export default function DashboardLayout() {
         ))}
       </nav>
 
-      <Outlet context={{ period, sellerId } satisfies DashboardFilters} />
+      <Outlet context={{ period: validPeriod, sellerId } satisfies DashboardFilters} />
     </div>
   );
 }

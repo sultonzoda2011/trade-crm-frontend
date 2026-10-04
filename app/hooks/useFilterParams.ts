@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import { DEFAULT_PAGE_LIMIT } from '~/store/useTableStore';
 import type { ActiveFilter, FilterConfig } from '~/types/filters';
 
@@ -72,6 +72,9 @@ export function useFilterParams({
   filterConfigs,
 }: UseFilterParamsOptions) {
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const freshListRef = useRef(false);
+  freshListRef.current = Boolean((location.state as { freshList?: boolean } | null)?.freshList);
   const configsRef = useRef(filterConfigs);
   configsRef.current = filterConfigs;
 
@@ -89,10 +92,16 @@ export function useFilterParams({
     const urlSearch = searchParams.get('search');
     const urlFilters = readUrlFilters(configsRef.current, searchParams);
 
-    if (urlPage) setPage(Number(urlPage));
+    // setLimit/setSearch/setFilters всегда сбрасывают страницу на 1, поэтому
+    // страница применяется последней — иначе `?page=3&type=SALE` терял page.
     if (urlLimit) setLimit(Number(urlLimit));
     if (urlSearch) setSearch(urlSearch);
     if (urlFilters.length > 0) setFilters(urlFilters);
+    // Ссылка «все …» с дашборда без параметров: список был открыт раньше с
+    // другими фильтрами, а store живёт между переходами — без сброса карточка
+    // «Всего товаров: 120» открывала бы урезанный список.
+    else if (freshListRef.current) setFilters([]);
+    if (urlPage) setPage(Number(urlPage));
 
     setReady(true);
   }, [keys, searchParams, setPage, setLimit, setSearch, setFilters]);

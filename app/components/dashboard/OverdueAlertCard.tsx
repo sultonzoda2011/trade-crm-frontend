@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
+import { debtsLink, type DashboardScope } from '~/lib/dashboard-links';
 import { fmtTJS } from '~/lib/format';
 import { cn } from '~/lib/utils';
 import type { OverviewDebts } from '~/types/dashboard';
 
 interface OverdueAlertCardProps {
   debts: OverviewDebts;
+  scope: DashboardScope;
   className?: string;
 }
 
@@ -21,7 +23,7 @@ interface OverdueAlertCardProps {
  * (`debtStatus=OVERDUE`, `debtStatus=DUE_SOON`), so "7 overdue" here and seven
  * rows over there are the same seven debts.
  */
-export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
+export function OverdueAlertCard({ debts, scope, className }: OverdueAlertCardProps) {
   const { t } = useTranslation('dashboard');
 
   const hasOverdue = debts.overdueCount > 0;
@@ -54,7 +56,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
 
       <div className="space-y-1.5">
         <Link
-          to="/transactions?debtStatus=OVERDUE"
+          to={debtsLink(scope, { debtStatus: 'OVERDUE' })}
           className={cn(
             'flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors',
             hasOverdue ? 'bg-destructive/10 hover:bg-destructive/15' : 'bg-muted/50 hover:bg-muted/80'
@@ -75,7 +77,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
         </Link>
 
         <Link
-          to="/transactions?debtStatus=DUE_SOON"
+          to={debtsLink(scope, { debtStatus: 'DUE_SOON' })}
           className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors">
           <span className="flex min-w-0 items-center gap-2">
             <Clock className="text-muted-foreground size-3.5 shrink-0" />
