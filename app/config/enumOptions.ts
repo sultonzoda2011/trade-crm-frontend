@@ -35,6 +35,7 @@ export const getRoleFilterOptions = (t: TFunction) => [{ value: 'all', label: t(
 export const getTransactionTypeOptions = (t: TFunction) => [
   { value: 'SALE', label: t('type.SALE') },
   { value: 'DEBT', label: t('type.DEBT') },
+  { value: 'REFUND', label: t('type.REFUND') },
 ];
 
 export const getPaymentTypeOptions = (t: TFunction) => [

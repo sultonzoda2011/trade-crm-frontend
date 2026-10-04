@@ -67,6 +67,13 @@
     "category": "Категория",
     "product": "Товар"
   },
+  "debtStatus": {
+    "title": "Статус долга",
+    "OVERDUE": "Просрочен",
+    "DUE_SOON": "Скоро срок",
+    "OUTSTANDING": "Не закрыт",
+    "SETTLED": "Закрыт"
+  },
   "quickActions": "Быстрые действия",
   "refund": "Оформить возврат",
   "refundSuccess": "Возврат успешно оформлен",

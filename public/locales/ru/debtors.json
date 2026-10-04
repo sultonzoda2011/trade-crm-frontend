@@ -3,6 +3,7 @@
   "create": "Создать",
   "notFound": "Должник не найден",
   "hasActiveDebts": "Есть активные долги",
+  "overdue": "Есть просроченные долги",
   "totalDebtAmount": "Общая сумма долга",
   "totalDebt": "Текущий долг",
   "transactionsHistory": "История транзакций",

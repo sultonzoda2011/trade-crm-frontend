@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
+import { usersApi } from '~/api/users';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
@@ -17,10 +18,12 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/markets/configs/columns';
 import { getMarketFilters } from '~/routes/(crm)/markets/configs/filters';
 import { useMarketsModals, useMarketsStore } from '~/routes/(crm)/markets/store';
+import { Role } from '~/types/common';
 
 export default function MarketsPage() {
   const { t } = useTranslation(['markets', 'common']);
@@ -71,7 +74,15 @@ export default function MarketsPage() {
 
   const columns = useMemo(() => getColumns({ t }), [t]);
 
-  const filterConfig = useMemo(() => getMarketFilters(t), [t]);
+  // Список владельцев для фильтра `ownerId` — страница доступна только Admin
+  // (ROUTE_PERMISSIONS['/markets']), поэтому запрос `/users` ничем не огорожен.
+  const { data: ownersResponse } = useQuery({
+    queryKey: queryKeys.options('users', { scope: 'owners', limit: 100 }),
+    queryFn: () => usersApi.getAll(1, 100, {}, [{ key: 'role', value: Role.Owner }]),
+  });
+  const ownerOptions = useMemo(() => mapToOptions(ownersResponse?.data?.data ?? [], 'id', 'name'), [ownersResponse]);
+
+  const filterConfig = useMemo(() => getMarketFilters(t, ownerOptions), [t, ownerOptions]);
   const markets = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
 

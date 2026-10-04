@@ -3,6 +3,7 @@
   "create": "Эҷод кардан",
   "notFound": "Қарздор ёфт нашуд",
   "hasActiveDebts": "Қарзи фаъол дорад",
+  "overdue": "Қарзи мӯҳлаташ гузашта дорад",
   "totalDebtAmount": "Маблағи умумии қарз",
   "fields": {
     "createdAt": "Санаи эҷод",

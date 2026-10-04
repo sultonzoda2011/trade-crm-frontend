@@ -67,6 +67,13 @@
     "category": "Category",
     "product": "Product"
   },
+  "debtStatus": {
+    "title": "Debt status",
+    "OVERDUE": "Overdue",
+    "DUE_SOON": "Due soon",
+    "OUTSTANDING": "Outstanding",
+    "SETTLED": "Settled"
+  },
   "quickActions": "Quick Actions",
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",

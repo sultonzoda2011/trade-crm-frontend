@@ -6,7 +6,8 @@ export const getTransactionFilters = (
   t: TFunction,
   debtorOptions?: { value: unknown; label: string }[],
   categoryOptions?: { value: unknown; label: string }[],
-  productOptions?: { value: unknown; label: string }[]
+  productOptions?: { value: unknown; label: string }[],
+  sellerOptions?: { value: unknown; label: string }[]
 ): FilterConfig[] => {
   const config: FilterConfig[] = [];
 
@@ -17,6 +18,16 @@ export const getTransactionFilters = (
       label: t('filters.debtor'),
       placeholder: t('filters.all', { ns: 'common' }),
       options: debtorOptions,
+    });
+  }
+
+  if (sellerOptions && sellerOptions.length > 0) {
+    config.push({
+      type: 'select',
+      key: 'createdById',
+      label: t('fields.createdBy'),
+      placeholder: t('filters.all', { ns: 'common' }),
+      options: sellerOptions,
     });
   }
 
@@ -53,12 +64,32 @@ export const getTransactionFilters = (
       key: 'status',
       label: t('fields.status'),
       placeholder: t('filters.all', { ns: 'common' }),
+      // Значения — в точности backend TransactionStatus: ACTIVE/PARTIAL/PAID/REFUNDED.
+      // PARTIALLY_REFUNDED в типе фронтенда существует только для будущего
+      // отображения и backend его не принимает — отправка этого значения как
+      // ?status= давала 400 (class-validator IsEnum), выбор молча ломался.
       options: [
         { value: 'ACTIVE', label: t('status.ACTIVE') },
         { value: 'PARTIAL', label: t('status.PARTIAL') },
         { value: 'PAID', label: t('status.PAID') },
-        { value: 'PARTIALLY_REFUNDED', label: t('status.PARTIALLY_REFUNDED') },
         { value: 'REFUNDED', label: t('status.REFUNDED') },
+      ],
+    },
+    // Состояние долга, вычисляемое backend'ом на момент запроса (не колонка в
+    // БД). Ссылки с дашборда (OverdueAlertCard) ведут на
+    // `/transactions?debtStatus=OVERDUE`/`DUE_SOON` — без этого фильтра в
+    // конфиге `useFilterParams` не читает такой URL-параметр вообще, и переход
+    // с дашборда ничего не фильтрует.
+    {
+      type: 'select',
+      key: 'debtStatus',
+      label: t('debtStatus.title'),
+      placeholder: t('filters.all', { ns: 'common' }),
+      options: [
+        { value: 'OVERDUE', label: t('debtStatus.OVERDUE') },
+        { value: 'DUE_SOON', label: t('debtStatus.DUE_SOON') },
+        { value: 'OUTSTANDING', label: t('debtStatus.OUTSTANDING') },
+        { value: 'SETTLED', label: t('debtStatus.SETTLED') },
       ],
     },
     {

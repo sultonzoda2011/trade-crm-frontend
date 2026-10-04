@@ -8,6 +8,22 @@ export const getDebtorFilters = (t: TFunction): FilterConfig[] => [
     label: t('hasActiveDebts'),
   },
   {
+    type: 'boolean',
+    key: 'overdue',
+    label: t('overdue'),
+  },
+  {
+    type: 'select',
+    key: 'risk',
+    label: t('risk.title'),
+    placeholder: t('filters.all', { ns: 'common' }),
+    options: [
+      { value: 'HIGH', label: t('risk.HIGH') },
+      { value: 'MEDIUM', label: t('risk.MEDIUM') },
+      { value: 'LOW', label: t('risk.LOW') },
+    ],
+  },
+  {
     type: 'number-range',
     keyFrom: 'minDebtAmount',
     keyTo: 'maxDebtAmount',

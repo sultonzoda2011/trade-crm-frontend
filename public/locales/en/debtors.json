@@ -11,6 +11,7 @@
     "debtors": "Debtors"
   },
   "hasActiveDebts": "Has active debts",
+  "overdue": "Has overdue debts",
   "totalDebtAmount": "Total debt amount",
   "totalDebt": "Current debt",
   "transactionsHistory": "Transaction history",
