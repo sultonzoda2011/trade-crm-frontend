@@ -49,8 +49,8 @@ export function TransactionMobileCard({ row, t, actionsCell }: TransactionMobile
 
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-base leading-snug font-semibold">{title}</p>
-        {products && <p className="text-muted-foreground truncate text-sm leading-snug">{products}</p>}
-        <p className="text-muted-foreground truncate text-xs leading-snug">
+        {products && <p className="text-muted-foreground break-words text-sm leading-snug">{products}</p>}
+        <p className="text-muted-foreground break-words text-xs leading-snug">
           {formatDateShort(tx.createdAt)}{tx.type === 'SALE' ? ` · ${method}` : ''}
         </p>
       </div>

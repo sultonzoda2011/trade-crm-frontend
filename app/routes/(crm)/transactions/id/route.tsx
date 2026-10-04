@@ -92,7 +92,7 @@ export default function TransactionDetailPage() {
         <div className="flex items-start gap-3">
           <TransactionProducts items={transaction.items} size="lg" max={3} />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl leading-tight font-bold">{getTransactionTitle(transaction, t)}</h1>
+            <h1 className="break-words text-xl leading-tight font-bold">{getTransactionTitle(transaction, t)}</h1>
             <p className="text-muted-foreground mt-0.5 text-sm">
               {formatDate(transaction.createdAt, true)}
               {transaction.dueDate && ` · ${t('fields.dueDate')}: ${formatDate(transaction.dueDate, false)}`}
@@ -245,8 +245,8 @@ export default function TransactionDetailPage() {
                     <div key={p.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5 md:hidden">
                       <InitialAvatar name={p.createdBy?.name ?? '?'} className="size-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-base leading-snug font-medium">{p.createdBy?.name || '-'}</p>
-                        <p className="text-muted-foreground truncate text-sm leading-snug">
+                        <p className="break-words text-base leading-snug font-medium">{p.createdBy?.name || '-'}</p>
+                        <p className="text-muted-foreground break-words text-sm leading-snug">
                           {formatDate(p.createdAt, true)}
                           {p.note && ` · ${p.note}`}
                         </p>
@@ -279,7 +279,7 @@ export default function TransactionDetailPage() {
                                   ) : null}
                                   <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
                                 </Avatar>
-                                <span className="truncate">{p.createdBy?.name || '-'}</span>
+                                <span className="break-words">{p.createdBy?.name || '-'}</span>
                               </span>
                             </td>
                             <td className="text-muted-foreground px-4 py-2.5 text-right text-xs">

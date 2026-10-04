@@ -65,7 +65,7 @@ export function ActiveFilterPills({ filters, config, onRemove }: ActiveFilterPil
           key={filter.key}
           variant="secondary"
           className="flex min-w-0 items-center gap-1 pr-0.5 text-xs font-normal">
-          <span className="max-w-[12rem] truncate">{getFilterLabel(filter, config)}</span>
+          <span className="max-w-[12rem] break-words">{getFilterLabel(filter, config)}</span>
           <Button
             variant="ghost"
             size="icon-xs"

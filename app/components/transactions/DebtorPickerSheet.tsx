@@ -52,8 +52,8 @@ export function DebtorPickerSheet({
         <>
           <InitialAvatar name={debtor.name} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-base leading-snug font-semibold">{debtor.name}</span>
-            <span className="text-muted-foreground block truncate text-sm leading-snug">{debtor.phone}</span>
+            <span className="block break-words text-base leading-snug font-semibold">{debtor.name}</span>
+            <span className="text-muted-foreground block break-words text-sm leading-snug">{debtor.phone}</span>
           </span>
           {debtor.totalDebtAmount > 0 && (
             <span className="text-warning shrink-0 font-mono text-base font-semibold">

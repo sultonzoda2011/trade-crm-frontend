@@ -46,8 +46,8 @@ export function UserAvatar({ fullName, imagePath, subInfo, shape = 'circle' }: U
         </Avatar>
       )}
       <div className="flex min-w-0 flex-col">
-        <span className="truncate text-sm font-semibold">{fullName}</span>
-        {subInfo && <span className="text-muted-foreground truncate text-xs">{subInfo}</span>}
+        <span className="break-words text-sm font-semibold">{fullName}</span>
+        {subInfo && <span className="text-muted-foreground break-words text-xs">{subInfo}</span>}
       </div>
     </div>
   );

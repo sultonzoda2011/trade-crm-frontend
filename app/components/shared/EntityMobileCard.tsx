@@ -71,9 +71,9 @@ export function EntityMobileCard({
 
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-base leading-snug font-semibold">{title}</p>
-        {subtitle && <p className="text-muted-foreground truncate text-sm leading-snug">{subtitle}</p>}
+        {subtitle && <p className="text-muted-foreground break-words text-sm leading-snug">{subtitle}</p>}
         {stats && stats.length > 0 && (
-          <p className="text-muted-foreground mt-0.5 truncate text-sm leading-snug">
+          <p className="text-muted-foreground mt-0.5 break-words text-sm leading-snug">
             {stats.map((s, i) => (
               <span key={s.label}>
                 {i > 0 && ' · '}

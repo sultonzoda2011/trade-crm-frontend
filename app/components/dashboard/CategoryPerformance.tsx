@@ -41,11 +41,11 @@ export function CategoryPerformance({ categories, className }: CategoryPerforman
                     {row.categoryId ? (
                       <Link
                         to={`/products?categoryId=${row.categoryId}`}
-                        className="block truncate text-sm font-medium hover:underline">
+                        className="block break-words text-sm font-medium hover:underline">
                         {label}
                       </Link>
                     ) : (
-                      <span className="text-muted-foreground block truncate text-sm">{label}</span>
+                      <span className="text-muted-foreground block break-words text-sm">{label}</span>
                     )}
                   </div>
 

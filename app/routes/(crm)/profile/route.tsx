@@ -112,8 +112,8 @@ export default function ProfilePage() {
               <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{product.name}</p>
-              {product.category && <p className="text-muted-foreground truncate text-xs">{product.category.name}</p>}
+              <p className="break-words text-sm font-medium">{product.name}</p>
+              {product.category && <p className="text-muted-foreground break-words text-xs">{product.category.name}</p>}
             </div>
           </div>
           <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
       emptyMessage: t('noDebtors'),
       rows: debtors.map((debtor) => (
         <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={fromState}>
-          <span className="truncate text-sm font-medium">{debtor.name}</span>
+          <span className="break-words text-sm font-medium">{debtor.name}</span>
           <span className="text-muted-foreground text-xs">{debtor.phone}</span>
         </ListLink>
       )),
@@ -233,8 +233,8 @@ export default function ProfilePage() {
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold">{market.name}</p>
-                    <p className="text-muted-foreground truncate text-xs">{market.address}</p>
+                    <p className="break-words text-sm font-semibold">{market.name}</p>
+                    <p className="text-muted-foreground break-words text-xs">{market.address}</p>
                   </div>
                 </div>
                 <UserAvatar

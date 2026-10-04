@@ -110,7 +110,7 @@ export function FileInputField({
           {value ? (
             <>
               <FileIcon className="text-muted-foreground size-3.5 shrink-0" />
-              <span className="text-foreground min-w-0 flex-1 truncate">{fileName}</span>
+              <span className="text-foreground min-w-0 flex-1 break-words">{fileName}</span>
               <button
                 type="button"
                 onClick={(e) => {
@@ -139,7 +139,7 @@ export function FileInputField({
                 <div className="flex h-full flex-col items-center justify-center gap-2 p-4">
                   <FileIcon className="text-muted-foreground size-10" />
                   {fileName && size !== 'compact' && (
-                    <span className="text-muted-foreground max-w-[80%] truncate text-sm">{fileName}</span>
+                    <span className="text-muted-foreground max-w-[80%] break-words text-sm">{fileName}</span>
                   )}
                 </div>
               )}

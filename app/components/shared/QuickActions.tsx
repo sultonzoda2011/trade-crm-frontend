@@ -40,14 +40,15 @@ export function QuickActions({ title, actions }: QuickActionsProps) {
           const inner = (
             <>
               <Icon className="text-primary size-5 shrink-0" strokeWidth={1.75} />
-              <span className="min-w-0 flex-1 truncate">{label}</span>
+              <span className="min-w-0 flex-1 py-2 leading-snug break-words">{label}</span>
               <ChevronRight className="text-muted-foreground/50 size-5 shrink-0" />
             </>
           );
-          const linkTo = (render as { props?: { to?: string } } | undefined)?.props?.to;
+          const linkProps = (render as { props?: { to?: string; state?: unknown } } | undefined)?.props;
+          const linkTo = linkProps?.to;
           if (linkTo) {
             return (
-              <Link key={key ?? i} to={linkTo} className={classes}>
+              <Link key={key ?? i} to={linkTo} state={linkProps?.state} className={classes}>
                 {inner}
               </Link>
             );

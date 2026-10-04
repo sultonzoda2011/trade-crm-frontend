@@ -85,7 +85,7 @@ export default function SellerDetailPage() {
                       {seller.image ? <AvatarImage src={seller.image} alt={seller.name} /> : null}
                       <AvatarFallback>{seller.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{seller.name}</span>
+                    <span className="break-words">{seller.name}</span>
                   </span>
                 }
               />

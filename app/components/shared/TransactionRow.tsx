@@ -39,8 +39,8 @@ export function TransactionRow({ tx, t, to, state, subtitle, showDebtor = true, 
         flush ? '-mx-2 rounded-xl px-2' : 'px-4'
       )}>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base leading-snug font-semibold">{title}</p>
-        <p className="text-muted-foreground truncate text-sm leading-snug">
+        <p className="break-words text-base leading-snug font-semibold">{title}</p>
+        <p className="text-muted-foreground break-words text-sm leading-snug">
           {subtitle ?? [products, formatDateShort(tx.createdAt)].filter(Boolean).join(' · ')}
         </p>
       </div>

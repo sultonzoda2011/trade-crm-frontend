@@ -198,7 +198,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
                       <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{user.name}</span>
+                    <span className="break-words">{user.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -218,8 +218,8 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
                       <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{market.name}</span>
-                    <span className="text-muted-foreground text-2xs ml-auto truncate">{market.address}</span>
+                    <span className="break-words">{market.name}</span>
+                    <span className="text-muted-foreground text-2xs ml-auto break-words">{market.address}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
@@ -239,7 +239,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
                       {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
                       <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{product.name}</span>
+                    <span className="break-words">{product.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>

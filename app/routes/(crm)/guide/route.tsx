@@ -140,11 +140,11 @@ export default function GuidePage() {
               dimmed && !isActive && 'opacity-45'
             )}>
             <Icon className="size-4 shrink-0" />
-            <span className="min-w-0 flex-1 truncate">{s.title}</span>
+            <span className="min-w-0 flex-1 break-words">{s.title}</span>
             {searching && count > 0 && (
               <span
                 className={cn(
-                  'rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums',
+                  'rounded-full px-1.5 py-0.5 text-2xs font-semibold tabular-nums',
                   isActive ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
                 )}>
                 {count}

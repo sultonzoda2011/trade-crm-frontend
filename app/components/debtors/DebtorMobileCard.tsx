@@ -34,7 +34,7 @@ export function DebtorMobileCard({ row, t, actionsCell }: DebtorMobileCardProps)
 
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-base leading-snug font-semibold">{d.name}</p>
-        <p className="text-muted-foreground truncate text-sm leading-snug">{d.phone}</p>
+        <p className="text-muted-foreground break-words text-sm leading-snug">{d.phone}</p>
       </div>
 
       <div className="shrink-0 text-right">
