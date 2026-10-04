@@ -9,7 +9,7 @@ import { Link } from 'react-router';
 import darkFavicon from '/dark-favicon.png';
 import lightFavicon from '/light-favicon.png';
 import darkLogo from '/logo-text-in-left-dark.png';
-import lightLogo from '/logo-text-in-left-light.png';
+import lightLogo from '/tradecrm-logo.png';
 export function AppSidebar() {
   const { can, user } = useCan();
   const { t } = useTranslation();

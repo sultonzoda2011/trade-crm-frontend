@@ -9,7 +9,7 @@ import { CommandPalette } from '~/components/shared/CommandPalette';
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
 import darkLogo from '/logo-text-in-left-dark.png';
-import lightLogo from '/logo-text-in-left-light.png';
+import lightLogo from '/tradecrm-logo.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 
 export default function Header() {
