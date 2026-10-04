@@ -145,7 +145,7 @@ export default function DashboardOverviewPage() {
         <PaymentDistributionChart data={overview.paymentMix} />
       </div>
 
-      <div className="grid items-stretch gap-6 lg:grid-cols-3">
+      <div className="grid items-stretch gap-6 lg:grid-cols-2">
         <OverdueAlertCard debts={debts} />
 
         <Panel title={t('stockSummary')} className="lg:col-span-1" bodyClassName="space-y-2">
