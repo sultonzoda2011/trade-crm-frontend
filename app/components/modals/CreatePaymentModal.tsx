@@ -87,7 +87,7 @@ export function CreatePaymentModal() {
       <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
         <div className="flex items-center gap-2.5">
           <TransactionProducts items={transaction.items} size="sm" max={3} />
-          <span className="truncate font-medium">{getTransactionTitle(transaction, t)}</span>
+          <span className="break-words font-medium">{getTransactionTitle(transaction, t)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('fields.totalAmount')}:</span>

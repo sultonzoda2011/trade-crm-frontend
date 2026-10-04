@@ -26,7 +26,7 @@ export function InfoItem({ label, value, className }: { label: string; value: Re
         'border-border flex min-w-0 items-center justify-between gap-4 border-b py-3 last:border-b-0 sm:block sm:space-y-1.5 sm:border-b-0 sm:py-0',
         className
       )}>
-      <p className="shrink-0 text-base sm:truncate sm:text-xs sm:font-medium sm:text-muted-foreground">{label}</p>
+      <p className="shrink-0 text-base sm:break-words sm:text-xs sm:font-medium sm:text-muted-foreground">{label}</p>
       <div className="text-muted-foreground min-w-0 text-right text-base [overflow-wrap:anywhere] sm:text-foreground sm:text-left sm:text-sm sm:font-semibold">
         {value}
       </div>

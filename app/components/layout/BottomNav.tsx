@@ -78,12 +78,12 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
     <>
       <Icon
         aria-hidden
-        className={cn('size-[26px] shrink-0 transition-colors duration-200', tone)}
+        className={cn('size-6 shrink-0 transition-colors duration-200', tone)}
         strokeWidth={active ? 2.25 : 1.75}
       />
       <span
         className={cn(
-          'block w-full overflow-hidden text-center text-[10px] leading-[12px] font-medium tracking-tight text-ellipsis whitespace-nowrap transition-colors duration-200',
+          'block w-full text-center text-[11px] leading-[13px] font-medium tracking-tight break-words hyphens-auto transition-colors duration-200',
           tone
         )}>
         {label}
@@ -231,7 +231,7 @@ export function BottomNav() {
                             <Icon aria-hidden className="size-[18px]" />
                           </span>
                         )}
-                        <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                        <span className="min-w-0 flex-1 break-words">{item.title}</span>
                         <ChevronRight aria-hidden className="text-muted-foreground/70 size-5 shrink-0" />
                       </Link>
                     </li>

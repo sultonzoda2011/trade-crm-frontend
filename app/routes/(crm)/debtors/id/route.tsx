@@ -107,7 +107,7 @@ export default function DebtorDetailPage() {
         <div className="flex items-center gap-3.5">
           <InitialAvatar name={debtor.name} className="size-14 text-xl" />
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-xl leading-tight font-bold">{debtor.name}</h1>
+            <h1 className="break-words text-xl leading-tight font-bold">{debtor.name}</h1>
             <a href={`tel:${debtor.phone.replace(/\s/g, '')}`} className="text-primary text-base whitespace-nowrap">
               {debtor.phone}
             </a>

@@ -35,7 +35,7 @@ export function Panel({ children, className, bodyClassName, title, actions, ...r
   return (
     <div className={cn('flex flex-col', className)} {...rest}>
       <div className="mb-1.5 flex items-end justify-between gap-3 px-1">
-        {title && <h3 className="text-muted-foreground min-w-0 truncate text-xs font-medium tracking-wide uppercase">{title}</h3>}
+        {title && <h3 className="text-muted-foreground min-w-0 break-words text-xs font-medium tracking-wide uppercase">{title}</h3>}
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm">{actions}</div>}
       </div>
       <div className={cn('bg-card text-card-foreground flex-1 rounded-2xl p-4', bodyClassName)}>{children}</div>

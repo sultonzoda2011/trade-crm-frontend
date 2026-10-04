@@ -74,8 +74,8 @@ export function StatCard({
 
         <span
           className={cn(
-            'text-muted-foreground w-full truncate text-center font-medium',
-            size === 'md' ? 'text-xs' : 'text-2xs'
+            'text-muted-foreground line-clamp-2 w-full text-center leading-tight font-medium break-words',
+            size === 'md' ? 'text-sm' : 'text-xs'
           )}>
           {label}
         </span>
@@ -85,7 +85,7 @@ export function StatCard({
             обычного крупного текста. */}
         <span
           className={cn(
-            'max-w-full truncate font-mono font-semibold',
+            'max-w-full text-center leading-tight font-mono font-semibold break-words',
             size === 'md' ? 'text-lg' : 'text-base',
             valueClassName
           )}>
@@ -107,11 +107,13 @@ export function StatCard({
           {/* line-clamp, а не truncate: подписи вроде «Нет в наличии» на 360px в
               две колонки в одну строку не влезают, а обрезать их многоточием
               означает потерять смысл плитки. */}
-          <span className="text-muted-foreground text-2xs line-clamp-2 leading-snug font-medium sm:text-xs">
+          <span className="text-muted-foreground line-clamp-2 text-xs leading-snug font-medium break-words sm:text-sm">
             {label}
           </span>
 
-          <span className={cn('block truncate font-mono text-lg font-bold sm:text-xl', valueClassName)}>{value}</span>
+          <span className={cn('block font-mono text-lg leading-tight font-bold break-words sm:text-xl', valueClassName)}>
+            {value}
+          </span>
         </span>
       </>
     );

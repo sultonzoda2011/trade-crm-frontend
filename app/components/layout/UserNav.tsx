@@ -83,7 +83,7 @@ export function UserNav() {
         </Avatar>
 
         <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
-          <span className="max-w-full truncate text-sm leading-none font-semibold">{userInfo?.name}</span>
+          <span className="max-w-full break-words text-sm leading-none font-semibold">{userInfo?.name}</span>
 
           <span className="text-muted-foreground text-2xs mt-1 leading-none">{roleLabel}</span>
         </div>
@@ -105,7 +105,7 @@ export function UserNav() {
                 </Avatar>
 
                 <div className="flex min-w-0 flex-col">
-                  <p className="truncate text-sm leading-none font-bold">{userInfo?.name}</p>
+                  <p className="break-words text-sm leading-none font-bold">{userInfo?.name}</p>
 
                   <p className="text-muted-foreground mt-1 text-xs leading-none">{roleLabel}</p>
                 </div>

@@ -92,7 +92,7 @@ export default function UserDetailPage() {
                       {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
                       <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{user.name}</span>
+                    <span className="break-words">{user.name}</span>
                   </span>
                 }
               />
@@ -125,7 +125,7 @@ export default function UserDetailPage() {
                         {m.image ? <AvatarImage src={m.image} alt={m.name} /> : null}
                         <AvatarFallback>{m.name.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <span className="truncate text-sm font-medium">{m.name}</span>
+                      <span className="break-words text-sm font-medium">{m.name}</span>
                     </span>
                     <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
                   </ListLink>

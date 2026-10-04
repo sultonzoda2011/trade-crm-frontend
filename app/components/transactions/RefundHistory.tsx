@@ -67,7 +67,7 @@ export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
                   {refund.createdBy ? ` · ${t('detail.actor', { name: refund.createdBy.name })}` : ''}
                 </p>
                 {refund.items && refund.items.length > 0 && (
-                  <p className="text-muted-foreground truncate text-xs">
+                  <p className="text-muted-foreground break-words text-xs">
                     {refund.items.map((item) => `${item.productName} × ${item.quantity}`).join(', ')}
                   </p>
                 )}

@@ -31,14 +31,14 @@ export function MetricCard({
   const body = (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-muted-foreground min-w-0 truncate text-sm font-medium">{label}</p>
+        <p className="text-muted-foreground min-w-0 break-words text-sm font-medium">{label}</p>
 
         <span className="bg-primary/12 text-primary flex size-8 shrink-0 items-center justify-center rounded-lg">
           <Icon className="size-[18px]" />
         </span>
       </div>
 
-      <p className="mt-1.5 truncate font-mono text-2xl leading-tight font-bold tabular-nums md:text-[clamp(1.35rem,2vw,1.75rem)]">{value}</p>
+      <p className="mt-1.5 break-words font-mono text-2xl leading-tight font-bold tabular-nums md:text-[clamp(1.35rem,2vw,1.75rem)]">{value}</p>
 
       {hint && <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">{hint}</p>}
 

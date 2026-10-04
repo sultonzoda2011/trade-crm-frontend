@@ -21,10 +21,10 @@ export function DetailHeader({ name, subtitle, image, badges, actions, className
         </Avatar>
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <h1 className="truncate text-xl font-bold tracking-tight sm:text-2xl">{name}</h1>
+            <h1 className="break-words text-xl font-bold tracking-tight sm:text-2xl">{name}</h1>
             {badges}
           </div>
-          {subtitle && <p className="text-muted-foreground truncate text-sm">{subtitle}</p>}
+          {subtitle && <p className="text-muted-foreground break-words text-sm">{subtitle}</p>}
         </div>
       </div>
       {actions && (

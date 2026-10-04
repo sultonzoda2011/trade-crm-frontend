@@ -29,8 +29,8 @@ html {
 
   /* Шкала как в iOS: 17pt основной текст, 15 — второстепенный, 13 — сноски.
      На десктопе (≥768px) ниже возвращается компактная — таблицам нужна плотность. */
-  --text-2xs: 0.75rem;
-  --text-2xs--line-height: 1rem;
+  --text-2xs: 0.8125rem;
+  --text-2xs--line-height: 1.125rem;
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;
   --text-sm: 0.9375rem;
@@ -49,10 +49,10 @@ html {
 
 @media (min-width: 768px) {
   :root {
-    --text-2xs: 0.6875rem;
-    --text-xs: 0.75rem;
-    --text-xs--line-height: 1rem;
-    --text-sm: 0.8125rem;
+    --text-2xs: 0.75rem;
+    --text-xs: 0.8125rem;
+    --text-xs--line-height: 1.125rem;
+    --text-sm: 0.875rem;
     --text-sm--line-height: 1.25rem;
     --text-base: 0.9375rem;
     --text-base--line-height: 1.5rem;

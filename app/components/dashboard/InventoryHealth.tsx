@@ -58,9 +58,9 @@ export function ReorderList({ products, className }: ReorderListProps) {
               )}>
               {/* Product information */}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{product.name}</p>
+                <p className="break-words text-sm font-medium">{product.name}</p>
 
-                <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                <p className="text-muted-foreground mt-0.5 break-words text-xs">
                   {product.metrics.daysOfStockRemaining === null
                     ? t('reorder.noVelocity')
                     : t('reorder.daysLeft', {

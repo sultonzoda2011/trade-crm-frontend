@@ -34,7 +34,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
         <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
           <p className="text-muted-foreground text-xs font-medium">{t('returns.amount')}</p>
 
-          <p className="mt-1 truncate font-mono text-lg font-bold sm:text-xl">{fmtTJS(returns.amount)}</p>
+          <p className="mt-1 break-words font-mono text-lg font-bold sm:text-xl">{fmtTJS(returns.amount)}</p>
 
           <ComparisonIndicator comparison={returns.comparison.amount} invert className="mt-1" />
         </div>
@@ -73,7 +73,7 @@ export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
                   'transition-colors',
                   'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
                 )}>
-                <span className="min-w-0 flex-1 truncate text-sm">{product.productName}</span>
+                <span className="min-w-0 flex-1 break-words text-sm">{product.productName}</span>
 
                 <span className="flex shrink-0 items-center gap-2 sm:gap-3">
                   <span className="text-muted-foreground hidden text-xs whitespace-nowrap sm:inline">

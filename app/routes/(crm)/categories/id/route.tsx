@@ -83,7 +83,7 @@ export default function CategoryDetailPage() {
                       {category.image ? <AvatarImage src={category.image} alt={category.name} /> : null}
                       <AvatarFallback>{category.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
-                    <span className="truncate">{category.name}</span>
+                    <span className="break-words">{category.name}</span>
                   </span>
                 }
               />
@@ -129,7 +129,7 @@ export default function CategoryDetailPage() {
                         <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
-                        <p className="truncate text-sm font-medium">{product.name}</p>
+                        <p className="break-words text-sm font-medium">{product.name}</p>
                         <p className="text-muted-foreground text-xs">{product.unit}</p>
                       </div>
                     </div>

@@ -43,7 +43,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
               <Wallet className="text-muted-foreground size-4" />
             )}
           </div>
-          <h3 className={cn('truncate text-sm font-semibold', hasOverdue ? 'text-destructive' : undefined)}>
+          <h3 className={cn('break-words text-sm font-semibold', hasOverdue ? 'text-destructive' : undefined)}>
             {t('debts.title')}
           </h3>
         </div>
@@ -63,7 +63,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
             <AlertCircle
               className={cn('size-3.5 shrink-0', hasOverdue ? 'text-destructive' : 'text-muted-foreground')}
             />
-            <span className="min-w-0 truncate text-sm">{t('debts.overdue', { count: debts.overdueCount })}</span>
+            <span className="min-w-0 break-words text-sm">{t('debts.overdue', { count: debts.overdueCount })}</span>
           </span>
           <span
             className={cn(
@@ -79,7 +79,7 @@ export function OverdueAlertCard({ debts, className }: OverdueAlertCardProps) {
           className="bg-muted/50 hover:bg-muted/80 flex items-center justify-between gap-2 rounded-xl px-2.5 py-2 transition-colors">
           <span className="flex min-w-0 items-center gap-2">
             <Clock className="text-muted-foreground size-3.5 shrink-0" />
-            <span className="min-w-0 truncate text-sm">{t('debts.dueSoon', { count: debts.dueSoonCount })}</span>
+            <span className="min-w-0 break-words text-sm">{t('debts.dueSoon', { count: debts.dueSoonCount })}</span>
           </span>
           <span
             className={cn(

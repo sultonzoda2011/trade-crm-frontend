@@ -24,7 +24,6 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { getClientUser } from '~/lib/auth-utils';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import { Role } from '~/types/common';
 import type { Debtor } from '~/types/debtors';
 import type { Market } from '~/types/markets';
@@ -78,7 +77,6 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
   const location = useLocation();
 
   const { can } = useCan();
-  const editModal = useMarketsModals((state) => state.edit);
 
   const sellersByProduct = useMemo(() => {
     const sellersMap = new Map<string, UserInfo[]>();
@@ -160,9 +158,9 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
             </Avatar>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{product.name}</p>
+              <p className="break-words text-sm font-medium">{product.name}</p>
 
-              <p className="text-muted-foreground truncate text-sm">
+              <p className="text-muted-foreground break-words text-sm">
                 {product.category?.name && `${product.category.name} · `}
                 {t('soldCount', { count: product._count.transactionItems })}
               </p>
@@ -194,7 +192,7 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
 
     rows: previews.debtors.map((debtor) => (
       <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={listState}>
-        <span className="truncate text-sm font-medium">{debtor.name}</span>
+        <span className="break-words text-sm font-medium">{debtor.name}</span>
 
         <span className="text-muted-foreground text-xs">{debtor.phone}</span>
       </ListLink>
@@ -241,7 +239,7 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
             icon: Pencil,
             label: t('actions.edit'),
             variant: 'outline' as const,
-            onClick: () => editModal.open(market),
+            render: <Link to={`/markets/${market.id}/edit`} />,
           },
         ]
       : []),
@@ -316,7 +314,7 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
                     <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
 
-                  <span className="truncate">{market.name}</span>
+                  <span className="break-words">{market.name}</span>
                 </div>
               }
             />

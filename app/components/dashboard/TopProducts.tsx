@@ -37,7 +37,7 @@ export function TopProducts({ products, title }: { products: ProductLeaderRow[];
                   {index + 1}
                 </span>
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">{product.productName}</span>
+                  <span className="block break-words text-sm font-medium">{product.productName}</span>
                   <span className="text-muted-foreground block text-xs">
                     {t('products.netUnits', { count: product.netUnits })}
                     {product.refundedUnits > 0 && (
