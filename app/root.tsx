@@ -50,16 +50,6 @@ export const links: Route.LinksFunction = () => [
   { rel: 'icon', type: 'image/png', href: '/light-favicon.png', media: '(prefers-color-scheme: light)' },
   { rel: 'icon', type: 'image/png', href: '/dark-favicon.png', media: '(prefers-color-scheme: dark)' },
   { rel: 'apple-touch-icon', href: '/light-favicon.png' },
-  { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-  {
-    rel: 'preconnect',
-    href: 'https://fonts.gstatic.com',
-    crossOrigin: 'anonymous',
-  },
-  {
-    rel: 'stylesheet',
-    href: 'https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap',
-  },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
