@@ -76,20 +76,16 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
   return (
     <>
-      <span
-        className={cn(
-          'grid size-7 place-items-center rounded-full transition-[background-color,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-          active && 'bg-foreground/[0.08] scale-110 dark:bg-foreground/[0.12]'
-        )}>
+      <span className="grid size-7 place-items-center transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]">
         <Icon
           aria-hidden
-          className={cn('size-[22px] shrink-0 transition-[color,transform,stroke-width] duration-300', tone)}
+          className={cn('size-[22px] shrink-0 transition-[color,transform,stroke-width] duration-300', tone, active && 'scale-110')}
           strokeWidth={active ? 2.35 : 1.75}
         />
       </span>
       <span
         className={cn(
-          'block w-full text-center text-[11px] leading-[13px] font-medium tracking-tight break-words hyphens-auto transition-[color,opacity,transform] duration-300',
+          'block w-full min-w-0 max-w-full overflow-hidden text-center text-[10px] leading-[12px] font-medium tracking-tight transition-[color,opacity,transform] duration-300 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
           tone,
           active ? 'translate-y-0 opacity-100' : 'opacity-80'
         )}>
@@ -239,7 +235,7 @@ export function BottomNav() {
                           active && 'font-semibold'
                         )}>
                         {Icon && (
-                          <span className="bg-primary text-primary-foreground grid size-9 shrink-0 place-items-center rounded-full">
+                          <span className="text-muted-foreground grid size-9 shrink-0 place-items-center">
                             <Icon aria-hidden className="size-[18px]" />
                           </span>
                         )}
