@@ -70,7 +70,7 @@ function haptic() {
 }
 
 const TAB_CLASS =
-  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
+  'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
 
 function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; active: boolean }) {
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
@@ -85,7 +85,7 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
       </span>
       <span
         className={cn(
-          'block w-full min-w-0 max-w-full overflow-hidden text-center text-[10px] leading-[12px] font-medium tracking-tight transition-[color,opacity,transform] duration-300 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]',
+          'block w-full min-w-0 max-w-full truncate text-center text-[10px] leading-[12px] font-medium tracking-tight transition-[color,opacity,transform] duration-300',
           tone,
           active ? 'translate-y-0 opacity-100' : 'opacity-80'
         )}>
@@ -96,8 +96,8 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
 }
 
 /**
- * Плавающая навигация в стиле iOS 26 «Liquid Glass»: стеклянная капсула с
- * отступами от краёв экрана, активная вкладка подсвечена скользящей стеклянной
+ * Плавающая навигация в стиле iOS 27 «Liquid Glass»: стеклянная капсула с
+ * отступами от краёв экрана, активная вкладка подсвечена единой нейтральной
  * «таблеткой», по центру — крупная кнопка «+» (новая транзакция).
  * Список вкладок и «Ещё» берутся из того же getSidebarConfig/getVisibleNavigation,
  * что и десктопный сайдбар — один источник правды на роль пользователя.
