@@ -113,6 +113,11 @@ function buildPills(filters: ActiveFilter[], config: FilterConfig[]): Pill[] {
   return pills;
 }
 
+/** How many filters the user sees: a range counts once, like its chip — the badge and the chips must agree. */
+export function countActiveFilters(filters: ActiveFilter[], config: FilterConfig[]): number {
+  return buildPills(filters, config).length;
+}
+
 export function ActiveFilterPills({ filters, config, onRemove }: ActiveFilterPillsProps) {
   const { t } = useTranslation('common');
 

@@ -15,6 +15,8 @@ interface UseFilterParamsOptions {
   filterConfigs: FilterConfig[];
 }
 
+const RESERVED_PARAMS = new Set(['page', 'limit', 'search']);
+
 /** Which URL param names a config array is able to hydrate. */
 function hydratableKeys(configs: FilterConfig[]): string[] {
   return configs.flatMap((config) => {
@@ -59,6 +61,10 @@ function readUrlFilters(configs: FilterConfig[], search: URLSearchParams): Activ
  *    was silently dropped. Hydration now re-runs whenever the set of hydratable
  *    keys grows, and reads configs from a ref. Re-applying is safe: once the
  *    writer is running, the query string mirrors the store.
+ * 4. Re-hydration needs the param to still be in the URL. The writer used to
+ *    rebuild the query string from the store alone, which erased a deep-linked
+ *    param whose filter had not appeared yet (`?createdById=` before the sellers
+ *    list loaded). It now keeps params the config cannot represent yet.
  */
 export function useFilterParams({
   page,
@@ -77,6 +83,8 @@ export function useFilterParams({
   freshListRef.current = Boolean((location.state as { freshList?: boolean } | null)?.freshList);
   const configsRef = useRef(filterConfigs);
   configsRef.current = filterConfigs;
+  const searchParamsRef = useRef(searchParams);
+  searchParamsRef.current = searchParams;
 
   const [ready, setReady] = useState(false);
   const hydratedFor = useRef<string>('');
@@ -118,6 +126,14 @@ export function useFilterParams({
         params.set(f.key, String(f.value));
       }
     }
+    // Параметры, которые конфиг пока не умеет представить (опции селекта ещё
+    // грузятся), остаются в адресе: иначе первая же запись затирала бы
+    // `?createdById=…` до того, как фильтр «Создал» появился, и ссылка с
+    // дашборда теряла продавца. Когда конфиг узнает ключ, читатель подхватит его.
+    const known = new Set(hydratableKeys(configsRef.current));
+    searchParamsRef.current.forEach((value, key) => {
+      if (!RESERVED_PARAMS.has(key) && !known.has(key) && !params.has(key)) params.set(key, value);
+    });
     setSearchParams(params, { replace: true });
   }, [ready, page, limit, search, filters, setSearchParams]);
 }

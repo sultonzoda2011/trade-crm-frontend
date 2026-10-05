@@ -21,7 +21,11 @@ export function useCapacitorStatusBar(currentTheme: string | undefined) {
       if (cancelled) return;
 
       const isDark = currentTheme === 'dark';
-      await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
+      try {
+        await StatusBar.setStyle({ style: isDark ? Style.Dark : Style.Light });
+      } catch {
+        return; // веб: плагин импортируется, но не реализован — это не ошибка
+      }
       try {
         // Android-only: на iOS цвет статус-бара не настраивается через плагин
         await StatusBar.setBackgroundColor({ color: isDark ? '#0a0a0a' : '#ffffff' });
