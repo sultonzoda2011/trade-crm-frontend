@@ -16,7 +16,7 @@
   "sellerCreditExceedsBalance": "Amount exceeds current balance",
   "itemProductRequired": "Select product",
   "itemsRequired": "Add at least one item",
-  "dueDateRequired": "Required for DEBT type",
+  "dueDateRequired": "Required for debts",
   "debtorRequired": "Debtor is required",
   "stockExceeded": "Exceeds stock ({{count}} available)",
   "stockUnavailable": "Product stock is unavailable",

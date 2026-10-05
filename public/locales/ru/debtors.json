@@ -6,12 +6,7 @@
   "overdue": "Есть просроченные долги",
   "totalDebtAmount": "Общая сумма долга",
   "totalDebt": "Текущий долг",
-  "transactionsHistory": "История транзакций",
-  "noTransactions": "Пока нет транзакций",
-  "quickActions": "Быстрые действия",
   "fields": {
-    "createdAt": "Дата создания",
-    "updatedAt": "Дата обновления",
     "transactions": "Транзакции"
   },
   "navigation": {
@@ -61,6 +56,5 @@
     "acceptPayment": "Принять оплату",
     "pickDebtTitle": "Какой долг погашаем?"
   },
-  "noDebt": "Нет долга",
-  "viewAll": "Все"
+  "noDebt": "Нет долга"
 }

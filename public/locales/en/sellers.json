@@ -2,16 +2,7 @@
   "title": "Sellers",
   "create": "Create",
   "notFound": "Seller not found",
-  "fields": {
-    "role": "Role",
-    "createdAt": "Created at",
-    "updatedAt": "Updated at"
-  },
-  "statistics": "Statistics",
-  "quickActions": "Quick Actions",
-  "transactionsHistory": "Transaction History",
   "viewMarkets": "Seller's Market",
-  "noTransactions": "No transactions yet",
   "markupBalance": "Markup Balance",
   "earned": "Earned",
   "refunded": "Reversed by refunds",
@@ -24,8 +15,5 @@
   "payoutError": "Failed to record the payout",
   "creditsHistory": "Payout History",
   "noCredits": "No payouts yet",
-  "noBalance": "No markup yet",
-  "navigation": {
-    "sellers": "Sellers"
-  }
+  "noBalance": "No markup yet"
 }

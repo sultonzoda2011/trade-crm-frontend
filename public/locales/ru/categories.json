@@ -8,27 +8,12 @@
   "updateSuccess": "Категория успешно обновлена",
   "updateError": "Ошибка при обновлении категории",
   "fields": {
-    "name": "Название",
-    "description": "Описание",
-    "image": "Изображение",
-    "market": "Рынок",
-    "productsCount": "Товаров",
-    "createdAt": "Дата создания",
-    "updatedAt": "Дата обновления"
+    "productsCount": "Товаров"
   },
-  "hasProducts": "Есть товары",
-  "statistics": "Статистика",
-  "quickActions": "Быстрые действия",
-  "viewAll": "Все",
   "filters": {
     "search": "Поиск по категориям"
   },
   "actions": {
-    "view": "Просмотр",
-    "edit": "Редактировать",
-    "save": "Сохранить",
-    "delete": "Удалить",
-    "confirm": "Подтверждение",
     "areYouSure": "Вы уверены, что хотите удалить эту категорию?",
     "deleteSuccess": "Категория удалена",
     "deleteError": "Ошибка при удалении категории"

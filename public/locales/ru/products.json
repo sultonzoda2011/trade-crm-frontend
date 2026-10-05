@@ -8,32 +8,15 @@
   "updateSuccess": "Товар успешно обновлён",
   "updateError": "Ошибка при обновлении товара",
   "fields": {
-    "name": "Название",
-    "description": "Описание",
-    "price": "Цена",
-    "quantity": "Количество",
-    "image": "Изображение",
-    "market": "Рынок",
     "transactionItems": "Транзакции",
-    "createdAt": "Дата создания",
-    "updatedAt": "Дата обновления",
     "unit": "Единица измерения",
     "category": "Категория",
     "lowStockThreshold": "Порог низкого остатка"
   },
-  "quickActions": "Быстрые действия",
-  "statistics": "Статистика",
   "actions": {
-    "view": "Просмотр",
-    "edit": "Редактировать",
-    "delete": "Удалить",
-    "confirm": "Подтверждение",
     "areYouSure": "Вы уверены, что хотите удалить этот товар?",
     "deleteSuccess": "Товар удалён",
     "deleteError": "Ошибка при удалении товара",
-    "cancel": "Отмена",
-    "save": "Сохранить",
-    "create": "Создать",
     "all": "Все товары"
   },
   "filters": {

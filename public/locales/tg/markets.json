@@ -8,45 +8,25 @@
   "updateSuccess": "Бозор бо муваффақият навсозӣ шуд",
   "updateError": "Хатогӣ ҳангоми навсозии бозор",
   "fields": {
-    "name": "Ном",
-    "address": "Суроға",
-    "owner": "Соҳиб",
-    "image": "Акс",
     "ownerId": "Соҳиб",
     "products": "Молҳо",
     "debtors": "Қарздорҳо",
-    "transactions": "Транзаксияҳо",
-    "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ",
+    "transactions": "Муомилотҳо",
     "employees": "Кормандон"
   },
   "hasUsers": "Корбар дорад",
-  "hasProducts": "Мол дорад",
-  "statistics": "Омор",
-  "quickActions": "Амалҳои зуд",
   "viewProducts": "Молҳои бозор",
   "viewDebtors": "Қарздорони бозор",
-  "viewTransactions": "Транзаксияҳои бозор",
-  "viewAll": "Ҳама",
+  "viewTransactions": "Муомилотҳои бозор",
   "soldCount": "Фурӯхта шуд {{count}}",
   "actions": {
-    "view": "Дидан",
-    "edit": "Таҳрир кардан",
-    "delete": "Нобуд кардан",
-    "confirm": "Тасдиқ",
     "areYouSure": "Шумо мутмаин ҳастед, ки мехоҳед ин бозорро нест кунед?",
     "deleteSuccess": "Бозор нест карда шуд",
     "deleteError": "Хатогӣ ҳангоми нест кардани бозор",
-    "cancel": "Бекор кардан",
-    "save": "Нигоҳ доштан",
-    "create": "Эҷод кардан",
     "all": "Ҳамаи бозорҳо"
   },
   "filters": {
     "search": "Ҷустуҷӯи бозорҳо"
   },
-  "noEmployees": "Ҳанӯз корманд нест",
-  "noProducts": "Ҳанӯз мол нест",
-  "noDebtors": "Ҳанӯз қарздор нест",
-  "noTransactions": "Ҳанӯз транзаксия нест"
+  "noEmployees": "Ҳанӯз корманд нест"
 }

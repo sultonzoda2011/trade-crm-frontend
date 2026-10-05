@@ -6,17 +6,12 @@
   "overdue": "Қарзи мӯҳлаташ гузашта дорад",
   "totalDebtAmount": "Маблағи умумии қарз",
   "fields": {
-    "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ",
-    "transactions": "Транзаксияҳо"
+    "transactions": "Муомилотҳо"
   },
   "navigation": {
     "debtors": "Қарздорҳо"
   },
   "totalDebt": "Қарзи ҷорӣ",
-  "transactionsHistory": "Таърихи амалиётҳо",
-  "noTransactions": "Ҳанӯз амалиёт нест",
-  "quickActions": "Амалҳои зуд",
   "risk": {
     "title": "Хатари барнагардонидан",
     "whyTitle": "Чаро ин хатар",
@@ -61,6 +56,5 @@
     "acceptPayment": "Қабули пардохт",
     "pickDebtTitle": "Кадом қарзро пардохт мекунед?"
   },
-  "noDebt": "Қарз нест",
-  "viewAll": "Ҳама"
+  "noDebt": "Қарз нест"
 }

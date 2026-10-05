@@ -3,8 +3,6 @@
   "create": "Create",
   "notFound": "Debtor not found",
   "fields": {
-    "createdAt": "Created at",
-    "updatedAt": "Updated at",
     "transactions": "Transactions"
   },
   "navigation": {
@@ -14,9 +12,6 @@
   "overdue": "Has overdue debts",
   "totalDebtAmount": "Total debt amount",
   "totalDebt": "Current debt",
-  "transactionsHistory": "Transaction history",
-  "noTransactions": "No transactions yet",
-  "quickActions": "Quick Actions",
   "risk": {
     "title": "Repayment risk",
     "whyTitle": "Why this risk",
@@ -61,6 +56,5 @@
     "acceptPayment": "Accept payment",
     "pickDebtTitle": "Which debt to pay?"
   },
-  "noDebt": "No debt",
-  "viewAll": "View all"
+  "noDebt": "No debt"
 }

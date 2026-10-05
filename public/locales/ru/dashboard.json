@@ -1,5 +1,5 @@
 {
-  "title": "Дашборд",
+  "title": "Сводка",
   "tabs": {
     "overview": "Обзор",
     "inventory": "Склад",
@@ -13,7 +13,6 @@
   "allMarkets": "Все рынки",
   "allSellers": "Все продавцы",
   "seller": "Продавец",
-  "viewAll": "Смотреть все",
   "empty": "Нет данных",
   "loadError": "Не удалось загрузить данные",
   "charts": {
@@ -121,5 +120,5 @@
     "from": "С",
     "to": "По"
   },
-  "recentTransactions": "Последние операции"
+  "recentTransactions": "Последние транзакции"
 }

@@ -68,7 +68,8 @@ export function ConfirmDialog({
 
   const resolvedTitle = title || t('actions.confirm');
   const resolvedDescription = description || t('actions.areYouSure');
-  const confirmLabel = confirmText || t('actions.confirm');
+  // The title says "Confirmation"; the button needs a verb — and for a destructive dialog the verb is the action itself.
+  const confirmLabel = confirmText || (type === 'danger' ? t('actions.delete') : t('actions.confirmAction'));
   const cancelLabel = cancelText || t('actions.cancel');
 
   const icon = (

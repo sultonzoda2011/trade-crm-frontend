@@ -39,14 +39,14 @@
   },
   "errors": {
     "noConnection": "No server connection. Please check your internet.",
-    "badRequest": "Bad request",
-    "forbidden": "Access denied",
-    "notFound": "Resource not found",
-    "validation": "Data validation error",
+    "badRequest": "Couldn't complete the request. Please check the entered data",
+    "forbidden": "You don't have access to this action",
+    "notFound": "Nothing was found",
+    "validation": "Please check the entered data",
     "tooManyRequests": "Too many requests. Please try again later",
-    "serverError": "Internal server error",
+    "serverError": "Something went wrong on our side. Please try again shortly",
     "badGateway": "Server temporarily unavailable",
-    "serviceUnavailable": "Service unavailable",
+    "serviceUnavailable": "Service temporarily unavailable",
     "unknown": "Unknown error ({{status}})",
     "offlineAction": "No internet — this action will run once you're back online"
   },
@@ -96,9 +96,7 @@
     "min": "Min",
     "max": "Max",
     "yes": "Yes",
-    "no": "No",
-    "mentor": "Mentor",
-    "employee": "Employee"
+    "no": "No"
   },
   "days": {
     "mon": "Mo",
@@ -116,10 +114,8 @@
     "delete": "Delete",
     "edit": "Edit",
     "view": "View",
-    "approveDescription": "Are you sure you want to approve the payroll calculation ?",
     "confirm": "Confirmation",
     "areYouSure": "Are you sure you want to delete?",
-    "deleteDescription": "This action is irreversible. The user will be permanently removed from the system.",
     "deleteSuccess": "Deleted",
     "deleteError": "Error while deleting",
     "add": "Add",
@@ -131,7 +127,8 @@
     "toggleTheme": "Toggle theme",
     "changeLanguage": "Change language",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "confirmAction": "Confirm"
   },
   "fields": {
     "fullName": "Full Name",
@@ -158,7 +155,9 @@
     "price": "Price",
     "discount": "Discount",
     "amount": "Amount",
-    "sum": "Sum"
+    "sum": "Sum",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at"
   },
   "logout": "Logout",
   "usernameRequired": "Username is required",
@@ -179,24 +178,11 @@
     "emptyText": "Nothing found",
     "loading": "Loading…"
   },
-  "dateRangePicker": {
-    "placeholder": "Select period"
-  },
-  "input": {
-    "name": "Enter name",
-    "email": "Enter email",
-    "phone": "Enter phone",
-    "message": "Enter message"
-  },
   "role": {
     "admin": "Administrator",
     "owner": "Owner",
     "seller": "Seller"
   },
-  "startDate": "Start date",
-  "endDate": "End date",
-  "documentFile": "Document",
-  "yearsUnit": "yr.",
   "daysUnit": "d.",
   "breadcrumbs": {
     "create": "Create",
@@ -267,5 +253,13 @@
     "transactionsCreate": "Pick products and a payment method. For \"On credit\" choose a debtor and a due date.",
     "transactionsEdit": "Change the transaction details.",
     "transactionsDetail": "Transaction details: items, total, payment and remaining debt."
-  }
+  },
+  "viewAll": "View all",
+  "quickActions": "Quick actions",
+  "statistics": "Statistics",
+  "transactionsHistory": "Transaction history",
+  "noTransactions": "No transactions yet",
+  "noProducts": "No products yet",
+  "noDebtors": "No debtors yet",
+  "hasProducts": "Has products"
 }
