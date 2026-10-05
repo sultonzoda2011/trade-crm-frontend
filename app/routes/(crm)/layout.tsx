@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { Outlet, redirect, useLocation } from 'react-router';
 import { BottomNav } from '~/components/layout/BottomNav';
 import { PageNote } from '~/components/layout/PageNote';
@@ -41,10 +42,14 @@ export default function CrmLayout() {
               края + вылет центральной FAB-кнопки над баром). */}
           <div className="p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-6">
             {/* Мягкое появление при смене экрана — переход ощущается как в приложении, а не как перезагрузка страницы. */}
-            <div key={routeKey} className="animate-page-enter">
+            <motion.div
+              key={routeKey}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}>
               <Outlet />
               <PageNote />
-            </div>
+            </motion.div>
           </div>
         </ScrollArea>
       </div>

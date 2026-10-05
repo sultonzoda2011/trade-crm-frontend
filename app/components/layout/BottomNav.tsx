@@ -1,4 +1,5 @@
 import { ChevronRight, MoreHorizontal, Plus, type LucideIcon } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
@@ -6,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sh
 import { Action } from '~/config/actions';
 import { type NavItem, type NavKey, getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
+import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
 /**
@@ -60,15 +62,6 @@ function useKeyboardOpen() {
   return open;
 }
 
-/** Лёгкая вибро-отдача на «+» (Android WebView; в iOS вызов просто игнорируется). */
-function haptic() {
-  try {
-    navigator.vibrate?.(10);
-  } catch {
-    /* не поддерживается — не страшно */
-  }
-}
-
 const TAB_CLASS =
   'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] rounded-full px-0.5 transition-transform duration-150 select-none active:scale-95 [-webkit-tap-highlight-color:transparent]';
 
@@ -76,6 +69,15 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
   const tone = active ? 'text-foreground' : 'text-muted-foreground';
   return (
     <>
+      {/* Стеклянная «таблетка» переезжает между вкладками пружиной (общий layoutId). */}
+      {active && (
+        <motion.span
+          aria-hidden
+          layoutId="bottom-nav-pill"
+          transition={{ type: 'spring', stiffness: 460, damping: 34 }}
+          className="bg-foreground/[0.08] dark:bg-foreground/[0.14] absolute inset-0.5 -z-10 rounded-full shadow-[inset_0_1px_1px_rgb(255_255_255/0.75),inset_0_0_0_1px_rgb(255_255_255/0.3),0_1px_3px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_1px_1px_rgb(255_255_255/0.25),inset_0_0_0_1px_rgb(255_255_255/0.08)]"
+        />
+      )}
       <Icon
         aria-hidden
         className={cn('size-6 shrink-0 transition-colors duration-200', tone)}
@@ -136,7 +138,6 @@ export function BottomNav() {
   ];
   const middle = canCreate ? Math.ceil(tabs.length / 2) : tabs.length;
   const slots: Slot[] = canCreate ? [...tabs.slice(0, middle), { kind: 'create' }, ...tabs.slice(middle)] : tabs;
-  const activeIndex = slots.findIndex((slot) => slot.kind !== 'create' && slot.active);
 
   // Короткая подпись, чтобы не вылезала из ячейки: «Панель управления» → «Главная».
   const tabLabel = (item: NavItem) =>
@@ -148,7 +149,7 @@ export function BottomNav() {
         <div key="create" className="flex min-w-0 flex-1 basis-0 items-center justify-center">
           <Link
             to="/transactions/create"
-            onClick={haptic}
+            onClick={() => haptic('light')}
             aria-label={t('navigation.newTransaction', { defaultValue: 'Новая транзакция' })}
             className="bg-primary text-primary-foreground relative z-10 flex size-14 -translate-y-2.5 touch-manipulation items-center justify-center rounded-full bg-[linear-gradient(to_bottom,rgb(255_255_255/0.22),transparent_55%)] shadow-[0_12px_22px_-6px_rgb(0_0_0/0.45),inset_0_1px_1px_rgb(255_255_255/0.4),inset_0_-2px_5px_rgb(0_0_0/0.25)] transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none [-webkit-tap-highlight-color:transparent] active:scale-90">
             <Plus aria-hidden className="size-7" strokeWidth={2.5} />
@@ -158,14 +159,19 @@ export function BottomNav() {
     }
     if (slot.kind === 'more') {
       return (
-        <button key="more" type="button" onClick={() => setMoreOpen(true)} aria-haspopup="dialog" className={TAB_CLASS}>
+        <button key="more" type="button" onClick={() => { haptic('selection'); setMoreOpen(true); }} aria-haspopup="dialog" className={TAB_CLASS}>
           <TabFace Icon={MoreHorizontal} label={moreLabel} active={slot.active} />
         </button>
       );
     }
     const { item } = slot;
     return (
-      <Link key={item.key} to={item.url || '#'} aria-current={slot.active ? 'page' : undefined} className={TAB_CLASS}>
+      <Link
+        key={item.key}
+        to={item.url || '#'}
+        onClick={() => haptic('selection')}
+        aria-current={slot.active ? 'page' : undefined}
+        className={TAB_CLASS}>
         <TabFace Icon={item.icon as LucideIcon} label={tabLabel(item)} active={slot.active} />
       </Link>
     );
@@ -185,18 +191,6 @@ export function BottomNav() {
           className="liquid-glass pointer-events-auto relative mx-auto max-w-md rounded-full p-1.5"
           style={{ height: CAPSULE_HEIGHT }}>
           <div className="relative flex h-full items-stretch">
-            {/* Скользящая стеклянная «таблетка» под активной вкладкой */}
-            <span
-              aria-hidden
-              className="absolute inset-y-0 left-0 p-0.5 transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.3,1.25,0.5,1)]"
-              style={{
-                width: `${100 / slots.length}%`,
-                transform: `translateX(${Math.max(activeIndex, 0) * 100}%)`,
-                opacity: activeIndex >= 0 ? 1 : 0,
-              }}>
-              <span className="bg-foreground/[0.08] dark:bg-foreground/[0.14] block h-full w-full rounded-full shadow-[inset_0_1px_1px_rgb(255_255_255/0.75),inset_0_0_0_1px_rgb(255_255_255/0.3),0_1px_3px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_1px_1px_rgb(255_255_255/0.25),inset_0_0_0_1px_rgb(255_255_255/0.08)]" />
-            </span>
-
             {slots.map(renderSlot)}
           </div>
         </div>
@@ -208,8 +202,11 @@ export function BottomNav() {
           showCloseButton={false}
           className="gap-0 bg-transparent shadow-none data-[side=bottom]:inset-x-3 data-[side=bottom]:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] data-[side=bottom]:border-t-0 data-[side=bottom]:pb-0">
           <div className="liquid-glass relative flex max-h-[75dvh] flex-col overflow-hidden rounded-[2rem]">
-            <div aria-hidden className="bg-foreground/25 mx-auto mt-2.5 h-1 w-9 shrink-0 rounded-full" />
-            <SheetHeader className="px-5 pt-3 pb-3">
+            {/* Ручка лежит поверх общей зоны захвата шторки (её перекрывает стекло), поэтому сама — зона перетаскивания. */}
+            <div data-sheet-drag aria-hidden className="mx-auto flex w-full shrink-0 touch-none justify-center pt-2.5 pb-1">
+              <div className="bg-foreground/25 h-1 w-9 rounded-full" />
+            </div>
+            <SheetHeader className="px-5 pt-2 pb-3">
               <SheetTitle className="text-center text-base font-semibold">{moreLabel}</SheetTitle>
             </SheetHeader>
             <div className="relative min-h-0 overflow-y-auto px-3 pb-3">

@@ -1,4 +1,5 @@
 import { CalendarDays } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useSearchParams } from 'react-router';
@@ -103,10 +104,17 @@ export default function DashboardLayout() {
                 aria-selected={active}
                 onClick={() => updateParam('period', option.value)}
                 className={cn(
-                  'h-10 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
-                  active ? 'bg-card text-foreground shadow-sm dark:bg-white/20' : 'text-muted-foreground'
+                  'relative h-10 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
+                  active ? 'text-foreground' : 'text-muted-foreground'
                 )}>
-                {t(option.labelKey)}
+                {active && (
+                  <motion.span
+                    layoutId="dashboard-period-pill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                    className="bg-card absolute inset-0 rounded-lg shadow-sm dark:bg-white/20"
+                  />
+                )}
+                <span className="relative">{t(option.labelKey)}</span>
               </button>
             );
           })}
@@ -142,13 +150,22 @@ export default function DashboardLayout() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                'shrink-0 border-b-2 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2.5 md:text-sm',
-                isActive
-                  ? 'border-primary text-primary'
-                  : 'text-muted-foreground hover:text-foreground border-transparent'
+                'relative shrink-0 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2.5 md:text-sm',
+                isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )
             }>
-            {tab.label}
+            {({ isActive }) => (
+              <>
+                {tab.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="dashboard-tab-underline"
+                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                    className="bg-primary absolute inset-x-0 bottom-0 h-0.5 rounded-full"
+                  />
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

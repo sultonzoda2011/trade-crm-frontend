@@ -1,148 +1,120 @@
+import { animate, useDragControls, useMotionValue, useMotionValueEvent, type PanInfo } from 'motion/react';
 import { useCallback, useRef, type PointerEvent as ReactPointerEvent } from 'react';
 import { haptic } from '~/lib/haptics';
-
-interface DragState {
-  pointerId: number;
-  startY: number;
-  lastY: number;
-  lastT: number;
-  /** px/ms, smoothed — a flick should dismiss a sheet that was not dragged far. */
-  velocity: number;
-  crossed: boolean;
-}
 
 /** Drag distance after which letting go dismisses, capped so a tall sheet is not a long haul. */
 const DISMISS_DISTANCE_RATIO = 0.3;
 const DISMISS_DISTANCE_MAX = 160;
-const DISMISS_VELOCITY = 0.6;
+/** px/s — a flick faster than this dismisses even a short drag. */
+const DISMISS_VELOCITY = 500;
 const DISMISS_VELOCITY_MIN_DISTANCE = 24;
+
+const SPRING_BACK = { type: 'spring', stiffness: 520, damping: 42 } as const;
 
 interface Options {
   enabled: boolean;
   onDismiss: () => void;
 }
 
+function dismissThreshold(height: number) {
+  return Math.min(height * DISMISS_DISTANCE_RATIO, DISMISS_DISTANCE_MAX);
+}
+
 /**
- * Swipe-down-to-dismiss for a bottom sheet, the way a native sheet behaves:
- * the sheet follows the finger, the backdrop fades with it, a tick fires when
- * the release point crosses "this will close", and letting go either flings it
- * away (far enough, or fast enough) or springs it back.
+ * Swipe-down-to-dismiss for a bottom sheet, built on Motion's drag so it moves
+ * the way a native sheet does: the sheet follows the finger 1:1 downward, pulls
+ * back with resistance upward, the backdrop fades with it, a tick fires as the
+ * release point crosses "this will close", and letting go either flings the
+ * sheet away (far enough or fast enough) or springs it back with the release
+ * velocity carried into the spring.
  *
- * Only elements marked `data-sheet-drag` start a drag — the grabber and the
- * title bar. The body keeps its normal scrolling, which is why this does not try
- * to hijack a scroll gesture. Movement is written straight to the element's
- * `transform` (the enter/exit slide uses the separate `translate` property, so
- * the two compose) to avoid a React render per pointer move.
+ * Only elements marked `data-sheet-drag` (the grabber and the title bar) start a
+ * drag — the body keeps its own scrolling. The enter/exit slide stays in CSS
+ * (`translate`), Motion owns `transform`, so the two compose without fighting.
  */
 export function useSwipeToDismiss({ enabled, onDismiss }: Options) {
+  const y = useMotionValue(0);
+  const controls = useDragControls();
   const popupRef = useRef<HTMLElement | null>(null);
   const overlayRef = useRef<HTMLElement | null>(null);
-  const drag = useRef<DragState | null>(null);
+  const crossed = useRef(false);
 
-  const settle = useCallback(() => {
-    const popup = popupRef.current;
+  // The backdrop follows the sheet — also while it springs back after a release.
+  useMotionValueEvent(y, 'change', (offset) => {
     const overlay = overlayRef.current;
-    if (popup) {
-      popup.style.transform = '';
-      popup.style.transition = '';
-    }
-    if (overlay) {
-      overlay.style.opacity = '';
-      overlay.style.transition = '';
-    }
-  }, []);
+    const popup = popupRef.current;
+    if (!overlay || !popup) return;
+    overlay.style.opacity = offset > 0 ? String(Math.max(0, 1 - offset / (popup.offsetHeight || 1))) : '';
+  });
 
-  const onPointerDown = useCallback(
+  // The sheet component outlives open/close; a dismissed sheet must not reopen offset.
+  const setPopup = useCallback(
+    (node: HTMLElement | null) => {
+      popupRef.current = node;
+      if (node) y.set(0);
+    },
+    [y]
+  );
+
+  const startDrag = useCallback(
     (event: ReactPointerEvent<HTMLElement>) => {
-      const popup = popupRef.current;
-      if (!enabled || !popup || event.button > 0) return;
-
+      if (!enabled || event.button > 0) return;
       const target = event.target as HTMLElement;
       if (!target.closest('[data-sheet-drag]')) return;
       if (target.closest('button, a, input, select, textarea, [role="combobox"]')) return;
-
-      drag.current = {
-        pointerId: event.pointerId,
-        startY: event.clientY,
-        lastY: event.clientY,
-        lastT: event.timeStamp,
-        velocity: 0,
-        crossed: false,
-      };
-      popup.setPointerCapture(event.pointerId);
-      popup.style.transition = 'none';
-      if (overlayRef.current) overlayRef.current.style.transition = 'none';
+      crossed.current = false;
+      controls.start(event);
     },
-    [enabled]
+    [controls, enabled]
   );
 
-  const onPointerMove = useCallback((event: ReactPointerEvent<HTMLElement>) => {
-    const state = drag.current;
-    const popup = popupRef.current;
-    if (!state || !popup || event.pointerId !== state.pointerId) return;
-
-    const raw = event.clientY - state.startY;
-    // Upward pull is damped (rubber band) instead of detaching the sheet from the edge.
-    const offset = raw >= 0 ? raw : -Math.sqrt(-raw) * 1.5;
-    popup.style.transform = `translateY(${offset}px)`;
-
-    const height = popup.offsetHeight || 1;
-    if (overlayRef.current) overlayRef.current.style.opacity = String(Math.max(0, 1 - Math.max(raw, 0) / height));
-
-    const dt = Math.max(event.timeStamp - state.lastT, 1);
-    state.velocity = 0.8 * state.velocity + 0.2 * ((event.clientY - state.lastY) / dt);
-    state.lastY = event.clientY;
-    state.lastT = event.timeStamp;
-
-    const threshold = Math.min(height * DISMISS_DISTANCE_RATIO, DISMISS_DISTANCE_MAX);
-    const crossed = raw > threshold;
-    if (crossed !== state.crossed) {
-      state.crossed = crossed;
+  const onDrag = useCallback((_: unknown, info: PanInfo) => {
+    const height = popupRef.current?.offsetHeight || 1;
+    const past = info.offset.y > dismissThreshold(height);
+    if (past !== crossed.current) {
+      crossed.current = past;
       haptic('selection');
     }
   }, []);
 
-  const finish = useCallback(
-    (event: ReactPointerEvent<HTMLElement>, cancelled: boolean) => {
-      const state = drag.current;
+  const onDragEnd = useCallback(
+    (_: unknown, info: PanInfo) => {
       const popup = popupRef.current;
-      if (!state || !popup || event.pointerId !== state.pointerId) return;
-      drag.current = null;
-      if (popup.hasPointerCapture(event.pointerId)) popup.releasePointerCapture(event.pointerId);
+      const height = popup?.offsetHeight || 1;
+      const flung = info.velocity.y > DISMISS_VELOCITY && info.offset.y > DISMISS_VELOCITY_MIN_DISTANCE;
 
-      const raw = event.clientY - state.startY;
-      const height = popup.offsetHeight || 1;
-      const threshold = Math.min(height * DISMISS_DISTANCE_RATIO, DISMISS_DISTANCE_MAX);
-      const flung = state.velocity > DISMISS_VELOCITY && raw > DISMISS_VELOCITY_MIN_DISTANCE;
-      const dismiss = !cancelled && (raw > threshold || flung);
-
-      // Hand the transform back to the stylesheet transition so both the exit slide and the spring-back animate.
-      popup.style.transition = '';
-      if (overlayRef.current) overlayRef.current.style.transition = '';
-
-      if (!dismiss) {
-        settle();
+      if (info.offset.y <= dismissThreshold(height) && !flung) {
+        void animate(y, 0, { ...SPRING_BACK, velocity: info.velocity.y });
         return;
       }
 
       haptic('light');
       onDismiss();
-      // If the owner refused to close, the sheet must not stay stranded half-way down.
+      // The CSS exit takes it from here. If the owner refused to close, do not leave the sheet stranded half-way down.
       window.setTimeout(() => {
-        if (popup.isConnected && popup.hasAttribute('data-open')) settle();
+        if (popup?.isConnected && popup.hasAttribute('data-open')) void animate(y, 0, SPRING_BACK);
       }, 450);
     },
-    [onDismiss, settle]
+    [onDismiss, y]
   );
 
   return {
-    popupRef,
+    setPopup,
     overlayRef,
-    handlers: {
-      onPointerDown,
-      onPointerMove,
-      onPointerUp: (event: ReactPointerEvent<HTMLElement>) => finish(event, false),
-      onPointerCancel: (event: ReactPointerEvent<HTMLElement>) => finish(event, true),
-    },
+    /** Spread on the (motion-wrapped) popup. */
+    motionProps: enabled
+      ? ({
+          drag: 'y',
+          dragControls: controls,
+          dragListener: false,
+          dragConstraints: { top: 0 },
+          dragElastic: { top: 0.06 },
+          dragMomentum: false,
+          style: { y },
+          onPointerDown: startDrag,
+          onDrag,
+          onDragEnd,
+        } as const)
+      : {},
   };
 }

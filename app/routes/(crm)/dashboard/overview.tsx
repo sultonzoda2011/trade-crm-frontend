@@ -22,7 +22,9 @@ import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
+import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
+import { Reveal } from '~/components/shared/Reveal';
 import { StatCard } from '~/components/shared/StatCard';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Button } from '~/components/ui/button';
@@ -116,45 +118,49 @@ export default function DashboardOverviewPage() {
       <InsightList insights={insights} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <MetricCard
-          className="animate-card-enter col-span-2 [--stagger-index:0] lg:col-span-1"
-          icon={Banknote}
-          label={t('metrics.revenue')}
-          value={fmtTJS(sales.netRevenue)}
-          hint={t('metrics.revenueHint', {
-            sales: fmtTJS(sales.saleRevenue),
-            debts: fmtTJS(sales.debtIssued),
-          })}
-          comparison={sales.comparison.netRevenue}
-          to={transactionsLink(scope)}
-        />
-        <MetricCard
-          className="animate-card-enter [--stagger-index:1]"
-          icon={Receipt}
-          label={t('metrics.transactions')}
-          value={sales.transactionCount}
-          hint={t('metrics.transactionsHint', { sales: sales.saleCount, debts: sales.debtCount })}
-          comparison={sales.comparison.transactionCount}
-          to={transactionsLink(scope)}
-        />
-        <MetricCard
-          className="animate-card-enter [--stagger-index:2]"
-          icon={ShoppingCart}
-          label={t('metrics.averageCheck')}
-          value={fmtTJS(sales.averageCheck)}
-          hint={t('metrics.unitsSold', { count: sales.unitsSold })}
-          comparison={sales.comparison.averageCheck}
-        />
-        <MetricCard
-          className="animate-card-enter [--stagger-index:3]"
-          icon={Undo2}
-          label={t('metrics.returns')}
-          value={fmtTJS(returns.amount)}
-          hint={t('metrics.returnsHint', { percent: Math.round(returns.returnRate * 1000) / 10 })}
-          comparison={returns.comparison.amount}
-          invertComparison
-          to={transactionsLink(scope, { type: 'REFUND' })}
-        />
+        <Reveal index={0} className="col-span-2 lg:col-span-1">
+          <MetricCard
+            icon={Banknote}
+            label={t('metrics.revenue')}
+            value={<AnimatedNumber value={sales.netRevenue} format={fmtTJS} />}
+            hint={t('metrics.revenueHint', {
+              sales: fmtTJS(sales.saleRevenue),
+              debts: fmtTJS(sales.debtIssued),
+            })}
+            comparison={sales.comparison.netRevenue}
+            to={transactionsLink(scope)}
+          />
+        </Reveal>
+        <Reveal index={1}>
+          <MetricCard
+            icon={Receipt}
+            label={t('metrics.transactions')}
+            value={<AnimatedNumber value={sales.transactionCount} />}
+            hint={t('metrics.transactionsHint', { sales: sales.saleCount, debts: sales.debtCount })}
+            comparison={sales.comparison.transactionCount}
+            to={transactionsLink(scope)}
+          />
+        </Reveal>
+        <Reveal index={2}>
+          <MetricCard
+            icon={ShoppingCart}
+            label={t('metrics.averageCheck')}
+            value={<AnimatedNumber value={sales.averageCheck} format={fmtTJS} />}
+            hint={t('metrics.unitsSold', { count: sales.unitsSold })}
+            comparison={sales.comparison.averageCheck}
+          />
+        </Reveal>
+        <Reveal index={3}>
+          <MetricCard
+            icon={Undo2}
+            label={t('metrics.returns')}
+            value={<AnimatedNumber value={returns.amount} format={fmtTJS} />}
+            hint={t('metrics.returnsHint', { percent: Math.round(returns.returnRate * 1000) / 10 })}
+            comparison={returns.comparison.amount}
+            invertComparison
+            to={transactionsLink(scope, { type: 'REFUND' })}
+          />
+        </Reveal>
       </div>
 
       <div className="grid items-stretch gap-6 lg:grid-cols-3">
@@ -172,7 +178,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={Package}
               label={t('inventory.total')}
-              value={inventory.totalProducts}
+              value={<AnimatedNumber value={inventory.totalProducts} />}
               to="/products"
               state={FRESH_LIST}
             />
@@ -182,7 +188,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={PackagePlus}
               label={t('inventory.toOrder')}
-              value={inventory.needsReorder}
+              value={<AnimatedNumber value={inventory.needsReorder} />}
               to="/products?needsReorder=true"
               valueClassName="text-warning"
               iconClassName="bg-warning/10 text-warning"
@@ -193,7 +199,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={PackageCheck}
               label={t('inventory.healthy')}
-              value={inventory.healthy}
+              value={<AnimatedNumber value={inventory.healthy} />}
               to="/products?health=HEALTHY"
               valueClassName="text-success"
               iconClassName="bg-success/10 text-success"
@@ -204,7 +210,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={TicketPercent}
               label={t('metrics.discounts')}
-              value={fmtTJS(sales.discountAmount)}
+              value={<AnimatedNumber value={sales.discountAmount} format={fmtTJS} />}
               to={transactionsLink(scope)}
             />
           </div>

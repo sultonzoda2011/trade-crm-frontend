@@ -4,7 +4,14 @@ import { Dialog as SheetPrimitive } from '@base-ui/react/dialog';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
 import { XIcon } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useSwipeToDismiss } from '~/hooks/useSwipeToDismiss';
+
+// Motion wraps the Base UI popup so the bottom sheet can be dragged; enter/exit stay CSS.
+// Typed loosely on purpose: the popup's native `onDrag*` (HTML drag-and-drop) and Motion's
+// `onDrag*` (pan gestures) share names with incompatible signatures.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const MotionPopup = motion.create(SheetPrimitive.Popup) as unknown as React.ComponentType<Record<string, any>>;
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -46,7 +53,7 @@ function SheetContent({
   showCloseButton?: boolean;
 }) {
   const closeRef = React.useRef<HTMLButtonElement>(null);
-  const { popupRef, overlayRef, handlers } = useSwipeToDismiss({
+  const { setPopup, overlayRef, motionProps } = useSwipeToDismiss({
     enabled: side === 'bottom',
     onDismiss: () => closeRef.current?.click(),
   });
@@ -54,11 +61,11 @@ function SheetContent({
   return (
     <SheetPortal>
       <SheetOverlay ref={overlayRef as React.Ref<HTMLDivElement>} />
-      <SheetPrimitive.Popup
-        ref={popupRef as React.Ref<HTMLDivElement>}
+      <MotionPopup
+        ref={setPopup as React.Ref<HTMLDivElement>}
         data-slot="sheet-content"
         data-side={side}
-        {...(side === 'bottom' ? handlers : {})}
+        {...motionProps}
         className={cn(
           'bg-popover text-popover-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-xl transition duration-200 ease-in-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:rounded-t-[20px] data-[side=bottom]:pb-[env(safe-area-inset-bottom)] data-[side=bottom]:duration-300 data-[side=bottom]:ease-[cubic-bezier(0.32,0.72,0,1)] data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full data-[side=bottom]:data-ending-style:opacity-100 data-[side=bottom]:data-starting-style:opacity-100 data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:rounded-r-2xl data-[side=left]:border-r data-[side=left]:pt-[env(safe-area-inset-top)] data-[side=left]:pb-[env(safe-area-inset-bottom)] data-[side=left]:data-ending-style:-translate-x-10 data-[side=left]:data-starting-style:-translate-x-10 data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:rounded-l-2xl data-[side=right]:border-l data-[side=right]:pt-[env(safe-area-inset-top)] data-[side=right]:pb-[env(safe-area-inset-bottom)] data-[side=right]:data-ending-style:translate-x-10 data-[side=right]:data-starting-style:translate-x-10 data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=top]:pt-[env(safe-area-inset-top)] data-[side=top]:data-ending-style:-translate-y-10 data-[side=top]:data-starting-style:-translate-y-10 data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm',
           className
@@ -83,7 +90,7 @@ function SheetContent({
             <span className="sr-only">Close</span>
           </SheetPrimitive.Close>
         )}
-      </SheetPrimitive.Popup>
+      </MotionPopup>
     </SheetPortal>
   );
 }

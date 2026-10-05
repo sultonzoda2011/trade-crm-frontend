@@ -16,6 +16,7 @@ import {
 
 import type { Route } from '.react-router/types/app/+types/root';
 import { QueryClientProvider } from '@tanstack/react-query';
+import { MotionConfig } from 'motion/react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
@@ -83,7 +84,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <ThemeProvider>
             <CapacitorBridge />
             <NavigationProgress />
-            <TooltipProvider>{children}</TooltipProvider>
+            {/* reducedMotion="user": people who turned animations off in the OS get none of the transform-based ones. */}
+            <MotionConfig reducedMotion="user">
+              <TooltipProvider>{children}</TooltipProvider>
+            </MotionConfig>
             <ToasterProvider />
           </ThemeProvider>
           {import.meta.env.DEV && <DevTools />}
