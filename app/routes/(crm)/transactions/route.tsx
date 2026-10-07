@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
+import { sellersApi } from '~/api/sellers';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
@@ -94,6 +95,18 @@ export default function TransactionsPage() {
     [productsResponse]
   );
 
+  // `/sellers` разрешён только Admin/Owner (Action.SELLERS_VIEW) — Seller на
+  // этой же странице получил бы здесь локальный отказ axios-перехватчика и
+  // тост с ошибкой при каждом заходе, поэтому запрос включён только когда
+  // роль это позволяет; тогда и фильтр "Создал" в конфиге не появляется вовсе.
+  const { data: sellersResponse } = useQuery({
+    queryKey: queryKeys.options('sellers', { scope: 'filters', limit: 100 }),
+    queryFn: () => sellersApi.getAll(1, 100, {}, []),
+    enabled: can(Action.SELLERS_VIEW),
+  });
+
+  const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
+
   const {
     data: response,
     isLoading,
@@ -142,8 +155,8 @@ export default function TransactionsPage() {
   });
 
   const filterConfig = useMemo(
-    () => getTransactionFilters(t, debtorOptions, categoryOptions, productOptions),
-    [t, debtorOptions, categoryOptions, productOptions]
+    () => getTransactionFilters(t, debtorOptions, categoryOptions, productOptions, sellerOptions),
+    [t, debtorOptions, categoryOptions, productOptions, sellerOptions]
   );
 
   useFilterParams({

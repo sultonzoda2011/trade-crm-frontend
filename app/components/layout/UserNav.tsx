@@ -19,7 +19,8 @@ import {
 } from '~/components/ui/dropdown-menu';
 
 import { ROLE_CONFIG } from '~/config/enumOptions';
-import { clearSession, getClientUser } from '~/lib/auth-utils';
+import { useCurrentUser } from '~/hooks/useCurrentUser';
+import { clearSession } from '~/lib/auth-utils';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский', shortLabel: 'РУ' },
@@ -35,7 +36,7 @@ export function UserNav() {
 
   const { theme, setTheme, systemTheme } = useTheme();
 
-  const userInfo = getClientUser();
+  const userInfo = useCurrentUser();
 
   const currentTheme = theme === 'system' ? systemTheme : theme;
 
@@ -74,10 +75,10 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <button className="hover:bg-accent hover:text-accent-foreground hover:border-border group flex h-11 items-center gap-2 rounded-full border border-transparent px-1 md:h-10 transition-all outline-none sm:px-2" />
+          <button className="glass-control group flex h-11 items-center gap-2 rounded-full p-1 outline-none transition-transform active:scale-95 md:h-10 sm:pr-2.5" />
         }>
-        <Avatar className="size-9 border">
-          {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
+        <Avatar className="size-9">
+          {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
 
           <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
         </Avatar>
@@ -96,8 +97,8 @@ export function UserNav() {
           <DropdownMenuLabel className="p-0 font-normal">
             <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
               <div className="flex items-center gap-3">
-                <Avatar className="size-12 border-2">
-                  {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} /> : null}
+                <Avatar className="size-12">
+                  {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
 
                   <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
                     {initials}

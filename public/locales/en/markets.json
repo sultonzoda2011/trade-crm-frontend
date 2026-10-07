@@ -8,45 +8,25 @@
   "updateSuccess": "Market updated successfully",
   "updateError": "Error updating market",
   "fields": {
-    "name": "Name",
-    "address": "Address",
-    "owner": "Owner",
-    "image": "Image",
     "ownerId": "Owner",
     "products": "Products",
     "debtors": "Debtors",
     "transactions": "Transactions",
-    "createdAt": "Created At",
-    "updatedAt": "Updated At",
     "employees": "Employees"
   },
   "hasUsers": "Has users",
-  "hasProducts": "Has products",
-  "statistics": "Statistics",
-  "quickActions": "Quick Actions",
   "viewProducts": "Market Products",
   "viewDebtors": "Market Debtors",
   "viewTransactions": "Market Transactions",
-  "viewAll": "All",
   "soldCount": "Sold {{count}}",
   "actions": {
-    "view": "View",
-    "edit": "Edit",
-    "delete": "Delete",
-    "confirm": "Confirmation",
     "areYouSure": "Are you sure you want to delete this market?",
     "deleteSuccess": "Market deleted",
     "deleteError": "Error deleting market",
-    "cancel": "Cancel",
-    "save": "Save",
-    "create": "Create",
     "all": "All markets"
   },
   "filters": {
     "search": "Search markets"
   },
-  "noEmployees": "No employees yet",
-  "noProducts": "No products yet",
-  "noDebtors": "No debtors yet",
-  "noTransactions": "No transactions yet"
+  "noEmployees": "No employees yet"
 }

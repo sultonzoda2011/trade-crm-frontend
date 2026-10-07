@@ -1,9 +1,9 @@
 {
-  "title": "Дашборд",
+  "title": "Хулоса",
   "tabs": {
     "overview": "Умумӣ",
     "inventory": "Анбор",
-    "products": "Маҳсулотҳо",
+    "products": "Молҳо",
     "sellers": "Фурӯшандагон"
   },
   "revenueTrend": "Тренди даромад",
@@ -13,12 +13,11 @@
   "allMarkets": "Ҳамаи бозорҳо",
   "allSellers": "Ҳамаи фурӯшандагон",
   "seller": "Фурӯшанда",
-  "viewAll": "Ҳамаро дидан",
   "empty": "Маълумот нест",
   "loadError": "Маълумот бор карда нашуд",
   "charts": {
     "revenue": "Даромад",
-    "transactions": "Транзаксияҳо"
+    "transactions": "Муомилотҳо"
   },
   "comparison": {
     "vsPrevious": "нисбат ба давраи гузашта",
@@ -28,7 +27,7 @@
   "metrics": {
     "revenue": "Даромади холис",
     "revenueHint": "Фурӯш {{sales}} · ба қарз {{debts}}",
-    "transactions": "Транзаксияҳо",
+    "transactions": "Муомилотҳо",
     "transactionsHint": "Фурӯш {{sales}} · қарз {{debts}}",
     "averageCheck": "Чеки миёна",
     "unitsSold": "{{count}} дона фурӯхта шуд",
@@ -59,7 +58,7 @@
     "toOrder": "Вақти фармоиш",
     "healthy": "Дар меъёр",
     "stockValue": "Арзиши захира",
-    "frozenValue": "Дар моли ҳаракатнокарда"
+    "frozenValue": "Дар молҳои беҳаракат"
   },
   "reorder": {
     "title": "Чиро фармоиш додан",
@@ -90,7 +89,7 @@
       "slowMoving": "{{count}} мол қариб фурӯхта намешавад: захира зиёда аз {{days}} рӯз",
       "noSales": "{{count}} мол дар ин давра фурӯхта нашуд",
       "reorderList": "{{count}} молро фармоиш додан лозим аст",
-      "recordProduct": "{{name}} — пешсаф дар фурӯш: {{count}} амалиёт дар ин давра, рекорд байни молҳо"
+      "recordProduct": "{{name}} — пешсаф дар фурӯш: {{count}} муомила дар ин давра, рекорд байни молҳо"
     },
     "sales": {
       "none": "Дар ин давра ягон фурӯш нест",
@@ -121,5 +120,5 @@
     "from": "Аз",
     "to": "То"
   },
-  "recentTransactions": "Амалиётҳои охирин"
+  "recentTransactions": "Муомилоти охирин"
 }

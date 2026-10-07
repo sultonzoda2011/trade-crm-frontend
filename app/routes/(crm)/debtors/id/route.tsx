@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Banknote, ChevronRight, HandCoins, Pencil, Store } from 'lucide-react';
+import { Banknote, HandCoins, Store } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -8,12 +8,17 @@ import { debtorsApi } from '~/api/debtors';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { InitialAvatar } from '~/components/shared/InitialAvatar';
-import { ListGroup, ListRow } from '~/components/shared/ListGroup';
+import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
+import { DetailFacts } from '~/components/shared/DetailFacts';
+import { DetailHero } from '~/components/shared/DetailHero';
+import { DetailPage } from '~/components/shared/DetailPage';
+import { EntityAvatar } from '~/components/shared/EntityAvatar';
+import { EntityRow } from '~/components/shared/EntityRow';
+import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
-import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { Action } from '~/config/actions';
@@ -90,10 +95,12 @@ export default function DebtorDetailPage() {
     }
   };
 
+  const fromState = { fromPath: location.pathname, fromName: debtor.name };
+
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-6">
-      <BreadCrumbs
-        items={[
+    <>
+      <DetailPage
+        crumbs={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
           {
             link: location.state?.fromPath ?? '/debtors',
@@ -101,143 +108,139 @@ export default function DebtorDetailPage() {
           },
           { label: debtor.name },
         ]}
-      />
-
-      <div className="bg-card rounded-2xl p-5">
-        <div className="flex items-center gap-3.5">
-          <InitialAvatar name={debtor.name} className="size-14 text-xl" />
-          <div className="min-w-0 flex-1">
-            <h1 className="break-words text-xl leading-tight font-bold">{debtor.name}</h1>
-            <a href={`tel:${debtor.phone.replace(/\s/g, '')}`} className="text-primary text-base whitespace-nowrap">
-              {debtor.phone}
-            </a>
-          </div>
-        </div>
-
-        <div className="mt-5">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-muted-foreground text-sm">{t('totalDebt')}</p>
-            {hasDebt && (
-              <Badge variant="outline" className={DEBTOR_RISK_BADGE[debtor.risk]}>
-                {t(`risk.${debtor.risk}`)}
-              </Badge>
-            )}
-          </div>
-          <p className={`font-mono text-4xl leading-tight font-bold ${hasDebt ? '' : 'text-success'}`}>
-            {fmtNum(debtor.totalDebtAmount)}
-            <span className="text-muted-foreground ml-1.5 text-lg font-semibold">TJS</span>
-          </p>
-          {debtor.overdueAmount > 0 && (
-            <p className="text-destructive mt-0.5 text-sm font-medium">
-              {t('profile.overdueAmount')} {fmtTJS(debtor.overdueAmount)}
-              {debtor.maxDaysOverdue > 0 && ` · ${t('profile.daysUnit', { count: debtor.maxDaysOverdue })}`}
-            </p>
-          )}
-        </div>
-
-        {(canGiveDebt || canAcceptPayment) && (
-          <div className="mt-5 space-y-2.5">
-            {canGiveDebt && (
-              <Button
-                size="lg"
-                className="w-full"
-                render={
-                  <Link
-                    to="/transactions/create"
-                    state={{ debtorId: debtor.id, debtorName: debtor.name, fromPath: location.pathname }}
-                  />
-                }>
-                <HandCoins />
-                {t('actions.giveDebt')}
-              </Button>
-            )}
-            {canAcceptPayment && (
-              <Button
-                size="lg"
-                variant="secondary"
-                className="w-full"
-                disabled={isPayLoading}
-                onClick={handleAcceptPayment}>
-                <Banknote />
-                {t('actions.acceptPayment')}
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-
-      <ListGroup>
-        <ListRow title={t('profile.activeDebtCount')} value={debtor.activeDebtCount} />
-        {debtor.nextDueDate && (
-          <ListRow title={t('profile.nextDueDate')} value={formatDate(debtor.nextDueDate)} />
-        )}
-        <ListRow
-          title={t('profile.lastPaymentAt')}
-          value={debtor.lastPaymentAt ? formatDate(debtor.lastPaymentAt) : t('profile.never')}
-        />
-        <ListRow title={t('profile.totalIssued')} value={fmtTJS(debtor.totalIssued)} />
-        <ListRow title={t('profile.totalCollected')} value={fmtTJS(debtor.totalCollected)} />
-        <ListRow title={t('profile.repaymentRate')} value={`${Math.round(debtor.repaymentRate * 100)}%`} />
-      </ListGroup>
-
-      {debtor.factors.length > 0 && (
-        <ListGroup title={t('risk.whyTitle')} footer={t('riskFactors.score', { count: debtor.score })}>
-          {debtor.factors.map((factor) => (
-            <ListRow key={factor} title={t(`riskFactors.${factor}`)} />
-          ))}
-        </ListGroup>
-      )}
-
-      <ListGroup
-        title={t('transactionsHistory')}
-        action={
-          totalTx > PREVIEW_LIMIT ? (
-            <Link
-              to="/transactions"
-              state={{ fromDebtorId: debtor.id, fromDebtorName: debtor.name }}
-              className="text-primary inline-flex items-center">
-              {t('viewAll')} · {totalTx}
-              <ChevronRight className="size-4" />
-            </Link>
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={debtor.name} size="lg" />}
+            title={debtor.name}
+            subtitle={
+              <a href={`tel:${debtor.phone.replace(/\s/g, '')}`} className="text-primary text-base whitespace-nowrap">
+                {debtor.phone}
+              </a>
+            }
+            badges={
+              hasDebt ? (
+                <Badge variant="outline" className={DEBTOR_RISK_BADGE[debtor.risk]}>
+                  {t(`risk.${debtor.risk}`)}
+                </Badge>
+              ) : undefined
+            }
+            editTo={can(Action.DEBTORS_EDIT) ? `/debtors/${debtor.id}/edit` : undefined}
+            editLabel={t('actions.edit', { ns: 'common' })}
+            figure={{
+              label: t('totalDebt'),
+              tone: hasDebt ? 'default' : 'success',
+              value: (
+                <>
+                  <AnimatedNumber value={debtor.totalDebtAmount} format={(v) => fmtNum(Math.round(v))} />
+                  <span className="text-muted-foreground ml-1.5 text-lg font-semibold">TJS</span>
+                </>
+              ),
+              caption:
+                debtor.overdueAmount > 0 ? (
+                  <span className="text-destructive font-medium">
+                    {t('profile.overdueAmount')} {fmtTJS(debtor.overdueAmount)}
+                    {debtor.maxDaysOverdue > 0 && ` · ${t('profile.daysUnit', { count: debtor.maxDaysOverdue })}`}
+                  </span>
+                ) : undefined,
+            }}
+            actions={
+              canGiveDebt || canAcceptPayment ? (
+                <>
+                  {canGiveDebt && (
+                    <Button
+                      size="lg"
+                      render={
+                        <Link
+                          to="/transactions/create"
+                          state={{ debtorId: debtor.id, debtorName: debtor.name, fromPath: location.pathname }}
+                        />
+                      }>
+                      <HandCoins data-icon="inline-start" />
+                      {t('actions.giveDebt')}
+                    </Button>
+                  )}
+                  {canAcceptPayment && (
+                    <Button size="lg" variant="secondary" loading={isPayLoading} onClick={handleAcceptPayment}>
+                      <Banknote data-icon="inline-start" />
+                      {t('actions.acceptPayment')}
+                    </Button>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
+        }
+        aside={
+          debtor.market ? (
+            <ListGroup title={t('fields.market')}>
+              <EntityRow
+                name={debtor.market.name}
+                subtitle={debtor.market.address ?? undefined}
+                image={debtor.market.image}
+                shape="square"
+                icon={Store}
+                to={can(Action.MARKETS_VIEW_BY_ID) ? `/markets/${debtor.market.id}` : undefined}
+                state={fromState}
+              />
+            </ListGroup>
           ) : undefined
         }>
-        {transactions.length === 0 ? (
-          <p className="text-muted-foreground px-4 py-6 text-center text-sm">{t('noTransactions')}</p>
-        ) : (
-          transactions
-            .slice(0, PREVIEW_LIMIT)
-            .map((tx) => (
-              <TransactionRow
-                key={tx.id}
-                tx={tx}
-                t={t}
-                to={`/transactions/${tx.id}`}
-                state={{ fromPath: location.pathname, fromName: debtor.name }}
-                showDebtor={false}
-              />
-            ))
-        )}
-      </ListGroup>
+        <DetailFacts
+          facts={[
+            { label: t('profile.activeDebtCount'), value: debtor.activeDebtCount },
+            {
+              label: t('profile.nextDueDate'),
+              value: debtor.nextDueDate ? formatDate(debtor.nextDueDate) : undefined,
+              show: !!debtor.nextDueDate,
+            },
+            {
+              label: t('profile.lastPaymentAt'),
+              value: debtor.lastPaymentAt ? formatDate(debtor.lastPaymentAt) : t('profile.never'),
+            },
+            { label: t('profile.totalIssued'), value: fmtTJS(debtor.totalIssued) },
+            { label: t('profile.totalCollected'), value: fmtTJS(debtor.totalCollected) },
+            { label: t('profile.repaymentRate'), value: `${Math.round(debtor.repaymentRate * 100)}%` },
+          ]}
+        />
 
-      {(can(Action.DEBTORS_EDIT) || debtor.market) && (
-        <ListGroup>
-          {can(Action.DEBTORS_EDIT) && (
-            <ListRow
-              leading={<Pencil className="text-primary size-5" />}
-              title={t('actions.edit', { ns: 'common' })}
-              to={`/debtors/${debtor.id}/edit`}
-            />
-          )}
-          {debtor.market && (
-            <ListRow
-              leading={<Store className="text-primary size-5" />}
-              title={t('fields.market')}
-              value={debtor.market.name}
-              to={can(Action.MARKETS_VIEW_BY_ID) ? `/markets/${debtor.market.id}` : undefined}
-            />
+        {debtor.factors.length > 0 && (
+          <ListGroup title={t('risk.whyTitle')} footer={t('riskFactors.score', { count: debtor.score })}>
+            {debtor.factors.map((factor) => (
+              <ListRow key={factor} title={t(`riskFactors.${factor}`)} />
+            ))}
+          </ListGroup>
+        )}
+
+        <ListGroup
+          title={t('transactionsHistory')}
+          action={
+            totalTx > PREVIEW_LIMIT ? (
+              <PanelViewAll
+                to="/transactions"
+                state={{ fromDebtorId: debtor.id, fromDebtorName: debtor.name }}
+                label={t('viewAll')}
+                count={totalTx}
+              />
+            ) : undefined
+          }>
+          {transactions.length === 0 ? (
+            <ListEmpty>{t('noTransactions')}</ListEmpty>
+          ) : (
+            transactions
+              .slice(0, PREVIEW_LIMIT)
+              .map((tx) => (
+                <TransactionRow
+                  key={tx.id}
+                  tx={tx}
+                  t={t}
+                  to={`/transactions/${tx.id}`}
+                  state={fromState}
+                  showDebtor={false}
+                />
+              ))
           )}
         </ListGroup>
-      )}
+      </DetailPage>
 
       <Sheet open={pickDebtOpen} onOpenChange={setPickDebtOpen}>
         <SheetContent side="bottom" className="bg-background max-h-[80dvh]">
@@ -254,7 +257,11 @@ export default function DebtorDetailPage() {
                 openDebts.map((tx) => (
                   <ListRow
                     key={tx.id}
-                    title={tx.items[0] ? `${tx.items[0].productName}${tx.items.length > 1 ? ` +${tx.items.length - 1}` : ''}` : formatDateShort(tx.createdAt)}
+                    title={
+                      tx.items[0]
+                        ? `${tx.items[0].productName}${tx.items.length > 1 ? ` +${tx.items.length - 1}` : ''}`
+                        : formatDateShort(tx.createdAt)
+                    }
                     subtitle={
                       tx.dueDate
                         ? `${formatDateShort(tx.createdAt)} · ${t('fields.dueDate', { ns: 'transactions' })} ${formatDateShort(tx.dueDate)}`
@@ -271,6 +278,6 @@ export default function DebtorDetailPage() {
       </Sheet>
 
       <CreatePaymentModal />
-    </div>
+    </>
   );
 }

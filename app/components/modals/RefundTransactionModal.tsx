@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { showSuccess } from '~/store/useSuccessStore';
 import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { CustomInput } from '~/components/shared/CustomInput';
@@ -90,13 +91,13 @@ export function RefundTransactionModal() {
         request: { items, reason: data.reason?.trim() || undefined },
       });
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
-      toast.success(t('refundSuccess'));
+      showSuccess({ title: t('refundSuccess'), amount: Math.round(refundTotal) });
       refundModal.close();
       reset();
     },
@@ -128,7 +129,8 @@ export function RefundTransactionModal() {
               form="refund-transaction-form"
               variant="destructive"
               className="flex-1 sm:flex-initial"
-              disabled={isPending || refundableItems.length === 0}>
+              loading={isPending}
+              disabled={refundableItems.length === 0}>
               {t('refundModal.submit')}
             </Button>
           </div>

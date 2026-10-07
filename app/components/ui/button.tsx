@@ -1,10 +1,11 @@
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
+import { LoaderCircle } from "lucide-react"
 
 import { cn } from "~/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-[opacity,background-color,color] outline-none select-none in-data-[slot=button-group]:rounded-lg focus-visible:ring-3 focus-visible:ring-ring/40 active:not-aria-[haspopup]:opacity-60 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:ring-3 aria-invalid:ring-destructive/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 md:text-sm md:[&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 cursor-pointer items-center justify-center rounded-xl border border-transparent bg-clip-padding text-base font-semibold whitespace-nowrap transition-[opacity,background-color,color,scale] duration-150 outline-none select-none in-data-[slot=button-group]:rounded-lg focus-visible:ring-3 focus-visible:ring-ring/40 active:not-aria-[haspopup]:scale-[0.97] active:not-aria-[haspopup]:opacity-60 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-40 aria-invalid:ring-3 aria-invalid:ring-destructive/30 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5 md:text-sm md:[&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -16,6 +17,8 @@ const buttonVariants = cva(
         outline: "bg-muted text-foreground aria-expanded:bg-muted/80",
         ghost: "text-foreground hover:bg-muted aria-expanded:bg-muted",
         destructive: "bg-destructive/12 text-destructive",
+        // Стекло (iOS 26): плавающие контролы поверх фона — справка, «Назад», «Изменить» в шапке карточки.
+        glass: "glass-control text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       // Тап-таргет ≥44px: default 48 на телефоне (44 — минимум по HIG, но
@@ -31,12 +34,26 @@ const buttonVariants = cva(
         "icon-lg": "size-12",
       },
     },
+    // Стеклянные контролы — капсулы/круги, как в iOS 26; размер не должен сбрасывать скругление.
+    compoundVariants: [{ variant: "glass", class: "rounded-full" }],
     defaultVariants: {
       variant: "default",
       size: "default",
     },
   }
 )
+
+type ButtonProps = ButtonPrimitive.Props &
+  VariantProps<typeof buttonVariants> & {
+    /**
+     * Busy state, built into the component so no page has to wire a spinner by
+     * hand. The button keeps its look (it is working, not unavailable), swaps
+     * its leading icon for a spinner, announces `aria-busy`, and swallows clicks
+     * — including the implicit submit from pressing Enter in a form field — until
+     * the work finishes. Pass the mutation's `isPending`.
+     */
+    loading?: boolean
+  }
 
 function Button({
   className,
@@ -45,22 +62,57 @@ function Button({
   render,
   nativeButton,
   disabled,
+  loading = false,
+  children,
+  onClick,
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: ButtonProps) {
   // When rendering as a non-native element (e.g. `render={<Link />}`), Base UI does
   // not emit a `disabled` attribute, so Tailwind's `disabled:` styles never apply.
   // Mirror them here so anchor/Link-rendered buttons look and behave disabled too.
   const nonNative = (nativeButton ?? (render === undefined)) === false;
   const nonNativeDisabled = nonNative && !!disabled;
+  // Icon-only buttons have nothing but the icon to replace; labelled ones keep
+  // any trailing icon and only lose the leading one the spinner stands in for.
+  const iconOnly = typeof size === "string" && size.startsWith("icon")
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }), nonNativeDisabled && 'pointer-events-none opacity-50')}
+      data-loading={loading ? "" : undefined}
+      aria-busy={loading || undefined}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        nonNativeDisabled && 'pointer-events-none opacity-50',
+        loading &&
+          cn(
+            "pointer-events-none cursor-progress",
+            iconOnly
+              ? "[&_svg:not([data-slot=spinner])]:hidden"
+              : "[&_[data-icon=inline-start]]:hidden"
+          )
+      )}
       render={render}
       nativeButton={nativeButton ?? (render === undefined)}
       disabled={disabled}
+      onClick={
+        loading
+          ? (event) => {
+              // pointer-events-none stops taps; this stops Enter / programmatic clicks.
+              event.preventDefault()
+            }
+          : onClick
+      }
       {...props}
-    />
+    >
+      {loading ? (
+        <LoaderCircle
+          data-slot="spinner"
+          aria-hidden="true"
+          className="animate-spin"
+        />
+      ) : null}
+      {children}
+    </ButtonPrimitive>
   )
 }
 

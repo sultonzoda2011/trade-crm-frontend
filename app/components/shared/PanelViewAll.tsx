@@ -1,4 +1,4 @@
-import { ArrowUpRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { Link } from 'react-router';
 
 interface PanelViewAllProps {
@@ -8,14 +8,15 @@ interface PanelViewAllProps {
   state?: unknown;
 }
 
+/** «Все (12) ›» — ссылка в заголовке секции на полный список. */
 export function PanelViewAll({ to, state, label, count }: PanelViewAllProps) {
   return (
     <Link
       to={to}
       state={state}
-      className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium transition-colors">
+      className="text-primary inline-flex items-center text-sm font-medium transition-opacity active:opacity-60">
       {label} ({count})
-      <ArrowUpRight className="size-3" />
+      <ChevronRight className="-mr-1 size-4" />
     </Link>
   );
 }

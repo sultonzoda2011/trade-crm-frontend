@@ -22,6 +22,26 @@ export interface ListOptions {
   sortOrder?: 'asc' | 'desc';
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Date pickers emit a bare `YYYY-MM-DD`. The backend parses that as midnight UTC
+ * for both ends, so "to 04.10" silently dropped everything created on the 4th.
+ * Stretch a bare `dateTo` to the last millisecond of that UTC day — the same
+ * convention the server's own period resolver uses — and pin `dateFrom` to the
+ * start of its day. Full ISO timestamps pass through untouched.
+ */
+export function withInclusiveDates<T extends { dateFrom?: unknown; dateTo?: unknown }>(params: T): T {
+  const next = { ...params };
+  if (typeof next.dateFrom === 'string' && DATE_ONLY.test(next.dateFrom)) {
+    next.dateFrom = `${next.dateFrom}T00:00:00.000Z`;
+  }
+  if (typeof next.dateTo === 'string' && DATE_ONLY.test(next.dateTo)) {
+    next.dateTo = `${next.dateTo}T23:59:59.999Z`;
+  }
+  return next;
+}
+
 /** `GET <base>` — paginated list with active filters flattened into query params. */
 export function listRequest<TListRes>(base: string) {
   return async (
@@ -31,7 +51,7 @@ export function listRequest<TListRes>(base: string) {
     filters: ActiveFilter[] = []
   ): Promise<TListRes> => {
     const { data } = await apiClient.get(base, {
-      params: { page, limit, ...options, ...filtersToParams(filters) },
+      params: withInclusiveDates({ page, limit, ...options, ...filtersToParams(filters) }),
     });
     return data;
   };

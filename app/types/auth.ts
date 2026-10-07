@@ -5,6 +5,8 @@ export interface User {
   email: string;
   role: Role;
   marketId: string;
+  /** Login does not return the photo today; the shell loads it from `/profile` (see `useCurrentUser`). */
+  image?: string | null;
 }
 export interface Login {
   accessToken: string;

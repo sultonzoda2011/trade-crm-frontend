@@ -14,21 +14,21 @@ const BreadCrumbs = ({ items }: BreadCrumbProps) => {
   const navigate = useNavigate();
   const backItem = items.length >= 2 ? items[items.length - 2] : null;
   const backClass =
-    'text-primary -ml-1 flex min-h-11 items-center gap-0.5 text-base transition-opacity active:opacity-60 sm:hidden';
+    'glass-control text-primary -ml-1 inline-flex max-w-[75vw] min-h-11 items-center gap-0.5 rounded-full py-1 pr-4 pl-2 text-base font-medium transition-transform active:scale-95 sm:hidden';
 
   return (
     <nav aria-label="Breadcrumb">
       {/* Mobile: back button */}
       {backItem?.link ? (
         <Link to={backItem.link} className={backClass}>
-          <ChevronLeft className="size-6" />
-          {backItem.label}
+          <ChevronLeft className="size-6 shrink-0" />
+          <span className="truncate">{backItem.label}</span>
         </Link>
       ) : (
         // Зашли по прямой ссылке — родителя в state нет, идём назад по истории.
         <button type="button" onClick={() => navigate(-1)} className={backClass}>
-          <ChevronLeft className="size-6" />
-          {backItem?.label ?? ''}
+          <ChevronLeft className="size-6 shrink-0" />
+          <span className="truncate">{backItem?.label ?? ''}</span>
         </button>
       )}
 

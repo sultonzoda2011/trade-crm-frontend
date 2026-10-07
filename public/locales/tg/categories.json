@@ -8,27 +8,12 @@
   "updateSuccess": "Категория бо муваффақият навсозӣ шуд",
   "updateError": "Хатогӣ ҳангоми навсозии категория",
   "fields": {
-    "name": "Ном",
-    "description": "Тавсиф",
-    "image": "Акс",
-    "market": "Бозор",
-    "productsCount": "Молҳо",
-    "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ"
+    "productsCount": "Молҳо"
   },
-  "hasProducts": "Мол дорад",
-  "statistics": "Омор",
-  "quickActions": "Амалҳои зуд",
-  "viewAll": "Ҳама",
   "filters": {
     "search": "Ҷустуҷӯи категорияҳо"
   },
   "actions": {
-    "view": "Дидан",
-    "edit": "Таҳрир",
-    "save": "Захира кардан",
-    "delete": "Нобуд кардан",
-    "confirm": "Тасдиқ",
     "areYouSure": "Шумо мутмаин ҳастед, ки ин категорияро нест кардан мехоҳед?",
     "deleteSuccess": "Категория нест карда шуд",
     "deleteError": "Хатогӣ ҳангоми нест кардани категория"

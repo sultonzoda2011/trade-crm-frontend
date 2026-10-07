@@ -1,5 +1,6 @@
 import { type Row, type Table, flexRender } from '@tanstack/react-table';
 import { AlertCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -213,13 +214,16 @@ export function DataTable<TData>({
             // Все строки — одна сгруппированная карточка с разделителями с отступом
             // слева (как в iOS «Настройках»), а не стопка отдельных карточек.
             <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
-              {table.getRowModel().rows.map((row) => {
+              {table.getRowModel().rows.map((row, index) => {
                 const link = getRowLink?.(row);
                 const card = renderMobileCard(row);
 
                 return (
-                  <div
+                  <motion.div
                     key={row.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
                     className="relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:bg-border not-last:after:content-['']">
                     {link && (
                       <Link
@@ -234,7 +238,7 @@ export function DataTable<TData>({
                       />
                     )}
                     {card}
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

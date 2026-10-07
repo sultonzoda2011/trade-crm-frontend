@@ -35,7 +35,7 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
         <IconActionButton
           icon={<Banknote className="size-4" />}
           label={t('actions.pay', { ns: 'debtors' })}
-          disabled={isPayLoading}
+          loading={isPayLoading}
           onClick={() => row.activeDebtTransactionId && openPay(row.activeDebtTransactionId)}
         />
       )}

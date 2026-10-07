@@ -15,6 +15,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '~/components/ui/sheet';
+import { countActiveFilters } from '~/components/shared/ActiveFilterPills';
 import { FilterField } from '~/components/shared/FilterField';
 import { applyFilter } from '~/store/useTableStore';
 
@@ -54,7 +55,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
   const [draft, setDraft] = useState<ActiveFilter[]>(filters);
   const [open, setOpen] = useState(false);
 
-  const activeCount = filters.length;
+  const activeCount = countActiveFilters(filters, config);
 
   const handleOpen = (isOpen: boolean, eventDetails?: SheetOpenChangeDetails) => {
     if (

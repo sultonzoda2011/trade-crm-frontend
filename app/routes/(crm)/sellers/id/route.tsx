@@ -1,21 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { Coins, Pencil, ReceiptText, Store, Wallet } from 'lucide-react';
+import { Store, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
-import { Panel } from '~/components/layout/Panel';
 import { PayoutSellerModal } from '~/components/modals/PayoutSellerModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { DetailHeader } from '~/components/shared/DetailHeader';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { MarketCard } from '~/components/shared/MarketCard';
+import { DetailFacts } from '~/components/shared/DetailFacts';
+import { DetailHero } from '~/components/shared/DetailHero';
+import { DetailPage } from '~/components/shared/DetailPage';
+import { EntityAvatar } from '~/components/shared/EntityAvatar';
+import { EntityRow } from '~/components/shared/EntityRow';
+import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
-import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionRow } from '~/components/shared/TransactionRow';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -56,10 +55,14 @@ export default function SellerDetailPage() {
     );
   }
 
+  const fromState = { fromPath: location.pathname, fromName: seller.name };
+  const hasBalance = !!balance && balance.earned > 0;
+  const canPayout = can(Action.SELLERS_EDIT) && !!balance && balance.balance > 0;
+
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <BreadCrumbs
-        items={[
+    <>
+      <DetailPage
+        crumbs={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
           {
             link: location.state?.fromPath,
@@ -67,168 +70,120 @@ export default function SellerDetailPage() {
           },
           { label: seller.name },
         ]}
-      />
-
-      <Panel bodyClassName="p-4">
-        <DetailHeader name={seller.name} subtitle={seller.email} image={seller.image} />
-      </Panel>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
-              <InfoItem
-                label={t('fields.name')}
-                value={
-                  <span className="flex items-center gap-2">
-                    <Avatar size="sm" className="shrink-0">
-                      {seller.image ? <AvatarImage src={seller.image} alt={seller.name} /> : null}
-                      <AvatarFallback>{seller.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="break-words">{seller.name}</span>
-                  </span>
-                }
-              />
-              <InfoItem label={t('fields.email')} value={seller.email} />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(seller.createdAt, true)} />
-            </div>
-          </Panel>
-
-          <Panel
-            bodyClassName="p-0"
-            title={t('transactionsHistory')}
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={seller.name} image={seller.image} size="lg" />}
+            title={seller.name}
+            subtitle={seller.email}
+            editTo={can(Action.SELLERS_EDIT) ? `/sellers/${seller.id}/edit` : undefined}
+            editLabel={t('actions.edit')}
+            stats={
+              hasBalance
+                ? [
+                    { label: t('earned'), value: fmtTJS(balance.earned) },
+                    { label: t('paidOut'), value: fmtTJS(balance.paidOut) },
+                    {
+                      label: t('balance'),
+                      value: fmtTJS(balance.balance),
+                      tone: balance.balance > 0 ? 'success' : 'default',
+                    },
+                  ]
+                : undefined
+            }
             actions={
-              transactions.length > 0 ? (
-                <PanelViewAll
-                  to="/transactions"
-                  state={{ fromSellerId: seller.id, fromSellerName: seller.name }}
-                  label={t('filters.all', { ns: 'common' })}
-                  count={totalTx}
-                />
-              ) : undefined
-            }>
-            {transactions.length === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">{t('noTransactions')}</p>
-            ) : (
-              <div className="divide-border divide-y">
-                {transactions.map((tx) => (
-                  <TransactionRow
-                    key={tx.id}
-                    tx={tx}
-                    t={t}
-                    to={`/transactions/${tx.id}`}
-                    state={{ fromPath: location.pathname, fromName: seller.name }}
-                  />
-                ))}
-              </div>
-            )}
-          </Panel>
-
-          <Panel
-            title={t('markupBalance')}
-            actions={
-              can(Action.SELLERS_EDIT) && balance && balance.balance > 0 ? (
-                <Button size="sm" className="gap-1.5 text-xs" onClick={() => payoutModal.open(seller)}>
-                  <Wallet className="size-3.5" />
+              canPayout ? (
+                <Button size="lg" onClick={() => payoutModal.open(seller)}>
+                  <Wallet data-icon="inline-start" />
                   {t('payout')}
                 </Button>
               ) : undefined
-            }>
-            {!balance || balance.earned === 0 ? (
-              <p className="text-muted-foreground py-6 text-center text-sm">{t('noBalance')}</p>
-            ) : (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-x-3 gap-y-0 sm:grid-cols-4 sm:gap-y-3">
-                  <InfoItem label={t('earned')} value={<span className="font-mono">{fmtTJS(balance.earned)}</span>} />
-                  {balance.refunded > 0 && (
-                    <InfoItem
-                      label={t('refunded')}
-                      value={<span className="text-destructive font-mono">− {fmtTJS(balance.refunded)}</span>}
-                    />
-                  )}
-                  <InfoItem label={t('paidOut')} value={<span className="font-mono">{fmtTJS(balance.paidOut)}</span>} />
-                  <InfoItem
-                    label={t('balance')}
-                    value={<span className="text-success font-mono font-semibold">{fmtTJS(balance.balance)}</span>}
-                  />
-                </div>
-
-                {credits.length > 0 && (
-                  <div className="border-t pt-3">
-                    <p className="text-muted-foreground mb-2 flex items-center gap-1.5 text-xs font-medium">
-                      <Coins className="size-3.5" />
-                      {t('creditsHistory')}
-                    </p>
-                    <div className="divide-border divide-y">
-                      {credits.map((credit) => (
-                        <div key={credit.id} className="flex items-center justify-between py-2 text-sm">
-                          <div className="flex flex-col">
-                            <span className="font-mono font-medium">{fmtTJS(credit.amount)}</span>
-                            {credit.note && <span className="text-muted-foreground text-xs">{credit.note}</span>}
-                          </div>
-                          <span className="text-muted-foreground text-xs">{formatDate(credit.createdAt, true)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </Panel>
-        </div>
-
-        <div className="space-y-4">
-          {seller.market && (
-            <MarketCard
-              market={seller.market}
-              t={t}
-              viewState={{ fromPath: location.pathname, fromName: seller.name }}
-            />
-          )}
-
-          <QuickActions
-            title={t('quickActions')}
-            actions={[
-              ...(can(Action.SELLERS_EDIT)
-                ? [
-                    {
-                      icon: Pencil,
-                      label: t('actions.edit'),
-                      variant: 'outline' as const,
-                      onClick: () => navigate(`/sellers/${id}/edit`),
-                    },
-                  ]
-                : []),
-              ...(can(Action.SELLERS_EDIT) && balance && balance.balance > 0
-                ? [
-                    {
-                      icon: Wallet,
-                      label: t('payout'),
-                      variant: 'outline' as const,
-                      onClick: () => payoutModal.open(seller),
-                    },
-                  ]
-                : []),
-              {
-                icon: ReceiptText,
-                label: t('transactionsHistory'),
-                render: <Link to="/transactions" state={{ fromSellerId: seller.id, fromSellerName: seller.name }} />,
-              },
-              ...(seller.market
-                ? [
-                    {
-                      icon: Store,
-                      label: t('fields.market'),
-                      render: <Link to={`/markets/${seller.market.id}`} />,
-                    },
-                  ]
-                : []),
-            ]}
+            }
           />
-        </div>
-      </div>
+        }
+        aside={
+          seller.market ? (
+            <ListGroup title={t('fields.market')}>
+              <EntityRow
+                name={seller.market.name}
+                subtitle={seller.market.address ?? undefined}
+                image={seller.market.image}
+                shape="square"
+                icon={Store}
+                to={`/markets/${seller.market.id}`}
+                state={fromState}
+              />
+            </ListGroup>
+          ) : undefined
+        }>
+        <DetailFacts
+          facts={[
+            { label: t('fields.email'), value: seller.email },
+            { label: t('fields.createdAt'), value: formatDate(seller.createdAt, true) },
+          ]}
+        />
 
+        <ListGroup
+          title={t('transactionsHistory')}
+          action={
+            transactions.length > 0 ? (
+              <PanelViewAll
+                to="/transactions"
+                state={{ fromSellerId: seller.id, fromSellerName: seller.name }}
+                label={t('filters.all', { ns: 'common' })}
+                count={totalTx}
+              />
+            ) : undefined
+          }>
+          {transactions.length === 0 ? (
+            <ListEmpty>{t('noTransactions')}</ListEmpty>
+          ) : (
+            transactions.map((tx) => (
+              <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} />
+            ))
+          )}
+        </ListGroup>
+
+        <ListGroup title={t('markupBalance')}>
+          {!hasBalance ? (
+            <ListEmpty>{t('noBalance')}</ListEmpty>
+          ) : (
+            <>
+              <ListRow title={t('earned')} value={fmtTJS(balance.earned)} valueClassName="text-foreground font-mono" />
+              {balance.refunded > 0 && (
+                <ListRow
+                  title={t('refunded')}
+                  value={`− ${fmtTJS(balance.refunded)}`}
+                  valueClassName="text-destructive font-mono"
+                />
+              )}
+              <ListRow
+                title={t('paidOut')}
+                value={fmtTJS(balance.paidOut)}
+                valueClassName="text-foreground font-mono"
+              />
+              <ListRow
+                title={t('balance')}
+                value={fmtTJS(balance.balance)}
+                valueClassName="text-success font-mono font-semibold"
+              />
+            </>
+          )}
+        </ListGroup>
+
+        {credits.length > 0 && (
+          <ListGroup title={t('creditsHistory')}>
+            {credits.map((credit) => (
+              <ListRow
+                key={credit.id}
+                title={<span className="font-mono font-medium">{fmtTJS(credit.amount)}</span>}
+                subtitle={credit.note || undefined}
+                value={<span className="text-xs">{formatDate(credit.createdAt, true)}</span>}
+              />
+            ))}
+          </ListGroup>
+        )}
+      </DetailPage>
       <PayoutSellerModal />
-    </div>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
@@ -52,8 +51,7 @@ export default function CreateDebtorPage() {
           <Button variant="outline" onClick={() => navigate('/debtors')}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-debtor-page-form" disabled={isPending}>
-            {isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
+          <Button type="submit" form="create-debtor-page-form" loading={isPending}>
             {t('actions.save')}
           </Button>
         </div>
@@ -86,8 +84,7 @@ export default function CreateDebtorPage() {
       <div
         className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
         style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
-        <Button type="submit" form="create-debtor-page-form" size="lg" className="w-full" disabled={isPending}>
-          {isPending && <Loader2 className="animate-spin" />}
+        <Button type="submit" form="create-debtor-page-form" size="lg" className="w-full" loading={isPending}>
           {t('actions.save')}
         </Button>
       </div>

@@ -64,4 +64,14 @@ export const queryKeys = {
 
   /** The signed-in user's own profile — the one read with no id. */
   profile: () => ['profile', 'self'] as const,
+
+  /**
+   * Compact `GET /profile` for the shell (header avatar, name). It is NOT the
+   * same payload as `profile()` — the profile page loads `/profile/full` under
+   * that key — so it needs its own key or the two would overwrite each other.
+   */
+  me: () => ['profile', 'me'] as const,
+
+  /** Prefix for everything profile-related; use it after an edit so both reads refresh. */
+  profileAll: () => ['profile'] as const,
 } as const;

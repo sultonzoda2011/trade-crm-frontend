@@ -1,20 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
-import { Pencil, Store } from 'lucide-react';
+import { Package, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
-import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { DetailHeader } from '~/components/shared/DetailHeader';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
-import { MarketCard } from '~/components/shared/MarketCard';
+import { DetailFacts } from '~/components/shared/DetailFacts';
+import { DetailHero } from '~/components/shared/DetailHero';
+import { DetailPage } from '~/components/shared/DetailPage';
+import { EntityAvatar } from '~/components/shared/EntityAvatar';
+import { EntityRow } from '~/components/shared/EntityRow';
+import { ListGroup } from '~/components/shared/ListGroup';
+import { MetricGrid } from '~/components/shared/MetricGrid';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
-import { QuickActions } from '~/components/shared/QuickActions';
 import { TrendBadge } from '~/components/shared/TrendBadge';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
-import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
@@ -51,6 +50,7 @@ export default function ProductDetailPage() {
 
   const isLowStock = product.quantity <= product.lowStockThreshold;
   const marketState = { fromPath: location.pathname, fromName: t('title') };
+  const unit = t(`unit.${product.unit}`);
 
   // health (7 состояний) — основной сигнал состояния товара, он уже покрывает
   // OUT_OF_STOCK / CRITICAL / LOW_STOCK, поэтому ручной бейдж lowStock его дублирует.
@@ -64,22 +64,20 @@ export default function ProductDetailPage() {
   const reorderIsActionable =
     reorderPriority === 'OUT_OF_STOCK' || reorderPriority === 'CRITICAL' || reorderPriority === 'WARNING';
   const showReorderBadge = reorderIsActionable && !healthCoversStock;
+  const { metrics, comparison, sales } = product;
 
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <BreadCrumbs
-        items={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-          { label: product.name },
-        ]}
-      />
-
-      <Panel bodyClassName="p-4">
-        <DetailHeader
-          name={product.name}
+    <DetailPage
+      crumbs={[
+        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+        { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
+        { label: product.name },
+      ]}
+      hero={
+        <DetailHero
+          avatar={<EntityAvatar name={product.name} image={product.image} icon={Package} shape="square" size="lg" />}
+          title={product.name}
           subtitle={product.market?.name}
-          image={product.image}
           badges={
             <>
               {product.category && (
@@ -105,145 +103,83 @@ export default function ProductDetailPage() {
               )}
             </>
           }
+          editTo={can(Action.PRODUCTS_EDIT) ? `/products/${product.id}/edit` : undefined}
+          editLabel={t('actions.edit')}
+          stats={[
+            { label: t('fields.price'), value: fmtTJS(product.price) },
+            {
+              label: t('fields.quantity'),
+              value: `${product.quantity} ${unit}`,
+              tone: isLowStock ? 'danger' : 'default',
+            },
+            { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
+          ]}
         />
-      </Panel>
+      }
+      aside={
+        product.market ? (
+          <ListGroup title={t('fields.market')}>
+            <EntityRow
+              name={product.market.name}
+              subtitle={product.market.address ?? undefined}
+              image={product.market.image}
+              shape="square"
+              icon={Store}
+              to={`/markets/${product.marketId}`}
+              state={marketState}
+            />
+          </ListGroup>
+        ) : undefined
+      }>
+      <DetailFacts
+        facts={[
+          { label: t('fields.description'), value: product.description, long: true, show: !!product.description },
+          { label: t('fields.category'), value: product.category?.name ?? '—' },
+          { label: t('fields.lowStockThreshold'), value: `${product.lowStockThreshold} ${unit}` },
+          { label: t('fields.createdAt'), value: formatDate(product.createdAt, true) },
+          { label: t('fields.updatedAt'), value: formatDate(product.updatedAt, true) },
+        ]}
+      />
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
-              {product.description && <InfoItem label={t('fields.description')} value={product.description} />}
-              <InfoItem label={t('fields.price')} value={fmtTJS(product.price)} />
-              <InfoItem
-                label={t('fields.quantity')}
-                value={
-                  <span className="flex items-center gap-2">
-                    <span className={isLowStock ? 'text-destructive font-semibold' : undefined}>
-                      {product.quantity} {t(`unit.${product.unit}`)}
-                    </span>
-                    {isLowStock && (
-                      <Badge variant="destructive" className="text-xs font-normal">
-                        {t('lowStock')}
-                      </Badge>
-                    )}
-                  </span>
-                }
-              />
+      <MetricGrid
+        title={t('metrics.title')}
+        metrics={[
+          { label: t('metrics.revenue'), value: fmtTJS(metrics.revenue), trend: <TrendBadge comparison={comparison.revenue} /> },
+          {
+            label: t('metrics.netUnitsSold'),
+            value: metrics.netUnitsSold,
+            trend: <TrendBadge comparison={comparison.netUnitsSold} />,
+          },
+          {
+            label: t('metrics.transactionCount'),
+            value: metrics.transactionCount,
+            trend: <TrendBadge comparison={comparison.transactionCount} />,
+          },
+          { label: t('metrics.refundedUnits'), value: metrics.refundedUnits },
+          { label: t('metrics.returnRate'), value: `${Math.round(metrics.returnRate * 100)}%` },
+          { label: t('metrics.avgDailySales'), value: metrics.avgDailySales.toFixed(1) },
+          {
+            label: t('metrics.daysOfStock'),
+            value:
+              metrics.daysOfStockRemaining == null
+                ? t('metrics.noVelocity')
+                : t('metrics.daysUnit', { count: metrics.daysOfStockRemaining }),
+          },
+          ...(metrics.recommendedQuantity > 0
+            ? [{ label: t('metrics.recommendedQuantity'), value: `${metrics.recommendedQuantity} ${unit}` }]
+            : []),
+        ]}
+      />
 
-              <InfoItem
-                label={t('fields.lowStockThreshold')}
-                value={`${product.lowStockThreshold} ${t(`unit.${product.unit}`)}`}
-              />
-              <InfoItem label={t('fields.category')} value={product.category?.name ?? '—'} />
-              <InfoItem
-                label={t('fields.market')}
-                value={
-                  <span className="flex items-center gap-2">
-                    <Avatar size="sm" className="shrink-0">
-                      {product.market?.image ? (
-                        <AvatarImage src={product.market.image} alt={product.market.name} />
-                      ) : null}
-                      <AvatarFallback>{(product.market?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <InfoLink to={`/markets/${product.marketId}`} state={marketState}>
-                      {product.market?.name}
-                    </InfoLink>
-                  </span>
-                }
-              />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(product.createdAt, true)} />
-              <InfoItem label={t('fields.updatedAt')} value={formatDate(product.updatedAt, true)} />
-            </div>
-          </Panel>
-
-          <Panel title={t('metrics.title')}>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-3 sm:gap-y-3">
-              <InfoItem
-                label={t('metrics.revenue')}
-                value={
-                  <span className="flex items-center gap-2">
-                    {fmtTJS(product.metrics.revenue)}
-                    <TrendBadge comparison={product.comparison.revenue} />
-                  </span>
-                }
-              />
-              <InfoItem
-                label={t('metrics.netUnitsSold')}
-                value={
-                  <span className="flex items-center gap-2">
-                    {product.metrics.netUnitsSold}
-                    <TrendBadge comparison={product.comparison.netUnitsSold} />
-                  </span>
-                }
-              />
-              <InfoItem
-                label={t('metrics.transactionCount')}
-                value={
-                  <span className="flex items-center gap-2">
-                    {product.metrics.transactionCount}
-                    <TrendBadge comparison={product.comparison.transactionCount} />
-                  </span>
-                }
-              />
-              <InfoItem label={t('metrics.refundedUnits')} value={product.metrics.refundedUnits} />
-              <InfoItem label={t('metrics.returnRate')} value={`${Math.round(product.metrics.returnRate * 100)}%`} />
-              <InfoItem label={t('metrics.avgDailySales')} value={product.metrics.avgDailySales.toFixed(1)} />
-              <InfoItem
-                label={t('metrics.daysOfStock')}
-                value={
-                  product.metrics.daysOfStockRemaining == null
-                    ? t('metrics.noVelocity')
-                    : t('metrics.daysUnit', { count: product.metrics.daysOfStockRemaining })
-                }
-              />
-              {product.metrics.recommendedQuantity > 0 && (
-                <InfoItem
-                  label={t('metrics.recommendedQuantity')}
-                  value={`${product.metrics.recommendedQuantity} ${t(`unit.${product.unit}`)}`}
-                />
-              )}
-            </div>
-          </Panel>
-
-          <Panel title={t('metrics.allTime')}>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:grid-cols-2 sm:gap-y-3">
-              <InfoItem label={t('metrics.transactionCount')} value={product.sales.count} />
-              <InfoItem label={t('metrics.netUnitsSold')} value={product.sales.unitsSold} />
-              <InfoItem label={t('metrics.refundedUnits')} value={product.sales.refundedUnits} />
-              <InfoItem label={t('metrics.revenue')} value={fmtTJS(product.sales.revenue)} />
-            </div>
-          </Panel>
-        </div>
-
-        <div className="space-y-4">
-          <MarketCard market={product.market!} t={t} viewState={marketState} />
-
-          <QuickActions
-            title={t('quickActions')}
-            actions={[
-              ...(can(Action.PRODUCTS_EDIT)
-                ? [
-                    {
-                      icon: Pencil,
-                      label: t('actions.edit'),
-                      variant: 'outline' as const,
-                      render: <Link to={`/products/${product.id}/edit`} />,
-                    },
-                  ]
-                : []),
-              ...(product.market
-                ? [
-                    {
-                      icon: Store,
-                      label: t('fields.market'),
-                      render: <Link to={`/markets/${product.marketId}`} />,
-                    },
-                  ]
-                : []),
-            ]}
-          />
-        </div>
-      </div>
-    </div>
+      <MetricGrid
+        title={t('metrics.allTime')}
+        metrics={[
+          { label: t('metrics.transactionCount'), value: sales.count },
+          { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
+          { label: t('metrics.refundedUnits'), value: sales.refundedUnits },
+          { label: t('metrics.revenue'), value: fmtTJS(sales.revenue) },
+        ]}
+      />
+    </DetailPage>
   );
 }

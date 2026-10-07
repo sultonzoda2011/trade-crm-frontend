@@ -48,7 +48,7 @@ export function CreateDebtorModal() {
           <Button variant="outline" onClick={createModal.close}>
             {t('actions.cancel')}
           </Button>
-          <Button type="submit" form="create-debtor-form" disabled={isPending}>
+          <Button type="submit" form="create-debtor-form" loading={isPending}>
             {t('actions.save')}
           </Button>
         </div>

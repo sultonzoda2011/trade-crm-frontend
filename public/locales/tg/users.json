@@ -1,21 +1,7 @@
 {
-  "title": "Истифодабарандагон",
+  "title": "Корбарон",
   "create": "Эҷод кардан",
   "notFound": "Истифодабаранда ёфт нашуд",
-  "fields": {
-    "role": "Нақш",
-    "image": "Акс",
-    "createdAt": "Санаи эҷод",
-    "updatedAt": "Санаи навсозӣ"
-  },
   "isOwner": "Соҳиб",
-  "statistics": "Омор",
-  "quickActions": "Амалҳои зуд",
-  "transactionsHistory": "Таърихи амалиётҳо",
-  "viewMarkets": "Бозорҳои корбар",
-  "noTransactions": "Ҳанӯз амалиёте нест",
-  "viewAll": "Ҳама",
-  "navigation": {
-    "users": "Истифодабарандагон"
-  }
+  "viewMarkets": "Бозорҳои корбар"
 }

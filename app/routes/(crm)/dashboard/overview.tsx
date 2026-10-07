@@ -22,18 +22,24 @@ import { OverdueAlertCard } from '~/components/dashboard/OverdueAlertCard';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
 import { Panel } from '~/components/layout/Panel';
+import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
+import { Reveal } from '~/components/shared/Reveal';
 import { StatCard } from '~/components/shared/StatCard';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
 import { useCan } from '~/hooks/useCan';
+import { transactionsLink } from '~/lib/dashboard-links';
 import { fmtTJS } from '~/lib/format';
 import type { DashboardFilters } from './layout';
 import { queryKeys } from '~/lib/query-keys';
 
 /** Сколько последних операций показывать на дашборде превью-списком. */
 const RECENT_TRANSACTIONS_LIMIT = 5;
+
+/** Router state for links to an unfiltered list: tells the list to drop filters left from an earlier visit. */
+const FRESH_LIST = { freshList: true };
 
 export default function DashboardOverviewPage() {
   const { t } = useTranslation(['dashboard', 'common']);
@@ -56,15 +62,25 @@ export default function DashboardOverviewPage() {
 
   // Своя, самая свежая выдача транзакций — не пересчитывается из overview,
   // это просто "последние N по времени", как и на странице должника.
+  // Продавец из фильтра применяется и здесь: без него при выбранном продавце
+  // рядом с его цифрами показывались чужие операции. Период не применяется —
+  // это именно «последние», а не «за период».
   const { data: recentTx } = useQuery({
-    queryKey: queryKeys.dashboard('recent-transactions'),
-    queryFn: () => transactionsApi.getAll(1, RECENT_TRANSACTIONS_LIMIT, { sortBy: 'createdAt', sortOrder: 'desc' }),
+    queryKey: queryKeys.dashboard('recent-transactions', { sellerId }),
+    queryFn: () =>
+      transactionsApi.getAll(
+        1,
+        RECENT_TRANSACTIONS_LIMIT,
+        { sortBy: 'createdAt', sortOrder: 'desc' },
+        sellerId ? [{ key: 'createdById', value: sellerId }] : []
+      ),
     staleTime: 30_000,
   });
   const recentTransactions = recentTx?.data?.data ?? [];
   const recentTransactionsTotal = recentTx?.data?.meta?.total ?? 0;
 
   const overview = data?.data;
+  const scope = { period, sellerId };
 
   if (isError) {
     return (
@@ -102,42 +118,49 @@ export default function DashboardOverviewPage() {
       <InsightList insights={insights} />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
-        <MetricCard
-          className="col-span-2 lg:col-span-1"
-          icon={Banknote}
-          label={t('metrics.revenue')}
-          value={fmtTJS(sales.netRevenue)}
-          hint={t('metrics.revenueHint', {
-            sales: fmtTJS(sales.saleRevenue),
-            debts: fmtTJS(sales.debtIssued),
-          })}
-          comparison={sales.comparison.netRevenue}
-          to="/transactions"
-        />
-        <MetricCard
-          icon={Receipt}
-          label={t('metrics.transactions')}
-          value={sales.transactionCount}
-          hint={t('metrics.transactionsHint', { sales: sales.saleCount, debts: sales.debtCount })}
-          comparison={sales.comparison.transactionCount}
-          to="/transactions"
-        />
-        <MetricCard
-          icon={ShoppingCart}
-          label={t('metrics.averageCheck')}
-          value={fmtTJS(sales.averageCheck)}
-          hint={t('metrics.unitsSold', { count: sales.unitsSold })}
-          comparison={sales.comparison.averageCheck}
-        />
-        <MetricCard
-          icon={Undo2}
-          label={t('metrics.returns')}
-          value={fmtTJS(returns.amount)}
-          hint={t('metrics.returnsHint', { percent: Math.round(returns.returnRate * 1000) / 10 })}
-          comparison={returns.comparison.amount}
-          invertComparison
-          to="/transactions?type=REFUND"
-        />
+        <Reveal index={0} className="col-span-2 lg:col-span-1">
+          <MetricCard
+            icon={Banknote}
+            label={t('metrics.revenue')}
+            value={<AnimatedNumber value={sales.netRevenue} format={fmtTJS} />}
+            hint={t('metrics.revenueHint', {
+              sales: fmtTJS(sales.saleRevenue),
+              debts: fmtTJS(sales.debtIssued),
+            })}
+            comparison={sales.comparison.netRevenue}
+            to={transactionsLink(scope)}
+          />
+        </Reveal>
+        <Reveal index={1}>
+          <MetricCard
+            icon={Receipt}
+            label={t('metrics.transactions')}
+            value={<AnimatedNumber value={sales.transactionCount} />}
+            hint={t('metrics.transactionsHint', { sales: sales.saleCount, debts: sales.debtCount })}
+            comparison={sales.comparison.transactionCount}
+            to={transactionsLink(scope)}
+          />
+        </Reveal>
+        <Reveal index={2}>
+          <MetricCard
+            icon={ShoppingCart}
+            label={t('metrics.averageCheck')}
+            value={<AnimatedNumber value={sales.averageCheck} format={fmtTJS} />}
+            hint={t('metrics.unitsSold', { count: sales.unitsSold })}
+            comparison={sales.comparison.averageCheck}
+          />
+        </Reveal>
+        <Reveal index={3}>
+          <MetricCard
+            icon={Undo2}
+            label={t('metrics.returns')}
+            value={<AnimatedNumber value={returns.amount} format={fmtTJS} />}
+            hint={t('metrics.returnsHint', { percent: Math.round(returns.returnRate * 1000) / 10 })}
+            comparison={returns.comparison.amount}
+            invertComparison
+            to={transactionsLink(scope, { type: 'REFUND' })}
+          />
+        </Reveal>
       </div>
 
       <div className="grid items-stretch gap-6 lg:grid-cols-3">
@@ -146,7 +169,7 @@ export default function DashboardOverviewPage() {
       </div>
 
       <div className="grid items-stretch gap-6 lg:grid-cols-2">
-        <OverdueAlertCard debts={debts} />
+        <OverdueAlertCard debts={debts} scope={scope} />
 
         <Panel title={t('stockSummary')} className="lg:col-span-1" bodyClassName="space-y-2">
           <div className="grid grid-cols-2 gap-2 sm:gap-5">
@@ -155,8 +178,9 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={Package}
               label={t('inventory.total')}
-              value={inventory.totalProducts}
+              value={<AnimatedNumber value={inventory.totalProducts} />}
               to="/products"
+              state={FRESH_LIST}
             />
 
             <StatCard
@@ -164,7 +188,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={PackagePlus}
               label={t('inventory.toOrder')}
-              value={inventory.needsReorder}
+              value={<AnimatedNumber value={inventory.needsReorder} />}
               to="/products?needsReorder=true"
               valueClassName="text-warning"
               iconClassName="bg-warning/10 text-warning"
@@ -175,7 +199,7 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={PackageCheck}
               label={t('inventory.healthy')}
-              value={inventory.healthy}
+              value={<AnimatedNumber value={inventory.healthy} />}
               to="/products?health=HEALTHY"
               valueClassName="text-success"
               iconClassName="bg-success/10 text-success"
@@ -186,8 +210,8 @@ export default function DashboardOverviewPage() {
               size="sm"
               icon={TicketPercent}
               label={t('metrics.discounts')}
-              value={fmtTJS(sales.discountAmount)}
-              to="/transactions"
+              value={<AnimatedNumber value={sales.discountAmount} format={fmtTJS} />}
+              to={transactionsLink(scope)}
             />
           </div>
           {!user?.marketId && (
@@ -202,7 +226,14 @@ export default function DashboardOverviewPage() {
 
       <Panel
         title={t('recentTransactions')}
-        actions={<PanelViewAll to="/transactions" label={t('viewAll')} count={recentTransactionsTotal} />}
+        actions={
+          <PanelViewAll
+            to={sellerId ? `/transactions?createdById=${encodeURIComponent(sellerId)}` : '/transactions'}
+            label={t('viewAll')}
+            count={recentTransactionsTotal}
+            state={FRESH_LIST}
+          />
+        }
         bodyClassName="p-0">
         {recentTransactions.length === 0 ? (
           <p className="text-muted-foreground py-6 text-center text-sm">{t('empty')}</p>

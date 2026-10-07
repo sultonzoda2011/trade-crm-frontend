@@ -11,12 +11,14 @@ import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
 import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
+import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useFilterParams } from '~/hooks/useFilterParams';
 import { getClientUser } from '~/lib/auth-utils';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/sellers/configs/columns';
@@ -31,7 +33,7 @@ export default function SellersPage() {
   const { can } = useCan();
   const deleteModal = useSellersModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters } = useSellersStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } = useSellersStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -73,6 +75,19 @@ export default function SellersPage() {
   const columns = useMemo(() => getColumns({ t }), [t]);
 
   const filterConfig = useMemo(() => getSellerFilters(t), [t]);
+
+  // Фильтры из ссылки (с дашборда, из карточек) и из адресной строки при перезагрузке.
+  useFilterParams({
+    page,
+    limit,
+    search,
+    filters,
+    setPage,
+    setLimit,
+    setSearch,
+    setFilters,
+    filterConfigs: filterConfig,
+  });
   const sellers = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
 
@@ -101,6 +116,7 @@ export default function SellersPage() {
           </Button>
         )}
       </ListPageToolbar>
+      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
       <DataTable
         table={table}
         pinLastColumn

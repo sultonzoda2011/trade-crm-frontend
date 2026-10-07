@@ -2,20 +2,6 @@
   "title": "Users",
   "create": "Create",
   "notFound": "User not found",
-  "fields": {
-    "role": "Role",
-    "image": "Image",
-    "createdAt": "Created at",
-    "updatedAt": "Updated at"
-  },
   "isOwner": "Owner",
-  "statistics": "Statistics",
-  "quickActions": "Quick Actions",
-  "transactionsHistory": "Transaction History",
-  "viewMarkets": "User's Markets",
-  "noTransactions": "No transactions yet",
-  "viewAll": "View all",
-  "navigation": {
-    "users": "Users"
-  }
+  "viewMarkets": "User's Markets"
 }

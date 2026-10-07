@@ -44,16 +44,14 @@ export default function MarketDetailPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <MarketDetailView
-        market={market}
-        isOwnMarket={isOwnMarket}
-        previews={{
-          products: response?.data?.products?.data ?? [],
-          debtors: response?.data?.debtors?.data ?? [],
-          transactions: response?.data?.transactions?.data ?? [],
-        }}
-      />
-    </div>
+    <MarketDetailView
+      market={market}
+      isOwnMarket={isOwnMarket}
+      previews={{
+        products: response?.data?.products?.data ?? [],
+        debtors: response?.data?.debtors?.data ?? [],
+        transactions: response?.data?.transactions?.data ?? [],
+      }}
+    />
   );
 }

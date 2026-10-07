@@ -8,45 +8,25 @@
   "updateSuccess": "Рынок успешно обновлён",
   "updateError": "Ошибка при обновлении рынка",
   "fields": {
-    "name": "Название",
-    "address": "Адрес",
-    "owner": "Владелец",
-    "image": "Изображение",
     "ownerId": "Владелец",
     "products": "Товары",
     "debtors": "Должники",
     "transactions": "Транзакции",
-    "employees": "Сотрудники",
-    "createdAt": "Дата создания",
-    "updatedAt": "Дата обновления"
+    "employees": "Сотрудники"
   },
   "hasUsers": "Есть пользователи",
-  "hasProducts": "Есть товары",
-  "statistics": "Статистика",
-  "quickActions": "Быстрые действия",
   "viewProducts": "Товары рынка",
   "viewDebtors": "Должники рынка",
   "viewTransactions": "Транзакции рынка",
-  "viewAll": "Все",
   "soldCount": "Продано {{count}}",
   "actions": {
-    "view": "Просмотр",
-    "edit": "Редактировать",
-    "delete": "Удалить",
-    "confirm": "Подтверждение",
     "areYouSure": "Вы уверены, что хотите удалить этот рынок?",
     "deleteSuccess": "Рынок удалён",
     "deleteError": "Ошибка при удалении рынка",
-    "cancel": "Отмена",
-    "save": "Сохранить",
-    "create": "Создать",
     "all": "Все рынки"
   },
   "filters": {
     "search": "Поиск по рынкам"
   },
-  "noEmployees": "Пока нет сотрудников",
-  "noProducts": "Пока нет товаров",
-  "noDebtors": "Пока нет должников",
-  "noTransactions": "Пока нет транзакций"
+  "noEmployees": "Пока нет сотрудников"
 }
