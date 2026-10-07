@@ -1,28 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, Pencil, ReceiptText, Store } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { usersApi } from '~/api/users';
-import { Panel } from '~/components/layout/Panel';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { DetailHeader } from '~/components/shared/DetailHeader';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { ListLink } from '~/components/shared/ListLink';
-import { MarketCard } from '~/components/shared/MarketCard';
+import { DetailFacts } from '~/components/shared/DetailFacts';
+import { DetailHero } from '~/components/shared/DetailHero';
+import { DetailPage } from '~/components/shared/DetailPage';
+import { EntityAvatar } from '~/components/shared/EntityAvatar';
+import { EntityRow } from '~/components/shared/EntityRow';
+import { ListGroup } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
-import { QuickActions } from '~/components/shared/QuickActions';
 import { TransactionRow } from '~/components/shared/TransactionRow';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
-import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
-import { Role } from '~/types/common';
 
 export default function UserDetailPage() {
   const { t } = useTranslation(['users', 'common']);
@@ -55,142 +52,79 @@ export default function UserDetailPage() {
     );
   }
 
-  const roleLabel =
-    user.role === Role.Admin ? t('role.admin') : user.role === Role.Owner ? t('role.owner') : t('role.seller');
+  const fromState = { fromPath: location.pathname, fromName: user.name };
+  const roleConfig = ROLE_CONFIG[user.role];
+  const roleLabel = roleConfig ? roleConfig.label(t) : user.role;
+  // Владелец — по списку своих магазинов; у продавца магазин один, он лежит в `user.market`.
+  const markets = ownedMarkets.length > 0 ? ownedMarkets.slice(0, 5) : user.market ? [user.market] : [];
 
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <BreadCrumbs
-        items={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          {
-            link: location.state?.fromPath,
-            label: location.state?.fromName || t('navigation.users', { ns: 'common' }),
-          },
-          { label: user.name },
+    <DetailPage
+      crumbs={[
+        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+        {
+          link: location.state?.fromPath,
+          label: location.state?.fromName || t('navigation.users', { ns: 'common' }),
+        },
+        { label: user.name },
+      ]}
+      hero={
+        <DetailHero
+          avatar={<EntityAvatar name={user.name} image={user.image} size="lg" />}
+          title={user.name}
+          subtitle={user.email}
+          badges={
+            <Badge variant="outline" className={roleConfig?.className}>
+              {roleLabel}
+            </Badge>
+          }
+          editTo={can(Action.USERS_EDIT) ? `/users/${user.id}/edit` : undefined}
+          editLabel={t('actions.edit')}
+        />
+      }
+      aside={
+        markets.length > 0 ? (
+          <ListGroup title={t('fields.market')}>
+            {markets.map((market) => (
+              <EntityRow
+                key={market.id}
+                name={market.name}
+                subtitle={market.address ?? undefined}
+                image={market.image}
+                shape="square"
+                icon={Store}
+                to={`/markets/${market.id}`}
+                state={fromState}
+              />
+            ))}
+          </ListGroup>
+        ) : undefined
+      }>
+      <DetailFacts
+        facts={[
+          { label: t('fields.email'), value: user.email },
+          { label: t('fields.role'), value: roleLabel },
+          { label: t('fields.createdAt'), value: formatDate(user.createdAt, true) },
+          { label: t('fields.updatedAt'), value: formatDate(user.updatedAt, true) },
         ]}
       />
 
-      <Panel bodyClassName="p-4">
-        <DetailHeader
-          name={user.name}
-          subtitle={user.email}
-          image={user.image}
-          badges={<Badge variant="outline">{roleLabel}</Badge>}
-        />
-      </Panel>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <Panel>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
-              <InfoItem
-                label={t('fields.name')}
-                value={
-                  <span className="flex items-center gap-2">
-                    <Avatar size="sm" className="shrink-0">
-                      {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
-                      <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="break-words">{user.name}</span>
-                  </span>
-                }
-              />
-              <InfoItem label={t('fields.email')} value={user.email} />
-              <InfoItem
-                label={t('fields.role')}
-                value={
-                  <Badge variant="outline" className={ROLE_CONFIG[user.role]?.className}>
-                    {ROLE_CONFIG[user.role] ? ROLE_CONFIG[user.role].label(t) : user.role}
-                  </Badge>
-                }
-              />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(user.createdAt, true)} />
-              <InfoItem label={t('fields.updatedAt')} value={formatDate(user.updatedAt, true)} />
-            </div>
-          </Panel>
-        </div>
-
-        <div className="space-y-4">
-          {ownedMarkets.length > 0 && (
-            <Panel title={t('fields.market')}>
-              <div className="divide-border divide-y">
-                {ownedMarkets.slice(0, 5).map((m) => (
-                  <ListLink
-                    key={m.id}
-                    to={`/markets/${m.id}`}
-                    state={{ fromPath: location.pathname, fromName: user.name }}>
-                    <span className="flex min-w-0 items-center gap-2.5">
-                      <Avatar size="sm" className="shrink-0">
-                        {m.image ? <AvatarImage src={m.image} alt={m.name} /> : null}
-                        <AvatarFallback>{m.name.charAt(0).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <span className="break-words text-sm font-medium">{m.name}</span>
-                    </span>
-                    <ArrowUpRight className="text-muted-foreground size-3.5 shrink-0" />
-                  </ListLink>
-                ))}
-              </div>
-            </Panel>
-          )}
-
-          {!ownedMarkets.length && user.market && (
-            <MarketCard market={user.market} t={t} viewState={{ fromPath: location.pathname, fromName: user.name }} />
-          )}
-
-          {userTransactions.length > 0 && (
-            <Panel
-            bodyClassName="p-0"
-              title={t('transactionsHistory')}
-              actions={
-                <PanelViewAll
-                  to="/transactions"
-                  state={{ fromSellerId: user.id, fromSellerName: user.name }}
-                  label={t('viewAll')}
-                  count={totalTx}
-                />
-              }>
-              <div className="divide-border divide-y">
-                {userTransactions.map((tx) => (
-                  <TransactionRow
-                    key={tx.id}
-                    tx={tx}
-                    t={t}
-                    to={`/transactions/${tx.id}`}
-                    state={{ fromPath: location.pathname, fromName: user.name }}
-                  />
-                ))}
-              </div>
-            </Panel>
-          )}
-
-          <QuickActions
-            title={t('quickActions')}
-            actions={[
-              ...(can(Action.USERS_EDIT)
-                ? [
-                    {
-                      icon: Pencil,
-                      label: t('actions.edit'),
-                      variant: 'outline' as const,
-                      onClick: () => navigate(`/users/${id}/edit`),
-                    },
-                  ]
-                : []),
-              {
-                icon: ReceiptText,
-                label: t('transactionsHistory'),
-                render: <Link to="/transactions" />,
-              },
-              {
-                icon: Store,
-                label: t('viewMarkets'),
-                render: <Link to="/markets" />,
-              },
-            ]}
-          />
-        </div>
-      </div>
-    </div>
+      {userTransactions.length > 0 && (
+        <ListGroup
+          title={t('transactionsHistory')}
+          action={
+            <PanelViewAll
+              to="/transactions"
+              state={{ fromSellerId: user.id, fromSellerName: user.name }}
+              label={t('viewAll')}
+              count={totalTx}
+            />
+          }>
+          {userTransactions.map((tx) => (
+            <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} />
+          ))}
+        </ListGroup>
+      )}
+    </DetailPage>
   );
 }

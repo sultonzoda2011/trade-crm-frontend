@@ -1,4 +1,6 @@
+import { ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import { Badge } from '~/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { cn } from '~/lib/utils';
@@ -33,6 +35,12 @@ interface MarketEntityTabsProps {
   contentClassName?: string;
   viewAllClassName?: string;
   skeletonCount?: number;
+  /**
+   * `panel` — вкладки и строки внутри одной карточки (профиль).
+   * `grouped` — вкладки отдельно, строки в карточке списка iOS с ссылкой
+   * «Все (n)» последней строкой (страницы «по id»).
+   */
+  variant?: 'panel' | 'grouped';
 }
 
 export function MarketEntityTabs({
@@ -45,7 +53,10 @@ export function MarketEntityTabs({
   contentClassName = 'mt-2.5',
   viewAllClassName = 'mt-1.5 flex justify-end border-t pt-1.5',
   skeletonCount = 3,
+  variant = 'panel',
 }: MarketEntityTabsProps) {
+  const grouped = variant === 'grouped';
+
   return (
     <Tabs defaultValue={defaultValue} value={value} onValueChange={onValueChange}>
       <TabsList className="w-full">
@@ -62,10 +73,33 @@ export function MarketEntityTabs({
         ))}
       </TabsList>
 
-      <div className={cn('', contentClassName)}>
+      <div className={cn(grouped ? 'mt-3' : '', !grouped && contentClassName)}>
         {tabs.map((tab) => (
           <TabsContent key={tab.value} value={tab.value}>
-            {tab.isLoading ? (
+            {grouped ? (
+              <div className="bg-card divide-border divide-y overflow-hidden rounded-2xl">
+                {tab.isLoading ? (
+                  <div className="p-4">
+                    <SkeletonList count={skeletonCount} />
+                  </div>
+                ) : tab.isEmpty ? (
+                  <EmptyState className="py-10" message={tab.emptyMessage} />
+                ) : (
+                  <>
+                    {tab.rows}
+                    {tab.viewAll && (
+                      <Link
+                        to={tab.viewAll.to}
+                        state={tab.viewAll.state}
+                        className="text-primary active:bg-muted/70 flex min-h-12 items-center justify-between px-4 text-base font-medium transition-colors">
+                        {tab.viewAll.label} ({tab.viewAll.count})
+                        <ChevronRight className="size-5" />
+                      </Link>
+                    )}
+                  </>
+                )}
+              </div>
+            ) : tab.isLoading ? (
               <SkeletonList count={skeletonCount} />
             ) : tab.isEmpty ? (
               <EmptyState className={emptyClassName} message={tab.emptyMessage} />
@@ -74,7 +108,7 @@ export function MarketEntityTabs({
                 {tab.rows}
               </div>
             )}
-            {!tab.isLoading && !tab.isEmpty && tab.viewAll && (
+            {!grouped && !tab.isLoading && !tab.isEmpty && tab.viewAll && (
               <div className={viewAllClassName}>
                 <PanelViewAll
                   to={tab.viewAll.to}

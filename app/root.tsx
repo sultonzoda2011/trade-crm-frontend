@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import Cookies from 'js-cookie';
 import NProgress from 'nprogress';
-import { lazy, useEffect, useRef, useState } from 'react';
+import { lazy, useEffect } from 'react';
 import {
   isRouteErrorResponse,
   Links,
@@ -20,6 +20,7 @@ import { MotionConfig } from 'motion/react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
+import { Splash } from '~/components/layout/Splash';
 import ErrorPage from '~/components/shared/ErrorPage';
 import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
@@ -30,8 +31,6 @@ import { setNavigate } from '~/lib/navigation';
 import { getQueryClient } from '~/lib/query-client';
 import './styles/global.css';
 import './styles/nprogress.css';
-import darkLogo from '/logo-text-in-left-dark.png';
-import lightLogo from '/logo-text-in-left-light.png';
 
 export async function clientLoader() {
   const fromCookie = Cookies.get('lng');
@@ -79,7 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <Splash locale={locale} />
+        <Splash />
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
             <CapacitorBridge />
@@ -96,63 +95,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Scripts />
       </body>
     </html>
-  );
-}
-
-function Splash({ locale }: { locale: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [gone, setGone] = useState(false);
-  const [animationDone, setAnimationDone] = useState(false);
-  const navigation = useNavigation();
-
-  const isLoadingDone = navigation.state === 'idle';
-
-  useEffect(() => {
-    // Раньше здесь ждали video 'ended' + error/timeout-фолбэк на случай, если
-    // видео не проигралось (404/кодек/нет сети в WebView) — с чистой
-    // CSS-анимацией такого риска нет вообще, ждём просто её длительность.
-    const timeout = setTimeout(() => setAnimationDone(true), 2200);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  useEffect(() => {
-    // Прячем сплэш, только когда оба условия выполнены: загрузка приложения
-    // завершена И анимация хотя бы раз доиграла до конца.
-    if (!isLoadingDone || !animationDone) return;
-
-    const el = ref.current;
-    if (!el) return;
-    el.style.opacity = '0';
-    const t = setTimeout(() => setGone(true), 300);
-    return () => clearTimeout(t);
-  }, [isLoadingDone, animationDone]);
-
-  if (gone) return null;
-
-  return (
-    <div ref={ref} id="app-splash">
-      <div className="splash-content">
-        <div className="splash-code" aria-hidden="true">
-          <div className="splash-code-line splash-code-line-1">
-            <span className="splash-code-kw">const</span> crm = {'{'}
-          </div>
-          <div className="splash-code-line splash-code-line-2">
-            &nbsp;&nbsp;status: <span className="splash-code-val">'ready'</span>,
-          </div>
-          <div className="splash-code-line splash-code-line-3">
-            &nbsp;&nbsp;version: <span className="splash-code-val">1</span>
-          </div>
-          <div className="splash-code-line splash-code-line-4">
-            {'}'}
-            <span className="splash-cursor" />
-          </div>
-        </div>
-        <p className="splash-logo-wrap">
-          <img src={lightLogo} className="splash-logo dark:hidden" alt="Trade CRM" />
-          <img src={darkLogo} className="splash-logo hidden dark:block" alt="Trade CRM" />
-        </p>
-      </div>
-    </div>
   );
 }
 

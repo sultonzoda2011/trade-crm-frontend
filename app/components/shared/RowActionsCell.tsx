@@ -20,9 +20,20 @@ interface IconActionButtonProps {
   danger?: boolean;
   outline?: boolean;
   disabled?: boolean;
+  /** Busy state — the button swaps its icon for a spinner and ignores taps (see `Button loading`). */
+  loading?: boolean;
 }
 
-export function IconActionButton({ icon, label, onClick, render, danger, outline, disabled }: IconActionButtonProps) {
+export function IconActionButton({
+  icon,
+  label,
+  onClick,
+  render,
+  danger,
+  outline,
+  disabled,
+  loading,
+}: IconActionButtonProps) {
   return (
     <Tooltip>
       <TooltipTrigger
@@ -33,6 +44,7 @@ export function IconActionButton({ icon, label, onClick, render, danger, outline
             className={cn(danger && 'text-destructive hover:bg-destructive/10 hover:text-destructive')}
             onClick={onClick}
             disabled={disabled}
+            loading={loading}
             render={render}>
             {icon}
           </Button>
@@ -73,12 +85,12 @@ export function RowActionsCell({ children }: { children: ReactNode }) {
           />
           <DropdownMenuContent align="end" className="w-44">
             {items.map((item, i) => {
-              const { icon, label, onClick, render, danger, disabled } = item.props;
+              const { icon, label, onClick, render, danger, disabled, loading } = item.props;
               return (
                 <DropdownMenuItem
                   key={i}
                   variant={danger ? 'destructive' : 'default'}
-                  disabled={disabled}
+                  disabled={disabled || loading}
                   onClick={onClick}
                   render={render}>
                   {icon}

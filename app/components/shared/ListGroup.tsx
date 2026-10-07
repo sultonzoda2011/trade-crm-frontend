@@ -104,3 +104,8 @@ export function ListRow({
   }
   return <div className={classes}>{content}</div>;
 }
+
+/** Пустое состояние внутри `ListGroup`: одна спокойная строка вместо пустой карточки. */
+export function ListEmpty({ children }: { children: ReactNode }) {
+  return <p className="text-muted-foreground px-4 py-6 text-center text-sm">{children}</p>;
+}

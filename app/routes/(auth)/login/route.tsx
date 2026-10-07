@@ -193,7 +193,7 @@ export default function LoginPage() {
                 </div>
 
                 <Button type="submit" size="lg" className="w-full text-sm font-semibold" loading={isSubmitting}>
-                  {isSubmitting ? t('submitting') : t('signIn')}
+                  {t('signIn')}
                 </Button>
               </form>
 

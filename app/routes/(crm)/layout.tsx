@@ -4,6 +4,7 @@ import { BottomNav } from '~/components/layout/BottomNav';
 import { PageNote } from '~/components/layout/PageNote';
 import Header from '~/components/layout/Header';
 import { AppSidebar } from '~/components/layout/Sidebar';
+import { SuccessDialog } from '~/components/shared/SuccessDialog';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import { canAccess } from '~/config/permissions';
@@ -54,6 +55,7 @@ export default function CrmLayout() {
         </ScrollArea>
       </div>
       <BottomNav />
+      <SuccessDialog />
     </SidebarProvider>
   );
 }

@@ -46,7 +46,7 @@ export function EditProfileModal() {
       return profileApi.updateProfile(appendToFormData(payload));
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.profile() });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.profileAll() });
       toast.success(t('updateSuccess'));
       editModal.close();
       reset();

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { showSuccess } from '~/store/useSuccessStore';
 import { profileApi } from '~/api/profile';
 import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
@@ -27,7 +28,7 @@ export function ChangePasswordModal() {
         confirmPassword: data.confirmPassword,
       }),
     onSuccess: () => {
-      toast.success(t('passwordSuccess'));
+      showSuccess({ title: t('passwordSuccess') });
       passwordModal.close();
       reset();
     },

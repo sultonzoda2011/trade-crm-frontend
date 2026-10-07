@@ -1,7 +1,7 @@
 import { ArrowUpRight, Banknote, HandCoins, ShoppingCart, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { Panel } from '~/components/layout/Panel';
+import { ListGroup } from '~/components/shared/ListGroup';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { cn } from '~/lib/utils';
 import type { TimelineEventType, TransactionTimelineEvent } from '~/types/transactions';
@@ -31,38 +31,39 @@ export function TransactionTimeline({ events, currentId }: TransactionTimelinePr
   if (events.length === 0) return null;
 
   return (
-    <Panel title={t('detail.timeline')}>
-      <ol className="space-y-3">
+    <ListGroup title={t('detail.timeline')}>
+      <ol className="px-4 py-3">
         {events.map((event, index) => {
           const style = EVENT_STYLE[event.type];
           const Icon = style.icon;
           const isOther = event.transactionId !== currentId;
+          const isLast = index === events.length - 1;
 
           return (
             <li key={`${event.transactionId}-${event.type}-${event.at}-${index}`} className="flex gap-3">
               <div className="flex flex-col items-center">
-                <span className={cn('flex size-7 shrink-0 items-center justify-center rounded-full', style.dot)}>
-                  <Icon className="size-3.5" />
+                <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full', style.dot)}>
+                  <Icon className="size-4" />
                 </span>
-                {index < events.length - 1 && <span className="bg-border mt-1 w-px flex-1" />}
+                {!isLast && <span className="bg-border my-1 w-px flex-1" />}
               </div>
-              <div className="flex flex-1 items-start justify-between gap-3 pb-1">
+              <div className={cn('flex flex-1 items-start justify-between gap-3', !isLast && 'pb-3')}>
                 <div className="min-w-0">
-                  <p className="text-sm font-medium">{t(`detail.timelineEvent.${event.type}`)}</p>
-                  <p className="text-muted-foreground text-2xs">
+                  <p className="text-base leading-8 font-medium">{t(`detail.timelineEvent.${event.type}`)}</p>
+                  <p className="text-muted-foreground -mt-1 text-sm">
                     {formatDate(event.at, true)} ·{' '}
                     {event.actor ? t('detail.actor', { name: event.actor }) : t('detail.actorUnknown')}
                   </p>
                   {isOther && (
                     <Link
                       to={`/transactions/${event.transactionId}`}
-                      className="text-primary inline-flex items-center gap-1 text-xs hover:underline">
+                      className="text-primary mt-0.5 inline-flex items-center gap-1 text-sm hover:underline">
                       {t('detail.openTransaction')}
                       <ArrowUpRight className="size-3.5" />
                     </Link>
                   )}
                 </div>
-                <span className={cn('shrink-0 font-mono text-sm font-semibold', style.amount)}>
+                <span className={cn('shrink-0 font-mono text-base leading-8 font-semibold', style.amount)}>
                   {event.type === 'REFUND' ? '−' : ''}
                   {fmtTJS(event.amount)}
                 </span>
@@ -71,6 +72,6 @@ export function TransactionTimeline({ events, currentId }: TransactionTimelinePr
           );
         })}
       </ol>
-    </Panel>
+    </ListGroup>
   );
 }

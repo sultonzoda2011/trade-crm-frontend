@@ -50,7 +50,7 @@ export function LanguageSwitcher() {
     <Tooltip>
       <TooltipTrigger
         render={
-          <Button type="button" variant="outline" size="icon" onClick={handleChange} aria-label="Change language">
+          <Button type="button" variant="glass" size="icon" onClick={handleChange} aria-label="Change language">
             <img src={currentLanguageItem.icon} alt={currentLanguageItem.value} className="size-6 rounded-sm object-cover" />
           </Button>
         }

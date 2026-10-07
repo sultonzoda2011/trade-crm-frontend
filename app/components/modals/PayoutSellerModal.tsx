@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { showSuccess } from '~/store/useSuccessStore';
 import { sellersApi } from '~/api/sellers';
 import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
@@ -47,10 +48,10 @@ export function PayoutSellerModal() {
         request: { amount: Number(data.amount), note: data.note || undefined },
       });
     },
-    onSuccess: () => {
+    onSuccess: (_response, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.sub('sellers', 'balance', seller?.id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.sub('sellers', 'credits', seller?.id) });
-      toast.success(t('sellers:payoutSuccess'));
+      showSuccess({ title: t('sellers:payoutSuccess'), amount: Number(variables.amount) });
       payoutModal.close();
       reset();
     },

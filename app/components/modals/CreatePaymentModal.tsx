@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { showSuccess } from '~/store/useSuccessStore';
 import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
@@ -47,14 +48,14 @@ export function CreatePaymentModal() {
       if (!transaction?.id) throw new Error('No transaction ID');
       return transactionsApi.pay({ request: data, id: transaction.id });
     },
-    onSuccess: () => {
+    onSuccess: (_response, variables) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       // Оплата меняет долг должника — его список и карточка тоже устаревают.
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
-      toast.success(t('transactions:paySuccess'));
+      showSuccess({ title: t('transactions:paySuccess'), amount: Number(variables.amount) });
       payModal.close();
       reset();
     },

@@ -47,7 +47,7 @@ export default function Header() {
           ширину (на xl кнопка превращается в широкую строку поиска) сохраняем.
         */}
         <Button
-          variant="outline"
+          variant="glass"
           size="icon"
           aria-label={t('palette.trigger')}
           onClick={() => setPaletteOpen(true)}
@@ -65,12 +65,12 @@ export default function Header() {
           <TooltipTrigger
             render={
               <Button
-                variant="ghost"
+                variant="glass"
                 size="icon"
                 className="text-primary md:text-foreground"
                 aria-label={t('navigation.guide')}
                 onClick={() => navigate('/guide')}>
-                <HelpCircle className="size-6 md:size-4" strokeWidth={1.75} />
+                <HelpCircle className="size-5 md:size-4" strokeWidth={1.75} />
               </Button>
             }
           />

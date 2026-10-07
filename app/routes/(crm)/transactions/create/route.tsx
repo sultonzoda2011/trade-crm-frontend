@@ -18,6 +18,7 @@ import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { showSuccess } from '~/store/useSuccessStore';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
@@ -235,7 +236,7 @@ export default function CreateTransactionPage() {
       // до конца staleTime показывали бы старые цифры.
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      toast.success(t('createSuccess'));
+      showSuccess({ title: t('createSuccess'), amount: calculatedTotal });
       navigate(prefill?.fromPath ?? '/transactions');
     },
     onError: () => {
@@ -257,7 +258,8 @@ export default function CreateTransactionPage() {
   const pickerDebtors = debtorOptions
     .map((o) => debtors.byId.get(String(o.value)))
     .filter((d): d is Debtor => Boolean(d));
-  const canSubmit = !isPending && formState.isValid;
+  // Pending is handled by `loading` on the button (it swallows clicks and Enter), so it must not also dim it via `disabled`.
+  const canSubmit = formState.isValid;
   const submitLabel = type === 'DEBT' ? t('submitDebt') : t('submitSale');
 
   return (

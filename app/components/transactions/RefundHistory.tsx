@@ -1,9 +1,8 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
-import { Panel } from '~/components/layout/Panel';
+import { ListGroup } from '~/components/shared/ListGroup';
 import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
-import { Badge } from '~/components/ui/badge';
 import { fmtTJS, formatDate } from '~/lib/format';
 import type { RelatedTransaction } from '~/types/transactions';
 
@@ -29,65 +28,44 @@ export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
 
   if (!refundOf && refunds.length === 0) return null;
 
+  const rowClass = 'flex min-h-12 items-center justify-between gap-3 px-4 py-2.5 transition-colors active:bg-muted/70';
+
   return (
-    <Panel
-      title={refundOf ? t('detail.originalSale') : t('detail.refundHistory')}
-      actions={
-        refunds.length > 0 ? (
-          <Badge variant="secondary" className="text-xs font-normal">
-            {refunds.length}
-          </Badge>
-        ) : undefined
-      }>
+    <ListGroup
+      title={refundOf ? t('detail.originalSale') : `${t('detail.refundHistory')} · ${refunds.length}`}
+      footer={refundOf ? t('detail.refundOfHint') : undefined}>
       {refundOf ? (
-        <div className="flex items-center justify-between gap-3 py-1">
-          <div className="min-w-0">
-            <p className="text-muted-foreground text-xs">{t('detail.refundOfHint')}</p>
-            <p className="text-2xs text-muted-foreground">{formatDate(refundOf.createdAt, true)}</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <span className="font-mono text-sm font-semibold">{fmtTJS(refundOf.totalAmount)}</span>
-            <Link
-              to={`/transactions/${refundOf.id}`}
-              state={linkState}
-              className="text-primary inline-flex items-center gap-1 text-xs hover:underline">
+        <Link to={`/transactions/${refundOf.id}`} state={linkState} className={rowClass}>
+          <span className="min-w-0">
+            <span className="block text-base leading-snug">{formatDate(refundOf.createdAt, true)}</span>
+            <span className="text-primary inline-flex items-center gap-1 text-sm">
               {t('detail.openTransaction')}
               <ArrowUpRight className="size-3.5" />
-            </Link>
-          </div>
-        </div>
+            </span>
+          </span>
+          <span className="shrink-0 font-mono text-base font-semibold">{fmtTJS(refundOf.totalAmount)}</span>
+        </Link>
       ) : (
-        <ul className="divide-y">
-          {refunds.map((refund) => (
-            <li key={refund.id} className="flex items-center justify-between gap-3 py-2">
-              <div className="min-w-0">
-                <p className="text-sm font-medium">{getTransactionTitle(refund, t)}</p>
-                <p className="text-muted-foreground text-2xs">
-                  {formatDate(refund.createdAt, true)}
-                  {refund.createdBy ? ` · ${t('detail.actor', { name: refund.createdBy.name })}` : ''}
-                </p>
-                {refund.items && refund.items.length > 0 && (
-                  <p className="text-muted-foreground break-words text-xs">
-                    {refund.items.map((item) => `${item.productName} × ${item.quantity}`).join(', ')}
-                  </p>
-                )}
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <span className="text-destructive font-mono text-sm font-semibold">
-                  −{fmtTJS(refund.totalAmount)}
+        refunds.map((refund) => (
+          <Link key={refund.id} to={`/transactions/${refund.id}`} state={linkState} className={rowClass}>
+            <span className="min-w-0">
+              <span className="block text-base leading-snug font-medium">{getTransactionTitle(refund, t)}</span>
+              <span className="text-muted-foreground block text-sm leading-snug">
+                {formatDate(refund.createdAt, true)}
+                {refund.createdBy ? ` · ${t('detail.actor', { name: refund.createdBy.name })}` : ''}
+              </span>
+              {refund.items && refund.items.length > 0 && (
+                <span className="text-muted-foreground block text-sm leading-snug break-words">
+                  {refund.items.map((item) => `${item.productName} × ${item.quantity}`).join(', ')}
                 </span>
-                <Link
-                  to={`/transactions/${refund.id}`}
-                  state={linkState}
-                  className="text-primary inline-flex items-center gap-1 text-xs hover:underline">
-                  {t('detail.openTransaction')}
-                  <ArrowUpRight className="size-3.5" />
-                </Link>
-              </div>
-            </li>
-          ))}
-        </ul>
+              )}
+            </span>
+            <span className="text-destructive shrink-0 font-mono text-base font-semibold">
+              −{fmtTJS(refund.totalAmount)}
+            </span>
+          </Link>
+        ))
       )}
-    </Panel>
+    </ListGroup>
   );
 }
