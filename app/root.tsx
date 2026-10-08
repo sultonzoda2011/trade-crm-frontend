@@ -49,7 +49,7 @@ export const links: Route.LinksFunction = () => [
   { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
   { rel: 'icon', type: 'image/png', href: '/light-favicon.png', media: '(prefers-color-scheme: light)' },
   { rel: 'icon', type: 'image/png', href: '/dark-favicon.png', media: '(prefers-color-scheme: dark)' },
-  { rel: 'apple-touch-icon', href: '/light-favicon.png' },
+  { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
