@@ -12,7 +12,7 @@ import { canAccess } from '~/config/permissions';
 import { PRIMARY_ORDER, PRIMARY_SLOTS, getSidebarConfig, getVisibleNavigation, type NavItem } from '~/config/navigation';
 import { getClientUser } from '~/lib/auth-utils';
 import { useCan } from '~/hooks/useCan';
-import { useSwipeNav } from '~/hooks/useSwipeNav';
+import { useSwipeNav, type SwipeMode } from '~/hooks/useSwipeNav';
 import { useTabNeighbors } from '~/hooks/useTabNeighbors';
 import { useTranslation } from 'react-i18next';
 import type { Route } from './+types/layout';
@@ -33,8 +33,34 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   return { user };
 }
 
-/** Страницы-формы и детальные страницы: анимация вверх/вниз, не горизонтальная. */
-const FORM_OR_DETAIL_ROUTE = /\/(create|edit|[0-9a-f-]{8,})$/;
+/**
+ * Определяет режим свайп-навигации для текущего pathname:
+ * - 'tabs'     — корневые страницы вкладок (/, /transactions, /debtors, ...)
+ * - 'back'     — формы и детальные страницы (navigate(-1) свайпом вправо)
+ * - 'disabled' — прочее
+ *
+ * «Корень таба» — это pathname, который точно совпадает с одним из URL
+ * в nav-конфиге (не /transactions/123 и не /transactions/create).
+ * Страницы из «Ещё» (не primary-слоты) получают 'back', а не 'tabs' —
+ * свайп там работает только как «назад», не перелистывает вкладки.
+ */
+function resolveSwipeMode(pathname: string, primaryUrls: Set<string>): SwipeMode {
+  // Dashboard — все /dashboard/* относятся к одной вкладке
+  if (pathname.startsWith('/dashboard')) return 'tabs';
+
+  // Точное совпадение с корнем primary-таба
+  if (primaryUrls.has(pathname)) return 'tabs';
+
+  // Формы и детальные страницы → свайп вправо = назад
+  // Паттерн: заканчивается на /create, /edit или /uuid или /number
+  if (/\/(create|edit)$/.test(pathname)) return 'back';
+  if (/\/[^/]+$/.test(pathname) && !primaryUrls.has(pathname)) {
+    // Любой подпуть — /debtors/123, /products/abc, /sellers/456/edit
+    return 'back';
+  }
+
+  return 'disabled';
+}
 
 export default function CrmLayout() {
   const { pathname } = useLocation();
@@ -45,42 +71,43 @@ export default function CrmLayout() {
   // при переключении, поэтому для них ключ один и тот же.
   const routeKey = pathname.startsWith('/dashboard') ? '/dashboard' : pathname;
 
-  // Вычисляем индекс текущей вкладки для определения направления горизонтальной анимации
-  const { prevUrl, nextUrl } = useTabNeighbors();
-  const prevRouteKeyRef = useRef<string>(routeKey);
+  // Вычисляем список primary-вкладок для определения режима и направления анимации
+  const primaryUrls = useRef<Set<string>>(new Set());
+  const navConfig = getSidebarConfig(t, user?.marketId);
+  const visibleItems = getVisibleNavigation(navConfig, can);
+  const byKey = new Map(visibleItems.map((item) => [item.key, item]));
+  const primaryItems: NavItem[] = [];
+  for (const navKey of PRIMARY_ORDER) {
+    const item = byKey.get(navKey);
+    if (item) primaryItems.push(item);
+    if (primaryItems.length === PRIMARY_SLOTS) break;
+  }
+  primaryUrls.current = new Set(primaryItems.map((i) => i.url).filter(Boolean) as string[]);
 
-  // Определяем направление: +1 → движение влево (следующий таб), -1 → вправо (предыдущий таб)
-  // Если переход не между соседними табами — вертикальная анимация (direction = 0)
+  const swipeMode = resolveSwipeMode(pathname, primaryUrls.current);
+
+  // Соседние URL для режима tabs
+  const { prevUrl, nextUrl } = useTabNeighbors();
+
+  // Определяем направление горизонтальной анимации
   const getTabIndex = (key: string) => {
-    const navConfig = getSidebarConfig(t, user?.marketId);
-    const visibleItems = getVisibleNavigation(navConfig, can);
-    const byKey = new Map(visibleItems.map((item) => [item.key, item]));
-    const primaryItems: NavItem[] = [];
-    for (const navKey of PRIMARY_ORDER) {
-      const item = byKey.get(navKey);
-      if (item) primaryItems.push(item);
-      if (primaryItems.length === PRIMARY_SLOTS) break;
-    }
-    // dashboard → все /dashboard/* на один индекс
     if (key.startsWith('/dashboard')) {
-      const idx = primaryItems.findIndex((i) => i.key === 'dashboard');
-      return idx;
+      return primaryItems.findIndex((i) => i.key === 'dashboard');
     }
     return primaryItems.findIndex((i) => i.url === key);
   };
 
+  const prevRouteKeyRef = useRef<string>(routeKey);
   const prevIdx = getTabIndex(prevRouteKeyRef.current);
   const currIdx = getTabIndex(routeKey);
   const isTabTransition = prevIdx !== -1 && currIdx !== -1 && prevIdx !== currIdx;
   const direction = isTabTransition ? (currIdx > prevIdx ? 1 : -1) : 0;
   prevRouteKeyRef.current = routeKey;
 
-  // Свайп между соседними вкладками; отключаем на форм/детальных страницах
-  const isFormOrDetail = FORM_OR_DETAIL_ROUTE.test(pathname);
   const { onTouchStart, onTouchEnd } = useSwipeNav({
     prevUrl,
     nextUrl,
-    disabled: isFormOrDetail,
+    mode: swipeMode,
   });
 
   // Горизонтальная анимация для переходов между табами, вертикальная — для остального
@@ -100,7 +127,7 @@ export default function CrmLayout() {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}>
             {/* Горизонтальный слайд между соседними вкладками — как в нативных iOS/Android приложениях.
-                Для переходов внутри одной вкладки (детальная страница, форма) — мягкое появление вертикально. */}
+                Детальные страницы и формы — мягкое появление вертикально. */}
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={routeKey}
