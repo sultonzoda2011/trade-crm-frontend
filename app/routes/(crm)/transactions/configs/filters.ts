@@ -64,15 +64,17 @@ export const getTransactionFilters = (
       key: 'status',
       label: t('fields.status'),
       placeholder: t('filters.all', { ns: 'common' }),
-      // Значения — в точности backend TransactionStatus: ACTIVE/PARTIAL/PAID/REFUNDED.
-      // PARTIALLY_REFUNDED в типе фронтенда существует только для будущего
-      // отображения и backend его не принимает — отправка этого значения как
-      // ?status= давала 400 (class-validator IsEnum), выбор молча ломался.
+      // Значения — в точности backend TransactionStatus (Prisma enum).
+      // PARTIALLY_REFUNDED раньше отсутствовал в руками продублированном
+      // src/enums/transaction-status.enum.ts на бэкенде — ?status= давал 400
+      // (class-validator IsEnum), выбор молча ломался. Дубль синхронизирован,
+      // фильтр теперь включает все статусы.
       options: [
         { value: 'ACTIVE', label: t('status.ACTIVE') },
         { value: 'PARTIAL', label: t('status.PARTIAL') },
         { value: 'PAID', label: t('status.PAID') },
         { value: 'REFUNDED', label: t('status.REFUNDED') },
+        { value: 'PARTIALLY_REFUNDED', label: t('status.PARTIALLY_REFUNDED') },
       ],
     },
     // Состояние долга, вычисляемое backend'ом на момент запроса (не колонка в
