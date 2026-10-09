@@ -5,10 +5,27 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { Action } from '~/config/actions';
-import { PRIMARY_ORDER, PRIMARY_SLOTS, type NavItem, getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
+import { type NavItem, type NavKey, getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
 import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
+
+/**
+ * Порядок приоритета для основных вкладок. Пункты, которых нет у текущей роли
+ * (например Dashboard у Seller), пропускаются — следующий по приоритету
+ * занимает место. Вместе с «Ещё» и центральной «+» получается ровно 5 слотов:
+ * 2 вкладки | + | вкладка + «Ещё».
+ */
+const PRIMARY_ORDER: NavKey[] = [
+  'dashboard',
+  'transactions',
+  'debtors',
+  'products',
+  'myMarket',
+  'sellers',
+  'categories',
+];
+const PRIMARY_SLOTS = 3;
 
 /** Страницы-формы имеют свою sticky-панель действий — плавающая навигация там не нужна. */
 const FORM_ROUTE = /\/(create|edit)$/;

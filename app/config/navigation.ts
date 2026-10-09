@@ -40,24 +40,6 @@ export interface NavItem {
   section?: NavSection;
 }
 
-/**
- * Порядок приоритета вкладок в BottomNav. Совпадает с BottomNav.tsx.
- * Экспортируется отдельно, чтобы useTabNeighbors мог вычислять соседей
- * без импорта React-компонента (избегаем circular deps).
- */
-export const PRIMARY_ORDER: NavKey[] = [
-  'dashboard',
-  'transactions',
-  'debtors',
-  'products',
-  'myMarket',
-  'sellers',
-  'categories',
-];
-
-/** Количество основных слотов в BottomNav (не считая «+» и «Ещё»). */
-export const PRIMARY_SLOTS = 3;
-
 export const getSidebarConfig = (t: TFunction, marketId?: string): NavItem[] => [
   {
     key: 'users',
