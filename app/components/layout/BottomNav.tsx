@@ -66,7 +66,7 @@ const TAB_CLASS =
   'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
 
 function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; active: boolean }) {
-  const tone = active ? 'text-foreground' : 'text-muted-foreground';
+  const tone = active ? 'text-primary' : 'text-muted-foreground';
   return (
     <>
       {/* Стеклянная «таблетка» переезжает между вкладками пружиной (общий layoutId). */}
@@ -75,7 +75,7 @@ function TabFace({ Icon, label, active }: { Icon: LucideIcon; label: string; act
           aria-hidden
           layoutId="bottom-nav-pill"
           transition={{ type: 'spring', stiffness: 460, damping: 34 }}
-          className="bg-foreground/[0.08] dark:bg-foreground/[0.14] absolute inset-0.5 -z-10 rounded-full shadow-[inset_0_1px_1px_rgb(255_255_255/0.75),inset_0_0_0_1px_rgb(255_255_255/0.3),0_1px_3px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_1px_1px_rgb(255_255_255/0.25),inset_0_0_0_1px_rgb(255_255_255/0.08)]"
+          className="bg-primary/15 dark:bg-primary/25 absolute inset-0.5 -z-10 rounded-full shadow-[inset_0_1px_1px_rgb(255_255_255/0.75),inset_0_0_0_1px_rgb(255_255_255/0.3),0_1px_3px_rgb(0_0_0/0.06)] dark:shadow-[inset_0_1px_1px_rgb(255_255_255/0.25),inset_0_0_0_1px_rgb(255_255_255/0.08)]"
         />
       )}
       <Icon
@@ -221,12 +221,13 @@ export function BottomNav() {
                       <Link
                         to={item.url || '#'}
                         onClick={() => setMoreOpen(false)}
+                        aria-current={active ? 'page' : undefined}
                         className={cn(
                           'active:bg-foreground/10 flex h-14 touch-manipulation items-center gap-3 px-3.5 text-base transition-colors [-webkit-tap-highlight-color:transparent]',
-                          active && 'font-semibold'
+                          active && 'text-primary font-semibold'
                         )}>
                         {Icon && (
-                          <span className="text-muted-foreground grid size-9 shrink-0 place-items-center">
+                          <span className={cn('grid size-9 shrink-0 place-items-center', active ? 'text-primary' : 'text-muted-foreground')}>
                             <Icon aria-hidden className="size-[18px]" />
                           </span>
                         )}

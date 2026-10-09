@@ -4,10 +4,12 @@ import { Link } from 'react-router';
 import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { fmtNum, formatDateShort } from '~/lib/format';
 import { cn } from '~/lib/utils';
-import type { Transaction } from '~/types/transactions';
+import type { TransactionListItem } from '~/types/transactions';
 
 interface TransactionRowProps {
-  tx: Transaction;
+  // Самый узкий тип: не используем payments/market.address, поэтому подходит
+  // и список (TransactionListItem), и полная Transaction (структурно шире).
+  tx: TransactionListItem;
   t: TFunction;
   to: string;
   state?: unknown;

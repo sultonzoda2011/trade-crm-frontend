@@ -5,16 +5,16 @@ import { InitialAvatar } from '~/components/shared/InitialAvatar';
 import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { fmtNum, formatDateShort } from '~/lib/format';
 import { cn } from '~/lib/utils';
-import type { Transaction } from '~/types/transactions';
+import type { TransactionListItem } from '~/types/transactions';
 
 interface TransactionMobileCardProps {
-  row: Row<Transaction>;
+  row: Row<TransactionListItem>;
   t: TFunction;
   actionsCell?: React.ReactNode;
 }
 
 /** Что показать под суммой: остаток долга важнее слова «Активна» — по нему решают, звонить ли. */
-function statusLine(tx: Transaction, t: TFunction): { text: string; className: string } {
+function statusLine(tx: TransactionListItem, t: TFunction): { text: string; className: string } {
   if (tx.status === 'REFUNDED') return { text: t('status.REFUNDED'), className: 'text-destructive' };
   if (tx.status === 'PARTIALLY_REFUNDED') return { text: t('status.PARTIALLY_REFUNDED'), className: 'text-warning' };
   if (tx.remainingAmount > 0)

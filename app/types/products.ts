@@ -26,7 +26,8 @@ export interface Product {
   categoryId: string | null;
   createdAt: string;
   updatedAt: string;
-  market: MarketInfo;
+  /** Backend deliberately omits `category.image` elsewhere but DOES send market.address here (rendered in the market block on the product page) — keep in sync with `productInclude` in products.service.ts. */
+  market: Pick<MarketInfo, 'id' | 'name' | 'image' | 'address'>;
   category: CategoryInfo | null;
   _count: ProductCount;
   /** Period metrics computed by the backend. Present on list and detail. */
@@ -53,7 +54,7 @@ export interface ProductInfo {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image: string | null;
 }
 export type ProductsResponse = ApiResponse<PaginatedData<Product>>;
 export type ProductDetailResponse = ApiResponse<ProductDetail>;
@@ -71,8 +72,8 @@ export interface Category {
 export interface CategoryDetail {
   id: string;
   name: string;
-  description: string;
-  image: string;
+  description: string | null;
+  image: string | null;
   marketId: string;
   createdAt: string;
   updatedAt: string;

@@ -10,9 +10,9 @@ import { TRANSACTION_STATUS_BADGE, TRANSACTION_TYPE_BADGE } from '~/config/trans
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
-import type { Transaction, TransactionStatus, TransactionType } from '~/types/transactions';
+import type { TransactionListItem, TransactionStatus, TransactionType } from '~/types/transactions';
 
-function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) {
+function TransactionActionsCell({ row, t }: { row: TransactionListItem; t: TFunction }) {
   const deleteModal = useTransactionsModals((s) => s.delete);
   const payModal = useTransactionsModals((s) => s.pay);
   const location = useLocation();
@@ -46,9 +46,9 @@ function TransactionActionsCell({ row, t }: { row: Transaction; t: TFunction }) 
   );
 }
 
-const columnHelper = createColumnHelper<Transaction>();
+const columnHelper = createColumnHelper<TransactionListItem>();
 
-export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>[] => {
+export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListItem, any>[] => {
   return [
     columnHelper.display({
       id: 'products',
@@ -148,5 +148,5 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Transaction, any>
       header: () => <div className="text-center">{t('fields.actions', { ns: 'common' })}</div>,
       cell: (info) => <TransactionActionsCell row={info.row.original} t={t} />,
     }),
-  ] as ColumnDef<Transaction, any>[];
+  ] as ColumnDef<TransactionListItem, any>[];
 };

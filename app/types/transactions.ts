@@ -65,6 +65,17 @@ export interface Transaction {
   payments: Payment[];
 }
 
+/**
+ * Что реально отдаёт paginated-список (`GET /transactions`, `transactionListInclude`
+ * на бэкенде): без `payments` и без address/image у market — это намеренно
+ * срезано на бэкенде ради производительности (эти поля не рендерятся ни в
+ * таблице, ни в мобильной карточке). Полный `Transaction` — это то, что
+ * возвращает `GET /transactions/:id` и detail-эндпоинт.
+ */
+export interface TransactionListItem extends Omit<Transaction, 'market' | 'payments'> {
+  market: Pick<MarketInfo, 'id' | 'name'>;
+}
+
 // Цена всегда берётся сервером из карточки товара — с фронта она не отправляется,
 // только скидка и надбавка на позицию (если это разрешено бизнес-процессом).
 export interface CreateTransactionItemRequest {
@@ -157,6 +168,6 @@ export interface TransactionDetail extends Omit<Transaction, 'items'> {
   timeline: TransactionTimelineEvent[];
 }
 
-export type TransactionsResponse = ApiResponse<PaginatedData<Transaction>>;
+export type TransactionsResponse = ApiResponse<PaginatedData<TransactionListItem>>;
 export type TransactionResponse = ApiResponse<Transaction>;
 export type TransactionDetailResponse = ApiResponse<TransactionDetail>;

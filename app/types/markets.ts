@@ -20,7 +20,7 @@ export interface MarketInfo {
   id: string;
   name: string;
   address: string;
-  image: string;
+  image: string | null;
 }
 
 export interface MarketCount {
