@@ -51,6 +51,7 @@
     "offlineAction": "No internet — this action will run once you're back online"
   },
   "offline": {
+    "badge": "Offline",
     "banner": "No internet connection — showing saved data",
     "restored": "Connection restored"
   },

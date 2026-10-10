@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
 import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
 import { redirectToLogin } from '~/lib/navigation';
+import { getIsOnline, subscribeToNetworkStatus } from '~/lib/network-status';
 
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
@@ -32,6 +33,57 @@ const ERROR_MESSAGES: Record<number, string> = {
 const SILENT_URLS = ['/auth/login', '/auth/register', '/auth/logout'];
 
 const isSilent = (url?: string): boolean => SILENT_URLS.some((silent) => url?.includes(silent));
+
+// Запрос, отклонённый на старте, потому что устройство уже офлайн — не
+// долетает до сети вообще, не ждёт 15-секундный timeout. config навешивается
+// ниже, чтобы response-interceptor мог так же определить requestUrl/isSilent,
+// как для обычной axios-ошибки.
+class OfflineError extends Error {
+  readonly isOffline = true;
+  config?: import('axios').InternalAxiosRequestConfig;
+  constructor() {
+    super('offline');
+  }
+}
+
+// ---------- "нет соединения" toast: ждём и не дублируем ----------
+// Раньше toast.error вызывался на каждый упавший запрос — при параллельных
+// запросах (список + фильтры + дашборд) и retry:2 у react-query это давало
+// по несколько тостов подряд почти мгновенно. Теперь: один тост на весь
+// период офлайна, с небольшой задержкой (чтобы не мигать на короткий сбой),
+// и он сам закрывается, когда соединение восстановилось.
+const OFFLINE_TOAST_ID = 'network-offline';
+const OFFLINE_TOAST_DELAY = 1500;
+
+let offlineToastTimer: ReturnType<typeof setTimeout> | null = null;
+let offlineToastVisible = false;
+
+function scheduleOfflineToast() {
+  if (offlineToastVisible || offlineToastTimer) return;
+  offlineToastTimer = setTimeout(() => {
+    offlineToastTimer = null;
+    offlineToastVisible = true;
+    toast.error(i18next.t('errors.noConnection', { ns: 'common' }), {
+      id: OFFLINE_TOAST_ID,
+      duration: Infinity,
+    });
+  }, OFFLINE_TOAST_DELAY);
+}
+
+function dismissOfflineToast() {
+  if (offlineToastTimer) {
+    clearTimeout(offlineToastTimer);
+    offlineToastTimer = null;
+  }
+  if (offlineToastVisible) {
+    offlineToastVisible = false;
+    toast.dismiss(OFFLINE_TOAST_ID);
+  }
+}
+
+subscribeToNetworkStatus((online) => {
+  if (online) dismissOfflineToast();
+});
 
 type Method = 'get' | 'post' | 'patch' | 'put' | 'delete';
 
@@ -134,6 +186,16 @@ apiClient.interceptors.request.use((config) => {
     config.headers['Pragma'] = 'no-cache';
   }
 
+  // Устройство уже знает, что офлайн (см. app/lib/network-status.ts) — не
+  // отправляем запрос вообще, а сразу отдаём react-query/форме ошибку.
+  // Для GET-запросов это и есть "кеш вместо тоста": query не трогает сеть,
+  // остаётся paused и продолжает показывать последние загруженные данные.
+  if (!getIsOnline()) {
+    const offlineError = new OfflineError();
+    offlineError.config = config;
+    return Promise.reject(offlineError);
+  }
+
   return config;
 });
 
@@ -150,7 +212,7 @@ apiClient.interceptors.response.use(
     }
 
     if (!error.response) {
-      toast.error(i18next.t('errors.noConnection', { ns: 'common' }));
+      scheduleOfflineToast();
       return Promise.reject(error);
     }
 
