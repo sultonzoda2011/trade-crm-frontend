@@ -15,7 +15,7 @@ import {
 } from 'react-router';
 
 import type { Route } from '.react-router/types/app/+types/root';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { MotionConfig } from 'motion/react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
@@ -29,7 +29,8 @@ import { useCapacitorNetworkStatus } from '~/hooks/useCapacitorNetworkStatus';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
-import { getQueryClient } from '~/lib/query-client';
+import { getQueryClient, PERSISTED_GC_TIME } from '~/lib/query-client';
+import { CACHE_BUSTER, queryPersister } from '~/lib/query-persister';
 import './styles/global.css';
 import './styles/nprogress.css';
 
@@ -80,7 +81,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         <Splash />
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister: queryPersister,
+            // Хотим, чтобы кеш оставался валидным сколь угодно долго офлайн
+            // (хоть год без единого удачного запроса) — ограничиваем только
+            // временем жизни в памяти (gcTime), не временем самой дехидрации.
+            maxAge: PERSISTED_GC_TIME,
+            buster: CACHE_BUSTER,
+            // Мутации (create/pay/refund и т.д.) не персистим — это живые
+            // операции, а не справочные данные для офлайн-просмотра.
+            dehydrateOptions: { shouldDehydrateMutation: () => false },
+          }}
+        >
           <ThemeProvider>
             <CapacitorBridge />
             <NavigationProgress />
@@ -91,7 +105,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <ToasterProvider />
           </ThemeProvider>
           {import.meta.env.DEV && <DevTools />}
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
         <ScrollRestoration />
         <Scripts />
       </body>
