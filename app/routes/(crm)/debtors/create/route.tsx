@@ -41,12 +41,12 @@ export default function CreateDebtorPage() {
         items={[
           { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
           { label: t('title'), link: '/debtors' },
-          { label: t('actions.create') },
+          { label: t('create') },
         ]}
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{t('actions.create')}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t('create')}</h1>
         <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate('/debtors')}>
             {t('actions.cancel')}

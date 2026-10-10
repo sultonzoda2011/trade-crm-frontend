@@ -112,6 +112,7 @@ export default function TransactionsPage() {
     isLoading,
     isFetching,
     isError,
+    fetchStatus,
   } = useQuery({
     queryKey: queryKeys.list('transactions', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -129,6 +130,10 @@ export default function TransactionsPage() {
     },
     staleTime: 30_000,
   });
+
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
+  // от "список реально пуст" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   const { mutate: deleteTransaction, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => transactionsApi.delete(id),
@@ -199,6 +204,7 @@ export default function TransactionsPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         isError={isError}
+        isOfflineEmpty={isOfflineEmpty}
         page={page}
         limit={limit}
         totalPages={totalPages}

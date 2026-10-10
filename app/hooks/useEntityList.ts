@@ -73,6 +73,7 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
     isLoading,
     isFetching,
     isError,
+    fetchStatus,
   } = useQuery({
     queryKey: queryKeys.list(entity, { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -104,6 +105,10 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
 
   const rows = useMemo(() => response?.data?.data ?? [], [response]);
   const totalPages = response?.data?.meta?.totalPages || 1;
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна (см.
+  // app/lib/network-status.ts) — отличаем от "список реально пуст", чтобы
+  // DataTable не показывал это как "записей нет".
+  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   /** Spread straight onto `<ConfirmDialog>`. */
   const deleteDialog = {
@@ -125,6 +130,7 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
     isLoading,
     isFetching,
     isError,
+    isOfflineEmpty,
     page,
     limit,
     search,

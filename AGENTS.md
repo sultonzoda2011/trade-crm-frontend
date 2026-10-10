@@ -1098,6 +1098,33 @@ getColumns({ t });
 getProductFilters(t);
 ```
 
+---
+
+## Create-page titles
+
+Заголовок и breadcrumb на `/<entity>/create` должны использовать entity-scoped ключ `t('create')` (из namespace сущности), а не generic `t('actions.create')` из `common`.
+
+Значение `create` в locale-файле сущности должно быть explicit, с названием сущности:
+
+```json
+// debtors.json
+{ "create": "Создать должника" }
+
+// sellers.json
+{ "create": "Создать продавца" }
+
+// markets.json
+{ "create": "Создать рынок" }
+```
+
+Не:
+
+```json
+{ "create": "Создать" }
+```
+
+Причина: generic "Создать" неоднозначен вне контекста страницы (breadcrumb, browser tab, push-уведомление). Правило применяется ко всем create-страницам: `users`, `markets`, `sellers`, `products`, `categories`, `debtors`.
+
 Не вызывать React hooks внутри обычных config factories.
 
 ---

@@ -1,6 +1,6 @@
 {
   "title": "Users",
-  "create": "Create",
+  "create": "Create user",
   "notFound": "User not found",
   "isOwner": "Owner",
   "viewMarkets": "User's Markets"

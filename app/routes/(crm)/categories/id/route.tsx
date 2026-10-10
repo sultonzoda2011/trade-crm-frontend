@@ -12,6 +12,7 @@ import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
 import { ListGroup } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -27,7 +28,11 @@ export default function CategoryDetailPage() {
   const location = useLocation();
   const { can } = useCan();
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    fetchStatus,
+  } = useQuery({
     queryKey: queryKeys.full('categories', id),
     queryFn: () => categoriesApi.getFull(id!),
     enabled: !!id,
@@ -37,8 +42,21 @@ export default function CategoryDetailPage() {
   const category = response?.data?.category;
   const market = response?.data?.market ?? undefined;
   const categoryProducts = useMemo(() => response?.data?.products?.data ?? [], [response]);
+  // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
+  // от "не найдено" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !category;
 
   if (isLoading) return <ByIdSkeleton />;
+
+  if (isOfflineEmpty) {
+    return (
+      <OfflineBlock
+        label={t('offline.noCachedData', { ns: 'common' })}
+        onBack={() => navigate('/categories')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
+    );
+  }
 
   if (!category) {
     return (
