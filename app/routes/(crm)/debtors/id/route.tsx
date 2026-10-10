@@ -16,6 +16,7 @@ import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
 import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
@@ -39,7 +40,11 @@ export default function DebtorDetailPage() {
   const payModal = useTransactionsModals((s) => s.pay);
   const [pickDebtOpen, setPickDebtOpen] = useState(false);
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    fetchStatus,
+  } = useQuery({
     queryKey: queryKeys.full('debtors', id),
     queryFn: () => debtorsApi.getFull(id!),
     enabled: !!id,
@@ -47,6 +52,9 @@ export default function DebtorDetailPage() {
   });
 
   const debtor = response?.data?.debtor;
+  // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
+  // от "не найдено" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !debtor;
   const transactions = response?.data?.transactions?.data ?? [];
   const totalTx = response?.data?.transactions?.meta?.total ?? 0;
 
@@ -71,6 +79,16 @@ export default function DebtorDetailPage() {
   });
 
   if (isLoading) return <ByIdSkeleton />;
+
+  if (isOfflineEmpty) {
+    return (
+      <OfflineBlock
+        label={t('offline.noCachedData', { ns: 'common' })}
+        onBack={() => navigate('/debtors')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
+    );
+  }
 
   if (!debtor) {
     return (

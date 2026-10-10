@@ -13,6 +13,7 @@ import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
 import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
 import { RefundHistory } from '~/components/transactions/RefundHistory';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
@@ -37,7 +38,11 @@ export default function TransactionDetailPage() {
   const payModal = useTransactionsModals((s) => s.pay);
   const refundModal = useTransactionsModals((s) => s.refund);
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    fetchStatus,
+  } = useQuery({
     queryKey: queryKeys.full('transactions', id),
     queryFn: () => transactionsApi.getDetail(id!),
     enabled: !!id,
@@ -45,8 +50,21 @@ export default function TransactionDetailPage() {
   });
 
   const transaction = response?.data;
+  // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
+  // от "не найдено" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !transaction;
 
   if (isLoading) return <ByIdSkeleton />;
+
+  if (isOfflineEmpty) {
+    return (
+      <OfflineBlock
+        label={t('offline.noCachedData', { ns: 'common' })}
+        onBack={() => navigate('/transactions')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
+    );
+  }
 
   if (!transaction) {
     return (

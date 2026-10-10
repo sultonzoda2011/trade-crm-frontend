@@ -35,7 +35,8 @@ export default function MarketsPage() {
   const { can } = useCan();
   const deleteModal = useMarketsModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } = useMarketsStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
+    useMarketsStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -44,6 +45,7 @@ export default function MarketsPage() {
     isLoading,
     isFetching,
     isError,
+    fetchStatus,
   } = useQuery({
     queryKey: queryKeys.list('markets', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -61,6 +63,10 @@ export default function MarketsPage() {
     },
     staleTime: 30_000,
   });
+
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
+  // от "список реально пуст" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   const { mutate: deleteMarket, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => marketsApi.delete(id),
@@ -134,6 +140,7 @@ export default function MarketsPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         isError={isError}
+        isOfflineEmpty={isOfflineEmpty}
         page={page}
         limit={limit}
         totalPages={totalPages}

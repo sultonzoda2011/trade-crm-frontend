@@ -1,6 +1,6 @@
 {
   "title": "Debtors",
-  "create": "Create",
+  "create": "Create debtor",
   "notFound": "Debtor not found",
   "fields": {
     "transactions": "Transactions"

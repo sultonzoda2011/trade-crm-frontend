@@ -12,6 +12,7 @@ import { EntityRow } from '~/components/shared/EntityRow';
 import { ListGroup } from '~/components/shared/ListGroup';
 import { MetricGrid } from '~/components/shared/MetricGrid';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
@@ -27,7 +28,11 @@ export default function ProductDetailPage() {
   const location = useLocation();
   const { can } = useCan();
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    fetchStatus,
+  } = useQuery({
     queryKey: queryKeys.detail('products', id),
     queryFn: () => productsApi.getById(id!),
     enabled: !!id,
@@ -35,8 +40,21 @@ export default function ProductDetailPage() {
   });
 
   const product = response?.data;
+  // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
+  // от "не найдено" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !product;
 
   if (isLoading) return <ByIdSkeleton />;
+
+  if (isOfflineEmpty) {
+    return (
+      <OfflineBlock
+        label={t('offline.noCachedData', { ns: 'common' })}
+        onBack={() => navigate('/products')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
+    );
+  }
 
   if (!product) {
     return (
@@ -144,7 +162,11 @@ export default function ProductDetailPage() {
       <MetricGrid
         title={t('metrics.title')}
         metrics={[
-          { label: t('metrics.revenue'), value: fmtTJS(metrics.revenue), trend: <TrendBadge comparison={comparison.revenue} /> },
+          {
+            label: t('metrics.revenue'),
+            value: fmtTJS(metrics.revenue),
+            trend: <TrendBadge comparison={comparison.revenue} />,
+          },
           {
             label: t('metrics.netUnitsSold'),
             value: metrics.netUnitsSold,

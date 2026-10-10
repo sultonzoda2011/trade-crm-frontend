@@ -83,12 +83,19 @@ export function ListPageLayout<TData>({
         searchPlaceholder={searchPlaceholder}
         searchValue={list.search}
         onSearchChange={list.setSearch}>
-        <FilterSheet config={filterConfig} filters={list.filters} onApply={list.setFilters} onReset={list.resetFilters} />
+        <FilterSheet
+          config={filterConfig}
+          filters={list.filters}
+          onApply={list.setFilters}
+          onReset={list.resetFilters}
+        />
         <ColumnToggle table={table} />
         {createAction}
       </ListPageToolbar>
 
-      {showFilterPills ? <ActiveFilterPills filters={list.filters} config={filterConfig} onRemove={list.removeFilter} /> : null}
+      {showFilterPills ? (
+        <ActiveFilterPills filters={list.filters} config={filterConfig} onRemove={list.removeFilter} />
+      ) : null}
 
       <DataTable
         table={table}
@@ -96,6 +103,7 @@ export function ListPageLayout<TData>({
         isLoading={list.isLoading}
         isFetching={list.isFetching}
         isError={list.isError}
+        isOfflineEmpty={list.isOfflineEmpty}
         page={list.page}
         limit={list.limit}
         totalPages={list.totalPages}

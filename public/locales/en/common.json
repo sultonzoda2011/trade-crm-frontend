@@ -53,6 +53,7 @@
   "offline": {
     "badge": "Offline",
     "banner": "No internet connection — showing saved data",
+    "noCachedData": "No internet — there's no saved data for this page yet",
     "restored": "Connection restored"
   },
   "table": {

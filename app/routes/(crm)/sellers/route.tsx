@@ -33,7 +33,8 @@ export default function SellersPage() {
   const { can } = useCan();
   const deleteModal = useSellersModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } = useSellersStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
+    useSellersStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -42,6 +43,7 @@ export default function SellersPage() {
     isLoading,
     isFetching,
     isError,
+    fetchStatus,
   } = useQuery({
     queryKey: queryKeys.list('sellers', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -59,6 +61,10 @@ export default function SellersPage() {
     },
     staleTime: 30_000,
   });
+
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
+  // от "список реально пуст" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   const { mutate: deleteSeller, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => sellersApi.delete(id),
@@ -123,6 +129,7 @@ export default function SellersPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         isError={isError}
+        isOfflineEmpty={isOfflineEmpty}
         page={page}
         limit={limit}
         totalPages={totalPages}

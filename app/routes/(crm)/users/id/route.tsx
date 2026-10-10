@@ -12,6 +12,7 @@ import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
 import { ListGroup } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
+import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
@@ -28,7 +29,11 @@ export default function UserDetailPage() {
   const location = useLocation();
   const { can } = useCan();
 
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    fetchStatus,
+  } = useQuery({
     queryKey: queryKeys.full('users', id),
     queryFn: () => usersApi.getFull(id!),
     enabled: !!id,
@@ -39,8 +44,21 @@ export default function UserDetailPage() {
   const ownedMarkets = response?.data?.markets?.data ?? [];
   const userTransactions = useMemo(() => response?.data?.transactions?.data ?? [], [response]);
   const totalTx = response?.data?.transactions?.meta?.total ?? 0;
+  // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
+  // от "не найдено" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !user;
 
   if (isLoading) return <ByIdSkeleton />;
+
+  if (isOfflineEmpty) {
+    return (
+      <OfflineBlock
+        label={t('offline.noCachedData', { ns: 'common' })}
+        onBack={() => navigate('/users')}
+        backLabel={t('actions.back', { ns: 'common' })}
+      />
+    );
+  }
 
   if (!user) {
     return (

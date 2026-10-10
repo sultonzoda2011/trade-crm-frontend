@@ -1,5 +1,5 @@
 import { type Row, type Table, flexRender } from '@tanstack/react-table';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, WifiOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -30,6 +30,12 @@ interface DataTableProps<TData> {
   /** Dims current rows while the next page/filter result is in flight (keepPreviousData) */
   isFetching?: boolean;
   isError?: boolean;
+  /**
+   * Устройство офлайн и список ни разу не грузился (fetchStatus === 'paused'
+   * на первом запросе) — рисуем "нет интернета" вместо обычного EmptyState,
+   * чтобы это не читалось как "записей нет".
+   */
+  isOfflineEmpty?: boolean;
   page?: number;
   limit?: number;
   totalPages?: number;
@@ -170,6 +176,7 @@ export function DataTable<TData>({
   isLoading,
   isFetching,
   isError,
+  isOfflineEmpty,
   page = 1,
   limit = DEFAULT_PAGE_LIMIT,
   totalPages = 1,
@@ -208,6 +215,11 @@ export function DataTable<TData>({
               <AlertCircle className="text-destructive size-8" />
               <p className="text-sm">{t('table.error')}</p>
             </div>
+          ) : isOfflineEmpty ? (
+            <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
+              <WifiOff className="text-muted-foreground/40 size-8" />
+              <p className="max-w-56 text-sm">{t('offline.noCachedData')}</p>
+            </div>
           ) : table.getRowModel().rows.length === 0 ? (
             <EmptyState />
           ) : (
@@ -224,7 +236,7 @@ export function DataTable<TData>({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
-                    className="relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:bg-border not-last:after:content-['']">
+                    className="not-last:after:bg-border relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:content-['']">
                     {link && (
                       <Link
                         to={link.to}
@@ -316,6 +328,15 @@ export function DataTable<TData>({
                     <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
                       <AlertCircle className="text-destructive size-8" />
                       <p className="text-sm">{t('table.error')}</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ) : isOfflineEmpty ? (
+                <TableRow>
+                  <TableCell colSpan={visibleColumns.length}>
+                    <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
+                      <WifiOff className="text-muted-foreground/40 size-8" />
+                      <p className="max-w-64 text-sm">{t('offline.noCachedData')}</p>
                     </div>
                   </TableCell>
                 </TableRow>

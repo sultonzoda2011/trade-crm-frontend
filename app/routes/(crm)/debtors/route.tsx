@@ -33,7 +33,8 @@ export default function DebtorsPage() {
   const { can } = useCan();
   const deleteModal = useDebtorsModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } = useDebtorsStore();
+  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
+    useDebtorsStore();
 
   const debouncedSearch = useDebounce(search);
 
@@ -42,6 +43,7 @@ export default function DebtorsPage() {
     isLoading,
     isFetching,
     isError,
+    fetchStatus,
   } = useQuery({
     queryKey: queryKeys.list('debtors', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -59,6 +61,10 @@ export default function DebtorsPage() {
     },
     staleTime: 30_000,
   });
+
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
+  // от "список реально пуст" (см. app/lib/network-status.ts).
+  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   const { mutate: deleteDebtor, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => debtorsApi.delete(id),
@@ -124,6 +130,7 @@ export default function DebtorsPage() {
         isLoading={isLoading}
         isFetching={isFetching}
         isError={isError}
+        isOfflineEmpty={isOfflineEmpty}
         page={page}
         limit={limit}
         totalPages={totalPages}
