@@ -48,9 +48,10 @@ type ButtonProps = ButtonPrimitive.Props &
     /**
      * Busy state, built into the component so no page has to wire a spinner by
      * hand. The button keeps its look (it is working, not unavailable), swaps
-     * its leading icon for a spinner, announces `aria-busy`, and swallows clicks
-     * — including the implicit submit from pressing Enter in a form field — until
-     * the work finishes. Pass the mutation's `isPending`.
+     * its leading icon for a spinner, announces `aria-busy`, and is disabled
+     * at the DOM level for the duration — no double submit from a second tap
+     * before React re-renders, or from pressing Enter in a form field —
+     * until the work finishes. Pass the mutation's `isPending`.
      */
     loading?: boolean
   }
@@ -85,7 +86,11 @@ function Button({
         nonNativeDisabled && 'pointer-events-none opacity-50',
         loading &&
           cn(
-            "pointer-events-none cursor-progress",
+            // `disabled` is now also set below so the tap/Enter is blocked at
+            // the DOM level, not just by pointer-events + onClick — override
+            // the generic disabled:opacity-40/cursor-not-allowed so a loading
+            // button still reads as "working", not "unavailable".
+            "pointer-events-none cursor-progress disabled:cursor-progress disabled:opacity-100",
             iconOnly
               ? "[&_svg:not([data-slot=spinner])]:hidden"
               : "[&_[data-icon=inline-start]]:hidden"
@@ -93,7 +98,10 @@ function Button({
       )}
       render={render}
       nativeButton={nativeButton ?? (render === undefined)}
-      disabled={disabled}
+      // Loading implies disabled: besides looking busy, a loading button must
+      // not be re-submittable (double tap before React re-renders, Enter in
+      // another field, etc.) — see the `loading` prop doc above.
+      disabled={disabled || loading}
       onClick={
         loading
           ? (event) => {

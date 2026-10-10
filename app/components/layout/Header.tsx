@@ -1,4 +1,4 @@
-import { HelpCircle, Search } from 'lucide-react';
+import { HelpCircle, Search, WifiOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
@@ -6,16 +6,19 @@ import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { UserNav } from '~/components/layout/UserNav';
 import { CommandPalette } from '~/components/shared/CommandPalette';
+import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
 import darkLogo from '/logo-text-in-left-dark.png';
 import lightLogo from '/logo-text-in-left-light.png';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 
 export default function Header() {
   const { t } = useTranslation('common');
   const navigate = useNavigate();
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const isOnline = useNetworkStatus();
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -61,6 +64,20 @@ export default function Header() {
       </div>
 
       <div className="flex shrink-0 items-center gap-1 sm:gap-1.5 lg:gap-2">
+        {!isOnline && (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Badge variant="destructive" className="gap-1">
+                  <WifiOff className="size-3" strokeWidth={2} />
+                  <span className="hidden sm:inline">{t('offline.badge')}</span>
+                </Badge>
+              }
+            />
+            <TooltipContent side="bottom">{t('offline.banner')}</TooltipContent>
+          </Tooltip>
+        )}
+
         <Tooltip>
           <TooltipTrigger
             render={

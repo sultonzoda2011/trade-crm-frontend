@@ -25,6 +25,7 @@ import ErrorPage from '~/components/shared/ErrorPage';
 import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
+import { useCapacitorNetworkStatus } from '~/hooks/useCapacitorNetworkStatus';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
@@ -131,6 +132,7 @@ function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
+  useCapacitorNetworkStatus();
 
   return null;
 }
