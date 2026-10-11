@@ -56,9 +56,35 @@ export interface QueuedRefundTransactionVars {
   request?: RefundTransactionRequest;
 }
 
-/** `crypto.randomUUID` is available in every Android WebView and browser this app targets. */
+/**
+ * `crypto.randomUUID()` требует secure context (https/localhost) — в самом
+ * APK это не проблема (androidScheme: 'https' в capacitor.config.ts), но при
+ * тестировании через `npx cap run android --livereload --external` WebView
+ * грузит страницу с LAN IP дев-сервера по http, secure context нет, и
+ * randomUUID оказывается undefined. Раньше это ломало весь onSubmit
+ * синхронным исключением ещё до вызова mutate() — форма создания транзакции
+ * переставала что-либо делать по кнопке. crypto.getRandomValues (в отличие
+ * от randomUUID) secure context не требует и доступен везде, где доступен
+ * сам crypto, поэтому это основной fallback; Math.random — на случай
+ * совсем старого WebView без crypto вообще.
+ */
 export function createIdempotencyKey(): string {
-  return crypto.randomUUID();
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
+    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  return `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+  });
 }
 
 function invalidateAfterTransactionWrite(queryClient: QueryClient, transactionId?: string) {
