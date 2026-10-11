@@ -11,6 +11,8 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum, fmtTJS } from '~/lib/format';
+import { getIsOnline } from '~/lib/network-status';
+import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedPayTransactionVars } from '~/lib/offline-mutations';
 import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
@@ -43,19 +45,19 @@ export function CreatePaymentModal() {
         ]
       : [];
 
+  // mutationKey/mutationFn совпадают с setMutationDefaults в offline-mutations.ts
+  // — нужно, чтобы отложенная оплата, восстановленная из SQLite после
+  // перезапуска приложения, отправлялась тем же вызовом API.
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreatePaymentSchema) => {
-      if (!transaction?.id) throw new Error('No transaction ID');
-      return transactionsApi.pay({ request: data, id: transaction.id });
-    },
-    onSuccess: (_response, variables) => {
+    mutationKey: OFFLINE_MUTATION_KEYS.payTransaction,
+    mutationFn: (vars: QueuedPayTransactionVars) =>
+      transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
+    onSuccess: (_response, vars) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       // Оплата меняет долг должника — его список и карточка тоже устаревают.
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      if (transaction?.id) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
-      }
-      showSuccess({ title: t('transactions:paySuccess'), amount: Number(variables.amount) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', vars.id) });
+      showSuccess({ title: t('transactions:paySuccess'), amount: vars.request.amount });
       payModal.close();
       reset();
     },
@@ -65,7 +67,19 @@ export function CreatePaymentModal() {
   });
 
   function onSubmit(data: CreatePaymentSchema) {
-    mutate(data);
+    if (!transaction?.id) return;
+
+    const wasOffline = !getIsOnline();
+    mutate({ id: transaction.id, request: data, idempotencyKey: createIdempotencyKey() });
+
+    // Как и для создания транзакции: офлайн mutate() только ставит оплату в
+    // очередь, сети не касается — модалка закрывается сразу, а не ждёт
+    // ответа, которого пока неоткуда взяться.
+    if (wasOffline) {
+      toast(t('transactions:payQueuedOffline'));
+      payModal.close();
+      reset();
+    }
   }
 
   if (!transaction) return null;

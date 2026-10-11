@@ -39,6 +39,8 @@ import { useCan } from '~/hooks/useCan';
 import { useForm } from '~/hooks/useForm';
 import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum, fmtTJS } from '~/lib/format';
+import { getIsOnline } from '~/lib/network-status';
+import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedCreateTransactionVars } from '~/lib/offline-mutations';
 import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import type { Debtor } from '~/types/debtors';
@@ -213,30 +215,21 @@ export default function CreateTransactionPage() {
     return Math.max(q * p - d + m, 0);
   };
 
+  // mutationKey/mutationFn здесь намеренно совпадают с тем, что
+  // зарегистрировано в offline-mutations.ts через setMutationDefaults —
+  // тот же контракт нужен, чтобы мутация, восстановленная из SQLite после
+  // перезапуска приложения, заработала тем же вызовом API, что и live-сабмит
+  // с этой страницы.
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: CreateTransactionInput) => {
-      const payload: CreateTransactionRequest = {
-        debtorId: data.debtorId || undefined,
-        customerName: data.customerName || undefined,
-        type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
-        paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
-        dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
-        items: data.items.map((item) => ({
-          productId: item.productId ?? '',
-          quantity: Number(item.quantity),
-          discount: item.discount ? Number(item.discount) : undefined,
-          markup: item.markup ? Number(item.markup) : undefined,
-        })),
-      };
-      return transactionsApi.create(payload);
-    },
-    onSuccess: () => {
+    mutationKey: OFFLINE_MUTATION_KEYS.createTransaction,
+    mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
+    onSuccess: (response) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       // Продажа списывает остатки, долг меняет сумму у должника — без этого списки
       // до конца staleTime показывали бы старые цифры.
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      showSuccess({ title: t('createSuccess'), amount: calculatedTotal });
+      showSuccess({ title: t('createSuccess'), amount: response.data.totalAmount });
       navigate(prefill?.fromPath ?? '/transactions');
     },
     onError: () => {
@@ -249,7 +242,33 @@ export default function CreateTransactionPage() {
       toast.error(t('errors.forbidden', { ns: 'common' }));
       return;
     }
-    mutate(data);
+
+    const payload: CreateTransactionRequest = {
+      debtorId: data.debtorId || undefined,
+      customerName: data.customerName || undefined,
+      type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
+      paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
+      dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
+      items: data.items.map((item) => ({
+        productId: item.productId ?? '',
+        quantity: Number(item.quantity),
+        discount: item.discount ? Number(item.discount) : undefined,
+        markup: item.markup ? Number(item.markup) : undefined,
+      })),
+    };
+    const wasOffline = !getIsOnline();
+
+    mutate({ payload, idempotencyKey: createIdempotencyKey() });
+
+    // Офлайн mutate() не трогает сеть вообще — mutationFn не вызывается,
+    // мутация сразу уходит в очередь (networkMode: 'online' по умолчанию) и
+    // отправится сама, когда сеть вернётся. Ждать её здесь нечего и не
+    // нужно: продавец не должен стоять на этом экране ради связи, которой
+    // сейчас нет, поэтому navigate происходит сразу, а не в onSuccess.
+    if (wasOffline) {
+      toast(t('createQueuedOffline'));
+      navigate(prefill?.fromPath ?? '/transactions');
+    }
   }
 
   const debtorId = watch('debtorId');

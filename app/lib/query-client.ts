@@ -1,4 +1,6 @@
 import { QueryClient, keepPreviousData } from "@tanstack/react-query";
+import { registerOfflineMutationDefaults } from "~/lib/offline-mutations";
+import { subscribeToNetworkStatus } from "~/lib/network-status";
 
 // 400 дней — персистентный кеш (см. query-persister.ts) должен переживать
 // даже очень долгий офлайн (по задаче — "запрос год назад, но показать
@@ -7,7 +9,7 @@ import { QueryClient, keepPreviousData } from "@tanstack/react-query";
 export const PERSISTED_GC_TIME = 1000 * 60 * 60 * 24 * 400;
 
 export function makeQueryClient() {
-  return new QueryClient({
+  const client = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000, // 1 minute
@@ -23,6 +25,22 @@ export function makeQueryClient() {
       },
     },
   });
+
+  // Отложенные create/pay/refund транзакций (см. offline-mutations.ts) —
+  // их mutationFn не переживает сериализацию, поэтому должна быть
+  // переустановлена на каждом новом QueryClient, а не только у того
+  // useMutation(), который изначально поставил мутацию в очередь.
+  registerOfflineMutationDefaults(client);
+
+  // Единственное место, где очередь реально "будится": сеть вернулась —
+  // пробуем отправить всё, что скопилось, пока её не было. Безопасно звать
+  // и когда резюмировать нечего (no-op), и повторно при каждом следующем
+  // восстановлении связи.
+  subscribeToNetworkStatus((online) => {
+    if (online) void client.resumePausedMutations();
+  });
+
+  return client;
 }
 
 const browserQueryClient = makeQueryClient();

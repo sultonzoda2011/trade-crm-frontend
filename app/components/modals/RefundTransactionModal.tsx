@@ -14,6 +14,8 @@ import { Radio, RadioGroup } from '~/components/ui/radio-group';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
+import { getIsOnline } from '~/lib/network-status';
+import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedRefundTransactionVars } from '~/lib/offline-mutations';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { RefundItemRequest } from '~/types/transactions';
@@ -73,36 +75,54 @@ export function RefundTransactionModal() {
     }, 0);
   }, [mode, refundableItems, watchedItems]);
 
+  // mutationKey/mutationFn совпадают с setMutationDefaults в offline-mutations.ts
+  // — нужно, чтобы отложенный возврат, восстановленный из SQLite после
+  // перезапуска приложения, отправлялся тем же вызовом API.
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: RefundTransactionInput) => {
-      if (!transaction?.id) throw new Error('No transaction ID');
-
-      // Omitting `items` means "everything still refundable" on the backend,
-      // which keeps whole-transaction refunds a single well-defined case.
-      const items: RefundItemRequest[] | undefined =
-        data.mode === 'ALL'
-          ? undefined
-          : data.items
-              .map((item) => ({ itemId: item.itemId, quantity: Number(item.quantity) }))
-              .filter((item) => Number.isFinite(item.quantity) && item.quantity > 0);
-
-      return transactionsApi.refund({
-        id: transaction.id,
-        request: { items, reason: data.reason?.trim() || undefined },
-      });
-    },
-    onSuccess: () => {
+    mutationKey: OFFLINE_MUTATION_KEYS.refundTransaction,
+    mutationFn: (vars: QueuedRefundTransactionVars) =>
+      transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
+    onSuccess: (response) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       if (transaction?.id) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
       }
-      showSuccess({ title: t('refundSuccess'), amount: Math.round(refundTotal) });
+      showSuccess({ title: t('refundSuccess'), amount: Math.round(response.data.summary.refundedAmount) });
       refundModal.close();
       reset();
     },
     onError: () => toast.error(t('refundError')),
   });
+
+  function onSubmit(data: RefundTransactionInput) {
+    if (!transaction?.id) return;
+
+    // Omitting `items` means "everything still refundable" on the backend,
+    // which keeps whole-transaction refunds a single well-defined case.
+    const items: RefundItemRequest[] | undefined =
+      data.mode === 'ALL'
+        ? undefined
+        : data.items
+            .map((item) => ({ itemId: item.itemId, quantity: Number(item.quantity) }))
+            .filter((item) => Number.isFinite(item.quantity) && item.quantity > 0);
+
+    const wasOffline = !getIsOnline();
+    mutate({
+      id: transaction.id,
+      request: { items, reason: data.reason?.trim() || undefined },
+      idempotencyKey: createIdempotencyKey(),
+    });
+
+    // Как и для создания транзакции/оплаты: офлайн mutate() только ставит
+    // возврат в очередь, сети не касается — модалка закрывается сразу, а не
+    // ждёт ответа, которого пока неоткуда взяться.
+    if (wasOffline) {
+      toast(t('refundQueuedOffline'));
+      refundModal.close();
+      reset();
+    }
+  }
 
   if (!transaction) return null;
 
@@ -139,7 +159,7 @@ export function RefundTransactionModal() {
       {refundableItems.length === 0 ? (
         <p className="text-muted-foreground py-6 text-center text-sm">{t('refundModal.nothingRefundable')}</p>
       ) : (
-        <form id="refund-transaction-form" onSubmit={handleSubmit((data) => mutate(data))} className="space-y-4">
+        <form id="refund-transaction-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <p className="text-muted-foreground text-sm">{t('refundModal.description')}</p>
 
           <Controller

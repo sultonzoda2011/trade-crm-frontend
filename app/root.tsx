@@ -15,6 +15,7 @@ import {
 } from 'react-router';
 
 import type { Route } from '.react-router/types/app/+types/root';
+import { hashKey } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { MotionConfig } from 'motion/react';
 import { useTheme } from 'next-themes';
@@ -29,10 +30,16 @@ import { useCapacitorNetworkStatus } from '~/hooks/useCapacitorNetworkStatus';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
+import { OFFLINE_MUTATION_KEYS } from '~/lib/offline-mutations';
 import { getQueryClient, PERSISTED_GC_TIME } from '~/lib/query-client';
 import { CACHE_BUSTER, queryPersister } from '~/lib/query-persister';
 import './styles/global.css';
 import './styles/nprogress.css';
+
+// Какие мутации разрешено тащить в SQLite вместе с кешем чтения — см.
+// offline-mutations.ts. Только они и только пока реально стоят в очереди
+// (isPaused): завершённая/живая мутация персистентам не интересна.
+const PERSISTABLE_MUTATION_KEYS = new Set(Object.values(OFFLINE_MUTATION_KEYS).map((key) => hashKey(key)));
 
 export async function clientLoader() {
   const fromCookie = Cookies.get('lng');
@@ -90,10 +97,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
             // временем жизни в памяти (gcTime), не временем самой дехидрации.
             maxAge: PERSISTED_GC_TIME,
             buster: CACHE_BUSTER,
-            // Мутации (create/pay/refund и т.д.) не персистим — это живые
-            // операции, а не справочные данные для офлайн-просмотра.
-            dehydrateOptions: { shouldDehydrateMutation: () => false },
+            // Персистим только то, что реально стоит в очереди офлайн (см.
+            // offline-mutations.ts) — не весь live-мутационный трафик и не
+            // уже завершённые записи (дехидрация функций невозможна, поэтому
+            // непаузнутая мутация персисту всё равно не нужна).
+            dehydrateOptions: {
+              shouldDehydrateMutation: (mutation) =>
+                mutation.state.isPaused && PERSISTABLE_MUTATION_KEYS.has(hashKey(mutation.options.mutationKey ?? [])),
+            },
           }}
+          // Сразу после восстановления персиста пробуем отправить то, что
+          // скопилось в очереди, пока приложение было закрыто — если к
+          // этому моменту сеть уже есть. Если сети ещё нет, resume — no-op,
+          // мутации остаются paused до события в query-client.ts.
+          onSuccess={() => void queryClient.resumePausedMutations()}
         >
           <ThemeProvider>
             <CapacitorBridge />
