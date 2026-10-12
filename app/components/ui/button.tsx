@@ -88,11 +88,9 @@ function Button({
         nonNativeDisabled && 'pointer-events-none opacity-50',
         loading &&
           cn(
-            // `disabled` is now also set below so the tap/Enter is blocked at
-            // the DOM level, not just by pointer-events + onClick — override
-            // the generic disabled:opacity-40/cursor-not-allowed so a loading
-            // button still reads as "working", not "unavailable".
-            "pointer-events-none cursor-progress disabled:cursor-progress",
+            // Keep the loading state visibly disabled on every form, including
+            // browsers/WebViews where the native disabled variant is unreliable.
+            "pointer-events-none cursor-not-allowed opacity-50",
             iconOnly
               ? "[&_svg:not([data-slot=spinner])]:hidden"
               : "[&_[data-icon=inline-start]]:hidden"
