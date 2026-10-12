@@ -1,6 +1,7 @@
 import type { QueryClient } from '@tanstack/react-query';
 import i18next from 'i18next';
 import { transactionsApi } from '~/api/transactions';
+import { getServerMessage, isTransientError } from '~/lib/offline-errors';
 import { queryKeys } from '~/lib/query-keys';
 import { showSuccess } from '~/store/useSuccessStore';
 import { toast } from 'sonner';
@@ -37,6 +38,31 @@ export const OFFLINE_MUTATION_KEYS = {
   createTransaction: ['transactions', 'create'] as const,
   payTransaction: ['transactions', 'pay'] as const,
   refundTransaction: ['transactions', 'refund'] as const,
+};
+
+/**
+ * Все три операции идут через ОДНУ последовательную очередь: пока предыдущая не
+ * закончилась, следующая ждёт. Так на слабой сети не уходит пачка параллельных
+ * запросов (и не упирается в лимит 100 запросов/мин на IP), а порядок отправки
+ * совпадает с порядком, в котором продавец их оформил.
+ */
+export const OFFLINE_QUEUE_SCOPE = { id: 'offline-transactions' } as const;
+
+/** Сколько раз пробуем отправить на временном сбое, прежде чем показать «ошибка» с кнопкой «Повторить». */
+export const MAX_SEND_ATTEMPTS = 5;
+
+const QUEUE_OPTIONS = {
+  scope: OFFLINE_QUEUE_SCOPE,
+  // Сеть/таймаут/5xx/429 — пробуем снова с нарастающей паузой (2, 4, 8, 16 с).
+  // Бизнес-ошибку (400/403/422: «недостаточно товара» и т.п.) повторять
+  // бессмысленно — она сразу превращается в «ошибка» в очереди. Повтор безопасен:
+  // у каждой операции свой Idempotency-Key, сервер второй раз её не выполнит.
+  retry: (failureCount: number, error: unknown) => isTransientError(error) && failureCount < MAX_SEND_ATTEMPTS - 1,
+  retryDelay: (failureCount: number) => Math.min(2000 * 2 ** failureCount, 30_000),
+  // Операция не должна исчезнуть из очереди сама: упавшая ждёт решения человека
+  // (повторить или убрать), а не 5 минут сборщика мусора. Успешные чистит
+  // MutationCache в query-client.ts.
+  gcTime: Infinity,
 };
 
 export interface QueuedCreateTransactionVars {
@@ -110,41 +136,45 @@ function invalidateAfterTransactionWrite(queryClient: QueryClient, transactionId
  * до сервера, с кем бы пользователь к тому моменту ни разговаривал.
  */
 export function registerOfflineMutationDefaults(queryClient: QueryClient) {
+  const fail = (key: 'createError' | 'payError' | 'refundError') => (error: unknown) => {
+    // Единственный тост об ошибке: сам запрос идёт с `silent` (см. transactions.ts),
+    // поэтому перехватчик axios не дублирует его на каждой попытке.
+    toast.error(i18next.t(key, { ns: 'transactions' }), { description: getServerMessage(error) });
+  };
+
   queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.createTransaction, {
+    ...QUEUE_OPTIONS,
     mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
     onSuccess: (response) => {
       invalidateAfterTransactionWrite(queryClient);
-      showSuccess({ title: i18next.t('createSuccess', { ns: 'transactions' }), amount: response.data.totalAmount });
+      // `?.`: при гонке дубликатов бэкенд может вернуть пустой сохранённый ответ.
+      showSuccess({ title: i18next.t('createSuccess', { ns: 'transactions' }), amount: response?.data?.totalAmount });
     },
-    onError: () => {
-      toast.error(i18next.t('createError', { ns: 'transactions' }));
-    },
+    onError: fail('createError'),
   });
 
   queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.payTransaction, {
+    ...QUEUE_OPTIONS,
     mutationFn: (vars: QueuedPayTransactionVars) =>
       transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
     onSuccess: (_response, vars) => {
       invalidateAfterTransactionWrite(queryClient, vars.id);
       showSuccess({ title: i18next.t('paySuccess', { ns: 'transactions' }), amount: vars.request.amount });
     },
-    onError: () => {
-      toast.error(i18next.t('payError', { ns: 'transactions' }));
-    },
+    onError: fail('payError'),
   });
 
   queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.refundTransaction, {
+    ...QUEUE_OPTIONS,
     mutationFn: (vars: QueuedRefundTransactionVars) =>
       transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
     onSuccess: (response, vars) => {
       invalidateAfterTransactionWrite(queryClient, vars.id);
       showSuccess({
         title: i18next.t('refundSuccess', { ns: 'transactions' }),
-        amount: response.data.summary.refundedAmount,
+        amount: response?.data?.summary?.refundedAmount,
       });
     },
-    onError: () => {
-      toast.error(i18next.t('refundError', { ns: 'transactions' }));
-    },
+    onError: fail('refundError'),
   });
 }

@@ -186,6 +186,7 @@ export function DataTable<TData>({
   getRowLink,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
+  const { t: tSync } = useTranslation('sync');
   const visibleColumns = table.getVisibleLeafColumns();
   const isMobile = useIsMobile();
 
@@ -219,6 +220,9 @@ export function DataTable<TData>({
             <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
               <WifiOff className="text-muted-foreground/40 size-8" />
               <p className="max-w-56 text-sm">{t('offline.noCachedData')}</p>
+              <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
+                {tSync('offlineHint.action')}
+              </Link>
             </div>
           ) : table.getRowModel().rows.length === 0 ? (
             <EmptyState />
@@ -337,6 +341,9 @@ export function DataTable<TData>({
                     <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
                       <WifiOff className="text-muted-foreground/40 size-8" />
                       <p className="max-w-64 text-sm">{t('offline.noCachedData')}</p>
+                      <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
+                        {tSync('offlineHint.action')}
+                      </Link>
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,3 +1,4 @@
+import type { AxiosRequestConfig } from 'axios';
 import { apiClient } from '~/lib/client';
 import { filtersToParams } from '~/lib/filtersToParams';
 import type { ActiveFilter } from '~/types/filters';
@@ -42,15 +43,22 @@ export function withInclusiveDates<T extends { dateFrom?: unknown; dateTo?: unkn
   return next;
 }
 
-/** `GET <base>` — paginated list with active filters flattened into query params. */
+/**
+ * `GET <base>` — paginated list with active filters flattened into query params.
+ *
+ * The optional trailing `config` is for background callers (offline sync): it carries
+ * `silent` and an abort `signal`. Screens never pass it.
+ */
 export function listRequest<TListRes>(base: string) {
   return async (
     page = 1,
     limit = 20,
     options: ListOptions = {},
-    filters: ActiveFilter[] = []
+    filters: ActiveFilter[] = [],
+    config?: AxiosRequestConfig
   ): Promise<TListRes> => {
     const { data } = await apiClient.get(base, {
+      ...config,
       params: withInclusiveDates({ page, limit, ...options, ...filtersToParams(filters) }),
     });
     return data;
@@ -59,8 +67,8 @@ export function listRequest<TListRes>(base: string) {
 
 /** `GET <base>/:id` — the compact detail payload an edit form loads. */
 export function detailRequest<TDetailRes>(base: string) {
-  return async (id: string): Promise<TDetailRes> => {
-    const { data } = await apiClient.get(`${base}/${id}`);
+  return async (id: string, config?: AxiosRequestConfig): Promise<TDetailRes> => {
+    const { data } = await apiClient.get(`${base}/${id}`, config);
     return data;
   };
 }
@@ -70,8 +78,8 @@ export function detailRequest<TDetailRes>(base: string) {
  * `segment` is a parameter because the transactions endpoint calls it `detail`.
  */
 export function nestedDetailRequest<TFullRes>(base: string, segment: 'full' | 'detail' = 'full') {
-  return async (id: string): Promise<TFullRes> => {
-    const { data } = await apiClient.get(`${base}/${id}/${segment}`);
+  return async (id: string, config?: AxiosRequestConfig): Promise<TFullRes> => {
+    const { data } = await apiClient.get(`${base}/${id}/${segment}`, config);
     return data;
   };
 }

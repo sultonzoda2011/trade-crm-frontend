@@ -1,14 +1,15 @@
+import type { AxiosRequestConfig } from 'axios';
 import { apiClient } from '~/lib/client';
 import type { ProfileFullResponse, ProfileResponse, UpdatePasswordRequest } from '~/types/profile';
 
 export const profileApi = {
-  getProfile: async (): Promise<ProfileResponse> => {
-    const { data } = await apiClient.get<ProfileResponse>('/profile');
+  getProfile: async (config?: AxiosRequestConfig): Promise<ProfileResponse> => {
+    const { data } = await apiClient.get<ProfileResponse>('/profile', config);
     return data;
   },
 
-  getFullProfile: async (): Promise<ProfileFullResponse> => {
-    const { data } = await apiClient.get<ProfileFullResponse>('/profile/full');
+  getFullProfile: async (config?: AxiosRequestConfig): Promise<ProfileFullResponse> => {
+    const { data } = await apiClient.get<ProfileFullResponse>('/profile/full', config);
     return data;
   },
 

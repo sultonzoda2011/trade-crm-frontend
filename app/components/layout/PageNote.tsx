@@ -17,7 +17,7 @@ function noteKey(pathname: string): string | null {
     };
     return map[second ?? ''] ?? 'dashboard';
   }
-  if (first === 'profile' || first === 'guide') return first;
+  if (first === 'profile' || first === 'guide' || first === 'sync') return first;
   if (!ENTITIES.includes(first)) return null;
   if (!second) return `${first}List`;
   if (second === 'create') return `${first}Create`;

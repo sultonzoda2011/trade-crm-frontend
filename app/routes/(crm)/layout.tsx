@@ -9,6 +9,8 @@ import { ScrollArea } from '~/components/ui/scroll-area';
 import { SidebarProvider } from '~/components/ui/sidebar';
 import { canAccess } from '~/config/permissions';
 import { getClientUser } from '~/lib/auth-utils';
+import { ensureCacheOwner } from '~/lib/offline-session';
+import { getQueryClient } from '~/lib/query-client';
 import type { Route } from './+types/layout';
 
 export async function clientLoader({ request }: Route.ClientLoaderArgs) {
@@ -24,6 +26,9 @@ export async function clientLoader({ request }: Route.ClientLoaderArgs) {
   if (!canAccess(user.role, new URL(request.url).pathname)) {
     return redirect('/403');
   }
+  // Кеш на устройстве принадлежит тому, кто вошёл: при смене пользователя он стирается
+  // ещё до первого рендера, чтобы чужие данные и неотправленные операции не просочились.
+  await ensureCacheOwner(getQueryClient(), user.id);
   return { user };
 }
 

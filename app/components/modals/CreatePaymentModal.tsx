@@ -1,8 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { showSuccess } from '~/store/useSuccessStore';
 import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
@@ -13,14 +12,12 @@ import { useForm } from '~/hooks/useForm';
 import { fmtNum, fmtTJS } from '~/lib/format';
 import { getIsOnline } from '~/lib/network-status';
 import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedPayTransactionVars } from '~/lib/offline-mutations';
-import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import { createPaymentSchema, type CreatePaymentSchema } from '~/validations/transactions';
 
 export function CreatePaymentModal() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
-  const queryClient = useQueryClient();
   const payModal = useTransactionsModals((s) => s.pay);
   const transaction = payModal.data;
 
@@ -52,17 +49,10 @@ export function CreatePaymentModal() {
     mutationKey: OFFLINE_MUTATION_KEYS.payTransaction,
     mutationFn: (vars: QueuedPayTransactionVars) =>
       transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
-    onSuccess: (_response, vars) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
-      // Оплата меняет долг должника — его список и карточка тоже устаревают.
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', vars.id) });
-      showSuccess({ title: t('transactions:paySuccess'), amount: vars.request.amount });
+    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts).
+    onSuccess: () => {
       payModal.close();
       reset();
-    },
-    onError: () => {
-      toast.error(t('transactions:payError'));
     },
   });
 

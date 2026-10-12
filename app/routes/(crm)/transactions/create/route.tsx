@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
   AlertTriangle,
@@ -18,7 +18,6 @@ import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { showSuccess } from '~/store/useSuccessStore';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { transactionsApi } from '~/api/transactions';
@@ -69,7 +68,6 @@ export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
   const navigate = useNavigate();
   const location = useLocation();
-  const queryClient = useQueryClient();
   const { can } = useCan();
   // «Дать долг» со страницы должника приходит с уже выбранным человеком —
   // не заставляем искать его заново.
@@ -223,17 +221,11 @@ export default function CreateTransactionPage() {
   const { mutate, isPending } = useMutation({
     mutationKey: OFFLINE_MUTATION_KEYS.createTransaction,
     mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
-    onSuccess: (response) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
-      // Продажа списывает остатки, долг меняет сумму у должника — без этого списки
-      // до конца staleTime показывали бы старые цифры.
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      showSuccess({ title: t('createSuccess'), amount: response.data.totalAmount });
+    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts):
+    // они срабатывают и когда страницы уже нет (очередь ушла на сервер после перезапуска).
+    // Здесь остаётся только то, что относится к этому экрану.
+    onSuccess: () => {
       navigate(prefill?.fromPath ?? '/transactions');
-    },
-    onError: () => {
-      toast.error(t('createError'));
     },
   });
 

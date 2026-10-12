@@ -7,6 +7,18 @@ import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
 import { redirectToLogin } from '~/lib/navigation';
 import { getIsOnline, subscribeToNetworkStatus } from '~/lib/network-status';
 
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    /**
+     * Запрос «в фоне»: сам вызывающий код (очередь офлайн-операций, полная
+     * синхронизация) решает, что показать пользователю. Перехватчики не
+     * показывают тосты об ошибке и об отсутствии сети — иначе пакет из сотен
+     * запросов засыпал бы экран одинаковыми сообщениями.
+     */
+    silent?: boolean;
+  }
+}
+
 const baseURL = (import.meta.env.VITE_API_URL || '') + '/api';
 
 export const apiClient = axios.create({
@@ -176,7 +188,7 @@ apiClient.interceptors.request.use((config) => {
   if (!isSilent(urlPath)) {
     const requiredAction = getApiAction(urlPath, method);
     if (requiredAction && !canAccessApi(requiredAction)) {
-      toast.error(i18next.t('errors.forbidden', { ns: 'common' }));
+      if (!config.silent) toast.error(i18next.t('errors.forbidden', { ns: 'common' }));
       return Promise.reject(new Error(`Access denied: ${requiredAction}`));
     }
   }
@@ -212,13 +224,20 @@ apiClient.interceptors.response.use(
     }
 
     if (!error.response) {
-      scheduleOfflineToast();
+      if (!config?.silent) scheduleOfflineToast();
       return Promise.reject(error);
     }
 
+    // Сессия истекла: токен чистим всегда, а вот кеш и очередь офлайн-операций
+    // НЕ трогаем — после повторного входа тем же пользователем они продолжат
+    // работу (чужой пользователь кеш не получит: см. offline-session.ts).
     if (status === 401) {
       clearSession();
       redirectToLogin();
+      return Promise.reject(error);
+    }
+
+    if (config?.silent) {
       return Promise.reject(error);
     }
 

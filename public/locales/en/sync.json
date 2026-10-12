@@ -1,38 +1,108 @@
 {
   "title": "Sync",
-  "offlineTooltip": "No internet connection — this action is unavailable",
-  "outgoingTitle": "Outgoing changes",
-  "pushButton": "Send data",
-  "pushDescription": "Sends queued offline changes (created transactions, payments, refunds) to the server in the order they were created.",
-  "online": "Online",
-  "offline": "Offline",
-  "lastSync": "Updated: {{date}}",
-  "neverSynced": "Not synced yet",
-  "syncing": "Syncing...",
-  "queueTitle": "Waiting to be sent ({{count}})",
-  "queueEmpty": "Everything is synced",
-  "queueFailed": "failed",
-  "confirmRemoveQueueItem": "Remove this item from the queue? It will not be sent to the server.",
-  "referenceDataTitle": "Reference data",
-  "syncList": "Update list",
-  "syncListDescription": "Downloads every page of the list from the server and saves it for offline viewing, including switching between pages.",
-  "pageProgress": "Page {{page}} of {{total}}",
-  "syncDetails": "Update records",
-  "syncDetailsDescription": "Downloads the full detail page for every record in the list so it can be opened without internet.",
-  "syncDetailsRequiresList": "Update the list first — records are downloaded from it.",
-  "detailProgress": "Records: {{done}} of {{total}}",
-  "detailSkipped": "{{count}} already up to date, skipped",
-  "entities": {
-    "products": "Products",
-    "transactions": "Transactions",
-    "debtors": "Debtors",
-    "categories": "Categories",
-    "markets": "Markets",
-    "sellers": "Sellers"
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "syncing": "Loading",
+    "queue": "{{count}} queued",
+    "failed": "{{count}} failed"
+  },
+  "header": {
+    "open": "Open sync",
+    "syncAll": "Download all data for offline use"
+  },
+  "hero": {
+    "onlineTitle": "Connected to the internet",
+    "offlineTitle": "No internet",
+    "offlineText": "Saved data is shown. New sales, payments and refunds will wait in the queue and send themselves when the connection is back.",
+    "lastSync": "Offline data updated {{date}}",
+    "neverSynced": "Offline data hasn't been downloaded yet — tap the button below while you have internet.",
+    "preparing": "Getting ready: counting how much data to download…",
+    "progress": "Downloaded {{done}} of {{total}}",
+    "waitingNetwork": "No internet. The download will resume by itself when it's back.",
+    "throttled": "The server asked us to slow down. Continuing in {{seconds}} s.",
+    "partial": "Some data couldn't be downloaded. Tap again — what's already saved will be skipped.",
+    "throttledEnd": "The server limited the number of requests. Everything downloaded is saved — try again in a minute.",
+    "failedCount": "Not downloaded: {{count}}"
+  },
+  "button": {
+    "syncAll": "Sync everything",
+    "cancel": "Stop",
+    "noNetwork": "No connection"
   },
   "queue": {
-    "transactionCreate": "Create transaction",
-    "transactionPay": "Payment",
-    "transactionRefund": "Refund"
+    "title": "Send queue",
+    "empty": "The queue is empty — everything has been sent.",
+    "footer": "Operations go out one at a time, in the order they were created. Resending is safe: the server never performs the same operation twice.",
+    "kind": {
+      "create": "New transaction",
+      "pay": "Payment",
+      "refund": "Refund"
+    },
+    "type": {
+      "SALE": "Sale",
+      "DEBT": "Debt",
+      "REFUND": "Refund"
+    },
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "refundAll": "everything refundable",
+    "status": {
+      "waiting": "Waiting to send",
+      "sending": "Sending…",
+      "retrying": "Weak connection — retrying (attempt {{count}})",
+      "failed": "Not sent"
+    },
+    "queuedAt": "at {{time}}",
+    "retry": "Retry",
+    "retryAll": "Retry all",
+    "remove": "Remove",
+    "sendNow": "Send now",
+    "removeTitle": "Remove from the queue?",
+    "removeDescription": "The operation will not be sent to the server.",
+    "removeMaybeSent": "The operation will not be sent. But the connection dropped and the server may have already accepted it — check the transactions list."
+  },
+  "data": {
+    "title": "Saved on this device",
+    "footer": "The number on the right is how many records you can open without internet. The newest ones are saved; the rest are available online.",
+    "cards": "{{done}} of {{total}}",
+    "cardsOnly": "saved: {{count}}",
+    "notLoaded": "not loaded",
+    "entities": {
+      "transactions": "Transactions",
+      "debtors": "Debtors",
+      "products": "Products",
+      "categories": "Categories",
+      "sellers": "Sellers",
+      "markets": "Markets",
+      "users": "Users"
+    }
+  },
+  "storage": {
+    "title": "Device storage",
+    "size": "Used",
+    "rows": "Saved requests",
+    "clear": "Clear saved data",
+    "clearTitle": "Clear saved data?",
+    "clearDescription": "Downloaded data will be removed from this device — without internet the screens will be empty until you sync again. The queue of unsent operations is kept.",
+    "clearAction": "Clear",
+    "cleared": "Saved data cleared"
+  },
+  "toast": {
+    "complete": "Everything is downloaded — you can work offline",
+    "partial": "Not everything was downloaded — tap “Sync everything” again",
+    "throttled": "The server limited requests. What was downloaded is saved — try again in a minute",
+    "cancelled": "Sync stopped. What was downloaded is saved",
+    "offline": "No internet — sync is unavailable"
+  },
+  "offlineHint": {
+    "text": "This data hasn't been downloaded yet.",
+    "action": "Open sync"
+  },
+  "logout": {
+    "title": "Sign out?",
+    "description_one": "{{count}} operation in the queue hasn't been sent. If you sign out now, it will be deleted from this device and never reach the server.",
+    "description_other": "{{count}} operations in the queue haven't been sent. If you sign out now, they will be deleted from this device and never reach the server.",
+    "confirm": "Sign out and delete"
   }
 }

@@ -1,3 +1,4 @@
+import type { AxiosRequestConfig } from 'axios';
 import { apiClient } from '~/lib/client';
 import type { OverviewResponse, SellersReportResponse } from '~/types/dashboard';
 
@@ -13,12 +14,12 @@ export const dashboardApi = {
    * Business control centre: sales, debts, returns, inventory health and
    * recommendations in one round-trip.
    */
-  getOverview: async (params?: DashboardParams): Promise<OverviewResponse> => {
-    const { data } = await apiClient.get('/dashboard/overview', { params });
+  getOverview: async (params?: DashboardParams, config?: AxiosRequestConfig): Promise<OverviewResponse> => {
+    const { data } = await apiClient.get('/dashboard/overview', { ...config, params });
     return data;
   },
-  getSellersReport: async (params?: DashboardParams): Promise<SellersReportResponse> => {
-    const { data } = await apiClient.get('/dashboard/sellers-report', { params });
+  getSellersReport: async (params?: DashboardParams, config?: AxiosRequestConfig): Promise<SellersReportResponse> => {
+    const { data } = await apiClient.get('/dashboard/sellers-report', { ...config, params });
     return data;
   },
 };

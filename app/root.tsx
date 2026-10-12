@@ -32,13 +32,14 @@ import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
 import { OFFLINE_MUTATION_KEYS } from '~/lib/offline-mutations';
 import { getQueryClient, PERSISTED_GC_TIME } from '~/lib/query-client';
-import { CACHE_BUSTER, queryPersister } from '~/lib/query-persister';
+import { CACHE_BUSTER, queryPersister, shouldPersistQuery } from '~/lib/query-persister';
 import './styles/global.css';
 import './styles/nprogress.css';
 
 // Какие мутации разрешено тащить в SQLite вместе с кешем чтения — см.
-// offline-mutations.ts. Только они и только пока реально стоят в очереди
-// (isPaused): завершённая/живая мутация персистентам не интересна.
+// offline-mutations.ts. Только они и только пока они что-то значат: ждут
+// отправки/отправляются (pending) или упали и ждут решения человека (error).
+// Успешно отправленная персисту не интересна.
 const PERSISTABLE_MUTATION_KEYS = new Set(Object.values(OFFLINE_MUTATION_KEYS).map((key) => hashKey(key)));
 
 export async function clientLoader() {
@@ -97,13 +98,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             // временем жизни в памяти (gcTime), не временем самой дехидрации.
             maxAge: PERSISTED_GC_TIME,
             buster: CACHE_BUSTER,
-            // Персистим только то, что реально стоит в очереди офлайн (см.
-            // offline-mutations.ts) — не весь live-мутационный трафик и не
-            // уже завершённые записи (дехидрация функций невозможна, поэтому
-            // непаузнутая мутация персисту всё равно не нужна).
+            // Персистим только очередь офлайн-операций (см. offline-mutations.ts) —
+            // не весь live-мутационный трафик. Запросы чтения — по строке на запрос
+            // (см. query-persister.ts).
             dehydrateOptions: {
+              // Поисковые запросы «на лету» на диск не пишем (см. shouldPersistQuery).
+              shouldDehydrateQuery: shouldPersistQuery,
               shouldDehydrateMutation: (mutation) =>
-                mutation.state.isPaused && PERSISTABLE_MUTATION_KEYS.has(hashKey(mutation.options.mutationKey ?? [])),
+                (mutation.state.status === 'pending' || mutation.state.status === 'error') &&
+                PERSISTABLE_MUTATION_KEYS.has(hashKey(mutation.options.mutationKey ?? [])),
             },
           }}
           // Сразу после восстановления персиста пробуем отправить то, что

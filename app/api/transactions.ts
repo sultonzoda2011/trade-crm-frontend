@@ -12,9 +12,14 @@ import type {
 
 const BASE = '/transactions';
 
-/** `headers` for an idempotency-aware write — omitted entirely when no key is given, so the call is byte-identical to before for every caller that doesn't pass one. */
+/**
+ * Request config for an idempotency-aware write — omitted entirely when no key is given, so the
+ * call is byte-identical to before for every caller that doesn't pass one. A keyed write is always
+ * a queued one (see app/lib/offline-mutations.ts): it is retried and reported by the queue itself,
+ * so the axios interceptors stay quiet (`silent`) instead of toasting on every attempt.
+ */
 function idempotencyHeaders(idempotencyKey?: string) {
-  return idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined;
+  return idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey }, silent: true } : undefined;
 }
 
 export const transactionsApi = {

@@ -254,7 +254,8 @@
     "transactionsList": "History of sales and debts. Search by number or debtor, filter by date and status.",
     "transactionsCreate": "Pick products and a payment method. For \"On credit\" choose a debtor and a due date.",
     "transactionsEdit": "Change the transaction details.",
-    "transactionsDetail": "Transaction details: items, total, payment and remaining debt."
+    "transactionsDetail": "Transaction details: items, total, payment and remaining debt.",
+    "sync": "Download data here for offline work, see operations waiting to be sent and how much is saved on this device."
   },
   "viewAll": "View all",
   "quickActions": "Quick actions",

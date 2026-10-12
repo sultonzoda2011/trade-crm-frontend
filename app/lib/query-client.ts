@@ -1,5 +1,5 @@
-import { QueryClient, keepPreviousData } from "@tanstack/react-query";
-import { registerOfflineMutationDefaults } from "~/lib/offline-mutations";
+import { MutationCache, QueryClient, keepPreviousData } from "@tanstack/react-query";
+import { OFFLINE_QUEUE_SCOPE, registerOfflineMutationDefaults } from "~/lib/offline-mutations";
 import { subscribeToNetworkStatus } from "~/lib/network-status";
 
 // 400 дней — персистентный кеш (см. query-persister.ts) должен переживать
@@ -8,8 +8,21 @@ import { subscribeToNetworkStatus } from "~/lib/network-status";
 // react-query выкинет query из памяти раньше, чем успеет его сохранить.
 export const PERSISTED_GC_TIME = 1000 * 60 * 60 * 24 * 400;
 
+/** Сколько отправленная операция ещё лежит в MutationCache — чтобы экран, который её ждал, успел получить результат. */
+const SENT_OPERATION_LINGER_MS = 4000;
+
 export function makeQueryClient() {
+  // У очереди gcTime = Infinity (упавшая операция ждёт решения человека), поэтому
+  // успешно отправленные убираем сами — иначе они копились бы в памяти до перезапуска.
+  const mutationCache = new MutationCache({
+    onSuccess: (_data, _variables, _context, mutation) => {
+      if (mutation.options.scope?.id !== OFFLINE_QUEUE_SCOPE.id) return;
+      setTimeout(() => mutationCache.remove(mutation), SENT_OPERATION_LINGER_MS);
+    },
+  });
+
   const client = new QueryClient({
+    mutationCache,
     defaultOptions: {
       queries: {
         staleTime: 60 * 1000, // 1 minute

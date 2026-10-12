@@ -1,10 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { showSuccess } from '~/store/useSuccessStore';
 import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { CustomInput } from '~/components/shared/CustomInput';
@@ -16,7 +15,6 @@ import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { getIsOnline } from '~/lib/network-status';
 import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedRefundTransactionVars } from '~/lib/offline-mutations';
-import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { RefundItemRequest } from '~/types/transactions';
 import { refundTransactionSchema, type RefundableMap, type RefundTransactionInput } from '~/validations/transactions';
@@ -32,7 +30,6 @@ import { refundTransactionSchema, type RefundableMap, type RefundTransactionInpu
  */
 export function RefundTransactionModal() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
-  const queryClient = useQueryClient();
   const refundModal = useTransactionsModals((s) => s.refund);
   const transaction = refundModal.data;
 
@@ -82,17 +79,11 @@ export function RefundTransactionModal() {
     mutationKey: OFFLINE_MUTATION_KEYS.refundTransaction,
     mutationFn: (vars: QueuedRefundTransactionVars) =>
       transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
-    onSuccess: (response) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
-      if (transaction?.id) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transaction.id) });
-      }
-      showSuccess({ title: t('refundSuccess'), amount: Math.round(response.data.summary.refundedAmount) });
+    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts).
+    onSuccess: () => {
       refundModal.close();
       reset();
     },
-    onError: () => toast.error(t('refundError')),
   });
 
   function onSubmit(data: RefundTransactionInput) {

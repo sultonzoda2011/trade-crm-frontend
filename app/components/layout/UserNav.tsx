@@ -1,11 +1,14 @@
 import Cookies from 'js-cookie';
 
-import { ChevronDown, Languages, LogOut, Moon, Sun, User } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ChevronDown, CloudDownload, Languages, LogOut, Moon, Sun, User } from 'lucide-react';
+import { useState } from 'react';
 
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 
 import {
@@ -20,7 +23,9 @@ import {
 
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCurrentUser } from '~/hooks/useCurrentUser';
+import { useOfflineQueue } from '~/hooks/useOfflineQueue';
 import { clearSession } from '~/lib/auth-utils';
+import { wipeOfflineData } from '~/lib/offline-session';
 
 const LANGUAGES = [
   { value: 'ru', label: 'Русский', shortLabel: 'РУ' },
@@ -33,6 +38,10 @@ export function UserNav() {
 
   const { t } = useTranslation('auth');
   const { t: tc, i18n } = useTranslation('common');
+  const { t: ts } = useTranslation('sync');
+  const queryClient = useQueryClient();
+  const { total: queued } = useOfflineQueue();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   const { theme, setTheme, systemTheme } = useTheme();
 
@@ -56,9 +65,19 @@ export function UserNav() {
     void i18n.changeLanguage(nextLanguage.value);
   };
 
-  const handleLogout = () => {
+  // Выход стирает офлайн-кеш и очередь (данные бизнеса не должны достаться следующему
+  // человеку на этом телефоне). Неотправленные операции при этом пропали бы молча —
+  // поэтому, если они есть, сначала спрашиваем.
+  const logout = async () => {
+    setConfirmLogout(false);
     clearSession();
+    await wipeOfflineData(queryClient);
     navigate('/login');
+  };
+
+  const handleLogout = () => {
+    if (queued > 0) setConfirmLogout(true);
+    else void logout();
   };
 
   const initials = userInfo?.name
@@ -72,102 +91,125 @@ export function UserNav() {
   const roleLabel = userInfo?.role ? ROLE_CONFIG[userInfo.role]?.label(t) : '';
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <button className="glass-control group flex h-11 items-center gap-2 rounded-full p-1 outline-none transition-transform active:scale-95 md:h-10 sm:pr-2.5" />
-        }>
-        <Avatar className="size-9">
-          {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button className="glass-control group flex h-11 items-center gap-2 rounded-full p-1 transition-transform outline-none active:scale-95 sm:pr-2.5 md:h-10" />
+          }>
+          <Avatar className="size-9">
+            {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
 
-          <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
-        </Avatar>
+            <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
+          </Avatar>
 
-        <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
-          <span className="max-w-full break-words text-sm leading-none font-semibold">{userInfo?.name}</span>
+          <div className="hidden max-w-40 min-w-0 flex-col items-start text-left xl:flex">
+            <span className="max-w-full text-sm leading-none font-semibold break-words">{userInfo?.name}</span>
 
-          <span className="text-muted-foreground text-2xs mt-1 leading-none">{roleLabel}</span>
-        </div>
+            <span className="text-muted-foreground text-2xs mt-1 leading-none">{roleLabel}</span>
+          </div>
 
-        <ChevronDown className="text-muted-foreground hidden size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
-      </DropdownMenuTrigger>
+          <ChevronDown className="text-muted-foreground hidden size-4 transition-transform duration-200 group-data-[state=open]:rotate-180 sm:block" />
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" className="w-64 overflow-hidden p-0" sideOffset={8}>
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="p-0 font-normal">
-            <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
-              <div className="flex items-center gap-3">
-                <Avatar className="size-12">
-                  {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
+        <DropdownMenuContent align="end" className="w-64 overflow-hidden p-0" sideOffset={8}>
+          <DropdownMenuGroup>
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="bg-primary/3 flex flex-col space-y-3 border-b p-4">
+                <div className="flex items-center gap-3">
+                  <Avatar className="size-12">
+                    {userInfo?.image ? (
+                      <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" />
+                    ) : null}
 
-                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
+                    <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
 
-                <div className="flex min-w-0 flex-col">
-                  <p className="break-words text-sm leading-none font-bold">{userInfo?.name}</p>
+                  <div className="flex min-w-0 flex-col">
+                    <p className="text-sm leading-none font-bold break-words">{userInfo?.name}</p>
 
-                  <p className="text-muted-foreground mt-1 text-xs leading-none">{roleLabel}</p>
+                    <p className="text-muted-foreground mt-1 text-xs leading-none">{roleLabel}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </DropdownMenuLabel>
-        </DropdownMenuGroup>
+            </DropdownMenuLabel>
+          </DropdownMenuGroup>
 
-        <DropdownMenuSeparator className="mx-0" />
+          <DropdownMenuSeparator className="mx-0" />
 
-        <DropdownMenuGroup className="p-1.5">
-          {/* Profile */}
-          <DropdownMenuItem
-            onClick={() => {
-              navigate('/profile');
-            }}
-            closeOnClick={false}
-            className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
-            <User className="text-muted-foreground mr-2 size-4" />
+          <DropdownMenuGroup className="p-1.5">
+            {/* Profile */}
+            <DropdownMenuItem
+              onClick={() => {
+                navigate('/profile');
+              }}
+              closeOnClick={false}
+              className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
+              <User className="text-muted-foreground mr-2 size-4" />
 
-            <span className="text-sm">{tc('header.profile')}</span>
-          </DropdownMenuItem>
-          {/* Theme */}
-          <DropdownMenuItem
-            closeOnClick={false}
-            onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
-            className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
-            {currentTheme === 'dark' ? (
-              <Sun className="text-muted-foreground mr-2 size-4" />
-            ) : (
-              <Moon className="text-muted-foreground mr-2 size-4" />
-            )}
+              <span className="text-sm">{tc('header.profile')}</span>
+            </DropdownMenuItem>
+            {/* Sync */}
+            <DropdownMenuItem
+              onClick={() => navigate('/sync')}
+              closeOnClick={false}
+              className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
+              <CloudDownload className="text-muted-foreground mr-2 size-4" />
 
-            <span className="text-sm">{tc('header.theme')}</span>
-          </DropdownMenuItem>
+              <span className="text-sm">{ts('title')}</span>
+            </DropdownMenuItem>
+            {/* Theme */}
+            <DropdownMenuItem
+              closeOnClick={false}
+              onClick={() => setTheme(currentTheme === 'dark' ? 'light' : 'dark')}
+              className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
+              {currentTheme === 'dark' ? (
+                <Sun className="text-muted-foreground mr-2 size-4" />
+              ) : (
+                <Moon className="text-muted-foreground mr-2 size-4" />
+              )}
 
-          {/* Language */}
-          <DropdownMenuItem
-            closeOnClick={false}
-            onClick={changeLanguage}
-            className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
-            <Languages className="text-muted-foreground mr-2 size-4" />
+              <span className="text-sm">{tc('header.theme')}</span>
+            </DropdownMenuItem>
 
-            <span className="flex-1 text-sm">{tc('header.language')}</span>
+            {/* Language */}
+            <DropdownMenuItem
+              closeOnClick={false}
+              onClick={changeLanguage}
+              className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
+              <Languages className="text-muted-foreground mr-2 size-4" />
 
-            <span className="text-muted-foreground text-xs font-medium">{currentLanguage.shortLabel}</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+              <span className="flex-1 text-sm">{tc('header.language')}</span>
 
-        <DropdownMenuSeparator className="mx-0" />
+              <span className="text-muted-foreground text-xs font-medium">{currentLanguage.shortLabel}</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
 
-        <DropdownMenuGroup className="p-1.5">
-          <DropdownMenuItem
-            onClick={handleLogout}
-            className="text-destructive focus:text-destructive focus:bg-destructive/5 cursor-pointer rounded-xl px-3 py-2.5">
-            <LogOut className="mr-2 size-4" />
+          <DropdownMenuSeparator className="mx-0" />
 
-            <span className="text-sm font-medium">{t('logout')}</span>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuGroup className="p-1.5">
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-destructive focus:text-destructive focus:bg-destructive/5 cursor-pointer rounded-xl px-3 py-2.5">
+              <LogOut className="mr-2 size-4" />
+
+              <span className="text-sm font-medium">{t('logout')}</span>
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmDialog
+        open={confirmLogout}
+        onOpenChange={setConfirmLogout}
+        onConfirm={() => void logout()}
+        type="danger"
+        title={ts('logout.title')}
+        description={ts('logout.description', { count: queued })}
+        confirmText={ts('logout.confirm')}
+      />
+    </>
   );
 }
