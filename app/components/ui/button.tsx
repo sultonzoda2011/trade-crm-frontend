@@ -72,7 +72,8 @@ function Button({
   // not emit a `disabled` attribute, so Tailwind's `disabled:` styles never apply.
   // Mirror them here so anchor/Link-rendered buttons look and behave disabled too.
   const nonNative = (nativeButton ?? (render === undefined)) === false;
-  const nonNativeDisabled = nonNative && !!disabled;
+  const isDisabled = !!(disabled || loading);
+  const nonNativeDisabled = nonNative && isDisabled;
   // Icon-only buttons have nothing but the icon to replace; labelled ones keep
   // any trailing icon and only lose the leading one the spinner stands in for.
   const iconOnly = typeof size === "string" && size.startsWith("icon")
@@ -81,6 +82,7 @@ function Button({
       data-slot="button"
       data-loading={loading ? "" : undefined}
       aria-busy={loading || undefined}
+      aria-disabled={nonNativeDisabled || undefined}
       className={cn(
         buttonVariants({ variant, size, className }),
         nonNativeDisabled && 'pointer-events-none opacity-50',
@@ -90,7 +92,7 @@ function Button({
             // the DOM level, not just by pointer-events + onClick — override
             // the generic disabled:opacity-40/cursor-not-allowed so a loading
             // button still reads as "working", not "unavailable".
-            "pointer-events-none cursor-progress disabled:cursor-progress disabled:opacity-100",
+            "pointer-events-none cursor-progress disabled:cursor-progress",
             iconOnly
               ? "[&_svg:not([data-slot=spinner])]:hidden"
               : "[&_[data-icon=inline-start]]:hidden"
@@ -101,14 +103,20 @@ function Button({
       // Loading implies disabled: besides looking busy, a loading button must
       // not be re-submittable (double tap before React re-renders, Enter in
       // another field, etc.) — see the `loading` prop doc above.
-      disabled={disabled || loading}
+      disabled={isDisabled}
       onClick={
-        loading
+        nonNativeDisabled
           ? (event) => {
-              // pointer-events-none stops taps; this stops Enter / programmatic clicks.
+              // Links have no native disabled attribute, so block pointer and keyboard activation too.
               event.preventDefault()
+              event.stopPropagation()
             }
-          : onClick
+          : loading
+            ? (event) => {
+                // This also blocks Enter / programmatic clicks while the mutation is pending.
+                event.preventDefault()
+              }
+            : onClick
       }
       {...props}
     >
