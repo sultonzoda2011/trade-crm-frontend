@@ -60,7 +60,7 @@ export function CreatePaymentModal() {
     if (!transaction?.id) return;
 
     const wasOffline = !getIsOnline();
-    mutate({ id: transaction.id, request: data, idempotencyKey: createIdempotencyKey() });
+    mutate({ id: transaction.id, request: data, idempotencyKey: createIdempotencyKey(), queuedOffline: wasOffline });
 
     // Как и для создания транзакции: офлайн mutate() только ставит оплату в
     // очередь, сети не касается — модалка закрывается сразу, а не ждёт
@@ -92,7 +92,7 @@ export function CreatePaymentModal() {
       <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
         <div className="flex items-center gap-2.5">
           <TransactionProducts items={transaction.items} size="sm" max={3} />
-          <span className="break-words font-medium">{getTransactionTitle(transaction, t)}</span>
+          <span className="font-medium break-words">{getTransactionTitle(transaction, t)}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">{t('fields.totalAmount')}:</span>

@@ -250,7 +250,7 @@ export default function CreateTransactionPage() {
     };
     const wasOffline = !getIsOnline();
 
-    mutate({ payload, idempotencyKey: createIdempotencyKey() });
+    mutate({ payload, idempotencyKey: createIdempotencyKey(), queuedOffline: wasOffline });
 
     // Офлайн mutate() не трогает сеть вообще — mutationFn не вызывается,
     // мутация сразу уходит в очередь (networkMode: 'online' по умолчанию) и
@@ -581,7 +581,8 @@ export default function CreateTransactionPage() {
           form="create-transaction-page-form"
           size="lg"
           className="w-full"
-          disabled={!canSubmit} loading={isPending}>
+          disabled={!canSubmit}
+          loading={isPending}>
           {submitLabel}
         </Button>
       </div>

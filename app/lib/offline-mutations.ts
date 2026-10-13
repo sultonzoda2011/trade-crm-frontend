@@ -68,18 +68,28 @@ const QUEUE_OPTIONS = {
 export interface QueuedCreateTransactionVars {
   idempotencyKey: string;
   payload: CreateTransactionRequest;
+  /**
+   * Устройство было офлайн в момент вызова `mutate()` — мутация сразу ушла в
+   * очередь, и то, что видит пользователь сейчас, это её фактическая отправка
+   * на сервер (после восстановления сети, возможно — уже на другом экране
+   * или после перезапуска приложения), а не живой ответ на отправку формы.
+   * Меняет только заголовок уведомления об успехе (см. `successTitle` ниже).
+   */
+  queuedOffline?: boolean;
 }
 
 export interface QueuedPayTransactionVars {
   idempotencyKey: string;
   id: string;
   request: CreatePaymentRequest;
+  queuedOffline?: boolean;
 }
 
 export interface QueuedRefundTransactionVars {
   idempotencyKey: string;
   id: string;
   request?: RefundTransactionRequest;
+  queuedOffline?: boolean;
 }
 
 /**
@@ -142,13 +152,29 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
     toast.error(i18next.t(key, { ns: 'transactions' }), { description: getServerMessage(error) });
   };
 
+  /**
+   * Заголовок уведомления об успехе: «создано/проведено/оформлено», когда это
+   * живой ответ на отправку формы, и отдельное «синхронизировано», когда это
+   * та же операция, но ушедшая на сервер из офлайн-очереди (человек мог уже
+   * уйти с этого экрана, а то и перезапустить приложение — ему важно увидеть,
+   * что именно отправилось, а не только что отправка когда-то была поставлена).
+   */
+  const successTitle = (
+    liveKey: 'createSuccess' | 'paySuccess' | 'refundSuccess',
+    syncedKey: 'createSyncedSuccess' | 'paySyncedSuccess' | 'refundSyncedSuccess',
+    queuedOffline: boolean | undefined
+  ) => i18next.t(queuedOffline ? syncedKey : liveKey, { ns: 'transactions' });
+
   queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.createTransaction, {
     ...QUEUE_OPTIONS,
     mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
-    onSuccess: (response) => {
+    onSuccess: (response, vars) => {
       invalidateAfterTransactionWrite(queryClient);
       // `?.`: при гонке дубликатов бэкенд может вернуть пустой сохранённый ответ.
-      showSuccess({ title: i18next.t('createSuccess', { ns: 'transactions' }), amount: response?.data?.totalAmount });
+      showSuccess({
+        title: successTitle('createSuccess', 'createSyncedSuccess', vars.queuedOffline),
+        amount: response?.data?.totalAmount,
+      });
     },
     onError: fail('createError'),
   });
@@ -159,7 +185,10 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
       transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
     onSuccess: (_response, vars) => {
       invalidateAfterTransactionWrite(queryClient, vars.id);
-      showSuccess({ title: i18next.t('paySuccess', { ns: 'transactions' }), amount: vars.request.amount });
+      showSuccess({
+        title: successTitle('paySuccess', 'paySyncedSuccess', vars.queuedOffline),
+        amount: vars.request.amount,
+      });
     },
     onError: fail('payError'),
   });
@@ -171,7 +200,7 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
     onSuccess: (response, vars) => {
       invalidateAfterTransactionWrite(queryClient, vars.id);
       showSuccess({
-        title: i18next.t('refundSuccess', { ns: 'transactions' }),
+        title: successTitle('refundSuccess', 'refundSyncedSuccess', vars.queuedOffline),
         amount: response?.data?.summary?.refundedAmount,
       });
     },

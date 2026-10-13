@@ -4,26 +4,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { Progress } from '~/components/ui/progress';
-import { useCacheCoverage } from '~/hooks/useCacheCoverage';
+import { useAllUpToDate } from '~/hooks/useAllUpToDate';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { formatDate } from '~/lib/format';
-import { FRESH_WINDOW_MS } from '~/lib/offline-sync';
 import { cn } from '~/lib/utils';
 import { syncPercent, useSyncStore } from '~/store/useSyncStore';
-
-/** Все доступные роли сущности загружены недавно и в полном объёме — качать нечего. */
-function useAllUpToDate(): boolean {
-  const coverage = useCacheCoverage();
-  if (coverage.length === 0) return false;
-  const now = Date.now();
-  return coverage.every(
-    (item) =>
-      item.target !== null &&
-      item.details >= item.target &&
-      item.updatedAt !== null &&
-      now - item.updatedAt < FRESH_WINDOW_MS
-  );
-}
 
 /** Секунды до конца паузы по требованию сервера; тикает раз в секунду, пока пауза идёт. */
 function useCountdown(until: number | null | undefined): number {

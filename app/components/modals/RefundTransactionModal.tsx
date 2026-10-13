@@ -103,6 +103,7 @@ export function RefundTransactionModal() {
       id: transaction.id,
       request: { items, reason: data.reason?.trim() || undefined },
       idempotencyKey: createIdempotencyKey(),
+      queuedOffline: wasOffline,
     });
 
     // Как и для создания транзакции/оплаты: офлайн mutate() только ставит

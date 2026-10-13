@@ -3,6 +3,7 @@
   "listSubtitle": "Sales, debts and refunds",
   "create": "Create Transaction",
   "createSuccess": "Transaction created successfully",
+  "createSyncedSuccess": "Transaction synced successfully",
   "createQueuedOffline": "No connection — transaction saved and will be sent automatically once you're back online",
   "payQueuedOffline": "No connection — payment saved and will be sent automatically once you're back online",
   "refundQueuedOffline": "No connection — refund saved and will be sent automatically once you're back online",
@@ -14,6 +15,7 @@
   "debtHint": "The full amount is recorded as a debt: 0 credited, everything stays as remaining.",
   "pay": "Make Payment",
   "paySuccess": "Payment processed successfully",
+  "paySyncedSuccess": "Payment synced successfully",
   "payError": "Error processing payment",
   "notFound": "Transaction not found",
   "type": {
@@ -69,6 +71,7 @@
   },
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",
+  "refundSyncedSuccess": "Refund synced successfully",
   "refundError": "Failed to create refund",
   "refundConfirmTitle": "Refund transaction",
   "refundConfirmDescription": "This action cannot be undone. Continue?",

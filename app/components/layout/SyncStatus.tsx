@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useAllUpToDate } from '~/hooks/useAllUpToDate';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { useOfflineQueue } from '~/hooks/useOfflineQueue';
 import { cn } from '~/lib/utils';
@@ -27,8 +28,13 @@ export function SyncStatus() {
   const running = useSyncStore((s) => s.running);
   const snapshot = useSyncStore((s) => s.snapshot);
   const start = useSyncStore((s) => s.start);
+  const allUpToDate = useAllUpToDate();
 
   const percent = syncPercent(snapshot);
+  // Пока идёт загрузка, кнопка всегда кликабельна — ведёт на /sync. Иначе
+  // недоступна без сети или когда качать уже нечего (всё свежее и полное).
+  const syncDisabled = !running && (!isOnline || allUpToDate);
+  const syncLabel = running ? t('header.open') : allUpToDate ? t('button.upToDate') : t('header.syncAll');
 
   let badge: { tone: Tone; icon: typeof WifiOff; short: string; label: string } | null = null;
   if (failed > 0) {
@@ -90,7 +96,8 @@ export function SyncStatus() {
               variant="glass"
               size="icon"
               className="text-primary md:text-foreground"
-              aria-label={running ? t('header.open') : t('header.syncAll')}
+              aria-label={syncLabel}
+              disabled={syncDisabled}
               // Во время загрузки повторный запуск не нужен — открываем страницу с прогрессом.
               onClick={() => (running ? navigate('/sync') : void start(queryClient))}>
               <RefreshCw
@@ -100,7 +107,7 @@ export function SyncStatus() {
             </Button>
           }
         />
-        <TooltipContent side="bottom">{running ? t('header.open') : t('header.syncAll')}</TooltipContent>
+        <TooltipContent side="bottom">{syncLabel}</TooltipContent>
       </Tooltip>
     </>
   );
