@@ -96,7 +96,7 @@ What you see in the app depends on your **role**. Sections you don't have access
 
 ## Using the app on a phone
 
-Trade CRM works like a regular Android app. Some data is stored in the app, so it opens quickly. An internet connection is needed to get fresh data and to record operations. If the connection drops, you'll see a notification at the top of the screen.
+Trade CRM works like a regular Android app. Some data is stored in the app, so it opens quickly. If the connection drops, you'll see a notification at the top of the screen — but that's not the end of it: sales, payments, and refunds can still be recorded offline, and they're sent on their own once the connection comes back. See **"Offline mode and syncing"** for details.
 
 ---
 

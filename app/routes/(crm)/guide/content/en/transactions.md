@@ -74,6 +74,9 @@ Press **"Create transaction"** and fill in the form.
 > [!NOTE]
 > A seller can only choose the **"On credit"** type. Recording an ordinary cash or card sale is done by the administrator and the owner.
 
+> [!TIP]
+> No internet? The "Create" button still works: the deal is queued and sent to the server on its own once there's a connection. See "Offline mode and syncing" for details.
+
 On a phone a bar with the running total and the buttons is pinned to the bottom of the screen — always within reach as you scroll the form.
 
 ## The transaction page

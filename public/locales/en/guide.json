@@ -42,6 +42,10 @@
       "title": "Sellers and users",
       "summary": "Accounts and roles, a seller's markup and its payout."
     },
+    "offline": {
+      "title": "Offline mode and syncing",
+      "summary": "Working without internet, the sync screen, the send queue and device storage."
+    },
     "profile": {
       "title": "Profile and settings",
       "summary": "Personal details, password change, theme, language and signing out."

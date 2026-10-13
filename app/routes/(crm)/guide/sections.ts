@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { BookOpen, HandCoins, LayoutDashboard, Package, Receipt, Settings, Store, Users } from 'lucide-react';
+import { BookOpen, HandCoins, LayoutDashboard, Package, Receipt, Settings, Store, Users, WifiOff } from 'lucide-react';
 import type { Role } from '~/types/common';
 
 /**
@@ -29,5 +29,6 @@ export const GUIDE_SECTIONS: GuideSection[] = [
   { id: 'products', icon: Package },
   { id: 'markets', icon: Store },
   { id: 'people', icon: Users },
+  { id: 'offline', icon: WifiOff },
   { id: 'profile', icon: Settings },
 ];
