@@ -24,6 +24,7 @@ Backend: **NestJS + Prisma + PostgreSQL**.
 - Русский, английский и таджикский языки
 - Загрузка изображений для товаров, рынков и профиля
 - Встроенное offline-руководство `/guide`
+- **Офлайн-режим**: данные синхронизируются на устройство (SQLite на Android), продажи/оплаты/возвраты можно создавать без сети — они уходят в очередь и отправляются сами при восстановлении связи
 - Адаптация интерфейса под Android WebView
 - Сохранение авторизованной сессии в `localStorage`
 - Интеграция с Capacitor для Android
@@ -59,6 +60,7 @@ Backend: **NestJS + Prisma + PostgreSQL**.
 | Theme           | next-themes                            |
 | Mobile          | Capacitor 8                            |
 | Android         | Capacitor Android                      |
+| Offline storage | @capacitor-community/sqlite            |
 | E2E             | Playwright                             |
 | Formatting      | Prettier + prettier-plugin-tailwindcss |
 
@@ -275,6 +277,16 @@ Dashboard поддерживает фильтры периода и продав
 PATCH /transactions/:id/pay
 POST  /transactions/:id/refund
 ```
+
+---
+
+### Sync
+
+```text
+/sync
+```
+
+Экран офлайн-режима: статус сети, кнопка «Синхронизировать всё», очередь неотправленных операций, покрытие кеша по сущностям и память устройства. Доступен всем авторизованным ролям — ссылка на него есть в шапке (индикатор сети) и в меню профиля.
 
 ---
 
@@ -640,6 +652,75 @@ const modals = useUsersModals();
 ```
 
 Лучше подписываться только на нужный slice.
+
+---
+
+# Offline & Sync
+
+Приложение рассчитано на работу без стабильной связи (точки продаж на рынке). Офлайн-слой — это не самописная шина, а комбинация встроенных механизмов TanStack Query поверх персистентного хранилища.
+
+```text
+app/lib/
+├── network-status.ts     # единый источник истины о сети, подключён к onlineManager React Query
+├── offline-storage.ts    # key-value хранилище: SQLite на Android, IndexedDB в браузере
+├── query-persister.ts    # персист кеша чтения — построчно, а не одним блобом
+├── offline-mutations.ts  # определения мутаций с offline-поддержкой (create/pay/refund)
+├── offline-queue.ts      # витрина очереди для UI (/sync)
+├── offline-errors.ts     # PlainError — безопасный для персиста формат ошибки
+├── offline-sync.ts       # логика «Синхронизировать всё»
+└── offline-session.ts    # владелец кеша/очереди при логине/логауте
+
+app/hooks/
+├── useNetworkStatus.ts            # useSyncExternalStore вокруг network-status.ts
+├── useCapacitorNetworkStatus.ts   # источник событий сети — Capacitor Network, не navigator.onLine
+├── useOfflineQueue.ts             # данные для QueueSection
+├── useCacheCoverage.ts            # данные для CoverageSection
+└── useStorageStats.ts             # данные для StorageSection
+
+app/store/useSyncStore.ts   # глобальное состояние запуска «Синхронизировать всё»
+```
+
+### Источник истины о сети
+
+`navigator.onLine` в Android WebView ненадёжен (часто остаётся `true` без реального подключения). Поэтому единственный источник — **Capacitor Network**, с полноценной веб-реализацией, так что в браузере работает тот же код. `useCapacitorNetworkStatus()` подписывается на него один раз (в `CapacitorBridge`) и пишет в `network-status.ts`, который, в свою очередь, подключён к `onlineManager` TanStack Query — поэтому React Query сам знает, онлайн приложение или нет.
+
+### Офлайн-мутации — встроенный механизм, не своя очередь
+
+Для `createTransaction`, `payTransaction`, `refundTransaction` (только эти три — остальной CRUD в офлайн не попадает, это сознательно неполное покрытие, а не офлайн для всего приложения):
+
+1. У мутаций `networkMode: 'online'`. Если устройства нет в сети — `mutationFn` вообще не вызывается, мутация сразу уходит в `isPaused`.
+2. `root.tsx` персистит именно paused-мутации в ту же SQLite-базу, что и кеш чтения, — очередь переживает перезапуск приложения.
+3. `queryClient.resumePausedMutations()` вызывается при каждом восстановлении сети (и дополнительно сразу после восстановления персиста при старте).
+4. Бэкенд дедуплицирует повторные отправки по `Idempotency-Key` — поэтому повторный `resumePausedMutations()` безопасен даже если сервер уже принял операцию.
+
+`mutationKey` здесь — не ключ чтения из `query-keys.ts`, а идентификатор _определения_ мутации: по нему `setMutationDefaults` подставляет `mutationFn` обратно при восстановлении из персиста (функции не сериализуются — в SQLite попадают только `mutationKey`/`variables`/`state`).
+
+### Персист кеша
+
+`query-persister.ts` пишет кеш React Query **построчно** (по одному запросу на запись), а не одним блобом, и версионируется через `CACHE_BUSTER` — несовместимое изменение формы кеша (например, рефакторинг query-keys) бампает `buster`, чтобы старые записи не ломали новую версию приложения.
+
+Хранилище (`offline-storage.ts`):
+
+```text
+Android (native) → SQLite через @capacitor-community/sqlite
+Браузер (dev)     → IndexedDB
+```
+
+На Android это файл в песочнице приложения, который система не чистит при нехватке памяти — в отличие от IndexedDB/localStorage в WebView.
+
+### Чей это кеш
+
+Кеш и очередь содержат бизнес-данные (транзакции, должники, суммы) — они принадлежат вошедшему пользователю (`offline-session.ts`):
+
+- явный выход из аккаунта стирает кеш и очередь;
+- вход под другим пользователем стирает их тоже;
+- истёкшая сессия (401) ничего не стирает — тот же человек войдёт снова, и очередь продолжит отправку.
+
+### Экран `/sync` и `useSyncStore`
+
+Запуск «Синхронизировать всё» — глобальное состояние в `useSyncStore` (Zustand), а не локальный state страницы: синхронизация продолжается, пока человек переходит по приложению, а индикатор в шапке и страница `/sync` показывают один и тот же прогресс. `offline-sync.ts` обходит доступные пользователю сущности (с учётом RBAC) и догружает их постранично, с уважением к серверным лимитам запросов (throttling).
+
+Сам экран `/sync` собран из `SyncHero`, `QueueSection`, `CoverageSection`, `StorageSection` (`app/components/sync/`) — подробное пользовательское описание в `/guide` → «Офлайн-режим и синхронизация».
 
 ---
 

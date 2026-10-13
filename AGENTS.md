@@ -168,6 +168,7 @@ File-system routing не используется.
 │   ├── /create
 │   └── /:id
 │
+├── /sync
 ├── /guide
 ├── /403
 └── *
@@ -1420,7 +1421,71 @@ UI должен учитывать Android WebView:
 
 ---
 
-# 30. Session persistence
+# 30. Offline & Sync
+
+Offline-поддержка — не самописная очередь, а комбинация встроенных механизмов TanStack Query поверх персистентного хранилища.
+
+```text
+app/lib/
+├── network-status.ts     # единственный источник истины о сети, подключён к onlineManager React Query
+├── offline-storage.ts    # SQLite (native/@capacitor-community/sqlite) или IndexedDB (браузер)
+├── query-persister.ts    # персист query-кеша, построчно; версия через CACHE_BUSTER
+├── offline-mutations.ts  # offline-определения createTransaction/payTransaction/refundTransaction
+├── offline-queue.ts      # витрина очереди для UI (/sync)
+├── offline-errors.ts     # PlainError — ошибка без Authorization-заголовка, безопасна для персиста
+├── offline-sync.ts       # логика «Синхронизировать всё»
+└── offline-session.ts    # владелец кеша/очереди при логине/логауте
+
+app/hooks/useNetworkStatus.ts, useCapacitorNetworkStatus.ts, useOfflineQueue.ts, useCacheCoverage.ts, useStorageStats.ts
+app/store/useSyncStore.ts   # глобальный прогресс «Синхронизировать всё»
+```
+
+## Источник истины о сети
+
+`navigator.onLine` в Android WebView ненадёжен. Используется **Capacitor Network** через `useCapacitorNetworkStatus()` → `network-status.ts` → `onlineManager` TanStack Query. Не проверять связь напрямую через `navigator.onLine`.
+
+## Offline-mutations
+
+В очередь попадают **только три** мутации: `createTransaction`, `payTransaction`, `refundTransaction` (`OFFLINE_MUTATION_KEYS` в `offline-mutations.ts`). Остальной CRUD (markets/products/users/...) офлайн не поддерживает — это осознанно неполное покрытие, а не офлайн-режим для всего приложения.
+
+Механизм:
+
+```text
+mutationFn вызывается
+    ↓ (если устройство офлайн)
+networkMode: 'online' → mutation сразу isPaused
+    ↓
+root.tsx персистит paused-мутации в ту же SQLite-базу, что и кеш чтения
+    ↓ (при восстановлении сети)
+queryClient.resumePausedMutations()
+    ↓
+Backend дедуплицирует повтор по Idempotency-Key
+```
+
+`mutationKey` в офлайн-мутациях — идентификатор *определения* мутации (для `setMutationDefaults`), а не ключ чтения из `query-keys.ts`: функции не сериализуются, в SQLite попадают только `mutationKey`/`variables`/`state`.
+
+> [!IMPORTANT]
+> Добавляя новую offline-мутацию, обязательно реализовать идемпотентность на бэкенде (`Idempotency-Key`) — без неё `resumePausedMutations()` может выполнить операцию дважды.
+
+## Персист кеша
+
+Построчно (один query = одна запись), не единым блобом. `CACHE_BUSTER` в `query-persister.ts` бампается при несовместимом изменении формы кеша (например, рефакторинг `query-keys.ts`), чтобы старые персистентные записи не ломали новую версию приложения — не забывать бампать при таких изменениях.
+
+## Владение кешем
+
+Кеш и очередь принадлежат вошедшему пользователю (`offline-session.ts`):
+
+- logout стирает кеш и очередь;
+- login под другим пользователем стирает их тоже;
+- истёкшая сессия (401) ничего не стирает.
+
+## UI
+
+Экран `/sync` (`app/routes/(crm)/sync/route.tsx`) собран из `SyncHero`, `QueueSection`, `CoverageSection`, `StorageSection` (`app/components/sync/`), данные — через `useSyncStore`, `useOfflineQueue`, `useCacheCoverage`, `useStorageStats`. Пользовательское описание — в `/guide` → «Офлайн-режим и синхронизация».
+
+---
+
+# 31. Session persistence
 
 Session специально хранится в:
 
@@ -1438,7 +1503,7 @@ Android WebView может удалить обычную session cookie посл
 
 ---
 
-# 31. Error handling
+# 32. Error handling
 
 Axios response interceptor:
 
@@ -1464,7 +1529,7 @@ toast
 
 ---
 
-# 32. Query invalidation after mutations
+# 33. Query invalidation after mutations
 
 Typical mutation flow:
 
@@ -1492,7 +1557,7 @@ queryClient.invalidateQueries({
 
 ---
 
-# 33. Loading states
+# 34. Loading states
 
 Для first load использовать appropriate skeleton.
 
@@ -1508,7 +1573,7 @@ isFetching
 
 ---
 
-# 34. Empty states
+# 35. Empty states
 
 Использовать:
 
@@ -1524,7 +1589,7 @@ EmptyState
 
 ---
 
-# 35. Utility `cn`
+# 36. Utility `cn`
 
 Все conditional Tailwind classes должны объединяться через:
 
@@ -1540,7 +1605,7 @@ cn(...)
 
 ---
 
-# 36. Installed but currently unused
+# 37. Installed but currently unused
 
 Не начинать использовать библиотеку только потому, что она есть в `package.json`.
 
@@ -1563,7 +1628,7 @@ i18next-fs-backend
 
 ---
 
-# 37. Type organization
+# 38. Type organization
 
 Entity types находятся в:
 
@@ -1591,7 +1656,7 @@ filters
 
 ---
 
-# 38. Important domain conventions
+# 39. Important domain conventions
 
 ### Roles
 
@@ -1655,7 +1720,7 @@ PARTIALLY_REFUNDED
 
 ---
 
-# 39. Backend contract
+# 40. Backend contract
 
 Backend:
 
@@ -1685,7 +1750,7 @@ Swagger:
 
 ---
 
-# 40. Market scoping
+# 41. Market scoping
 
 Domain access is market-aware.
 
@@ -1707,7 +1772,7 @@ Cross-market authorization decisions are enforced server-side.
 
 ---
 
-# 41. New feature checklist
+# 42. New feature checklist
 
 При добавлении новой feature проверить:
 
@@ -1733,7 +1798,7 @@ Cross-market authorization decisions are enforced server-side.
 
 ---
 
-# 42. New endpoint checklist
+# 43. New endpoint checklist
 
 Новый API endpoint должен быть проверен в:
 
@@ -1757,7 +1822,7 @@ API_ROUTE_ACTIONS
 
 ---
 
-# 43. New route checklist
+# 44. New route checklist
 
 Новый protected route требует:
 
@@ -1790,7 +1855,7 @@ app/config/navigation.ts
 
 ---
 
-# 44. Don't
+# 45. Don't
 
 Не:
 
@@ -1811,11 +1876,13 @@ app/config/navigation.ts
 ❌ подписываться на весь Zustand store
 ❌ показывать full skeleton при каждом background refetch
 ❌ возвращать auth на cookie-based architecture
+❌ добавлять мутацию в OFFLINE_MUTATION_KEYS без Idempotency-Key на бэкенде
+❌ проверять связь через navigator.onLine вместо useNetworkStatus()
 ```
 
 ---
 
-# 45. Final engineering principle
+# 46. Final engineering principle
 
 TradeCRM — не набор независимых страниц.
 
