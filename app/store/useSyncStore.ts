@@ -3,21 +3,31 @@ import i18next from 'i18next';
 import { toast } from 'sonner';
 import { create } from 'zustand';
 import { getIsOnline } from '~/lib/network-status';
-import { readLastSync, runSync, type LastSync, type SyncOutcome, type SyncSnapshot } from '~/lib/offline-sync';
+import {
+  readLastSync,
+  runSync,
+  type LastSync,
+  type SyncOutcome,
+  type SyncScope,
+  type SyncSnapshot,
+} from '~/lib/offline-sync';
 
 /**
- * Состояние «синхронизировать всё» — глобальное, а не на странице: запуск идёт,
- * пока человек переходит по приложению, а кнопка в шапке и страница /sync
- * показывают один и тот же прогресс.
+ * Состояние синхронизации — глобальное, а не на странице: запуск идёт, пока
+ * человек переходит по приложению, а кнопка в шапке и страница /sync
+ * показывают один и тот же прогресс. Одновременно может идти только один
+ * запуск — либо «Всё», либо одна сущность (`scope`).
  */
 interface SyncState {
   running: boolean;
+  /** Что сейчас синхронизируется; `null`, когда `running === false`. */
+  scope: SyncScope | null;
   snapshot: SyncSnapshot | null;
   /** Чем закончился последний запуск в этой сессии (для подсказки на странице). */
   outcome: SyncOutcome | null;
-  /** Последний завершённый запуск — переживает перезапуск приложения. */
+  /** Последний завершённый полный запуск («Синхронизировать всё») — переживает перезапуск приложения. */
   lastSync: LastSync | null;
-  start: (queryClient: QueryClient) => Promise<void>;
+  start: (queryClient: QueryClient, scope?: SyncScope) => Promise<void>;
   cancel: () => void;
   loadLastSync: () => Promise<void>;
   /** Забыть всё о прошлых запусках — после выхода из аккаунта / очистки кеша. */
@@ -30,11 +40,12 @@ const t = (key: string) => i18next.t(key, { ns: 'sync' });
 
 export const useSyncStore = create<SyncState>((set, get) => ({
   running: false,
+  scope: null,
   snapshot: null,
   outcome: null,
   lastSync: null,
 
-  async start(queryClient) {
+  async start(queryClient, scope = 'all') {
     if (get().running) return;
     if (!getIsOnline()) {
       toast.error(t('toast.offline'));
@@ -42,13 +53,14 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     }
 
     controller = new AbortController();
-    set({ running: true, snapshot: null, outcome: null });
+    set({ running: true, scope, snapshot: null, outcome: null });
 
     let outcome: SyncOutcome;
     try {
       outcome = await runSync({
         queryClient,
         signal: controller.signal,
+        scope,
         onProgress: (snapshot) => set({ snapshot }),
       });
     } catch {
@@ -57,7 +69,8 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     }
 
     controller = null;
-    set({ running: false, outcome, lastSync: (await readLastSync()) ?? get().lastSync });
+    const lastSync = scope === 'all' ? ((await readLastSync()) ?? get().lastSync) : get().lastSync;
+    set({ running: false, scope: null, outcome, lastSync });
 
     if (outcome === 'complete') toast.success(t('toast.complete'));
     else if (outcome === 'partial') toast.warning(t('toast.partial'));
@@ -77,7 +90,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
 
   reset() {
     controller?.abort();
-    set({ running: false, snapshot: null, outcome: null, lastSync: null });
+    set({ running: false, scope: null, snapshot: null, outcome: null, lastSync: null });
   },
 }));
 
