@@ -42,6 +42,8 @@ interface ListRowProps {
   /** Значение справа (серое) — для строк «подпись: значение». */
   value?: ReactNode;
   valueClassName?: string;
+  /** Доп. элемент у самого края строки (после value, перед шевроном) — например, кнопка-иконка. */
+  trailing?: ReactNode;
   /** Переход на страницу — рисует шеврон и подсветку нажатия. */
   to?: string;
   state?: unknown;
@@ -60,6 +62,7 @@ export function ListRow({
   subtitle,
   value,
   valueClassName,
+  trailing,
   to,
   state,
   onClick,
@@ -84,6 +87,7 @@ export function ListRow({
       {value !== undefined && value !== null && (
         <span className={cn('text-muted-foreground max-w-[60%] shrink-0 text-right', valueClassName)}>{value}</span>
       )}
+      {trailing}
       {chevron && <ChevronRight className="text-muted-foreground/50 -mr-1 size-5 shrink-0" />}
     </>
   );

@@ -4,10 +4,26 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '~/components/ui/button';
 import { Progress } from '~/components/ui/progress';
+import { useCacheCoverage } from '~/hooks/useCacheCoverage';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { formatDate } from '~/lib/format';
+import { FRESH_WINDOW_MS } from '~/lib/offline-sync';
 import { cn } from '~/lib/utils';
 import { syncPercent, useSyncStore } from '~/store/useSyncStore';
+
+/** Все доступные роли сущности загружены недавно и в полном объёме — качать нечего. */
+function useAllUpToDate(): boolean {
+  const coverage = useCacheCoverage();
+  if (coverage.length === 0) return false;
+  const now = Date.now();
+  return coverage.every(
+    (item) =>
+      item.target !== null &&
+      item.details >= item.target &&
+      item.updatedAt !== null &&
+      now - item.updatedAt < FRESH_WINDOW_MS
+  );
+}
 
 /** Секунды до конца паузы по требованию сервера; тикает раз в секунду, пока пауза идёт. */
 function useCountdown(until: number | null | undefined): number {
@@ -33,6 +49,7 @@ export function SyncHero() {
   const lastSync = useSyncStore((s) => s.lastSync);
   const start = useSyncStore((s) => s.start);
   const cancel = useSyncStore((s) => s.cancel);
+  const allUpToDate = useAllUpToDate();
 
   const percent = syncPercent(snapshot);
   const secondsLeft = useCountdown(snapshot?.throttledUntil);
@@ -45,6 +62,7 @@ export function SyncHero() {
   else if (!isOnline) message = t('hero.offlineText');
   else if (outcome === 'partial') message = t('hero.partial');
   else if (outcome === 'throttled') message = t('hero.throttledEnd');
+  else if (allUpToDate) message = t('hero.upToDate');
   else if (lastSync) message = t('hero.lastSync', { date: formatDate(new Date(lastSync.finishedAt), true) });
   else message = t('hero.neverSynced');
 
@@ -87,9 +105,13 @@ export function SyncHero() {
           {t('button.cancel')}
         </Button>
       ) : (
-        <Button size="lg" className="w-full" disabled={!isOnline} onClick={() => void start(queryClient)}>
+        <Button
+          size="lg"
+          className="w-full"
+          disabled={!isOnline || allUpToDate}
+          onClick={() => void start(queryClient)}>
           <RefreshCw data-icon="inline-start" />
-          {isOnline ? t('button.syncAll') : t('button.noNetwork')}
+          {!isOnline ? t('button.noNetwork') : allUpToDate ? t('button.upToDate') : t('button.syncAll')}
         </Button>
       )}
     </section>

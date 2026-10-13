@@ -142,8 +142,19 @@ const canSyncDetails = (spec: EntitySpec, role: Role) => canAccess(role, `/${spe
 const CHUNK_SIZE = 100;
 /** Верхняя граница строк списка на сущность: дальше — только онлайн. */
 const MAX_LIST_ROWS = 1000;
-/** Загруженное позже этого времени считаем свежим и не качаем повторно (резюме прерванного запуска). */
-const FRESH_WINDOW_MS = 15 * 60 * 1000;
+/**
+ * Загруженное позже этого времени считаем свежим и не качаем повторно (резюме
+ * прерванного запуска), а также используем как окно «данные ещё актуальны» для
+ * кнопки «Синхронизировать всё»/«Обновить» на /sync.
+ */
+export const FRESH_WINDOW_MS = 15 * 60 * 1000;
+
+/**
+ * Что синхронизировать: всё (`'all'`, шапка + справочники + все сущности) или
+ * только одна сущность — тогда качаются только её списки и карточки, без
+ * профиля/дашборда/справочников для других страниц.
+ */
+export type SyncScope = 'all' | Entity;
 
 // ---------------------------------------------------------------------------
 // Состояние запуска
@@ -180,6 +191,9 @@ export interface LastSync {
   failed: number;
 }
 
+/** Отметки последнего запуска по каждому scope: `'all'` — «Синхронизировать всё», остальное — одна сущность. */
+type SyncHistory = Partial<Record<SyncScope, LastSync>>;
+
 class AbortedError extends Error {}
 class ThrottledError extends Error {}
 class UnauthorizedError extends Error {}
@@ -190,18 +204,28 @@ class UnauthorizedError extends Error {}
 
 const LAST_SYNC_KEY = 's:last';
 
-export async function readLastSync(): Promise<LastSync | null> {
+async function readSyncHistory(): Promise<SyncHistory> {
   const raw = await offlineStorage.getItem(LAST_SYNC_KEY);
-  if (!raw) return null;
+  if (!raw) return {};
   try {
-    return JSON.parse(raw) as LastSync;
+    const parsed = JSON.parse(raw) as SyncHistory | LastSync;
+    // Старый формат — один плоский LastSync для полной синхронизации (до scope).
+    if ('finishedAt' in parsed) return { all: parsed as LastSync };
+    return parsed as SyncHistory;
   } catch {
-    return null;
+    return {};
   }
 }
 
-async function writeLastSync(value: LastSync) {
-  await offlineStorage.setItem(LAST_SYNC_KEY, JSON.stringify(value));
+export async function readLastSync(scope: SyncScope = 'all'): Promise<LastSync | null> {
+  const history = await readSyncHistory();
+  return history[scope] ?? null;
+}
+
+async function writeLastSync(scope: SyncScope, value: LastSync) {
+  const history = await readSyncHistory();
+  history[scope] = value;
+  await offlineStorage.setItem(LAST_SYNC_KEY, JSON.stringify(history));
 }
 
 export async function clearLastSync() {
@@ -243,6 +267,27 @@ export function getEntityCoverage(queryClient: QueryClient, spec: EntitySpec): E
   };
 }
 
+/**
+ * Актуальна ли сущность прямо сейчас: список грузили недавно (в пределах
+ * `FRESH_WINDOW_MS`) и карточек в кеше столько же, сколько мы для неё хотим
+ * иметь. Используется, чтобы отключать кнопку «Обновить»/«Синхронизировать
+ * всё», когда качать уже нечего.
+ */
+export function isEntityUpToDate(queryClient: QueryClient, spec: EntitySpec, role: Role): boolean {
+  if (!canSyncEntity(spec, role)) return true; // роль её не синхронизирует — не блокируем кнопку этим
+  const coverage = getEntityCoverage(queryClient, spec);
+  if (coverage.target === null || coverage.updatedAt === null) return false;
+  if (Date.now() - coverage.updatedAt >= FRESH_WINDOW_MS) return false;
+  return coverage.details >= coverage.target;
+}
+
+/** Актуальны ли сразу все сущности, доступные роли (для главной кнопки «Синхронизировать всё»). */
+export function isAllUpToDate(queryClient: QueryClient, role: Role): boolean {
+  const entities = ENTITY_SPECS.filter((spec) => canSyncEntity(spec, role));
+  if (entities.length === 0) return true;
+  return entities.every((spec) => isEntityUpToDate(queryClient, spec, role));
+}
+
 // ---------------------------------------------------------------------------
 // Движок
 // ---------------------------------------------------------------------------
@@ -279,13 +324,21 @@ export interface RunSyncOptions {
   queryClient: QueryClient;
   signal: AbortSignal;
   onProgress: (snapshot: SyncSnapshot) => void;
+  /** `'all'` (по умолчанию) — полная синхронизация; конкретная сущность — только её списки и карточки. */
+  scope?: SyncScope;
 }
 
-export async function runSync({ queryClient, signal, onProgress }: RunSyncOptions): Promise<SyncOutcome> {
+export async function runSync({
+  queryClient,
+  signal,
+  onProgress,
+  scope = 'all',
+}: RunSyncOptions): Promise<SyncOutcome> {
   const user = getClientUser();
   if (!user) return 'unauthorized';
   const { role, marketId } = user;
   const can = (action: Action) => roleCan(role, action);
+  const full = scope === 'all';
 
   const snapshot: SyncSnapshot = {
     phase: 'preparing',
@@ -448,118 +501,126 @@ export async function runSync({ queryClient, signal, onProgress }: RunSyncOption
     });
   };
 
-  // Профиль: шапка читает compact `me`, страница профиля — `full`.
-  addMeta('profile', async () => store(queryKeys.me(), await call((c) => profileApi.getProfile(c))));
-  addMeta('profile', async () => store(queryKeys.profile(), await call((c) => profileApi.getFullProfile(c))));
+  // Для синхронизации одной сущности профиль/дашборд/справочники не трогаем —
+  // они не связаны с конкретной страницей списка и грузятся только «Всё».
+  if (full) {
+    // Профиль: шапка читает compact `me`, страница профиля — `full`.
+    addMeta('profile', async () => store(queryKeys.me(), await call((c) => profileApi.getProfile(c))));
+    addMeta('profile', async () => store(queryKeys.profile(), await call((c) => profileApi.getFullProfile(c))));
 
-  // Дашборд — для периода по умолчанию (то, что видно при первом заходе).
-  if (can(Action.DASHBOARDS_VIEW)) {
-    const params = { period: 'month' };
-    addMeta('dashboard', async () =>
-      store(queryKeys.dashboard('overview', params), await call((c) => dashboardApi.getOverview(params, c)))
-    );
-    addMeta('dashboard', async () =>
-      store(
-        queryKeys.dashboard('recent-transactions', { sellerId: undefined }),
-        await call((c) => transactionsApi.getAll(1, 5, { sortBy: 'createdAt', sortOrder: 'desc' }, [], c))
-      )
-    );
-    addMeta('dashboard', async () =>
-      store(queryKeys.dashboard('sellers-report', params), await call((c) => dashboardApi.getSellersReport(params, c)))
-    );
-  }
-
-  // Справочники. Ключи и форма данных — ровно те, что читают экраны (см. комментарий у каждого):
-  // выпадающие списки через useAsyncSelectOptions хранят МАССИВ строк под ключом с хвостом '' (пустой поиск),
-  // фильтры и превью читают ПОЛНЫЙ ответ API.
-  if (can(Action.DEBTORS_VIEW)) {
-    addMeta('reference', async () => {
-      const response = await call((c) => debtorsApi.getAll(1, 100, {}, [], c));
-      store(queryKeys.options('debtors', { scope: 'filters', limit: 100 }), response); // транзакции: фильтр
-      store([...queryKeys.options('debtors', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []); // новая транзакция
-    });
-    if (marketId) {
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('debtors', { scope: 'profile', marketId, limit: 5 }),
-          await call((c) => debtorsApi.getAll(1, 5, {}, [], c))
-        )
-      );
-    }
-  }
-  if (can(Action.PRODUCTS_VIEW)) {
-    addMeta('reference', async () => {
-      const response = await call((c) => productsApi.getAll(1, 100, {}, [], c));
-      store(queryKeys.options('products', { scope: 'filters', limit: 100 }), response);
-      store([...queryKeys.options('products', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []);
-    });
-    if (marketId) {
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('products', { scope: 'profile', marketId, limit: 5 }),
-          await call((c) => productsApi.getAll(1, 5, {}, [], c))
-        )
-      );
-    }
-  }
-  if (can(Action.CATEGORIES_VIEW)) {
-    addMeta('reference', async () =>
-      store(
-        queryKeys.options('categories', { scope: 'filters', limit: 100 }),
-        await call((c) => categoriesApi.getAll(1, 100, {}, [], c))
-      )
-    );
-    if (canAccess(role, '/products/create')) {
-      addMeta('reference', async () =>
-        store(
-          [...queryKeys.options('categories', { scope: 'form', limit: 20 }), ''],
-          (await call((c) => categoriesApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
-        )
-      );
-    }
-  }
-  if (can(Action.SELLERS_VIEW)) {
-    addMeta('reference', async () =>
-      store(
-        queryKeys.options('sellers', { scope: 'filters', limit: 100 }),
-        await call((c) => sellersApi.getAll(1, 100, {}, [], c))
-      )
-    );
+    // Дашборд — для периода по умолчанию (то, что видно при первом заходе).
     if (can(Action.DASHBOARDS_VIEW)) {
-      addMeta('reference', async () =>
+      const params = { period: 'month' };
+      addMeta('dashboard', async () =>
+        store(queryKeys.dashboard('overview', params), await call((c) => dashboardApi.getOverview(params, c)))
+      );
+      addMeta('dashboard', async () =>
         store(
-          [...queryKeys.options('sellers', { scope: 'filter-bar', limit: 20 }), ''],
-          (await call((c) => sellersApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
+          queryKeys.dashboard('recent-transactions', { sellerId: undefined }),
+          await call((c) => transactionsApi.getAll(1, 5, { sortBy: 'createdAt', sortOrder: 'desc' }, [], c))
+        )
+      );
+      addMeta('dashboard', async () =>
+        store(
+          queryKeys.dashboard('sellers-report', params),
+          await call((c) => dashboardApi.getSellersReport(params, c))
         )
       );
     }
-  }
-  if (can(Action.MARKETS_VIEW) && can(Action.USERS_VIEW)) {
-    addMeta('reference', async () =>
-      store(
-        queryKeys.options('markets', { scope: 'user-form', limit: 100 }),
-        await call((c) => marketsApi.getAll(1, 100, {}, [], c))
-      )
-    );
-  }
-  if (can(Action.USERS_VIEW)) {
-    const owners: ActiveFilter[] = [{ key: 'role', value: Role.Owner }];
-    addMeta('reference', async () =>
-      store(
-        queryKeys.options('users', { scope: 'owners', limit: 100 }),
-        await call((c) => usersApi.getAll(1, 100, {}, owners, c))
-      )
-    );
-    addMeta('reference', async () =>
-      store(
-        [...queryKeys.options('users', { scope: 'owners', limit: 20 }), ''],
-        (await call((c) => usersApi.getAll(1, 20, {}, owners, c)))?.data?.data ?? []
-      )
-    );
-  }
+
+    // Справочники. Ключи и форма данных — ровно те, что читают экраны (см. комментарий у каждого):
+    // выпадающие списки через useAsyncSelectOptions хранят МАССИВ строк под ключом с хвостом '' (пустой поиск),
+    // фильтры и превью читают ПОЛНЫЙ ответ API.
+    if (can(Action.DEBTORS_VIEW)) {
+      addMeta('reference', async () => {
+        const response = await call((c) => debtorsApi.getAll(1, 100, {}, [], c));
+        store(queryKeys.options('debtors', { scope: 'filters', limit: 100 }), response); // транзакции: фильтр
+        store([...queryKeys.options('debtors', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []); // новая транзакция
+      });
+      if (marketId) {
+        addMeta('reference', async () =>
+          store(
+            queryKeys.options('debtors', { scope: 'profile', marketId, limit: 5 }),
+            await call((c) => debtorsApi.getAll(1, 5, {}, [], c))
+          )
+        );
+      }
+    }
+    if (can(Action.PRODUCTS_VIEW)) {
+      addMeta('reference', async () => {
+        const response = await call((c) => productsApi.getAll(1, 100, {}, [], c));
+        store(queryKeys.options('products', { scope: 'filters', limit: 100 }), response);
+        store([...queryKeys.options('products', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []);
+      });
+      if (marketId) {
+        addMeta('reference', async () =>
+          store(
+            queryKeys.options('products', { scope: 'profile', marketId, limit: 5 }),
+            await call((c) => productsApi.getAll(1, 5, {}, [], c))
+          )
+        );
+      }
+    }
+    if (can(Action.CATEGORIES_VIEW)) {
+      addMeta('reference', async () =>
+        store(
+          queryKeys.options('categories', { scope: 'filters', limit: 100 }),
+          await call((c) => categoriesApi.getAll(1, 100, {}, [], c))
+        )
+      );
+      if (canAccess(role, '/products/create')) {
+        addMeta('reference', async () =>
+          store(
+            [...queryKeys.options('categories', { scope: 'form', limit: 20 }), ''],
+            (await call((c) => categoriesApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
+          )
+        );
+      }
+    }
+    if (can(Action.SELLERS_VIEW)) {
+      addMeta('reference', async () =>
+        store(
+          queryKeys.options('sellers', { scope: 'filters', limit: 100 }),
+          await call((c) => sellersApi.getAll(1, 100, {}, [], c))
+        )
+      );
+      if (can(Action.DASHBOARDS_VIEW)) {
+        addMeta('reference', async () =>
+          store(
+            [...queryKeys.options('sellers', { scope: 'filter-bar', limit: 20 }), ''],
+            (await call((c) => sellersApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
+          )
+        );
+      }
+    }
+    if (can(Action.MARKETS_VIEW) && can(Action.USERS_VIEW)) {
+      addMeta('reference', async () =>
+        store(
+          queryKeys.options('markets', { scope: 'user-form', limit: 100 }),
+          await call((c) => marketsApi.getAll(1, 100, {}, [], c))
+        )
+      );
+    }
+    if (can(Action.USERS_VIEW)) {
+      const owners: ActiveFilter[] = [{ key: 'role', value: Role.Owner }];
+      addMeta('reference', async () =>
+        store(
+          queryKeys.options('users', { scope: 'owners', limit: 100 }),
+          await call((c) => usersApi.getAll(1, 100, {}, owners, c))
+        )
+      );
+      addMeta('reference', async () =>
+        store(
+          [...queryKeys.options('users', { scope: 'owners', limit: 20 }), ''],
+          (await call((c) => usersApi.getAll(1, 20, {}, owners, c)))?.data?.data ?? []
+        )
+      );
+    }
+  } // full
 
   // Списки: первая пачка каждой сущности. Из неё сразу видно, сколько всего записей.
-  const entities = ENTITY_SPECS.filter((spec) => canSyncEntity(spec, role));
+  // Если scope — конкретная сущность, синхронизируем только её.
+  const entities = ENTITY_SPECS.filter((spec) => (full || spec.entity === scope) && canSyncEntity(spec, role));
   const rowIds = new Map<Entity, string[]>();
   const serverTotals = new Map<Entity, number>();
 
@@ -602,7 +663,11 @@ export async function runSync({ queryClient, signal, onProgress }: RunSyncOption
 
   // Своя карточка рынка для ролей, которым список рынков недоступен (владелец, продавец).
   const marketSpec = ENTITY_SPECS.find((spec) => spec.entity === 'markets')!;
-  const ownMarketOnly = !entities.includes(marketSpec) && Boolean(marketId) && can(Action.MARKETS_VIEW_BY_ID);
+  const ownMarketOnly =
+    (full || scope === 'markets') &&
+    !entities.includes(marketSpec) &&
+    Boolean(marketId) &&
+    can(Action.MARKETS_VIEW_BY_ID);
   if (ownMarketOnly) {
     plan('markets', 1);
     tasks1.push({
@@ -686,7 +751,7 @@ export async function runSync({ queryClient, signal, onProgress }: RunSyncOption
   emit(true);
 
   if (outcome === 'complete' || outcome === 'partial') {
-    await writeLastSync({
+    await writeLastSync(scope, {
       finishedAt: Date.now(),
       outcome,
       done: snapshot.done,

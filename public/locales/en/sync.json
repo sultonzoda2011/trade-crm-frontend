@@ -16,6 +16,7 @@
     "offlineTitle": "No internet",
     "offlineText": "Saved data is shown. New sales, payments and refunds will wait in the queue and send themselves when the connection is back.",
     "lastSync": "Offline data updated {{date}}",
+    "upToDate": "Everything is up to date — nothing new to download",
     "neverSynced": "Offline data hasn't been downloaded yet — tap the button below while you have internet.",
     "preparing": "Getting ready: counting how much data to download…",
     "progress": "Downloaded {{done}} of {{total}}",
@@ -27,6 +28,7 @@
   },
   "button": {
     "syncAll": "Sync everything",
+    "upToDate": "Everything up to date",
     "cancel": "Stop",
     "noNetwork": "No connection"
   },
@@ -68,6 +70,7 @@
     "cards": "{{done}} of {{total}}",
     "cardsOnly": "saved: {{count}}",
     "notLoaded": "not loaded",
+    "refresh": "Refresh: {{entity}}",
     "entities": {
       "transactions": "Transactions",
       "debtors": "Debtors",
