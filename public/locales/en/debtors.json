@@ -52,6 +52,7 @@
   "actions": {
     "pay": "Repay debt",
     "payLoadError": "Failed to load the transaction",
+    "payOffline": "No internet — opening payment requires a connection",
     "giveDebt": "Give on credit",
     "acceptPayment": "Accept payment",
     "pickDebtTitle": "Which debt to pay?"

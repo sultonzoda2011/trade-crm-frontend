@@ -26,6 +26,7 @@ import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { fmtNum, fmtTJS, formatDate, formatDateShort } from '~/lib/format';
+import { getIsOnline } from '~/lib/network-status';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
@@ -78,6 +79,20 @@ export default function DebtorDetailPage() {
     onError: () => toast.error(t('actions.payLoadError')),
   });
 
+  // У мутаций по умолчанию networkMode: 'online' — при офлайне mutate() не
+  // уходит в ошибку, а зависает в isPending навсегда, пока не вернётся сеть
+  // (кнопка «вечно грузится»). Это не часть офлайн-очереди
+  // (offline-mutations.ts): простой GET, который бессмысленно откладывать —
+  // к моменту ответа пользователь уже не будет ждать этот экран. Поэтому при
+  // офлайне сразу показываем тост вместо того, чтобы запускать мутацию.
+  const requestPay = (transactionId: string) => {
+    if (!getIsOnline()) {
+      toast.error(t('actions.payOffline'));
+      return;
+    }
+    openPay(transactionId);
+  };
+
   if (isLoading) return <ByIdSkeleton />;
 
   if (isOfflineEmpty) {
@@ -107,7 +122,7 @@ export default function DebtorDetailPage() {
   const handleAcceptPayment = () => {
     // Один открытый долг — сразу окно оплаты; несколько — сначала выбор.
     if (debtor.activeDebtCount === 1 && debtor.activeDebtTransactionId) {
-      openPay(debtor.activeDebtTransactionId);
+      requestPay(debtor.activeDebtTransactionId);
     } else {
       setPickDebtOpen(true);
     }
@@ -286,7 +301,7 @@ export default function DebtorDetailPage() {
                         : formatDateShort(tx.createdAt)
                     }
                     value={<span className="text-foreground font-semibold">{fmtNum(tx.remainingAmount)}</span>}
-                    onClick={() => openPay(tx.id)}
+                    onClick={() => requestPay(tx.id)}
                   />
                 ))
               )}

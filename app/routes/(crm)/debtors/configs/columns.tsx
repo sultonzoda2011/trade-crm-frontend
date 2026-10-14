@@ -10,6 +10,7 @@ import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { fmtTJS, formatDate } from '~/lib/format';
+import { getIsOnline } from '~/lib/network-status';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { Debtor } from '~/types/debtors';
@@ -29,6 +30,19 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
     onError: () => toast.error(t('actions.payLoadError', { ns: 'debtors' })),
   });
 
+  // networkMode мутации по умолчанию 'online' — при офлайне mutate() не
+  // падает в ошибку, а зависает в isPending навсегда (кнопка «вечно
+  // грузится»). Это простой GET, не часть офлайн-очереди
+  // (offline-mutations.ts), поэтому при офлайне сразу показываем тост вместо
+  // запуска мутации.
+  const requestPay = (transactionId: string) => {
+    if (!getIsOnline()) {
+      toast.error(t('actions.payOffline', { ns: 'debtors' }));
+      return;
+    }
+    openPay(transactionId);
+  };
+
   return (
     <RowActionsCell>
       {row.activeDebtTransactionId && can(Action.TRANSACTIONS_EDIT) && (
@@ -36,7 +50,7 @@ function DebtorActionsCell({ row, t }: { row: Debtor; t: TFunction }) {
           icon={<Banknote className="size-4" />}
           label={t('actions.pay', { ns: 'debtors' })}
           loading={isPayLoading}
-          onClick={() => row.activeDebtTransactionId && openPay(row.activeDebtTransactionId)}
+          onClick={() => row.activeDebtTransactionId && requestPay(row.activeDebtTransactionId)}
         />
       )}
       <IconActionButton
