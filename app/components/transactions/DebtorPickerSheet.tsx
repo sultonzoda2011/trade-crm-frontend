@@ -1,17 +1,18 @@
 import { UserPlus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { InitialAvatar } from '~/components/shared/InitialAvatar';
+import { PendingBadge } from '~/components/shared/PendingBadge';
 import { PickerSheet } from '~/components/shared/PickerSheet';
 import { fmtNum } from '~/lib/format';
-import type { Debtor } from '~/types/debtors';
+import type { DebtorRow } from '~/types/pending';
 
 interface DebtorPickerSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  items: Debtor[];
+  items: DebtorRow[];
   loading: boolean;
   onSearch: (query: string) => void;
-  onSelect: (debtor: Debtor) => void;
+  onSelect: (debtor: DebtorRow) => void;
   onCreateNew?: () => void;
 }
 
@@ -55,6 +56,7 @@ export function DebtorPickerSheet({
             <span className="block break-words text-base leading-snug font-semibold">{debtor.name}</span>
             <span className="text-muted-foreground block break-words text-sm leading-snug">{debtor.phone}</span>
           </span>
+          {debtor.pending && <PendingBadge pending={debtor.pending} />}
           {debtor.totalDebtAmount > 0 && (
             <span className="text-warning shrink-0 font-mono text-base font-semibold">
               {fmtNum(debtor.totalDebtAmount)}

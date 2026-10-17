@@ -1430,13 +1430,20 @@ app/lib/
 ├── network-status.ts     # единственный источник истины о сети, подключён к onlineManager React Query
 ├── offline-storage.ts    # SQLite (native/@capacitor-community/sqlite) или IndexedDB (браузер)
 ├── query-persister.ts    # персист query-кеша, построчно; версия через CACHE_BUSTER
-├── offline-mutations.ts  # offline-определения createTransaction/payTransaction/refundTransaction
+├── offline-mutations.ts  # offline-определения createDebtor/createTransaction/payTransaction/refundTransaction
 ├── offline-queue.ts      # витрина очереди для UI (/sync)
+├── offline-overlay.ts    # подмешивает очередь к спискам: строки «в очереди», пересчёт долгов/остатков/склада
+├── offline-sent.ts       # когда операция дошла до сервера (чтобы строка не мигала до обновления списка)
+├── client-ids.ts         # временные id `local-…` и их соответствие настоящим (должник → долг без связи)
+├── detached-submit.ts    # «отпустить» форму через 1.5 с или сразу офлайн, не дожидаясь сервера
+└── load-transaction-for-pay.ts  # транзакция для окна оплаты: сеть ≤4 с, иначе копия с устройства
 ├── offline-errors.ts     # PlainError — ошибка без Authorization-заголовка, безопасна для персиста
 ├── offline-sync.ts       # логика «Синхронизировать всё»
 └── offline-session.ts    # владелец кеша/очереди при логине/логауте
 
 app/hooks/useNetworkStatus.ts, useCapacitorNetworkStatus.ts, useOfflineQueue.ts, useCacheCoverage.ts, useStorageStats.ts
+app/hooks/useOfflineOverlay.ts, useDetachedMutation.ts, useCreateDebtor.ts
+app/components/shared/PendingBadge.tsx, PendingRowActions.tsx   # метка «в очереди» и действия повторить/убрать
 app/store/useSyncStore.ts   # глобальный прогресс «Синхронизировать всё»
 ```
 
@@ -1446,7 +1453,26 @@ app/store/useSyncStore.ts   # глобальный прогресс «Синхр
 
 ## Offline-mutations
 
-В очередь попадают **только три** мутации: `createTransaction`, `payTransaction`, `refundTransaction` (`OFFLINE_MUTATION_KEYS` в `offline-mutations.ts`). Остальной CRUD (markets/products/users/...) офлайн не поддерживает — это осознанно неполное покрытие, а не офлайн-режим для всего приложения.
+В очередь попадают **только четыре** мутации: `createDebtor`, `createTransaction`, `payTransaction`, `refundTransaction` (`OFFLINE_MUTATION_KEYS` в `offline-mutations.ts`). Остальной CRUD (markets/products/users/...) офлайн не поддерживает — это осознанно неполное покрытие, а не офлайн-режим для всего приложения.
+
+Очередь последовательная (`OFFLINE_QUEUE_SCOPE`): операции уходят по одной в порядке создания — поэтому «новый должник → дать ему долг» работает без связи.
+
+## Очередь видна в списках (overlay)
+
+Строки очереди **не патчатся в кеш** react-query, а выводятся из `MutationCache` и подмешиваются при рендере (`offline-overlay.ts`, хуки `useDebtorRows` / `useTransactionRows` / `usePendingDebtors` / `usePendingStock`). Ушла из очереди — оверлея нет, откатывать нечего.
+
+- Новый должник/транзакция — строка сверху с `PendingBadge`, без ссылки на страницу; действия — только «повторить»/«убрать» (`PendingRowActions`).
+- Оплата и новый долг сразу меняют сумму долга должника и остаток транзакции (`pendingOps` → `PendingEffectsNote`); продажа из очереди вычитается из остатка товара в форме продажи.
+- Принятая сервером операция (`sent`) остаётся в оверлее, пока список не перезапросился после её принятия (`dataUpdatedAt` > `sentAt`), максимум `SENT_OVERLAY_MAX_MS`. Поэтому успешные мутации живут в `MutationCache` ~минуту (`query-client.ts`).
+- Новый список/страница, показывающие должников или транзакции, должны брать данные через эти хуки, иначе очередь в них не видна.
+
+## Временные id
+
+Должник из очереди живёт под `local-<uuid>` (`client-ids.ts`). Продажа ссылается на него; перед отправкой `withRealDebtor` подменяет id настоящим (соответствие `clientId → realId` пишется в localStorage в `onSuccess` создания должника). Если должник не создался — продажа падает с понятной ошибкой, а не уходит с мусорным id.
+
+## Формы не ждут сервер
+
+Формы отправляют через `useDetachedMutation(key)` (`submitDetached`): офлайн — закрываются сразу; онлайн — по ответу или через `DETACH_AFTER_MS` (1.5 с), что раньше. Ошибка сервера за это время оставляет человека на форме. В `useMutation` передаётся **только `mutationKey`** — собственные `onSuccess`/`onError` перекрыли бы те, что в `setMutationDefaults`, и списки перестали бы обновляться. Навигация и закрытие окна — только через `release`.
 
 Механизм:
 
@@ -1465,7 +1491,7 @@ Backend дедуплицирует повтор по Idempotency-Key
 `mutationKey` в офлайн-мутациях — идентификатор *определения* мутации (для `setMutationDefaults`), а не ключ чтения из `query-keys.ts`: функции не сериализуются, в SQLite попадают только `mutationKey`/`variables`/`state`.
 
 > [!IMPORTANT]
-> Добавляя новую offline-мутацию, обязательно реализовать идемпотентность на бэкенде (`Idempotency-Key`) — без неё `resumePausedMutations()` может выполнить операцию дважды.
+> Добавляя новую offline-мутацию, обязательно реализовать идемпотентность на бэкенде (`Idempotency-Key`) — без неё `resumePausedMutations()` может выполнить операцию дважды. Для POST /debtors она уже есть.
 
 ## Персист кеша
 

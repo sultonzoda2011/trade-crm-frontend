@@ -14,7 +14,7 @@
   "hero": {
     "onlineTitle": "Connected to the internet",
     "offlineTitle": "No internet",
-    "offlineText": "Saved data is shown. New sales, payments and refunds will wait in the queue and send themselves when the connection is back.",
+    "offlineText": "Saved data is shown. New debtors, sales, debts, payments and refunds will wait in the queue, appear in the lists right away and send themselves when the connection is back.",
     "lastSync": "Offline data updated {{date}}",
     "upToDate": "Everything is up to date — nothing new to download",
     "neverSynced": "Offline data hasn't been downloaded yet — tap the button below while you have internet.",
@@ -39,7 +39,8 @@
     "kind": {
       "create": "New transaction",
       "pay": "Payment",
-      "refund": "Refund"
+      "refund": "Refund",
+      "debtor": "New debtor"
     },
     "type": {
       "SALE": "Sale",
@@ -107,5 +108,15 @@
     "description_one": "{{count}} operation in the queue hasn't been sent. If you sign out now, it will be deleted from this device and never reach the server.",
     "description_other": "{{count}} operations in the queue haven't been sent. If you sign out now, they will be deleted from this device and never reach the server.",
     "confirm": "Sign out and delete"
+  },
+  "pending": {
+    "waiting": "Queued",
+    "sending": "Sending",
+    "retrying": "Retrying",
+    "failed": "Not sent",
+    "sent": "Sent",
+    "payQueued": "payment queued",
+    "debtQueued": "new debt queued",
+    "refundQueued": "refund queued"
   }
 }

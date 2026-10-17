@@ -1,19 +1,20 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { debtorsApi } from '~/api/debtors';
 import { Modal } from '~/components/shared/Modal';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useCreateDebtor, type CreatedDebtor } from '~/hooks/useCreateDebtor';
 import { useForm } from '~/hooks/useForm';
-import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
 
-export function CreateDebtorModal() {
+interface CreateDebtorModalProps {
+  /** Должник создан (или поставлен в очередь): вызывающая форма может сразу выбрать его. */
+  onCreated?: (debtor: CreatedDebtor) => void;
+}
+
+export function CreateDebtorModal({ onCreated }: CreateDebtorModalProps) {
   const { t } = useTranslation(['debtors', 'common', 'validation']);
-  const queryClient = useQueryClient();
   const createModal = useDebtorsModals((s) => s.create);
 
   const { control, handleSubmit, reset } = useForm<RequestDebtorSchema>({
@@ -21,21 +22,14 @@ export function CreateDebtorModal() {
     defaultValues: { name: '', phone: '' },
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: debtorsApi.create,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      toast.success(t('debtors:createSuccess'));
-      createModal.close();
-      reset();
-    },
-    onError: () => {
-      toast.error(t('debtors:createError'));
-    },
-  });
+  const { create, isSubmitting: isPending } = useCreateDebtor();
 
   function onSubmit(request: RequestDebtorSchema) {
-    mutate(request);
+    create(request, (debtor) => {
+      createModal.close();
+      reset();
+      onCreated?.(debtor);
+    });
   }
 
   return (

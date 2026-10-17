@@ -132,5 +132,9 @@
     "full": "Full remaining"
   },
   "submitSale": "Complete sale",
-  "submitDebt": "Record debt"
+  "submitDebt": "Record debt",
+  "createQueuedSlow": "Weak connection — transaction saved and sending in the background",
+  "payQueuedSlow": "Weak connection — payment saved and sending in the background",
+  "refundQueuedSlow": "Weak connection — refund saved and sending in the background",
+  "debtorNotCreated": "The debtor was not created on the server — make sure they are in the list and create the transaction again"
 }

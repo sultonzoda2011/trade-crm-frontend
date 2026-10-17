@@ -1,10 +1,14 @@
 import type { QueryClient } from '@tanstack/react-query';
 import i18next from 'i18next';
+import { debtorsApi } from '~/api/debtors';
 import { transactionsApi } from '~/api/transactions';
+import { createUuid, isClientId, rememberRealId, resolveRealId } from '~/lib/client-ids';
 import { getServerMessage, isTransientError } from '~/lib/offline-errors';
+import { markSent } from '~/lib/offline-sent';
 import { queryKeys } from '~/lib/query-keys';
 import { showSuccess } from '~/store/useSuccessStore';
 import { toast } from 'sonner';
+import type { DebtorRequest } from '~/types/debtors';
 import type { CreatePaymentRequest, CreateTransactionRequest, RefundTransactionRequest } from '~/types/transactions';
 
 /**
@@ -22,10 +26,15 @@ import type { CreatePaymentRequest, CreateTransactionRequest, RefundTransactionR
  *      возврате сети, root.tsx — ещё раз сразу после восстановления персиста
  *      (на случай когда к моменту открытия приложения сеть уже есть).
  *
- * Сюда попали только три флоу с реальной офлайн-ценностью для продавца на
- * точке — продажа/долг, оплата, возврат — и ровно то, что бэкенд умеет
+ * Сюда попали только флоу с реальной офлайн-ценностью для продавца на точке —
+ * новый должник, продажа/долг, оплата, возврат — и ровно то, что бэкенд умеет
  * дедуплицировать через Idempotency-Key (см. IdempotencyInterceptor в
- * trade-crm-backend). Остальной CRUD (markets/products/users/...) в очередь
+ * trade-crm-backend).
+ *
+ * Поставленная в очередь операция сразу видна в списках: оверлей
+ * (offline-overlay.ts) подмешивает её к данным сервера, а временные `local-…`
+ * id (client-ids.ts) позволяют ссылаться на ещё не созданную запись — например,
+ * «дать долг» только что заведённому без связи должнику. Остальной CRUD (markets/products/users/...) в очередь
  * не ставится — сознательно неполное покрытие, а не полноценный офлайн-режим
  * для всего приложения.
  *
@@ -35,13 +44,14 @@ import type { CreatePaymentRequest, CreateTransactionRequest, RefundTransactionR
  * сериализуются — в SQLite попадают только mutationKey/variables/state.
  */
 export const OFFLINE_MUTATION_KEYS = {
+  createDebtor: ['debtors', 'create'] as const,
   createTransaction: ['transactions', 'create'] as const,
   payTransaction: ['transactions', 'pay'] as const,
   refundTransaction: ['transactions', 'refund'] as const,
 };
 
 /**
- * Все три операции идут через ОДНУ последовательную очередь: пока предыдущая не
+ * Все операции идут через ОДНУ последовательную очередь: пока предыдущая не
  * закончилась, следующая ждёт. Так на слабой сети не уходит пачка параллельных
  * запросов (и не упирается в лимит 100 запросов/мин на IP), а порядок отправки
  * совпадает с порядком, в котором продавец их оформил.
@@ -65,15 +75,34 @@ const QUEUE_OPTIONS = {
   gcTime: Infinity,
 };
 
+export interface QueuedCreateDebtorVars {
+  idempotencyKey: string;
+  /** Временный id (`local-…`): под ним должник виден в списках, пока сервер его не создал. */
+  clientId: string;
+  payload: DebtorRequest;
+}
+
+/** Снимок того, что показать в списке, пока транзакции нет на сервере: цена/название/фото на момент оформления. */
+export interface TransactionPreview {
+  total: number;
+  debtorName?: string;
+  debtorPhone?: string;
+  items: Array<{ productId: string; name: string; quantity: number; price: number; image: string | null }>;
+}
+
 export interface QueuedCreateTransactionVars {
   idempotencyKey: string;
+  /** `payload.debtorId` может быть временным `local-…` — подменяется на настоящий при отправке. */
   payload: CreateTransactionRequest;
+  preview?: TransactionPreview;
 }
 
 export interface QueuedPayTransactionVars {
   idempotencyKey: string;
   id: string;
   request: CreatePaymentRequest;
+  /** Чей это долг — чтобы пересчитать сумму долга должника в списке, пока оплата в очереди. */
+  preview?: { debtorId: string | null };
 }
 
 export interface QueuedRefundTransactionVars {
@@ -82,35 +111,30 @@ export interface QueuedRefundTransactionVars {
   request?: RefundTransactionRequest;
 }
 
+/** Ключ идемпотентности: создаётся один раз при постановке операции в очередь и переиспользуется на каждой попытке. */
+export const createIdempotencyKey = createUuid;
+
+/** Ошибка зависимости внутри очереди: повторять бессмысленно, ждёт решения человека. */
+function dependencyError(message: string): Error {
+  return Object.assign(new Error(message), { transient: false });
+}
+
 /**
- * `crypto.randomUUID()` требует secure context (https/localhost) — в самом
- * APK это не проблема (androidScheme: 'https' в capacitor.config.ts), но при
- * тестировании через `npx cap run android --livereload --external` WebView
- * грузит страницу с LAN IP дев-сервера по http, secure context нет, и
- * randomUUID оказывается undefined. Раньше это ломало весь onSubmit
- * синхронным исключением ещё до вызова mutate() — форма создания транзакции
- * переставала что-либо делать по кнопке. crypto.getRandomValues (в отличие
- * от randomUUID) secure context не требует и доступен везде, где доступен
- * сам crypto, поэтому это основной fallback; Math.random — на случай
- * совсем старого WebView без crypto вообще.
+ * Подставляет настоящий id вместо временного. Очередь последовательная, поэтому к
+ * моменту отправки продажи должник, заведённый перед ней, уже создан. Если нет —
+ * его создание упало или было убрано из очереди: продажу без него отправлять нельзя.
  */
-export function createIdempotencyKey(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
+function withRealDebtor(payload: CreateTransactionRequest): CreateTransactionRequest {
+  if (!payload.debtorId) return payload;
+  const debtorId = resolveRealId(payload.debtorId);
+  if (isClientId(debtorId)) {
+    throw dependencyError(i18next.t('debtorNotCreated', { ns: 'transactions' }));
   }
+  return debtorId === payload.debtorId ? payload : { ...payload, debtorId };
+}
 
-  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-    const bytes = crypto.getRandomValues(new Uint8Array(16));
-    bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
-    bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
-    const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  }
-
-  return `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-  });
+function invalidateAfterDebtorWrite(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
 }
 
 function invalidateAfterTransactionWrite(queryClient: QueryClient, transactionId?: string) {
@@ -136,16 +160,35 @@ function invalidateAfterTransactionWrite(queryClient: QueryClient, transactionId
  * до сервера, с кем бы пользователь к тому моменту ни разговаривал.
  */
 export function registerOfflineMutationDefaults(queryClient: QueryClient) {
-  const fail = (key: 'createError' | 'payError' | 'refundError') => (error: unknown) => {
-    // Единственный тост об ошибке: сам запрос идёт с `silent` (см. transactions.ts),
-    // поэтому перехватчик axios не дублирует его на каждой попытке.
-    toast.error(i18next.t(key, { ns: 'transactions' }), { description: getServerMessage(error) });
-  };
+  const fail =
+    (key: 'createError' | 'payError' | 'refundError', ns: 'transactions' | 'debtors' = 'transactions') =>
+    (error: unknown) => {
+      // Единственный тост об ошибке: сам запрос идёт с `silent` (см. transactions.ts),
+      // поэтому перехватчик axios не дублирует его на каждой попытке.
+      toast.error(i18next.t(key, { ns }), { description: getServerMessage(error) ?? (error as Error)?.message });
+    };
+
+  queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.createDebtor, {
+    ...QUEUE_OPTIONS,
+    mutationFn: (vars: QueuedCreateDebtorVars) => debtorsApi.create(vars.payload, vars.idempotencyKey),
+    onSuccess: (response, vars) => {
+      // Связываем временный id с настоящим ДО обновления списков: следующая в очереди
+      // продажа этому должнику подставит его именно отсюда.
+      const realId = response?.data?.id;
+      if (realId) rememberRealId(vars.clientId, realId);
+      markSent(vars.idempotencyKey);
+      invalidateAfterDebtorWrite(queryClient);
+      toast.success(i18next.t('createSuccess', { ns: 'debtors' }));
+    },
+    onError: fail('createError', 'debtors'),
+  });
 
   queryClient.setMutationDefaults(OFFLINE_MUTATION_KEYS.createTransaction, {
     ...QUEUE_OPTIONS,
-    mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
-    onSuccess: (response) => {
+    mutationFn: (vars: QueuedCreateTransactionVars) =>
+      transactionsApi.create(withRealDebtor(vars.payload), vars.idempotencyKey),
+    onSuccess: (response, vars) => {
+      markSent(vars.idempotencyKey);
       invalidateAfterTransactionWrite(queryClient);
       // `?.`: при гонке дубликатов бэкенд может вернуть пустой сохранённый ответ.
       showSuccess({ title: i18next.t('createSuccess', { ns: 'transactions' }), amount: response?.data?.totalAmount });
@@ -158,6 +201,7 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
     mutationFn: (vars: QueuedPayTransactionVars) =>
       transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
     onSuccess: (_response, vars) => {
+      markSent(vars.idempotencyKey);
       invalidateAfterTransactionWrite(queryClient, vars.id);
       showSuccess({ title: i18next.t('paySuccess', { ns: 'transactions' }), amount: vars.request.amount });
     },
@@ -169,6 +213,7 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
     mutationFn: (vars: QueuedRefundTransactionVars) =>
       transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
     onSuccess: (response, vars) => {
+      markSent(vars.idempotencyKey);
       invalidateAfterTransactionWrite(queryClient, vars.id);
       showSuccess({
         title: i18next.t('refundSuccess', { ns: 'transactions' }),

@@ -1,38 +1,30 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { debtorsApi } from '~/api/debtors';
 import { Panel } from '~/components/layout/Panel';
 import { FormGrid } from '~/components/shared/FormGrid';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { useCreateDebtor } from '~/hooks/useCreateDebtor';
 import { useForm } from '~/hooks/useForm';
-import { queryKeys } from '~/lib/query-keys';
 import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function CreateDebtorPage() {
   const { t } = useTranslation(['debtors', 'common', 'validation']);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   const { control, handleSubmit } = useForm<RequestDebtorSchema>({
     resolver: zodResolver(requestDebtorSchema(t)),
     defaultValues: { name: '', phone: '' },
   });
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: debtorsApi.create,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      navigate('/debtors');
-    },
-    onError: () => {},
-  });
+  const { create, isSubmitting: isPending } = useCreateDebtor();
 
+  // Форма не ждёт сервера: на слабой связи или без сети человек сразу попадает в список,
+  // где новый должник уже виден с меткой «в очереди».
   function onSubmit(request: RequestDebtorSchema) {
-    mutate(request);
+    create(request, () => navigate('/debtors'));
   }
 
   return (

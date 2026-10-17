@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Banknote, HandCoins, Store } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
+import { PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
@@ -25,7 +26,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sh
 import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
+import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { fmtNum, fmtTJS, formatDate, formatDateShort } from '~/lib/format';
+import { loadTransactionForPay } from '~/lib/load-transaction-for-pay';
+import { withDebtorQueueEffects, withPendingPayments } from '~/lib/offline-overlay';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
@@ -37,6 +41,7 @@ export default function DebtorDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const queryClient = useQueryClient();
   const payModal = useTransactionsModals((s) => s.pay);
   const [pickDebtOpen, setPickDebtOpen] = useState(false);
 
@@ -44,6 +49,7 @@ export default function DebtorDetailPage() {
     data: response,
     isLoading,
     fetchStatus,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: queryKeys.full('debtors', id),
     queryFn: () => debtorsApi.getFull(id!),
@@ -51,7 +57,13 @@ export default function DebtorDetailPage() {
     staleTime: 30_000,
   });
 
-  const debtor = response?.data?.debtor;
+  const loadedDebtor = response?.data?.debtor;
+  // Долг и оплаты, что ещё в очереди, уже учтены в сумме — как будет после отправки.
+  const queueOps = useOverlayOps();
+  const debtor = useMemo(
+    () => (loadedDebtor ? withDebtorQueueEffects(loadedDebtor, queueOps, dataUpdatedAt) : undefined),
+    [loadedDebtor, queueOps, dataUpdatedAt]
+  );
   // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
   // от "не найдено" (см. app/lib/network-status.ts).
   const isOfflineEmpty = fetchStatus === 'paused' && !debtor;
@@ -64,16 +76,19 @@ export default function DebtorDetailPage() {
     queryFn: () => transactionsApi.getAll(1, 50, {}, [{ key: 'debtorId', value: id }]),
     enabled: pickDebtOpen && !!id,
   });
-  const openDebts = (debtsResponse?.data?.data ?? []).filter(
-    (tx) => tx.type === 'DEBT' && tx.remainingAmount > 0 && (tx.status === 'ACTIVE' || tx.status === 'PARTIAL')
-  );
+  const openDebts = (debtsResponse?.data?.data ?? [])
+    .map((tx) => withPendingPayments(tx, queueOps))
+    .filter((tx) => tx.type === 'DEBT' && tx.remainingAmount > 0 && (tx.status === 'ACTIVE' || tx.status === 'PARTIAL'));
 
   // Модалке оплаты нужен полный Transaction — дотягиваем его по id.
+  // Без связи или на слабой берётся копия с устройства (см. loadTransactionForPay); networkMode 'always' —
+  // иначе без сети загрузка не запустилась бы вовсе.
   const { mutate: openPay, isPending: isPayLoading } = useMutation({
-    mutationFn: (transactionId: string) => transactionsApi.getById(transactionId),
-    onSuccess: (res) => {
+    networkMode: 'always',
+    mutationFn: (transactionId: string) => loadTransactionForPay(queryClient, transactionId),
+    onSuccess: (transaction) => {
       setPickDebtOpen(false);
-      payModal.open(res.data);
+      payModal.open(transaction);
     },
     onError: () => toast.error(t('actions.payLoadError')),
   });
@@ -154,10 +169,15 @@ export default function DebtorDetailPage() {
                 </>
               ),
               caption:
-                debtor.overdueAmount > 0 ? (
-                  <span className="text-destructive font-medium">
-                    {t('profile.overdueAmount')} {fmtTJS(debtor.overdueAmount)}
-                    {debtor.maxDaysOverdue > 0 && ` · ${t('profile.daysUnit', { count: debtor.maxDaysOverdue })}`}
+                debtor.overdueAmount > 0 || debtor.pendingOps ? (
+                  <span className="flex flex-col gap-0.5">
+                    {debtor.overdueAmount > 0 && (
+                      <span className="text-destructive font-medium">
+                        {t('profile.overdueAmount')} {fmtTJS(debtor.overdueAmount)}
+                        {debtor.maxDaysOverdue > 0 && ` · ${t('profile.daysUnit', { count: debtor.maxDaysOverdue })}`}
+                      </span>
+                    )}
+                    <PendingEffectsNote effects={debtor.pendingOps} />
                   </span>
                 ) : undefined,
             }}

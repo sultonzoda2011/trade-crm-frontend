@@ -19,6 +19,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
+import { useDebtorRows } from '~/hooks/useOfflineOverlay';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
@@ -44,6 +45,7 @@ export default function DebtorsPage() {
     isFetching,
     isError,
     fetchStatus,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: queryKeys.list('debtors', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -64,7 +66,6 @@ export default function DebtorsPage() {
 
   // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
   // от "список реально пуст" (см. app/lib/network-status.ts).
-  const isOfflineEmpty = fetchStatus === 'paused' && !response;
 
   const { mutate: deleteDebtor, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => debtorsApi.delete(id),
@@ -94,7 +95,12 @@ export default function DebtorsPage() {
     setFilters,
     filterConfigs: filterConfig,
   });
-  const debtors = useMemo(() => response?.data?.data ?? [], [response]);
+  const serverDebtors = useMemo(() => response?.data?.data ?? [], [response]);
+  // Должники из очереди (ещё не созданные на сервере) стоят сверху и сразу доступны — см. offline-overlay.ts.
+  const debtors = useDebtorRows(serverDebtors, { page, search: debouncedSearch, filters, dataUpdatedAt });
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем от "список реально пуст"
+  // (см. app/lib/network-status.ts). Если в очереди уже что-то есть, показываем это, а не заглушку.
+  const isOfflineEmpty = fetchStatus === 'paused' && !response && debtors.length === 0;
   const totalPages = response?.data?.meta?.totalPages || 1;
 
   const { table } = useDataTable({
@@ -136,10 +142,12 @@ export default function DebtorsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        getRowLink={(row) => ({
-          to: `/debtors/${row.original.id}`,
-          state: { fromPath: location.pathname, fromName: t('title') },
-        })}
+        getRowLink={(row) =>
+          // Страницы у должника из очереди ещё нет — открывать нечего.
+          row.original.pending
+            ? undefined
+            : { to: `/debtors/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
+        }
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           return (

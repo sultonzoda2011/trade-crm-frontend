@@ -1,19 +1,16 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { Button } from '~/components/ui/button';
 import { Label } from '~/components/ui/label';
 import { Radio, RadioGroup } from '~/components/ui/radio-group';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
+import { useDetachedMutation } from '~/hooks/useDetachedMutation';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
-import { getIsOnline } from '~/lib/network-status';
 import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedRefundTransactionVars } from '~/lib/offline-mutations';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { RefundItemRequest } from '~/types/transactions';
@@ -72,19 +69,10 @@ export function RefundTransactionModal() {
     }, 0);
   }, [mode, refundableItems, watchedItems]);
 
-  // mutationKey/mutationFn совпадают с setMutationDefaults в offline-mutations.ts
-  // — нужно, чтобы отложенный возврат, восстановленный из SQLite после
-  // перезапуска приложения, отправлялся тем же вызовом API.
-  const { mutate, isPending } = useMutation({
-    mutationKey: OFFLINE_MUTATION_KEYS.refundTransaction,
-    mutationFn: (vars: QueuedRefundTransactionVars) =>
-      transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
-    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts).
-    onSuccess: () => {
-      refundModal.close();
-      reset();
-    },
-  });
+  // Отправка, повторы, инвалидация и тосты — в setMutationDefaults (offline-mutations.ts).
+  const { run, isSubmitting: isPending } = useDetachedMutation<QueuedRefundTransactionVars>(
+    OFFLINE_MUTATION_KEYS.refundTransaction
+  );
 
   function onSubmit(data: RefundTransactionInput) {
     if (!transaction?.id) return;
@@ -98,21 +86,21 @@ export function RefundTransactionModal() {
             .map((item) => ({ itemId: item.itemId, quantity: Number(item.quantity) }))
             .filter((item) => Number.isFinite(item.quantity) && item.quantity > 0);
 
-    const wasOffline = !getIsOnline();
-    mutate({
-      id: transaction.id,
-      request: { items, reason: data.reason?.trim() || undefined },
-      idempotencyKey: createIdempotencyKey(),
-    });
-
-    // Как и для создания транзакции/оплаты: офлайн mutate() только ставит
-    // возврат в очередь, сети не касается — модалка закрывается сразу, а не
-    // ждёт ответа, которого пока неоткуда взяться.
-    if (wasOffline) {
-      toast(t('refundQueuedOffline'));
-      refundModal.close();
-      reset();
-    }
+    run(
+      {
+        id: transaction.id,
+        request: { items, reason: data.reason?.trim() || undefined },
+        idempotencyKey: createIdempotencyKey(),
+      },
+      {
+        release: () => {
+          refundModal.close();
+          reset();
+        },
+        offlineMessage: t('refundQueuedOffline'),
+        slowMessage: t('refundQueuedSlow'),
+      }
+    );
   }
 
   if (!transaction) return null;
