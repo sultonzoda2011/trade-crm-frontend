@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { CustomSelect } from '~/components/shared/CustomSelect';
 import { EmptyState } from '~/components/shared/EmptyState';
+import { SwipeableRow, type SwipeAction } from '~/components/shared/SwipeableRow';
 import {
   Pagination,
   PaginationContent,
@@ -65,6 +66,11 @@ interface DataTableProps<TData> {
    * ломает и клавиатуру, и скринридеры.
    */
   getRowLink?: (row: Row<TData>) => { to: string; state?: unknown } | undefined;
+  /**
+   * iOS-свайп влево по мобильной строке. Пустой массив/undefined — строка без
+   * жеста. Кнопки обязаны быть уже отфильтрованы по правам (`useCan`).
+   */
+  getSwipeActions?: (row: Row<TData>) => SwipeAction[] | undefined;
 }
 
 function getpages(current: number, total: number): (number | 'ellipsis')[] {
@@ -184,6 +190,7 @@ export function DataTable<TData>({
   onLimitChange,
   renderMobileCard,
   getRowLink,
+  getSwipeActions,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const { t: tSync } = useTranslation('sync');
@@ -233,19 +240,15 @@ export function DataTable<TData>({
               {table.getRowModel().rows.map((row, index) => {
                 const link = getRowLink?.(row);
                 const card = renderMobileCard(row);
-
-                return (
-                  <motion.div
-                    key={row.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
-                    className="not-last:after:bg-border relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:content-['']">
+                const swipeActions = getSwipeActions?.(row);
+                const content = (
+                  <>
                     {link && (
                       <Link
                         to={link.to}
                         state={link.state}
                         aria-label={t('actions.view')}
+                        draggable={false}
                         // z-1: шапка строки и её кнопка действий позиционированы
                         // (relative), без слоя оверлей уходил бы под них; кнопки
                         // действий внутри строки поднимаются выше (z-2), чтобы ⋮
@@ -254,6 +257,21 @@ export function DataTable<TData>({
                       />
                     )}
                     {card}
+                  </>
+                );
+
+                return (
+                  <motion.div
+                    key={row.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
+                    className="not-last:after:bg-border relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:content-['']">
+                    {swipeActions && swipeActions.length > 0 ? (
+                      <SwipeableRow actions={swipeActions}>{content}</SwipeableRow>
+                    ) : (
+                      content
+                    )}
                   </motion.div>
                 );
               })}

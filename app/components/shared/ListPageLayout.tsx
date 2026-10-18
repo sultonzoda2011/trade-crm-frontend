@@ -4,6 +4,7 @@ import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { useFilterParams } from '~/hooks/useFilterParams';
@@ -47,6 +48,8 @@ interface ListPageLayoutProps<TData> {
   /** Row → mobile card. `actions` is already the rendered actions cell. */
   renderCard: (row: Row<TData>, actions: ReactNode) => ReactNode;
   getRowLink?: (row: Row<TData>) => { to: string; state?: unknown } | undefined;
+  /** Свайп-действия мобильной строки (уже отфильтрованные по правам). */
+  getSwipeActions?: (row: Row<TData>) => SwipeAction[] | undefined;
   /**
    * The create control stays with the page: RBAC gating is decided per route and
    * the whole permission layer is still unsettled (see the A8 impact report).
@@ -72,6 +75,7 @@ export function ListPageLayout<TData>({
   filterConfig,
   renderCard,
   getRowLink,
+  getSwipeActions,
   createAction,
   showFilterPills = false,
   syncUrl = false,
@@ -110,6 +114,7 @@ export function ListPageLayout<TData>({
         onPageChange={list.setPage}
         onLimitChange={list.setLimit}
         getRowLink={getRowLink}
+        getSwipeActions={getSwipeActions}
         renderMobileCard={(row) => renderCard(row, renderActionsCell(row))}
       />
 

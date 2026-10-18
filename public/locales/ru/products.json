@@ -66,5 +66,18 @@
     "daysUnit": "{{count}} дн.",
     "reorderHint": "До запаса на {{days}} дней",
     "allTime": "За всё время"
+  },
+  "status": {
+    "out": "Нет",
+    "low": "Мало",
+    "soon": "Скоро",
+    "returns": "Возвраты",
+    "slow": "Лежит",
+    "daysShort": "{{count}} дн",
+    "overYear": ">1 г."
+  },
+  "swipe": {
+    "edit": "Изменить",
+    "delete": "Удалить"
   }
 }

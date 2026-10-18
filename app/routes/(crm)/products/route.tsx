@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
-import { ProductMobileCard } from '~/components/products/ProductMobileCard';
+import { ProductRow } from '~/components/products/ProductRow';
+import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -21,6 +22,7 @@ import { useProductsModals, useProductsStore } from '~/routes/(crm)/products/sto
 export default function ProductsPage() {
   const { t } = useTranslation(['products', 'common']);
   const location = useLocation();
+  const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useProductsModals((s) => s.delete);
 
@@ -80,6 +82,32 @@ export default function ProductsPage() {
         to: `/products/${row.original.id}`,
         state: { fromPath: location.pathname, fromName: t('title') },
       })}
+      getSwipeActions={(row): SwipeAction[] => {
+        const product = row.original;
+        const actions: SwipeAction[] = [];
+        if (can(Action.PRODUCTS_EDIT)) {
+          actions.push({
+            key: 'edit',
+            label: t('swipe.edit'),
+            icon: Pencil,
+            tone: 'primary',
+            onSelect: () =>
+              navigate(`/products/${product.id}/edit`, {
+                state: { fromPath: location.pathname, fromName: t('title') },
+              }),
+          });
+        }
+        if (can(Action.PRODUCTS_DELETE)) {
+          actions.push({
+            key: 'delete',
+            label: t('swipe.delete'),
+            icon: Trash2,
+            tone: 'destructive',
+            onSelect: () => deleteModal.open(product.id),
+          });
+        }
+        return actions;
+      }}
       createAction={
         can(Action.PRODUCTS_CREATE) ? (
           <Button
@@ -91,7 +119,7 @@ export default function ProductsPage() {
           </Button>
         ) : null
       }
-      renderCard={(row, actions) => <ProductMobileCard row={row} t={t} actionsCell={actions} />}
+      renderCard={(row) => <ProductRow row={row} t={t} />}
     />
   );
 }
