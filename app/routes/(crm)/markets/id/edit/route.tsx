@@ -54,6 +54,8 @@ export default function EditMarketPage() {
       ).map((u) => ({ id: u.id, name: u.name })),
     getValue: (u) => u.id,
     getLabel: (u) => u.name,
+    // Без сети список собирается из сохранённых пользователей — оставляем только владельцев.
+    accept: (u) => !('role' in u) || (u as { role?: string }).role === Role.Owner,
     enabled: canManageUsers,
     seed: ownerSeed,
   });

@@ -1,5 +1,6 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
-import { CustomSelect, type CustomSelectOption } from '~/components/shared/CustomSelect';
+import type { CustomSelectOption } from '~/components/shared/CustomSelect';
+import { PickerField } from '~/components/shared/PickerField';
 
 interface FormCustomSelectProps<T extends FieldValues> {
   control: Control<T>;
@@ -18,6 +19,10 @@ interface FormCustomSelectProps<T extends FieldValues> {
   loading?: boolean;
 }
 
+/**
+ * Поле формы «выбор из списка». Раскрывается шторкой снизу (PickerField), а не выпадающим списком —
+ * удобнее с телефона и работает с данными на устройстве без сети.
+ */
 export function FormCustomSelect<T extends FieldValues>({
   control,
   name,
@@ -30,7 +35,7 @@ export function FormCustomSelect<T extends FieldValues>({
       name={name}
       render={({ field, fieldState }) => (
         <div className={className}>
-          <CustomSelect {...props} value={field.value ?? null} onChange={field.onChange} />
+          <PickerField {...props} value={field.value ?? null} onChange={field.onChange} />
           {fieldState.error && <p className="text-destructive mt-1 text-sm">{fieldState.error.message}</p>}
         </div>
       )}
