@@ -16,6 +16,12 @@ interface PickerSheetProps<T> {
   onSearch: (query: string) => void;
   /** Строка над списком — например «+ Новый должник». */
   header?: ReactNode;
+  /** Поле поиска. Для короткого списка (роль, единица) оно лишнее. По умолчанию есть. */
+  searchable?: boolean;
+  /** Что показать, когда список пуст (по умолчанию «Ничего не найдено»). */
+  emptyText?: string;
+  /** Пометка под списком, например «Показаны сохранённые данные». */
+  note?: ReactNode;
 }
 
 /**
@@ -35,6 +41,9 @@ export function PickerSheet<T>({
   loading,
   onSearch,
   header,
+  searchable = true,
+  emptyText,
+  note,
 }: PickerSheetProps<T>) {
   const { t } = useTranslation('common');
   const [query, setQuery] = useState('');
@@ -56,23 +65,25 @@ export function PickerSheet<T>({
         className="bg-background flex flex-col gap-0 p-0 data-[side=bottom]:h-[88dvh] data-[side=bottom]:max-h-[88dvh] md:mx-auto md:max-w-lg">
         <SheetHeader className="shrink-0 space-y-3 px-4 pt-2 pb-3">
           <SheetTitle className="text-center text-lg">{title}</SheetTitle>
-          <CustomInput
-            startIcon={<Search className="text-muted-foreground size-4" />}
-            placeholder={`${t('filters.search')}...`}
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              onSearch(e.target.value);
-            }}
-            className="h-10"
-          />
+          {searchable && (
+            <CustomInput
+              startIcon={<Search className="text-muted-foreground size-4" />}
+              placeholder={`${t('filters.search')}...`}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                onSearch(e.target.value);
+              }}
+              className="h-10"
+            />
+          )}
         </SheetHeader>
 
         <div className="min-h-0 flex-1 touch-pan-y space-y-3 overflow-y-auto overscroll-contain px-4 pb-6 [-webkit-overflow-scrolling:touch]">
           {header && <div className="bg-card overflow-hidden rounded-2xl">{header}</div>}
           {items.length === 0 ? (
             <p className="text-muted-foreground py-10 text-center text-sm">
-              {loading ? t('customSelect.loading') : t('customSelect.emptyText')}
+              {loading ? t('customSelect.loading') : (emptyText ?? t('customSelect.emptyText'))}
             </p>
           ) : (
             <div className="bg-card divide-border divide-y overflow-hidden rounded-2xl">
@@ -87,6 +98,7 @@ export function PickerSheet<T>({
               ))}
             </div>
           )}
+          {note && <p className="text-muted-foreground px-2 text-center text-xs leading-snug">{note}</p>}
         </div>
       </SheetContent>
     </Sheet>

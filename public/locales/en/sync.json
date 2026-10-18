@@ -118,5 +118,8 @@
     "payQueued": "payment queued",
     "debtQueued": "new debt queued",
     "refundQueued": "refund queued"
+  },
+  "pickers": {
+    "savedData": "Showing saved data — the list may be incomplete without internet"
   }
 }

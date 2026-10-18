@@ -30,6 +30,8 @@ export default function CreateMarketPage() {
         ?.data ?? [],
     getValue: (u) => u.id,
     getLabel: (u) => u.name,
+    // Без сети список собирается из сохранённых пользователей — оставляем только владельцев.
+    accept: (u) => !('role' in u) || (u as { role?: string }).role === Role.Owner,
   });
 
   const { control, handleSubmit } = useForm<CreateMarketSchema>({
