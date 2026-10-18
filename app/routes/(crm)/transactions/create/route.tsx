@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import {
   AlertTriangle,
@@ -20,7 +19,6 @@ import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
-import { transactionsApi } from '~/api/transactions';
 import { CreateDebtorModal } from '~/components/modals/CreateDebtorModal';
 import { InitialAvatar } from '~/components/shared/InitialAvatar';
 import { ListGroup, ListRow } from '~/components/shared/ListGroup';
@@ -35,14 +33,23 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
+import type { CreatedDebtor } from '~/hooks/useCreateDebtor';
+import { useDetachedMutation } from '~/hooks/useDetachedMutation';
 import { useForm } from '~/hooks/useForm';
+import { usePendingDebtors, usePendingStock } from '~/hooks/useOfflineOverlay';
 import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum, fmtTJS } from '~/lib/format';
-import { getIsOnline } from '~/lib/network-status';
-import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedCreateTransactionVars } from '~/lib/offline-mutations';
+import { resolveRealId } from '~/lib/client-ids';
+import {
+  createIdempotencyKey,
+  OFFLINE_MUTATION_KEYS,
+  type QueuedCreateTransactionVars,
+  type TransactionPreview,
+} from '~/lib/offline-mutations';
 import { queryKeys } from '~/lib/query-keys';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
 import type { Debtor } from '~/types/debtors';
+import type { DebtorRow } from '~/types/pending';
 import type { Product } from '~/types/products';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
@@ -81,6 +88,9 @@ export default function CreateTransactionPage() {
   // Sheet один на всю форму, а не по одному на строку.
   const [pickerIndex, setPickerIndex] = useState<number | null>(null);
   const [debtorPickerOpen, setDebtorPickerOpen] = useState(false);
+  const [debtorSearch, setDebtorSearch] = useState('');
+  // Только что заведённый должник: пока сервер его не создал, у него временный id и его нет ни в одном списке сервера.
+  const [createdDebtor, setCreatedDebtor] = useState<CreatedDebtor | null>(null);
 
   const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
 
@@ -104,22 +114,29 @@ export default function CreateTransactionPage() {
   const debtorOptions = debtors.options;
   const productOptions = products.options;
 
+  // Read stock/price from the accumulated set (products.byId), not just the latest search —
+  // a row that already picked a product must keep its data even after the results narrow.
+  // Продажи из очереди ещё не списали остатки на сервере — вычитаем их сами, иначе без связи один
+  // и тот же товар можно было бы продать дважды, а сервер отклонил бы вторую продажу уже при синхронизации.
+  const pendingStock = usePendingStock(products.dataUpdatedAt);
+  const stockMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const p of products.byId.values()) map[p.id] = Math.max(0, p.quantity - (pendingStock[p.id] ?? 0));
+    return map;
+  }, [products.byId, pendingStock]);
+
   // Текущая выдача поиска для пикера: options хранит только value/label, а
   // фото/цена/остаток лежат в byId (туда попадает всё, что когда-либо пришло
   // с сервера, включая текущую выдачу) — раскрываем одно через другое, не
   // трогая общий хук useAsyncSelectOptions.
   const pickerItems = useMemo(
-    () => productOptions.map((o) => products.byId.get(String(o.value))).filter((p): p is Product => Boolean(p)),
-    [productOptions, products.byId]
+    () =>
+      productOptions
+        .map((o) => products.byId.get(String(o.value)))
+        .filter((p): p is Product => Boolean(p))
+        .map((p) => ({ ...p, quantity: stockMap[p.id] ?? p.quantity })),
+    [productOptions, products.byId, stockMap]
   );
-
-  // Read stock/price from the accumulated set (products.byId), not just the latest search —
-  // a row that already picked a product must keep its data even after the results narrow.
-  const stockMap = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const p of products.byId.values()) map[p.id] = p.quantity;
-    return map;
-  }, [products.byId]);
 
   const priceMap = useMemo(() => {
     const map: Record<string, number> = {};
@@ -178,7 +195,10 @@ export default function CreateTransactionPage() {
 
   const productMap = products.byId;
 
-  const getProduct = (productId?: string | null) => (productId ? productMap.get(productId) : undefined);
+  const getProduct = (productId?: string | null): Product | undefined => {
+    const product = productId ? productMap.get(productId) : undefined;
+    return product ? { ...product, quantity: stockMap[product.id] ?? product.quantity } : undefined;
+  };
 
   const itemsList = Array.isArray(items) ? items : [];
 
@@ -213,21 +233,12 @@ export default function CreateTransactionPage() {
     return Math.max(q * p - d + m, 0);
   };
 
-  // mutationKey/mutationFn здесь намеренно совпадают с тем, что
-  // зарегистрировано в offline-mutations.ts через setMutationDefaults —
-  // тот же контракт нужен, чтобы мутация, восстановленная из SQLite после
-  // перезапуска приложения, заработала тем же вызовом API, что и live-сабмит
-  // с этой страницы.
-  const { mutate, isPending } = useMutation({
-    mutationKey: OFFLINE_MUTATION_KEYS.createTransaction,
-    mutationFn: (vars: QueuedCreateTransactionVars) => transactionsApi.create(vars.payload, vars.idempotencyKey),
-    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts):
-    // они срабатывают и когда страницы уже нет (очередь ушла на сервер после перезапуска).
-    // Здесь остаётся только то, что относится к этому экрану.
-    onSuccess: () => {
-      navigate(prefill?.fromPath ?? '/transactions');
-    },
-  });
+  // Всё поведение отправки (повторы, инвалидация, тосты) — в setMutationDefaults (offline-mutations.ts):
+  // оно срабатывает и когда экрана уже нет (очередь ушла на сервер после перезапуска приложения).
+  // Здесь — только то, что относится к этому экрану: когда его можно покинуть.
+  const { run, isSubmitting: isPending } = useDetachedMutation<QueuedCreateTransactionVars>(
+    OFFLINE_MUTATION_KEYS.createTransaction
+  );
 
   function onSubmit(data: CreateTransactionInput) {
     if (data.type === 'SALE' && !canCreateSale) {
@@ -236,7 +247,8 @@ export default function CreateTransactionPage() {
     }
 
     const payload: CreateTransactionRequest = {
-      debtorId: data.debtorId || undefined,
+      // Временный id нового должника подменится настоящим, когда его создание дойдёт до сервера.
+      debtorId: data.debtorId ? resolveRealId(data.debtorId) : undefined,
       customerName: data.customerName || undefined,
       type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
       paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
@@ -248,27 +260,54 @@ export default function CreateTransactionPage() {
         markup: item.markup ? Number(item.markup) : undefined,
       })),
     };
-    const wasOffline = !getIsOnline();
 
-    mutate({ payload, idempotencyKey: createIdempotencyKey() });
+    // Снимок для списка: пока продажи нет на сервере, название/цену/фото берём отсюда.
+    const preview: TransactionPreview = {
+      total: calculatedTotal,
+      debtorName: selectedDebtor?.name,
+      debtorPhone: selectedDebtor?.phone,
+      items: payload.items.map((item) => {
+        const product = getProduct(item.productId);
+        return {
+          productId: item.productId,
+          name: product?.name ?? '',
+          quantity: item.quantity,
+          price: product?.price ?? 0,
+          image: product?.image ?? null,
+        };
+      }),
+    };
 
-    // Офлайн mutate() не трогает сеть вообще — mutationFn не вызывается,
-    // мутация сразу уходит в очередь (networkMode: 'online' по умолчанию) и
-    // отправится сама, когда сеть вернётся. Ждать её здесь нечего и не
-    // нужно: продавец не должен стоять на этом экране ради связи, которой
-    // сейчас нет, поэтому navigate происходит сразу, а не в onSuccess.
-    if (wasOffline) {
-      toast(t('createQueuedOffline'));
-      navigate(prefill?.fromPath ?? '/transactions');
-    }
+    run(
+      { payload, idempotencyKey: createIdempotencyKey(), preview },
+      {
+        release: () => navigate(prefill?.fromPath ?? '/transactions'),
+        offlineMessage: t('createQueuedOffline'),
+        slowMessage: t('createQueuedSlow'),
+      }
+    );
   }
 
   const debtorId = watch('debtorId');
-  const selectedDebtor = debtorId ? debtors.byId.get(debtorId) : undefined;
+  // Должники из очереди (создание которых ещё не дошло до сервера) тоже можно выбрать.
+  const pendingDebtors = usePendingDebtors(debtors.dataUpdatedAt);
+  const selectedDebtor: Debtor | undefined = debtorId
+    ? (debtors.byId.get(debtorId) ??
+      pendingDebtors.find((d) => d.id === debtorId) ??
+      (createdDebtor?.id === debtorId ? ({ ...createdDebtor } as Debtor) : undefined))
+    : undefined;
   const debtorError = formState.errors.debtorId?.message;
-  const pickerDebtors = debtorOptions
-    .map((o) => debtors.byId.get(String(o.value)))
-    .filter((d): d is Debtor => Boolean(d));
+  const pickerDebtors: DebtorRow[] = useMemo(() => {
+    const query = debtorSearch.trim().toLowerCase();
+    const queued = pendingDebtors.filter(
+      (d) => !query || d.name.toLowerCase().includes(query) || d.phone.toLowerCase().includes(query)
+    );
+    const queuedIds = new Set(queued.map((d) => d.id));
+    const fromServer = debtorOptions
+      .map((o) => debtors.byId.get(String(o.value)))
+      .filter((d): d is Debtor => Boolean(d) && !queuedIds.has(d!.id));
+    return [...queued, ...fromServer];
+  }, [pendingDebtors, debtorOptions, debtors.byId, debtorSearch]);
   // Pending is handled by `loading` on the button (it swallows clicks and Enter), so it must not also dim it via `disabled`.
   const canSubmit = formState.isValid;
   const submitLabel = type === 'DEBT' ? t('submitDebt') : t('submitSale');
@@ -530,7 +569,13 @@ export default function CreateTransactionPage() {
         </div>
       </form>
 
-      <CreateDebtorModal />
+      <CreateDebtorModal
+        onCreated={(debtor) => {
+          // Сразу выбираем только что заведённого должника — продавец продолжает оформление, а не ищет его заново.
+          setCreatedDebtor(debtor);
+          setValue('debtorId', debtor.id, { shouldValidate: true, shouldDirty: true });
+        }}
+      />
 
       <ProductPickerSheet
         open={pickerIndex !== null}
@@ -553,7 +598,10 @@ export default function CreateTransactionPage() {
         onOpenChange={setDebtorPickerOpen}
         items={pickerDebtors}
         loading={debtors.loading}
-        onSearch={debtors.onSearch}
+        onSearch={(query) => {
+          setDebtorSearch(query);
+          debtors.onSearch(query);
+        }}
         onSelect={(debtor) => {
           setValue('debtorId', debtor.id, { shouldValidate: true, shouldDirty: true });
           setDebtorPickerOpen(false);

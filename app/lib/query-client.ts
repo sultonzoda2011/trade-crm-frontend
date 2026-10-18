@@ -1,6 +1,7 @@
 import { MutationCache, QueryClient, keepPreviousData } from "@tanstack/react-query";
 import { OFFLINE_QUEUE_SCOPE, registerOfflineMutationDefaults } from "~/lib/offline-mutations";
 import { subscribeToNetworkStatus } from "~/lib/network-status";
+import { SENT_OVERLAY_MAX_MS } from "~/lib/offline-sent";
 
 // 400 дней — персистентный кеш (см. query-persister.ts) должен переживать
 // даже очень долгий офлайн (по задаче — "запрос год назад, но показать
@@ -8,8 +9,13 @@ import { subscribeToNetworkStatus } from "~/lib/network-status";
 // react-query выкинет query из памяти раньше, чем успеет его сохранить.
 export const PERSISTED_GC_TIME = 1000 * 60 * 60 * 24 * 400;
 
-/** Сколько отправленная операция ещё лежит в MutationCache — чтобы экран, который её ждал, успел получить результат. */
-const SENT_OPERATION_LINGER_MS = 4000;
+/**
+ * Сколько отправленная операция ещё лежит в MutationCache. Оверлей списков (offline-overlay.ts)
+ * держит строку «в очереди», пока список не перезапросится после ответа сервера, — а для этого
+ * сама операция должна быть на месте. Минута с запасом покрывает слабую сеть, где перезапрос
+ * списка идёт долго; верхний предел оверлея — SENT_OVERLAY_MAX_MS (offline-sent.ts).
+ */
+const SENT_OPERATION_LINGER_MS = SENT_OVERLAY_MAX_MS;
 
 export function makeQueryClient() {
   // У очереди gcTime = Infinity (упавшая операция ждёт решения человека), поэтому

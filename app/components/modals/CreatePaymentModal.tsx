@@ -1,16 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { transactionsApi } from '~/api/transactions';
 import { Modal } from '~/components/shared/Modal';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
+import { useDetachedMutation } from '~/hooks/useDetachedMutation';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum, fmtTJS } from '~/lib/format';
-import { getIsOnline } from '~/lib/network-status';
 import { createIdempotencyKey, OFFLINE_MUTATION_KEYS, type QueuedPayTransactionVars } from '~/lib/offline-mutations';
 import { cn } from '~/lib/utils';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
@@ -42,34 +39,32 @@ export function CreatePaymentModal() {
         ]
       : [];
 
-  // mutationKey/mutationFn совпадают с setMutationDefaults в offline-mutations.ts
-  // — нужно, чтобы отложенная оплата, восстановленная из SQLite после
-  // перезапуска приложения, отправлялась тем же вызовом API.
-  const { mutate, isPending } = useMutation({
-    mutationKey: OFFLINE_MUTATION_KEYS.payTransaction,
-    mutationFn: (vars: QueuedPayTransactionVars) =>
-      transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
-    // Инвалидация кеша, «успех» и тост ошибки — в setMutationDefaults (offline-mutations.ts).
-    onSuccess: () => {
-      payModal.close();
-      reset();
-    },
-  });
+  // Отправка, повторы, инвалидация и тосты — в setMutationDefaults (offline-mutations.ts). Модалка
+  // закрывается, как только оплату можно считать принятой, — не дожидаясь слабой сети: оплата
+  // остаётся в очереди, а остаток в списке уже уменьшен (см. offline-overlay.ts).
+  const { run, isSubmitting: isPending } = useDetachedMutation<QueuedPayTransactionVars>(
+    OFFLINE_MUTATION_KEYS.payTransaction
+  );
 
   function onSubmit(data: CreatePaymentSchema) {
     if (!transaction?.id) return;
 
-    const wasOffline = !getIsOnline();
-    mutate({ id: transaction.id, request: data, idempotencyKey: createIdempotencyKey() });
-
-    // Как и для создания транзакции: офлайн mutate() только ставит оплату в
-    // очередь, сети не касается — модалка закрывается сразу, а не ждёт
-    // ответа, которого пока неоткуда взяться.
-    if (wasOffline) {
-      toast(t('transactions:payQueuedOffline'));
-      payModal.close();
-      reset();
-    }
+    run(
+      {
+        id: transaction.id,
+        request: data,
+        idempotencyKey: createIdempotencyKey(),
+        preview: { debtorId: transaction.debtorId ?? null },
+      },
+      {
+        release: () => {
+          payModal.close();
+          reset();
+        },
+        offlineMessage: t('transactions:payQueuedOffline'),
+        slowMessage: t('transactions:payQueuedSlow'),
+      }
+    );
   }
 
   if (!transaction) return null;

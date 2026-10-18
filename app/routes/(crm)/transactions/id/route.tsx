@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { CreditCard, Package, Store, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
@@ -24,8 +25,10 @@ import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
+import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
+import { withPendingPayments } from '~/lib/offline-overlay';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
@@ -49,7 +52,10 @@ export default function TransactionDetailPage() {
     staleTime: 30_000,
   });
 
-  const transaction = response?.data;
+  const loaded = response?.data;
+  // Оплаты, что ещё в очереди, уже вычтены из остатка: на экране и в окне оплаты он такой же, как после отправки.
+  const queueOps = useOverlayOps();
+  const transaction = useMemo(() => (loaded ? withPendingPayments(loaded, queueOps) : undefined), [loaded, queueOps]);
   // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
   // от "не найдено" (см. app/lib/network-status.ts).
   const isOfflineEmpty = fetchStatus === 'paused' && !transaction;

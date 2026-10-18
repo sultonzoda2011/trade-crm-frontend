@@ -1,12 +1,13 @@
 import type { Row } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { InitialAvatar } from '~/components/shared/InitialAvatar';
+import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { fmtNum } from '~/lib/format';
 import { cn } from '~/lib/utils';
-import type { Debtor } from '~/types/debtors';
+import type { DebtorRow } from '~/types/pending';
 
 interface DebtorMobileCardProps {
-  row: Row<Debtor>;
+  row: Row<DebtorRow>;
   t: TFunction;
   actionsCell?: React.ReactNode;
 }
@@ -35,6 +36,7 @@ export function DebtorMobileCard({ row, t, actionsCell }: DebtorMobileCardProps)
       <div className="min-w-0 flex-1">
         <p className="line-clamp-2 text-base leading-snug font-semibold">{d.name}</p>
         <p className="text-muted-foreground break-words text-sm leading-snug">{d.phone}</p>
+        {d.pending && <PendingBadge pending={d.pending} className="mt-1" />}
       </div>
 
       <div className="shrink-0 text-right">
@@ -46,6 +48,7 @@ export function DebtorMobileCard({ row, t, actionsCell }: DebtorMobileCardProps)
           {hasDebt ? fmtNum(d.totalDebtAmount) : t('noDebt')}
         </p>
         {note && <p className={cn('text-xs leading-snug font-medium', note.className)}>{note.text}</p>}
+        <PendingEffectsNote effects={d.pendingOps} className="justify-end" />
       </div>
       {actionsCell && <div className="relative z-2 -mr-1.5 shrink-0">{actionsCell}</div>}
     </div>

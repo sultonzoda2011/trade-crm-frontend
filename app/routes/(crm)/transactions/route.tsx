@@ -24,6 +24,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
+import { useTransactionRows } from '~/hooks/useOfflineOverlay';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/transactions/configs/columns';
@@ -113,6 +114,7 @@ export default function TransactionsPage() {
     isFetching,
     isError,
     fetchStatus,
+    dataUpdatedAt,
   } = useQuery({
     queryKey: queryKeys.list('transactions', { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -131,10 +133,6 @@ export default function TransactionsPage() {
     staleTime: 30_000,
   });
 
-  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
-  // от "список реально пуст" (см. app/lib/network-status.ts).
-  const isOfflineEmpty = fetchStatus === 'paused' && !response;
-
   const { mutate: deleteTransaction, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => transactionsApi.delete(id),
     onSuccess: () => {
@@ -149,7 +147,18 @@ export default function TransactionsPage() {
 
   const columns = useMemo(() => getColumns({ t }), [t]);
 
-  const transactions = useMemo(() => response?.data?.data ?? [], [response]);
+  const serverTransactions = useMemo(() => response?.data?.data ?? [], [response]);
+  // Продажи и долги из очереди стоят сверху сразу, а оплаты/возвраты из очереди уже учтены в остатках —
+  // см. offline-overlay.ts.
+  const transactions = useTransactionRows(serverTransactions, {
+    page,
+    search: debouncedSearch,
+    filters,
+    dataUpdatedAt,
+  });
+  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем от "список реально пуст"
+  // (см. app/lib/network-status.ts). Если в очереди уже что-то есть, показываем это, а не заглушку.
+  const isOfflineEmpty = fetchStatus === 'paused' && !response && transactions.length === 0;
   const totalPages = response?.data?.meta?.totalPages || 1;
 
   const { table } = useDataTable({
@@ -210,10 +219,12 @@ export default function TransactionsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
-        getRowLink={(row) => ({
-          to: `/transactions/${row.original.id}`,
-          state: { fromPath: location.pathname, fromName: t('title') },
-        })}
+        getRowLink={(row) =>
+          // Страницы у продажи из очереди ещё нет — открывать нечего.
+          row.original.pending
+            ? undefined
+            : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
+        }
         renderMobileCard={(row) => {
           const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           return (

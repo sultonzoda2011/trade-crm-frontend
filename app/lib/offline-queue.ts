@@ -3,6 +3,7 @@ import { toPlainError, type PlainError } from '~/lib/offline-errors';
 import {
   OFFLINE_MUTATION_KEYS,
   OFFLINE_QUEUE_SCOPE,
+  type QueuedCreateDebtorVars,
   type QueuedCreateTransactionVars,
   type QueuedPayTransactionVars,
   type QueuedRefundTransactionVars,
@@ -16,7 +17,7 @@ import {
  * ней — «повторить», «убрать», «отправить сейчас».
  */
 
-export type QueueKind = 'create' | 'pay' | 'refund';
+export type QueueKind = 'debtor' | 'create' | 'pay' | 'refund';
 
 /**
  * - waiting  — ждёт: нет сети или впереди ещё не отправленная операция;
@@ -38,12 +39,15 @@ export interface QueueItem {
   itemsCount?: number;
   /** Продажа или долг — только у «создания». */
   transactionType?: string;
+  /** Имя — у «нового должника» и (если известно) у продажи/долга. */
+  debtorName?: string;
   /** Для «оплаты»/«возврата» — к какой транзакции относится. */
   transactionId?: string;
   error?: PlainError;
 }
 
-const KIND_BY_KEY_HASH = new Map<string, QueueKind>([
+export const KIND_BY_KEY_HASH = new Map<string, QueueKind>([
+  [hashKey(OFFLINE_MUTATION_KEYS.createDebtor), 'debtor'],
   [hashKey(OFFLINE_MUTATION_KEYS.createTransaction), 'create'],
   [hashKey(OFFLINE_MUTATION_KEYS.payTransaction), 'pay'],
   [hashKey(OFFLINE_MUTATION_KEYS.refundTransaction), 'refund'],
@@ -71,10 +75,14 @@ export function toQueueItem(mutation: AnyMutation): QueueItem | null {
     error: status === 'error' && error ? toPlainError(error) : undefined,
   };
 
-  if (kind === 'create') {
+  if (kind === 'debtor') {
+    const vars = variables as QueuedCreateDebtorVars | undefined;
+    item.debtorName = vars?.payload?.name;
+  } else if (kind === 'create') {
     const vars = variables as QueuedCreateTransactionVars | undefined;
     item.itemsCount = vars?.payload?.items?.length;
     item.transactionType = vars?.payload?.type;
+    item.debtorName = vars?.preview?.debtorName;
   } else if (kind === 'pay') {
     const vars = variables as QueuedPayTransactionVars | undefined;
     item.amount = vars?.request?.amount;

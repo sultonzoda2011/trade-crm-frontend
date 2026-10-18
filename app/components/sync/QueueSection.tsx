@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Banknote, HandCoins, RotateCw, ShoppingCart, Trash2, Undo2, type LucideIcon } from 'lucide-react';
+import { Banknote, HandCoins, RotateCw, ShoppingCart, Trash2, Undo2, UserPlus, type LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
@@ -20,6 +20,7 @@ import {
 import { cn } from '~/lib/utils';
 
 function iconFor(item: QueueItem): LucideIcon {
+  if (item.kind === 'debtor') return UserPlus;
   if (item.kind === 'pay') return Banknote;
   if (item.kind === 'refund') return Undo2;
   return item.transactionType === 'DEBT' ? HandCoins : ShoppingCart;
@@ -35,6 +36,7 @@ export function QueueSection() {
 
   const title = (item: QueueItem): string => {
     const kind = t(`queue.kind.${item.kind}`);
+    if (item.kind === 'debtor') return item.debtorName ? `${kind} · ${item.debtorName}` : kind;
     if (item.kind === 'create') {
       const type = item.transactionType ? t(`queue.type.${item.transactionType}`) : kind;
       return item.itemsCount ? `${type} · ${t('queue.items', { count: item.itemsCount })}` : type;

@@ -56,5 +56,9 @@
     "acceptPayment": "Accept payment",
     "pickDebtTitle": "Which debt to pay?"
   },
-  "noDebt": "No debt"
+  "noDebt": "No debt",
+  "createSuccess": "Debtor created",
+  "createError": "Failed to create debtor",
+  "createQueuedOffline": "No connection — debtor saved and will be sent automatically once you're back online",
+  "createQueuedSlow": "Weak connection — debtor saved and sending in the background"
 }

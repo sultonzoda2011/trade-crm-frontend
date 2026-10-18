@@ -2,19 +2,20 @@ import type { Row } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { RotateCcw, ShoppingBag } from 'lucide-react';
 import { InitialAvatar } from '~/components/shared/InitialAvatar';
+import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { fmtNum, formatDateShort } from '~/lib/format';
 import { cn } from '~/lib/utils';
-import type { TransactionListItem } from '~/types/transactions';
+import type { TransactionRow } from '~/types/pending';
 
 interface TransactionMobileCardProps {
-  row: Row<TransactionListItem>;
+  row: Row<TransactionRow>;
   t: TFunction;
   actionsCell?: React.ReactNode;
 }
 
 /** Что показать под суммой: остаток долга важнее слова «Активна» — по нему решают, звонить ли. */
-function statusLine(tx: TransactionListItem, t: TFunction): { text: string; className: string } {
+function statusLine(tx: TransactionRow, t: TFunction): { text: string; className: string } {
   if (tx.status === 'REFUNDED') return { text: t('status.REFUNDED'), className: 'text-destructive' };
   if (tx.status === 'PARTIALLY_REFUNDED') return { text: t('status.PARTIALLY_REFUNDED'), className: 'text-warning' };
   if (tx.remainingAmount > 0)
@@ -53,11 +54,13 @@ export function TransactionMobileCard({ row, t, actionsCell }: TransactionMobile
         <p className="text-muted-foreground break-words text-xs leading-snug">
           {formatDateShort(tx.createdAt)}{tx.type === 'SALE' ? ` · ${method}` : ''}
         </p>
+        {tx.pending && <PendingBadge pending={tx.pending} className="mt-1" />}
       </div>
 
       <div className="shrink-0 text-right">
         <p className="font-mono text-base leading-snug font-semibold">{fmtNum(tx.totalAmount)}</p>
         <p className={cn('text-xs leading-snug font-medium', status.className)}>{status.text}</p>
+        <PendingEffectsNote effects={tx.pendingOps} className="justify-end" />
       </div>
       {actionsCell && <div className="relative z-2 -mr-1.5 shrink-0">{actionsCell}</div>}
     </div>

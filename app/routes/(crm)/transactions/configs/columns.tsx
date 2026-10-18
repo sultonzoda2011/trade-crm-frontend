@@ -2,21 +2,28 @@ import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { CreditCard, Eye, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
+import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
+import { PendingRowActions } from '~/components/shared/PendingRowActions';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { TransactionProducts } from '~/components/transactions/TransactionProducts';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { TRANSACTION_STATUS_BADGE, TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
+import { isClientId } from '~/lib/client-ids';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
-import type { TransactionListItem, TransactionStatus, TransactionType } from '~/types/transactions';
+import type { TransactionRow } from '~/types/pending';
+import type { TransactionStatus, TransactionType } from '~/types/transactions';
 
-function TransactionActionsCell({ row, t }: { row: TransactionListItem; t: TFunction }) {
+function TransactionActionsCell({ row, t }: { row: TransactionRow; t: TFunction }) {
   const deleteModal = useTransactionsModals((s) => s.delete);
   const payModal = useTransactionsModals((s) => s.pay);
   const location = useLocation();
   const { can } = useCan();
+
+  // Продажи ещё нет на сервере: открыть, оплатить или удалить её нельзя — только повторить или убрать из очереди.
+  if (row.pending) return <PendingRowActions pending={row.pending} />;
 
   return (
     <RowActionsCell>
@@ -46,9 +53,9 @@ function TransactionActionsCell({ row, t }: { row: TransactionListItem; t: TFunc
   );
 }
 
-const columnHelper = createColumnHelper<TransactionListItem>();
+const columnHelper = createColumnHelper<TransactionRow>();
 
-export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListItem, any>[] => {
+export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionRow, any>[] => {
   return [
     columnHelper.display({
       id: 'products',
@@ -56,15 +63,26 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListIt
       enableHiding: false,
       cell: (info) => {
         const tx = info.row.original;
+        const content =
+          tx.items && tx.items.length > 0 ? (
+            <TransactionProducts items={tx.items} size="sm" max={3} />
+          ) : (
+            <span className="text-muted-foreground text-xs">{t(`type.${tx.type}`)}</span>
+          );
+        // У продажи из очереди страницы ещё нет — вместо ссылки метка её состояния.
+        if (tx.pending) {
+          return (
+            <div className="inline-flex items-center gap-2">
+              {content}
+              <PendingBadge pending={tx.pending} />
+            </div>
+          );
+        }
         return (
           <Link
             to={`/transactions/${tx.id}`}
             className="inline-flex items-center gap-2 transition-opacity hover:opacity-80">
-            {tx.items && tx.items.length > 0 ? (
-              <TransactionProducts items={tx.items} size="sm" max={3} />
-            ) : (
-              <span className="text-muted-foreground text-xs">{t(`type.${tx.type}`)}</span>
-            )}
+            {content}
           </Link>
         );
       },
@@ -74,12 +92,14 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListIt
       header: t('fields.debtor'),
       cell: (info) => {
         const debtor = info.getValue();
-        return (
-          debtor && (
-            <Link to={`/debtors/${debtor.id}`} className="text-sm font-medium hover:underline">
-              {debtor.name}
-            </Link>
-          )
+        if (!debtor) return null;
+        // Должник из очереди (временный id) ещё не имеет страницы.
+        return isClientId(debtor.id) ? (
+          <span className="text-sm font-medium">{debtor.name}</span>
+        ) : (
+          <Link to={`/debtors/${debtor.id}`} className="text-sm font-medium hover:underline">
+            {debtor.name}
+          </Link>
         );
       },
     }),
@@ -121,9 +141,12 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListIt
       cell: (info) => {
         const remaining = info.getValue();
         return (
-          <span className={`font-mono text-sm font-medium ${remaining > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
-            {fmtTJS(remaining)}
-          </span>
+          <div className="flex flex-col items-start gap-0.5">
+            <span className={`font-mono text-sm font-medium ${remaining > 0 ? 'text-warning' : 'text-muted-foreground'}`}>
+              {fmtTJS(remaining)}
+            </span>
+            <PendingEffectsNote effects={info.row.original.pendingOps} />
+          </div>
         );
       },
     }),
@@ -148,5 +171,5 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<TransactionListIt
       header: () => <div className="text-center">{t('fields.actions', { ns: 'common' })}</div>,
       cell: (info) => <TransactionActionsCell row={info.row.original} t={t} />,
     }),
-  ] as ColumnDef<TransactionListItem, any>[];
+  ] as ColumnDef<TransactionRow, any>[];
 };

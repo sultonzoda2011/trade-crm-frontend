@@ -1,4 +1,11 @@
-import { deleteRequest, detailRequest, jsonWrites, listRequest, nestedDetailRequest } from '~/api/crud';
+import {
+  deleteRequest,
+  detailRequest,
+  idempotencyConfig as idempotencyHeaders,
+  jsonWrites,
+  listRequest,
+  nestedDetailRequest,
+} from '~/api/crud';
 import { apiClient } from '~/lib/client';
 import type {
   CreatePaymentRequest,
@@ -11,16 +18,6 @@ import type {
 } from '~/types/transactions';
 
 const BASE = '/transactions';
-
-/**
- * Request config for an idempotency-aware write — omitted entirely when no key is given, so the
- * call is byte-identical to before for every caller that doesn't pass one. A keyed write is always
- * a queued one (see app/lib/offline-mutations.ts): it is retried and reported by the queue itself,
- * so the axios interceptors stay quiet (`silent`) instead of toasting on every attempt.
- */
-function idempotencyHeaders(idempotencyKey?: string) {
-  return idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey }, silent: true } : undefined;
-}
 
 export const transactionsApi = {
   getAll: listRequest<TransactionsResponse>(BASE),

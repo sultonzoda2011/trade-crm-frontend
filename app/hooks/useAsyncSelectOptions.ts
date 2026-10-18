@@ -37,6 +37,8 @@ interface AsyncSelectResult<T> {
   onSearch: (query: string) => void;
   /** True while a request is in flight — pass to `<FormCustomSelect loading>`. */
   loading: boolean;
+  /** Когда результаты последний раз пришли с сервера — по нему оверлей очереди понимает, что список уже догнал её. */
+  dataUpdatedAt: number;
 }
 
 /**
@@ -71,9 +73,19 @@ export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSel
   const seenRef = React.useRef<Map<string, T>>(new Map());
   const versionRef = React.useRef(0);
   let grew = false;
-  for (const item of [...(seed ?? []), ...results]) {
+  for (const item of seed ?? []) {
     const key = String(getValue(item));
     if (!seenRef.current.has(key)) {
+      seenRef.current.set(key, item);
+      grew = true;
+    }
+  }
+  // Свежий ответ сервера заменяет то, что накопилось раньше: после обновления списка (скажем, когда
+  // продажа из очереди списала остатки) в `byId` должны лежать новые цифры, а не те, что были при первом показе.
+  // Structural sharing у react-query сохраняет ссылку на неизменившиеся элементы, поэтому лишних перерисовок нет.
+  for (const item of results) {
+    const key = String(getValue(item));
+    if (seenRef.current.get(key) !== item) {
       seenRef.current.set(key, item);
       grew = true;
     }
@@ -95,5 +107,5 @@ export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSel
     return list;
   }, [results, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { options, byId, onSearch: setSearch, loading: query.isFetching };
+  return { options, byId, onSearch: setSearch, loading: query.isFetching, dataUpdatedAt: query.dataUpdatedAt };
 }

@@ -1,4 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query';
+import { clearClientIds } from '~/lib/client-ids';
+import { clearSent } from '~/lib/offline-sent';
 import { queryPersister } from '~/lib/query-persister';
 import { useSyncStore } from '~/store/useSyncStore';
 
@@ -38,6 +40,8 @@ function writeOwner(userId: string | null) {
 export async function wipeOfflineData(queryClient: QueryClient): Promise<void> {
   useSyncStore.getState().reset();
   queryClient.clear();
+  clearClientIds();
+  clearSent();
   await queryPersister.removeClient();
   writeOwner(null);
 }

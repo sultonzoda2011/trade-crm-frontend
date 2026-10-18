@@ -1,6 +1,6 @@
 # Offline mode and syncing
 
-Trade CRM can work without an internet connection. Some data is stored right on the device, so lists and detail pages open even without a connection, and new sales, payments, and refunds are never lost — they go into a queue and are sent to the server on their own as soon as the connection comes back.
+Trade CRM can work without an internet connection. Some data is stored right on the device, so lists and detail pages open even without a connection, and new debtors, sales, debts, payments, and refunds are never lost — they go into a queue, show up in the lists right away, and are sent to the server on their own as soon as the connection comes back.
 
 > [!NOTE]
 > Offline mode relies on data that was already downloaded earlier. If you open the app offline for the very first time, there's no data yet — you need to sync once while you have a connection.
@@ -22,7 +22,7 @@ While downloading, progress is shown ("Downloaded X of Y"). You can stop the dow
 
 ### Send queue
 
-This shows every operation created offline that hasn't been sent to the server yet: new transactions, payments, and refunds. Each operation has a status:
+This shows every operation created offline that hasn't been sent to the server yet: new debtors, transactions, payments, and refunds. Each operation has a status:
 
 | Status | What it means |
 | --- | --- |
@@ -50,7 +50,10 @@ Shows how much space the stored data takes up. The **"Clear stored data"** butto
 
 - Lists and detail pages that have already been synced open as usual.
 - Data that isn't on the device yet shows a "This data hasn't been downloaded yet" hint with a link to the sync screen.
-- You can create a sale, debt, payment, or refund while offline — it's queued and sent on its own once there's a connection.
+- You can add a debtor, make a sale or a debt, take a payment, or make a refund while offline — it's queued and sent on its own once there's a connection.
+- The same goes for a weak connection: if the server doesn't answer for a couple of seconds, the window closes by itself and the operation finishes in the background — no need to wait at the screen.
+- A queued operation shows up in the lists right away with a "Queued" label. You can give a debt to a new debtor straight away — pick them in the sale as usual. Queued payments and new debts are already counted in the totals, and sold goods in the stock.
+- While an operation is queued, its row can't be opened or edited — only retried or removed if it failed to send.
 
 > [!TIP]
 > Before heading somewhere you know won't have internet, open the "Sync" screen and tap **"Sync everything"** while you still have a connection.
