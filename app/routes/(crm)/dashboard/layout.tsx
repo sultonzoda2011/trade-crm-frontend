@@ -6,7 +6,7 @@ import { NavLink, Outlet, useSearchParams } from 'react-router';
 
 import { sellersApi } from '~/api/sellers';
 import { PageHeader } from '~/components/layout/PageHeader';
-import { CustomSelect } from '~/components/shared/CustomSelect';
+import { PickerField } from '~/components/shared/PickerField';
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
@@ -120,8 +120,10 @@ export default function DashboardLayout() {
           })}
         </div>
 
-        <CustomSelect
+        <PickerField
           className="md:w-56"
+          title={t('allSellers')}
+          placeholder={t('allSellers')}
           options={[{ value: '', label: t('allSellers') }, ...sellers.options]}
           value={sellerId ?? ''}
           onChange={(value) => updateParam('sellerId', value ? String(value) : '')}

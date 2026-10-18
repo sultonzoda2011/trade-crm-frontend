@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import type { CustomSelectOption } from '~/components/shared/CustomSelect';
 import { useDebounce } from '~/hooks/useDebounce';
+import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 
 const EMPTY: readonly never[] = [];
 
@@ -22,6 +23,19 @@ interface AsyncSelectConfig<T> {
   debounceMs?: number;
   /** react-query staleTime. Default 30s. */
   staleTime?: number;
+  /**
+   * Сущность, чьи сохранённые на устройстве списки служат запасным источником без сети и на слабой
+   * связи. По умолчанию — первый элемент `queryKey` (он же ключ сущности в query-keys.ts).
+   */
+  entity?: string;
+  /**
+   * Подходит ли запись этому списку. Нужно, когда выбор — подмножество сущности (например, только
+   * владельцы среди пользователей): запасной источник собирает записи из ВСЕХ сохранённых запросов
+   * сущности, и без фильтра в список попали бы лишние.
+   */
+  accept?: (item: T) => boolean;
+  /** Текст, по которому ищем на устройстве. По умолчанию — подпись; для людей полезно добавить телефон. */
+  getSearchText?: (item: T) => string;
 }
 
 interface AsyncSelectResult<T> {
@@ -37,8 +51,42 @@ interface AsyncSelectResult<T> {
   onSearch: (query: string) => void;
   /** True while a request is in flight — pass to `<FormCustomSelect loading>`. */
   loading: boolean;
+  /** Показываются ли сейчас данные с устройства, а не ответ сервера: нет сети или сервер ещё не ответил. */
+  fromDevice: boolean;
   /** Когда результаты последний раз пришли с сервера — по нему оверлей очереди понимает, что список уже догнал её. */
   dataUpdatedAt: number;
+}
+
+/** Не больше стольких записей с устройства в одном списке — шторка не должна рисовать тысячи строк. */
+const LOCAL_LIMIT = 100;
+
+/**
+ * Записи сущности из всего, что лежит в кеше (в том числе восстановленном с диска): страницы таблиц
+ * (`list`) и справочники (`options`). Выпадающий список не должен зависеть от того, какой именно
+ * ключ кеша совпал: если сущность хоть раз загружалась или синхронизировалась, её записи годятся
+ * для выбора без сети и на слабой связи.
+ */
+function collectCached<T>(queryClient: QueryClient, entity: string, getValue: (item: T) => string | number): T[] {
+  const found = new Map<string, T>();
+  const add = (rows: unknown) => {
+    if (!Array.isArray(rows)) return;
+    for (const row of rows) {
+      if (typeof row !== 'object' || row === null) continue;
+      const value = getValue(row as T);
+      if (value === undefined || value === null || value === '') continue;
+      found.set(String(value), row as T);
+    }
+  };
+
+  for (const [key, data] of queryClient.getQueriesData<unknown>({ queryKey: [entity] })) {
+    const kind = key[1];
+    if (kind !== 'list' && kind !== 'options') continue;
+    const body = data as { data?: { data?: unknown } | unknown } | unknown[] | undefined;
+    if (Array.isArray(body)) add(body); // справочник из sync: массив записей
+    else if (Array.isArray(body?.data)) add(body.data); // ответ API без пагинации
+    else add((body?.data as { data?: unknown } | undefined)?.data); // страница таблицы / ответ API с пагинацией
+  }
+  return [...found.values()];
 }
 
 /**
@@ -53,7 +101,21 @@ interface AsyncSelectResult<T> {
  * exactly what the server returned (no double filtering).
  */
 export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSelectResult<T> {
-  const { fetcher, getValue, getLabel, seed, queryKey, enabled = true, debounceMs = 300, staleTime = 30_000 } = config;
+  const {
+    fetcher,
+    getValue,
+    getLabel,
+    seed,
+    queryKey,
+    enabled = true,
+    debounceMs = 300,
+    staleTime = 30_000,
+    entity = typeof queryKey[0] === 'string' ? queryKey[0] : undefined,
+    accept,
+    getSearchText,
+  } = config;
+  const queryClient = useQueryClient();
+  const isOnline = useNetworkStatus();
 
   const [search, setSearch] = React.useState('');
   const debounced = useDebounce(search, debounceMs);
@@ -65,7 +127,43 @@ export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSel
     staleTime,
   });
 
-  const results = (query.data ?? EMPTY) as T[];
+  // Ответ сервера по ЭТОМУ запросу. keepPreviousData подставляет прошлый поиск на время загрузки —
+  // это не ответ на текущий ввод, поэтому такие данные за «серверные» не считаем.
+  const serverData = query.isPlaceholderData ? undefined : (query.data as T[] | undefined);
+  // С устройства берём, когда сети нет или сервер ещё не ответил (слабая связь): человек сразу видит
+  // и может искать, а не смотрит на «Загрузка…». Ответ сервера, когда придёт, заменит этот список.
+  const useDevice = !!entity && (!isOnline || serverData === undefined);
+
+  // Кеш меняется (идёт синхронизация, восстановился диск) — пересобираем запасной список.
+  const [cacheTick, setCacheTick] = React.useState(0);
+  React.useEffect(() => {
+    if (!useDevice || !entity) return;
+    return queryClient.getQueryCache().subscribe((event) => {
+      if (event.type !== 'added' && event.type !== 'updated') return;
+      if (event.query.queryKey[0] === entity) setCacheTick((n) => n + 1);
+    });
+  }, [useDevice, entity, queryClient]);
+
+  const deviceItems = React.useMemo<T[]>(() => {
+    if (!useDevice || !entity) return [];
+    const needle = search.trim().toLowerCase();
+    const exact = (query.data as T[] | undefined) ?? [];
+    const pool = new Map<string, T>();
+    for (const item of [...exact, ...collectCached<T>(queryClient, entity, getValue)]) {
+      if (accept && !accept(item)) continue;
+      pool.set(String(getValue(item)), item);
+    }
+    const matches = [...pool.values()].filter(
+      (item) => !needle || (getSearchText ? getSearchText(item) : getLabel(item)).toLowerCase().includes(needle)
+    );
+    return matches.slice(0, LOCAL_LIMIT);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [useDevice, entity, search, query.data, cacheTick, queryClient]);
+
+  // Данных с устройства нет, а прошлый поиск на экране есть — не мигаем пустотой.
+  const results = (
+    useDevice && (deviceItems.length > 0 || !query.data) ? deviceItems : (serverData ?? query.data ?? EMPTY)
+  ) as T[];
 
   // Накопление идёт синхронно в рендере, а не в useEffect: потребители читают цену/остаток
   // выбранного товара из `byId` в этом же рендере, и effect-обновление пришло бы на рендер
@@ -107,5 +205,12 @@ export function useAsyncSelectOptions<T>(config: AsyncSelectConfig<T>): AsyncSel
     return list;
   }, [results, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return { options, byId, onSearch: setSearch, loading: query.isFetching, dataUpdatedAt: query.dataUpdatedAt };
+  return {
+    options,
+    byId,
+    onSearch: setSearch,
+    loading: query.isFetching,
+    fromDevice: useDevice,
+    dataUpdatedAt: query.dataUpdatedAt,
+  };
 }

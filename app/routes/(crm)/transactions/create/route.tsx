@@ -101,6 +101,7 @@ export default function CreateTransactionPage() {
     fetcher: async (search) => (await debtorsApi.getAll(1, 100, { search: search || undefined }))?.data?.data ?? [],
     getValue: (d) => d.id,
     getLabel: (d) => d.name,
+    getSearchText: (d) => `${d.name} ${d.phone ?? ''}`,
     seed: prefill?.debtorId ? [{ id: prefill.debtorId, name: prefill.debtorName ?? '' } as Debtor] : undefined,
   });
 
