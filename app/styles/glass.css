@@ -245,24 +245,32 @@
   }
 }
 
-/* ─── Glass surface ──────────────────────────────────────────────────────────
-   Стеклянная ПОВЕРХНОСТЬ (нижняя навигация, выезжающая панель «Ещё») на языке
-   GlassButton: тот же блик по кромке и внутренние тени, но без 3D-наклона и
-   бликов при наведении, а подложка плотнее и размытие сильнее — под поверхностью
-   лежит текст списков, он не должен просвечивать. Кромка — ::after. */
+/* ─── Glass surface / control / popup ────────────────────────────────────────
+   Три размера одного языка (блик по кромке, внутренние тени, мягкая тень):
+   · .glass-surface — крупные плавающие поверхности (нижняя навигация, панель
+     «Ещё», окно успеха): плотная подложка и сильное размытие, под ними текст;
+   · .glass-control — маленькие контролы в шапке и на карточках (Button
+     variant="glass", аватар): лёгкая подложка, без анимаций;
+   · .glass-popup — выпадающие меню и поповеры: те же цвета, но без кромки-
+     псевдоэлемента (она уезжала бы вместе со скроллом внутри меню).
+   Кромка — ::after с маской; тема и плотность настраиваются переменными. */
 @layer components {
+  .glass-surface,
+  .glass-control,
+  .glass-popup {
+    --glass-edge: oklch(from var(--foreground) l c h / 45%);
+    --glass-fill-a: oklch(from var(--background) l c h / 58%);
+    --glass-fill-b: oklch(from var(--background) l c h / 40%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+    background: linear-gradient(-75deg, var(--glass-fill-a), var(--glass-fill-b), var(--glass-fill-a));
+  }
+
   .glass-surface {
+    --glass-blur: 22px;
     --border-width: 1.5px;
     position: relative;
     isolation: isolate;
-    -webkit-backdrop-filter: blur(22px) saturate(180%);
-    backdrop-filter: blur(22px) saturate(180%);
-    background: linear-gradient(
-      -75deg,
-      oklch(from var(--background) l c h / 58%),
-      oklch(from var(--background) l c h / 40%),
-      oklch(from var(--background) l c h / 58%)
-    );
     box-shadow:
       inset 0 0.125em 0.125em oklch(from var(--foreground) l c h / 6%),
       inset 0 -0.125em 0.125em oklch(from var(--background) l c h / 55%),
@@ -271,7 +279,34 @@
       0 0.125rem 0.5rem oklch(from var(--foreground) l c h / 8%);
   }
 
-  .glass-surface::after {
+  .glass-control {
+    --glass-blur: 14px;
+    --border-width: 1px;
+    --glass-fill-a: oklch(from var(--background) l c h / 62%);
+    --glass-fill-b: oklch(from var(--background) l c h / 42%);
+    position: relative;
+    isolation: isolate;
+    box-shadow:
+      inset 0 0.1em 0.1em oklch(from var(--foreground) l c h / 5%),
+      inset 0 -0.1em 0.1em oklch(from var(--background) l c h / 55%),
+      inset 0 0 0.08em 0.2em oklch(from var(--background) l c h / 25%),
+      0 0.3em 0.6em -0.3em oklch(from var(--foreground) l c h / 28%);
+  }
+
+  .glass-popup {
+    --glass-blur: 22px;
+    /* Меню читают, а не любуются: подложка плотнее, чем у навигации. */
+    --glass-fill-a: oklch(from var(--background) l c h / 82%);
+    --glass-fill-b: oklch(from var(--background) l c h / 70%);
+    box-shadow:
+      0 0 0 0.5px oklch(from var(--foreground) l c h / 14%),
+      inset 0 1px 0.5px oklch(from var(--background) l c h / 70%),
+      0 1rem 2rem -0.75rem oklch(from var(--foreground) l c h / 35%),
+      0 0.125rem 0.5rem oklch(from var(--foreground) l c h / 8%);
+  }
+
+  .glass-surface::after,
+  .glass-control::after {
     content: '';
     position: absolute;
     inset: calc(var(--border-width) / -2);
@@ -283,11 +318,11 @@
     background:
       conic-gradient(
         from -75deg at 50% 50%,
-        oklch(from var(--foreground) l c h / 45%) 0%,
+        var(--glass-edge) 0%,
         transparent 5% 40%,
-        oklch(from var(--foreground) l c h / 45%) 50%,
+        var(--glass-edge) 50%,
         transparent 60% 95%,
-        oklch(from var(--foreground) l c h / 45%) 100%
+        var(--glass-edge) 100%
       ),
       linear-gradient(180deg, oklch(from var(--background) l c h / 50%), oklch(from var(--background) l c h / 50%));
     -webkit-mask:
@@ -300,38 +335,52 @@
     mask-composite: exclude;
   }
 
-  /* Тёмная тема: --background почти чёрный, поэтому подложку делаем светлее токеном карточки. */
+  /* Тёмная тема: --background почти чёрный, подложку светлим токенами карточки. */
   .dark .glass-surface {
-    background: linear-gradient(
-      -75deg,
-      color-mix(in srgb, var(--elevated) 62%, transparent),
-      color-mix(in srgb, var(--card) 42%, transparent),
-      color-mix(in srgb, var(--elevated) 62%, transparent)
-    );
+    --glass-fill-a: color-mix(in srgb, var(--elevated) 66%, transparent);
+    --glass-fill-b: color-mix(in srgb, var(--card) 46%, transparent);
+  }
+  .dark .glass-popup {
+    --glass-fill-a: color-mix(in srgb, var(--elevated) 86%, transparent);
+    --glass-fill-b: color-mix(in srgb, var(--card) 76%, transparent);
+  }
+  .dark .glass-control {
+    --glass-fill-a: color-mix(in srgb, var(--elevated) 60%, transparent);
+    --glass-fill-b: color-mix(in srgb, var(--card) 40%, transparent);
   }
 }
 
+/* Нет относительных цветов (старый WebView) — простое стекло из токенов. */
 @supports not (color: oklch(from red l c h)) {
-  .glass-surface {
-    background: color-mix(in srgb, var(--card) 70%, transparent);
+  .glass-surface,
+  .glass-control,
+  .glass-popup {
+    background: color-mix(in srgb, var(--card) 72%, transparent);
     box-shadow:
       0 0 0 0.5px rgb(0 0 0 / 0.09),
-      0 0.75rem 1.75rem -0.75rem rgb(0 0 0 / 0.32);
+      0 0.5rem 1.25rem -0.5rem rgb(0 0 0 / 0.3);
   }
-  .glass-surface::after {
+  .glass-surface::after,
+  .glass-control::after {
     display: none;
   }
 }
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-surface {
+  .glass-surface,
+  .glass-control,
+  .glass-popup {
     background: color-mix(in srgb, var(--card) 96%, transparent);
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
   .glass-surface,
-  .dark .glass-surface {
+  .glass-control,
+  .glass-popup,
+  .dark .glass-surface,
+  .dark .glass-control,
+  .dark .glass-popup {
     background: var(--card);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
