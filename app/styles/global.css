@@ -3,7 +3,7 @@
 @import 'shadcn/tailwind.css';
 @import 'flatpickr/dist/flatpickr.min.css';
 @import '@fontsource-variable/inter';
-@import './glass.css';
+@import './glass-button.css';
 
 @custom-variant dark (&:is(.dark *));
 
