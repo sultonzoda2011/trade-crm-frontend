@@ -6,6 +6,7 @@ import { Link, useLocation } from 'react-router';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { Action } from '~/config/actions';
 import { type NavItem, type NavKey, getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
+import { GlassSurface } from '~/components/ui/glass-surface';
 import { useCan } from '~/hooks/useCan';
 import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
@@ -189,13 +190,13 @@ export function BottomNav() {
           hidden && 'translate-y-[160%] opacity-0'
         )}
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) * 0.5 + 12px)' }}>
-        <div
-          className="liquid-glass pointer-events-auto relative mx-auto max-w-md rounded-full p-1.5"
+        <GlassSurface
+          className="pointer-events-auto relative mx-auto max-w-md rounded-full p-1.5"
           style={{ height: CAPSULE_HEIGHT }}>
           <div className="relative flex h-full items-stretch">
             {slots.map(renderSlot)}
           </div>
-        </div>
+        </GlassSurface>
       </nav>
 
       <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
@@ -203,7 +204,7 @@ export function BottomNav() {
           side="bottom"
           showCloseButton={false}
           className="gap-0 bg-transparent shadow-none data-[side=bottom]:inset-x-3 data-[side=bottom]:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] data-[side=bottom]:border-t-0 data-[side=bottom]:pb-0">
-          <div className="liquid-glass relative flex max-h-[75dvh] flex-col overflow-hidden rounded-[2rem]">
+          <GlassSurface className="relative flex max-h-[75dvh] flex-col overflow-hidden rounded-[2rem]">
             {/* Ручка лежит поверх общей зоны захвата шторки (её перекрывает стекло), поэтому сама — зона перетаскивания. */}
             <div data-sheet-drag aria-hidden className="mx-auto flex w-full shrink-0 touch-none justify-center pt-2.5 pb-1">
               <div className="bg-foreground/25 h-1 w-9 rounded-full" />
@@ -239,7 +240,7 @@ export function BottomNav() {
                 })}
               </ul>
             </div>
-          </div>
+          </GlassSurface>
         </SheetContent>
       </Sheet>
     </>
