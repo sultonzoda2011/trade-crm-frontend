@@ -45,7 +45,7 @@ export function SuccessDialog() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}>
           <motion.div
-            className="glass-surface relative flex w-full max-w-72 flex-col items-center gap-1 rounded-[2rem] px-6 pt-7 pb-6 text-center"
+            className="liquid-glass relative flex w-full max-w-72 flex-col items-center gap-1 rounded-[2rem] px-6 pt-7 pb-6 text-center"
             initial={{ opacity: 0, scale: 0.84, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 4 }}
