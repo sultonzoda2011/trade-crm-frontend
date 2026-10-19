@@ -66,5 +66,18 @@
     "daysUnit": "{{count}} рӯз",
     "reorderHint": "То захираи {{days}} рӯз",
     "allTime": "Дар тамоми давр"
+  },
+  "status": {
+    "out": "Нест",
+    "low": "Кам",
+    "soon": "Ба зудӣ",
+    "returns": "Бозг.",
+    "slow": "Хобидааст",
+    "daysShort": "{{count}} р",
+    "overYear": ">1 с."
+  },
+  "swipe": {
+    "edit": "Таҳрир",
+    "delete": "Нест кардан"
   }
 }

@@ -66,5 +66,18 @@
     "daysUnit": "{{count}} days",
     "reorderHint": "Up to {{days}} days of cover",
     "allTime": "All time"
+  },
+  "status": {
+    "out": "Out",
+    "low": "Low",
+    "soon": "Soon",
+    "returns": "Returns",
+    "slow": "Idle",
+    "daysShort": "{{count}} d",
+    "overYear": ">1 y"
+  },
+  "swipe": {
+    "edit": "Edit",
+    "delete": "Delete"
   }
 }
