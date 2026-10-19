@@ -1,5 +1,6 @@
 import { ChevronLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
+import { GlassButton } from '~/components/ui/glass-button';
 
 interface BreadCrumbLink {
   label: string;
@@ -13,23 +14,23 @@ interface BreadCrumbProps {
 const BreadCrumbs = ({ items }: BreadCrumbProps) => {
   const navigate = useNavigate();
   const backItem = items.length >= 2 ? items[items.length - 2] : null;
-  const backClass =
-    'glass-control text-primary -ml-1 inline-flex max-w-[75vw] min-h-11 items-center gap-0.5 rounded-full py-1 pr-4 pl-2 text-base font-medium transition-transform active:scale-95 sm:hidden';
+  const backWrap = '-ml-1 max-w-[75vw] sm:hidden';
+  const backContent = 'text-primary flex min-h-11 items-center gap-0.5 py-1 pr-4 pl-2';
 
   return (
     <nav aria-label="Breadcrumb">
       {/* Mobile: back button */}
       {backItem?.link ? (
-        <Link to={backItem.link} className={backClass}>
+        <GlassButton render={<Link to={backItem.link} />} className={backWrap} contentClassName={backContent}>
           <ChevronLeft className="size-6 shrink-0" />
           <span className="truncate">{backItem.label}</span>
-        </Link>
+        </GlassButton>
       ) : (
         // Зашли по прямой ссылке — родителя в state нет, идём назад по истории.
-        <button type="button" onClick={() => navigate(-1)} className={backClass}>
+        <GlassButton type="button" onClick={() => navigate(-1)} className={backWrap} contentClassName={backContent}>
           <ChevronLeft className="size-6 shrink-0" />
           <span className="truncate">{backItem?.label ?? ''}</span>
-        </button>
+        </GlassButton>
       )}
 
       {/* Desktop: full breadcrumb trail */}

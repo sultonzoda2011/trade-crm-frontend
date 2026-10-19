@@ -1,7 +1,7 @@
 import { Pencil } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { Button } from '~/components/ui/button';
+import { GlassButton } from '~/components/ui/glass-button';
 import { cn } from '~/lib/utils';
 
 type Tone = 'default' | 'success' | 'warning' | 'danger';
@@ -76,9 +76,9 @@ export function DetailHero({
           {badges ? <div className="flex flex-wrap items-center gap-1.5 pt-0.5">{badges}</div> : null}
         </div>
         {editTo ? (
-          <Button variant="glass" size="icon" aria-label={editLabel} render={<Link to={editTo} />}>
+          <GlassButton size="icon" aria-label={editLabel} render={<Link to={editTo} />}>
             <Pencil className="size-4" strokeWidth={1.75} />
-          </Button>
+          </GlassButton>
         ) : null}
       </div>
 
