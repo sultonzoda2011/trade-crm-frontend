@@ -93,3 +93,19 @@ export function getPeriodDateParams(period: Period): { dateFrom: string; dateTo:
   const { from, to } = getPeriodRange(period);
   return { dateFrom: from.format('YYYY-MM-DD'), dateTo: (to ?? from).format('YYYY-MM-DD') };
 }
+
+/**
+ * The last `days` calendar days ending today, as the `YYYY-MM-DD` pair the
+ * dashboard API takes (`dateFrom` / `dateTo`, both ends inclusive).
+ *
+ * Counted on the same UTC calendar the backend cuts windows on, so a window of
+ * 28 days really is 28 days there (`durationDays` = 28), whatever the phone's
+ * time zone.
+ */
+export function getRollingDateParams(days: number): { dateFrom: string; dateTo: string } {
+  const to = backendToday();
+  return {
+    dateFrom: to.subtract(Math.max(days, 1) - 1, 'day').format('YYYY-MM-DD'),
+    dateTo: to.format('YYYY-MM-DD'),
+  };
+}

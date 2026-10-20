@@ -1,6 +1,6 @@
 # Dashboard and reports
 
-The dashboard is the home screen for the administrator and the owner. It opens right after you sign in and shows how business is going: revenue, deals, debts, stock health, best-selling products, and a sellers report. All the numbers are on one screen, split across tabs.
+The dashboard is the home screen for the administrator and the owner. It opens right after you sign in and shows how business is going: what was sold, how much money came in, who owes you, what is running low, which products sell best, and how the sellers are doing. All the numbers are on one screen, split across tabs.
 
 > [!NOTE]
 > The dashboard is seen by the administrator and the owner. A seller does not have this screen — after signing in they go straight to the **"Transactions"** section to record sales.
@@ -9,7 +9,7 @@ The dashboard is the home screen for the administrator and the owner. It opens r
 
 Above the tabs are two filters that apply to every tab at once:
 
-- **"Period"** — the span the numbers are calculated over: **Today**, **Week**, **Month** (the default) or **Year**. The exact date range is shown next to it.
+- **"Period"** — the span the numbers are calculated over: **Today**, **Week**, **Month** or **Year**. On "Overview" the default is **Today**, on the other tabs it is **Month**. The week counts from Monday, the month from the 1st, the year from 1 January, always up to today. The exact date range is shown next to it.
 - **"Seller"** — you can view the overall numbers (**"All sellers"**) or pick one seller to see only their results.
 
 The filters are kept when you switch tabs, and you can share a link to a specific tab with the filter already applied.
@@ -20,24 +20,30 @@ The dashboard is split into four tabs: **"Overview"**, **"Inventory"**, **"Produ
 
 ### Overview
 
-The main tab, with the big picture.
+The main tab answers the evening question "how did the day go?". It opens with the period set to **"Today"**; the other tabs default to the **month**.
 
-At the top is the **"What needs attention"** block: the program itself points out what matters (for example, overdue debts, products running out, a rise in returns). If all is calm, it says "No urgent tasks". Each hint has an **"Open"** button to jump straight to the matter.
+**Sold.** The big card at the top: the value of goods that left the shop in the period — cash, card and credit together, minus returns. Under it are two lines that must not be confused:
 
-Below are four cards with the key numbers:
-
-| Card | What it shows |
+| Line | What it means |
 | --- | --- |
-| Net revenue | Income for the period; the hint splits it into sales and credit issued |
-| Transactions | How many deals; the hint splits them into sales and credits |
-| Average check | The average amount of one deal and how many units were sold |
-| Returns | The refund amount and what percentage of sales it makes up |
+| Money received | Money that actually came in: cash and card sales plus payments on older debts in this period |
+| Given on credit | Goods that left without payment. They become money only when the debt is paid back |
 
-Under the figure on each card you see a **comparison with the previous period** (up or down). You can tap a card to jump to the related list (for example, to transactions).
+When a single seller is picked, payments on older debts are not added to "Money received": the system counts them for the whole shop, not per seller, and crediting them to one seller would be untrue. In that case the line is called "Received in cash or by card". If there were returns in the period, a note under the card says how much — it is already subtracted from "Sold".
 
-Further down are the **"Revenue trend"** chart (how revenue changed) and the **"Debts"** panel (how much is unpaid in total, collected in the period, how much is overdue, and who to call first).
+**Needs attention.** A short list of what matters right now: overdue debts, products running out, a sharp rise in returns. Every row is a link that takes you straight to the matter. The first four are shown, the rest behind **"Show all"**. If all is calm it says "Nothing urgent".
 
-At the very bottom are **"Payment method distribution"** (how much went through cash, card and credit) and the **"Stock summary"** with tiles: **"Total products"**, **"Time to order"**, **"Healthy"** and the **"Discounts"** amount. The tiles link to an already-filtered product list.
+**Owed to us.** How much is unpaid **right now** (not "issued in the period") and by how many people. Below it, how much of that is overdue, how much is coming due, and how much is not due yet or has no due date. The rows open the matching debt list, and **"Who to call first"** opens the high-risk debtors.
+
+**Running low.** Products it is time to restock, with an explanation for each: how much is left, how many days it lasts at the current pace, whether the stock is below your minimum, and roughly how much to order. It is calculated **from the last 28 days of sales** and does not change with the period switch — one day of sales is not enough to judge stock. If there were no sales at all in 28 days, "how long it lasts" cannot be calculated, and the card says so. There is no "add to purchase" button because the app has no purchase list; the row opens the product.
+
+**Best sellers.** The three products that earned the most in the period (minus returns). **"All products"** leads to the Products tab.
+
+**Selling better or worse.** Categories whose sales changed noticeably (by 15% or more) compared with the previous period, with "was → now" amounts. Individual products are not compared: the server gives no previous-period figures per product, and we won't make them up. This card is hidden for short periods (see below).
+
+**Sales by day** is a chart. **How customers paid** shows cash, card and credit in one bar, with amount and share. **Details** has the number of operations, the average sale, discounts and returns. **Latest operations** lists the five most recent transactions.
+
+With no internet the saved data is shown, with a line saying what time it is from. If nothing has been saved for a tab yet, it says so plainly with a link to sync.
 
 ### Inventory
 
@@ -61,7 +67,11 @@ A report on the sellers' work. At the top are four figures: the number of seller
 
 ## How to read the comparison
 
-On the Overview cards, next to the figure, there is a rise or fall **"vs the previous period"** — that is, compared with the previous span of the same length. For revenue and deals a rise is good. For returns it's the opposite: less is better, so there a rise is highlighted as a warning.
+A rise or fall is shown **vs the same days last week**, **vs the same point last month or year**: the previous period is taken at the same length. So an unfinished month is compared with the same stretch of last month, not with the whole of last month.
+
+For short stretches — **"Today"**, the first two days of a week or month — no percentage is shown; instead it says what the figure was before. The reason is simple: in the morning any day looks like a "collapse" next to a whole yesterday, and that alarm should not be raised. For the same reason the chart and the "Selling better or worse" card are hidden for short periods, and the "sales are down" alert does not fire.
+
+For sales and the average sale a rise is good. For returns and debts it's the opposite: less is better, so a rise there is highlighted as a warning.
 
 ## Who sees the dashboard
 
@@ -69,4 +79,4 @@ On the Overview cards, next to the figure, there is a rise or fall **"vs the pre
 | --- | --- | --- | --- |
 | Dashboard and all tabs | yes | yes | no |
 
-The owner sees the figures for their own market. The administrator sees the data overall; if they have no market of their own, the stock summary shows an **"All markets"** link.
+The owner sees the figures for their own market. The administrator sees the data overall; if they have no market of their own, a link **"All markets"** appears at the bottom of the Overview.

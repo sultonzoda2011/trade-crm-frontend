@@ -18,7 +18,7 @@ const SEVERITY_ICON: Record<InsightSeverity, React.ComponentType<{ className?: s
 /** Params named like money are rendered as money; the rest stay as they are. */
 const MONEY_PARAMS = new Set(['amount', 'previous', 'value']);
 
-function formatParams(params: Record<string, string | number>): Record<string, string | number> {
+export function formatInsightParams(params: Record<string, string | number>): Record<string, string | number> {
   const formatted: Record<string, string | number> = {};
   for (const [key, value] of Object.entries(params)) {
     formatted[key] = MONEY_PARAMS.has(key) && typeof value === 'number' ? fmtTJS(value) : value;
@@ -32,7 +32,7 @@ function formatParams(params: Record<string, string | number>): Record<string, s
  * same rule that counted the problem decides where the user lands, so the
  * number in the sentence always matches the list that opens.
  */
-function insightHref(action: NonNullable<BusinessInsight['action']>): string {
+export function insightHref(action: NonNullable<BusinessInsight['action']>): string {
   const query = new URLSearchParams(action.query ?? {}).toString();
   return query ? `${action.route}?${query}` : action.route;
 }
@@ -55,7 +55,7 @@ function InsightRow({ insight }: { insight: BusinessInsight }) {
         <Icon className="size-3.5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm leading-snug">{t(insight.messageKey, formatParams(insight.params))}</p>
+        <p className="text-sm leading-snug">{t(insight.messageKey, formatInsightParams(insight.params))}</p>
       </div>
       {insight.action && (
         <Button

@@ -59,7 +59,7 @@ export const queryKeys = {
    * set. `params` is `object` rather than a record because the callers pass the
    * `DashboardParams` interface, which has no index signature.
    */
-  dashboard: (view: 'overview' | 'recent-transactions' | 'sellers-report', params?: object) =>
+  dashboard: (view: 'overview' | 'stock' | 'recent-transactions' | 'sellers-report', params?: object) =>
     ['dashboard', view, params ?? null] as const,
 
   /** The signed-in user's own profile — the one read with no id. */

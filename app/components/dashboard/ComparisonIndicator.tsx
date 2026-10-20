@@ -10,6 +10,8 @@ interface ComparisonIndicatorProps {
    * so the colour has to be inverted — green must never mean "more refunds".
    */
   invert?: boolean;
+  /** What the change is measured against ("vs yesterday"); defaults to the generic "vs previous period". */
+  vsLabel?: string;
   className?: string;
 }
 
@@ -22,7 +24,7 @@ interface ComparisonIndicatorProps {
  *  - `0` — genuinely unchanged.
  *  - anything else — signed change, coloured by whether it is good news.
  */
-export function ComparisonIndicator({ comparison, invert, className }: ComparisonIndicatorProps) {
+export function ComparisonIndicator({ comparison, invert, vsLabel, className }: ComparisonIndicatorProps) {
   const { t } = useTranslation('dashboard');
   const { changePercent } = comparison;
 
@@ -57,7 +59,7 @@ export function ComparisonIndicator({ comparison, invert, className }: Compariso
       <Icon className="size-3" />
       {isUp ? '+' : ''}
       {changePercent}%
-      <span className="text-muted-foreground font-normal">{t('comparison.vsPrevious')}</span>
+      <span className="text-muted-foreground font-normal">{vsLabel ?? t('comparison.vsPrevious')}</span>
     </span>
   );
 }
