@@ -6,17 +6,14 @@
     "products": "Products",
     "sellers": "Sellers"
   },
-  "revenueTrend": "Revenue trend",
-  "paymentTypes": "Payment type distribution",
   "sellersReport": "Sellers report",
-  "stockSummary": "Stock summary",
   "allMarkets": "All markets",
   "allSellers": "All sellers",
   "seller": "Seller",
   "empty": "No data",
   "loadError": "Failed to load data",
   "charts": {
-    "revenue": "Revenue",
+    "revenue": "Sold",
     "transactions": "Transactions"
   },
   "comparison": {
@@ -24,25 +21,151 @@
     "unchanged": "no change",
     "noBaseline": "nothing to compare to"
   },
-  "metrics": {
-    "revenue": "Net revenue",
-    "revenueHint": "{{sales}} sales · {{debts}} on credit",
-    "transactions": "Transactions",
-    "transactionsHint": "{{sales}} sales · {{debts}} debts",
-    "averageCheck": "Average check",
-    "unitsSold": "{{count}} units sold",
-    "returns": "Returns",
-    "returnsHint": "{{percent}}% of sales",
-    "discounts": "Discounts"
+  "summary": {
+    "sold": {
+      "today": "Sold today",
+      "week": "Sold this week",
+      "month": "Sold this month",
+      "year": "Sold this year"
+    },
+    "vs": {
+      "today": "vs yesterday",
+      "week": "vs the same days last week",
+      "month": "vs the same point last month",
+      "year": "vs the same point last year"
+    },
+    "previousWas": {
+      "today": "Yesterday's full day: {{amount}}",
+      "week": "Same days last week: {{amount}}",
+      "month": "Same point last month: {{amount}}",
+      "year": "Same point last year: {{amount}}"
+    },
+    "previousNone": {
+      "today": "No sales yesterday",
+      "week": "No sales on the same days last week",
+      "month": "No sales at the same point last month",
+      "year": "No sales at the same point last year"
+    },
+    "noSales": {
+      "today": "No sales yet today",
+      "week": "No sales yet this week",
+      "month": "No sales yet this month",
+      "year": "No sales yet this year"
+    },
+    "received": {
+      "title": "Money received",
+      "titleSeller": "Received in cash or by card",
+      "hintWithPayments": "Sales {{sales}} + payments on old debts {{payments}}",
+      "hintSalesOnly": "Cash and card sales. No payments on old debts",
+      "hintSeller": "This seller's cash and card sales. Debt payments are tracked for the whole shop, so they aren't included"
+    },
+    "credit": {
+      "title": "Given on credit",
+      "hint_one": "{{count}} sale on credit",
+      "hint_other": "{{count}} sales on credit",
+      "none": "No sales on credit"
+    },
+    "returnsNote": "Returns of {{amount}} are already subtracted from this"
   },
-  "debts": {
-    "title": "Debts",
-    "debtors": "debtors: {{count}}",
-    "overdue": "Overdue: {{count}}",
-    "dueSoon": "Due soon: {{count}}",
-    "outstanding": "Total outstanding",
-    "collected": "Collected this period",
-    "whoToCall": "Who to call first"
+  "attention": {
+    "title": "Needs attention",
+    "allClear": "Nothing urgent",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less"
+  },
+  "debtsCard": {
+    "title": "Owed to us",
+    "none": "Nobody owes anything",
+    "noneHint": "All debts are paid",
+    "owedBy_one": "Owed by {{count}} person",
+    "owedBy_other": "Owed by {{count}} people",
+    "overdue": "Overdue",
+    "dueSoon": "Due soon",
+    "dueSoonDays": "Due in the next {{days}} days",
+    "rest": "Not due yet, or no due date",
+    "debtsCount_one": "{{count}} debt",
+    "debtsCount_other": "{{count}} debts",
+    "whoToCall": "Who to call first",
+    "allDebtors": "All debtors"
+  },
+  "stock": {
+    "title": "Running low",
+    "basis": "Based on sales over the last {{days}} days.",
+    "allShop": "Stock is shared by the whole shop — the seller filter doesn't apply.",
+    "noSalesData": "No sales in the last {{days}} days, so we can't tell how many days the stock will last.",
+    "allGood": "Nothing is running out",
+    "allGoodHint": "Based on your sales and minimum levels, nothing needs ordering right now.",
+    "orderNote": "“Order” is an estimate based on how the product has been selling lately. The decision is yours.",
+    "slowMoving_one": "Barely selling: {{count}} product worth {{amount}} — more than {{days}} days of stock",
+    "slowMoving_other": "Barely selling: {{count}} products worth {{amount}} — more than {{days}} days of stock",
+    "slowMovingNoDays_one": "Barely selling: {{count}} product worth {{amount}}",
+    "slowMovingNoDays_other": "Barely selling: {{count}} products worth {{amount}}",
+    "left": "{{quantity}} {{unit}} left",
+    "order": "Order",
+    "orderAmount": "≈ {{quantity}} {{unit}}",
+    "offline": "No internet — stock is not available yet",
+    "loadError": "Couldn't load stock",
+    "status": {
+      "OUT_OF_STOCK": "Out of stock",
+      "CRITICAL": "Urgent",
+      "WARNING": "Running low"
+    },
+    "reason": {
+      "soldOut": "Out of stock. Sold {{sold}} {{unit}} in {{days}} days.",
+      "noSales": "No sales in {{days}} days, so we can't tell how long it will last.",
+      "lessThanDay": "At the current pace it won't last a day.",
+      "daysLeft_one": "At the current pace it lasts about {{count}} day.",
+      "daysLeft_other": "At the current pace it lasts about {{count}} days.",
+      "belowMinimum": "Below your minimum ({{min}} {{unit}})."
+    }
+  },
+  "leaders": {
+    "title": "Best sellers",
+    "more": "All products",
+    "empty": "No product sales in this period",
+    "units": "{{count}} sold",
+    "returned": "{{count}} returned"
+  },
+  "changes": {
+    "title": "Selling better or worse",
+    "basis": {
+      "week": "Categories whose sales changed noticeably vs the same days last week.",
+      "month": "Categories whose sales changed noticeably vs the same point last month.",
+      "year": "Categories whose sales changed noticeably vs the same point last year."
+    },
+    "steady": "No big changes — categories are selling about as before.",
+    "noBaseline": "There were no category sales before, so there is nothing to compare with yet.",
+    "wasNow": "was {{previous}} → now {{current}}"
+  },
+  "details": {
+    "title": "Details",
+    "operations": "Operations",
+    "operationsHint": "{{sales}} sales, {{debts}} on credit",
+    "averageCheck": "Average sale",
+    "discounts": "Discounts",
+    "discountsHint": "Total discounts given to customers",
+    "returns": "Returns",
+    "returnsHint": "{{units}} units returned — {{percent}}% of sales",
+    "returnsNone": "No returns"
+  },
+  "payments": {
+    "title": "How customers paid",
+    "empty": "No sales in this period",
+    "CASH": "Cash",
+    "CARD": "Card",
+    "CREDIT": "On credit"
+  },
+  "trend": {
+    "byDay": "Sales by day",
+    "byMonth": "Sales by month",
+    "notEnough": "Not enough data for a chart yet — it needs at least two days."
+  },
+  "recent": {
+    "title": "Latest operations",
+    "empty": "No operations yet"
+  },
+  "offline": {
+    "dataFrom": "No internet. Showing data from {{time}}"
   },
   "returns": {
     "title": "Returns",
@@ -54,9 +177,6 @@
   },
   "inventory": {
     "title": "Inventory health",
-    "total": "Total products",
-    "toOrder": "To reorder",
-    "healthy": "Healthy",
     "stockValue": "Stock value",
     "frozenValue": "Frozen in slow stock"
   },
@@ -84,27 +204,32 @@
     "allClear": "Nothing urgent",
     "inventory": {
       "outOfStock": "Out of stock: {{count}} products. E.g. {{example}}",
-      "critical": "{{count}} products critically low. {{example}} — {{days}} days left",
-      "runningOut": "{{count}} products will run out within {{days}} days",
-      "slowMoving": "{{count}} products barely sell: over {{days}} days of stock",
-      "noSales": "{{count}} products had no sales this period",
-      "reorderList": "{{count}} products need reordering",
+      "critical_one": "Almost out: {{count}} product. {{example}} — {{days}} days left",
+      "critical_other": "Almost out: {{count}} products. {{example}} — {{days}} days left",
+      "runningOut_one": "{{count}} product will run out within {{days}} days",
+      "runningOut_other": "{{count}} products will run out within {{days}} days",
+      "slowMoving_one": "{{count}} product barely sells: over {{days}} days of stock",
+      "slowMoving_other": "{{count}} products barely sell: over {{days}} days of stock",
+      "noSales_one": "{{count}} product had no sales this period",
+      "noSales_other": "{{count}} products had no sales this period",
+      "reorderList_one": "{{count}} product needs reordering",
+      "reorderList_other": "{{count}} products need reordering",
       "recordProduct": "{{name}} is the top seller: {{count}} transactions this period, a record among products"
     },
     "sales": {
       "none": "No sales this period",
-      "declining": "Revenue down {{percent}}% — was {{previous}}",
-      "growing": "Revenue up {{percent}}% — was {{previous}}"
+      "declining": "Sales are down {{percent}}% — was {{previous}}",
+      "growing": "Sales are up {{percent}}% — was {{previous}}"
     },
     "debts": {
-      "overdue": "{{count}} overdue debts worth {{amount}}",
-      "dueSoon": "{{count}} debts worth {{amount}} due within {{days}} days",
-      "noCollection": "No payments collected this period, yet {{amount}} is outstanding across {{debtors}} debtors"
+      "overdue": "Overdue debts: {{count}}, worth {{amount}}",
+      "dueSoon": "Debts due in the next {{days}} days: {{count}}, worth {{amount}}",
+      "noCollection": "Nobody paid a debt this period, and {{amount}} is still owed by {{debtors}} people"
     },
     "returns": {
       "highRate": "Returns are {{percent}}% of sales — {{amount}}",
       "problemProduct": "{{name}}: {{units}} units returned, {{percent}}% of its sales",
-      "growing": "Returns up {{percent}}% vs previous period"
+      "growing": "Returns are up {{percent}}% vs the previous period"
     }
   },
   "table": {
@@ -119,6 +244,5 @@
   "period": {
     "from": "From",
     "to": "To"
-  },
-  "recentTransactions": "Recent transactions"
+  }
 }

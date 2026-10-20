@@ -2,11 +2,12 @@ import { CalendarDays } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet, useSearchParams } from 'react-router';
+import { NavLink, Outlet, useMatch, useSearchParams } from 'react-router';
 
 import { sellersApi } from '~/api/sellers';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { PickerField } from '~/components/shared/PickerField';
+import { DASHBOARD_DEFAULT_PERIOD, OVERVIEW_DEFAULT_PERIOD } from '~/config/dashboard';
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
@@ -32,7 +33,14 @@ export default function DashboardLayout() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const period = searchParams.get('period') ?? 'month';
+  // «Обзор» открывается на «Сегодня» — вечером владелец спрашивает «как прошёл день?».
+  // Склад/товары/продавцы считают по периоду аналитику, которой за один день мало,
+  // поэтому у них прежний период по умолчанию. Выбранный явно период (он в URL)
+  // переносится между вкладками как раньше.
+  const isOverview = Boolean(useMatch({ path: '/dashboard', end: true }));
+  const defaultPeriod = isOverview ? OVERVIEW_DEFAULT_PERIOD : DASHBOARD_DEFAULT_PERIOD;
+
+  const period = searchParams.get('period') ?? defaultPeriod;
   const sellerId = searchParams.get('sellerId') ?? undefined;
 
   const updateParam = (key: 'period' | 'sellerId', value: string) => {
@@ -60,7 +68,7 @@ export default function DashboardLayout() {
     getLabel: (s) => s.name,
   });
 
-  const validPeriod: Period = PERIOD_OPTIONS.some((option) => option.value === period) ? (period as Period) : 'month';
+  const validPeriod: Period = PERIOD_OPTIONS.some((option) => option.value === period) ? (period as Period) : defaultPeriod;
 
   const range = useMemo(() => getPeriodRange(validPeriod), [validPeriod]);
 
@@ -104,7 +112,7 @@ export default function DashboardLayout() {
                 aria-selected={active}
                 onClick={() => updateParam('period', option.value)}
                 className={cn(
-                  'relative h-10 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
+                  'relative h-11 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
                   active ? 'text-foreground' : 'text-muted-foreground'
                 )}>
                 {active && (

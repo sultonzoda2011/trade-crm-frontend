@@ -67,6 +67,12 @@ export interface OverviewDebts {
   dueSoonCount: number;
   /** Collected within the selected period — the one period-scoped figure here. */
   collectedAmount: number;
+  /**
+   * How many payments that is. The backend does not narrow `collectedAmount`
+   * and this count to the picked seller (they stay market-wide), so the UI must
+   * not present them as the seller's own when a seller filter is on.
+   */
+  collectedCount?: number;
 }
 
 export interface ReturnedProductRow {
@@ -137,7 +143,16 @@ export interface OverviewCategoryRow {
   comparison: MetricComparison;
 }
 
+/** The windows the figures were counted in. `durationDays` is at least 1. */
+export interface OverviewPeriod {
+  current: { gte: string; lte: string };
+  previous: { gte: string; lte: string };
+  durationDays: number;
+}
+
 export interface OverviewData {
+  /** Optional: copies saved on a phone before the backend sent it have no such field. */
+  period?: OverviewPeriod;
   sales: OverviewSales;
   debts: OverviewDebts;
   returns: OverviewReturns;
