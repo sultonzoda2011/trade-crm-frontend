@@ -1,4 +1,4 @@
-import { CalendarDays } from 'lucide-react';
+import { CalendarDays, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { NavLink, Outlet, useMatch, useSearchParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
 import { PageHeader } from '~/components/layout/PageHeader';
 import { PickerField } from '~/components/shared/PickerField';
-import { DASHBOARD_DEFAULT_PERIOD, OVERVIEW_DEFAULT_PERIOD } from '~/config/dashboard';
+import { DASHBOARD_DEFAULT_PERIOD, OVERVIEW_DEFAULT_PERIOD, STOCK_ANALYSIS_DAYS } from '~/config/dashboard';
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
@@ -38,6 +38,9 @@ export default function DashboardLayout() {
   // поэтому у них прежний период по умолчанию. Выбранный явно период (он в URL)
   // переносится между вкладками как раньше.
   const isOverview = Boolean(useMatch({ path: '/dashboard', end: true }));
+  // The Inventory tab is "now, for the whole shop": neither the period nor the seller
+  // changes it, so its filters are not drawn (see the note below the tabs).
+  const isInventory = Boolean(useMatch({ path: '/dashboard/inventory', end: false }));
   const defaultPeriod = isOverview ? OVERVIEW_DEFAULT_PERIOD : DASHBOARD_DEFAULT_PERIOD;
 
   const period = searchParams.get('period') ?? defaultPeriod;
@@ -99,53 +102,60 @@ export default function DashboardLayout() {
     <div className="flex flex-1 flex-col space-y-4 pb-6">
       <PageHeader title={t('title')} />
 
-      {/* Период — кнопками в один ряд (быстрее выпадающего списка), продавец — одним полем. */}
-      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
-        <div role="tablist" className="bg-muted flex gap-0.5 rounded-[10px] p-0.5 md:w-auto">
-          {PERIOD_OPTIONS.map((option) => {
-            const active = option.value === validPeriod;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                onClick={() => updateParam('period', option.value)}
-                className={cn(
-                  'relative h-11 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
-                  active ? 'text-foreground' : 'text-muted-foreground'
-                )}>
-                {active && (
-                  <motion.span
-                    layoutId="dashboard-period-pill"
-                    transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                    className="bg-card absolute inset-0 rounded-lg shadow-sm dark:bg-white/20"
-                  />
-                )}
-                <span className="relative">{t(option.labelKey)}</span>
-              </button>
-            );
-          })}
+      {isInventory ? (
+        <p className="text-muted-foreground flex items-start gap-2 px-1 text-sm leading-snug">
+          <Info className="mt-0.5 size-4 shrink-0" />
+          {t('inventoryTab.scope', { days: STOCK_ANALYSIS_DAYS })}
+        </p>
+      ) : (
+        // Период — кнопками в один ряд (быстрее выпадающего списка), продавец — одним полем.
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
+          <div role="tablist" className="bg-muted flex gap-0.5 rounded-[10px] p-0.5 md:w-auto">
+            {PERIOD_OPTIONS.map((option) => {
+              const active = option.value === validPeriod;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => updateParam('period', option.value)}
+                  className={cn(
+                    'relative h-11 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
+                    active ? 'text-foreground' : 'text-muted-foreground'
+                  )}>
+                  {active && (
+                    <motion.span
+                      layoutId="dashboard-period-pill"
+                      transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+                      className="bg-card absolute inset-0 rounded-lg shadow-sm dark:bg-white/20"
+                    />
+                  )}
+                  <span className="relative">{t(option.labelKey)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <PickerField
+            className="md:w-56"
+            title={t('allSellers')}
+            placeholder={t('allSellers')}
+            options={[{ value: '', label: t('allSellers') }, ...sellers.options]}
+            value={sellerId ?? ''}
+            onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
+            onSearch={sellers.onSearch}
+            loading={sellers.loading}
+            isClearable={false}
+          />
+
+          <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
+            <CalendarDays className="size-3.5 shrink-0" />
+            {formatDate(range.from.toDate())}
+            {range.to && !range.to.isSame(range.from, 'day') ? ` - ${formatDate(range.to.toDate())}` : ''}
+          </span>
         </div>
-
-        <PickerField
-          className="md:w-56"
-          title={t('allSellers')}
-          placeholder={t('allSellers')}
-          options={[{ value: '', label: t('allSellers') }, ...sellers.options]}
-          value={sellerId ?? ''}
-          onChange={(value) => updateParam('sellerId', value ? String(value) : '')}
-          onSearch={sellers.onSearch}
-          loading={sellers.loading}
-          isClearable={false}
-        />
-
-        <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
-          <CalendarDays className="size-3.5 shrink-0" />
-          {formatDate(range.from.toDate())}
-          {range.to && !range.to.isSame(range.from, 'day') ? ` - ${formatDate(range.to.toDate())}` : ''}
-        </span>
-      </div>
+      )}
 
       <nav
         className="border-border -mx-3 flex gap-1 overflow-x-auto border-b px-3 md:-mx-6 md:px-6"

@@ -3,6 +3,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { ROW_TONE, type RowTone } from '~/components/dashboard/rowTone';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
 import { debtsLink, type DashboardScope } from '~/lib/dashboard-links';
@@ -19,15 +20,9 @@ interface DebtsCardProps {
 
 const money = (value: number) => Math.round(value * 100) / 100;
 
-const TONE = {
-  danger: { badge: 'bg-destructive/10 text-destructive', amount: 'text-destructive' },
-  warning: { badge: 'bg-warning/10 text-warning', amount: 'text-warning' },
-  neutral: { badge: 'bg-muted text-muted-foreground', amount: 'text-foreground' },
-} as const;
-
 interface DebtLineProps {
   icon: LucideIcon;
-  tone: keyof typeof TONE;
+  tone: RowTone;
   label: string;
   hint: string;
   amount: number;
@@ -37,13 +32,13 @@ interface DebtLineProps {
 function DebtLine({ icon: Icon, tone, label, hint, amount, to }: DebtLineProps) {
   const content = (
     <>
-      <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-full', TONE[tone].badge)}>
+      <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-full', ROW_TONE[tone].badge)}>
         <Icon className="size-5" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-baseline justify-between gap-2">
           <span className="min-w-0 text-base leading-snug font-semibold">{label}</span>
-          <span className={cn('shrink-0 font-mono text-base font-semibold tabular-nums', TONE[tone].amount)}>
+          <span className={cn('shrink-0 font-mono text-base font-semibold tabular-nums', ROW_TONE[tone].amount)}>
             {fmtTJS(amount)}
           </span>
         </span>

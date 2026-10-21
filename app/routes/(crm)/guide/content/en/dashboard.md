@@ -7,12 +7,12 @@ The dashboard is the home screen for the administrator and the owner. It opens r
 
 ## Filters at the top
 
-Above the tabs are two filters that apply to every tab at once:
+Above the tabs are two filters. They apply to "Overview", "Products" and "Sellers". The **"Inventory"** tab has none: stock is counted as of now and for the whole shop, so period and seller would change nothing.
 
 - **"Period"** — the span the numbers are calculated over: **Today**, **Week**, **Month** or **Year**. On "Overview" the default is **Today**, on the other tabs it is **Month**. The week counts from Monday, the month from the 1st, the year from 1 January, always up to today. The exact date range is shown next to it.
 - **"Seller"** — you can view the overall numbers (**"All sellers"**) or pick one seller to see only their results.
 
-The filters are kept when you switch tabs, and you can share a link to a specific tab with the filter already applied.
+The filters are kept when you switch tabs (and come back when you return from "Inventory"), and you can share a link to a specific tab with the filter already applied.
 
 ## Dashboard tabs
 
@@ -47,11 +47,16 @@ With no internet the saved data is shown, with a line saying what time it is fro
 
 ### Inventory
 
-Everything about stock and returns:
+This tab answers three questions: what to order, how the shelves are doing, and what customers bring back. Everything is counted as of now, for the whole shop, **over sales of the last 28 days** — the same window as the "Running low" card on "Overview", so the two tabs never disagree. Period and seller are not selectable here.
 
-- **"What to order"** — a list of products it's time to restock.
-- **"Stock health"** — how many products there are in total, how many to order, how many are healthy, the value of the stock, and how much money is "frozen" in slow-moving goods.
-- **"Returns"** — the amount and share of returns, how many units were returned, and which products are returned most often.
+**What to order.** Products it's time to restock, the most urgent first. Each row says how much is left, how many days it lasts at the current pace, how much sells per day or week, whether the stock is below your minimum, roughly how much to order and how long it will last after the order. "Order" is an estimate based on recent sales; the decision is yours. The list shows at most ten of the most urgent products; if more need ordering, the card says so ("showing 10 of 14") and **"View all"** opens the full product list. If there were no sales at all in 28 days, how long the stock lasts can't be calculated, and the card says so.
+
+**Stock health.** At the top is the value of all goods in stock. It is **at selling price**, not purchase price: the app has no purchase price, so profit or "how much was invested" can't be read from it. Below are only the states that have products: out of stock, critically low, below your minimum, high returns, slow-moving, no sales. Each row links to the list of exactly those products. For slow-moving products the amount sitting in them is shown; for products with no sales at all there is no amount — the server doesn't calculate it and we don't make it up. At the bottom: how many products are fine out of the total.
+
+**What gets returned.** The amount returned over 28 days, how many units came back and what share of sales that is. The comparison with the previous 28 days appears only if there were returns then: a percentage from zero means nothing. Below are the products returned most often. The returned amount is priced at the product's list price, so with discounts it can differ a little from the money actually refunded.
+
+> [!NOTE]
+> Counters on "Inventory" cover the last 28 days, while the product lists (`/products?health=…`) use the calendar month. So the number on a card and the number in the list it opens can differ by a product or two. This is a server limitation, not an error.
 
 ### Products
 

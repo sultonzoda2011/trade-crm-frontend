@@ -3,12 +3,12 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
-import { formatInsightParams, insightHref } from '~/components/dashboard/InsightList';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
 import { INSIGHT_SEVERITY_BADGE } from '~/config/analyticsBadges';
 import { ATTENTION_VISIBLE } from '~/config/dashboard';
 import type { DashboardScope } from '~/lib/dashboard-links';
+import { formatInsightParams, insightHref } from '~/lib/insights';
 import { cn } from '~/lib/utils';
 import type { BusinessInsight, InsightSeverity } from '~/types/analytics';
 
