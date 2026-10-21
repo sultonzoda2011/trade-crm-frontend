@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ArrowRight, WifiOff } from 'lucide-react';
+import { ArrowRight, WifiOff } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useOutletContext, useSearchParams } from 'react-router';
@@ -8,6 +8,7 @@ import { transactionsApi } from '~/api/transactions';
 import { AttentionList } from '~/components/dashboard/AttentionList';
 import { BestSellers } from '~/components/dashboard/BestSellers';
 import { DebtsCard } from '~/components/dashboard/DebtsCard';
+import { QueryFallback } from '~/components/dashboard/QueryFallback';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { PeriodDetails } from '~/components/dashboard/PeriodDetails';
 import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
@@ -20,10 +21,11 @@ import { Reveal } from '~/components/shared/Reveal';
 import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Button } from '~/components/ui/button';
 import { Skeleton } from '~/components/ui/skeleton';
-import { MIN_DAYS_FOR_TREND, RECENT_TRANSACTIONS_LIMIT, STOCK_ANALYSIS_DAYS } from '~/config/dashboard';
+import { MIN_DAYS_FOR_TREND, RECENT_TRANSACTIONS_LIMIT } from '~/config/dashboard';
 import type { Period } from '~/config/period';
 import { useCan } from '~/hooks/useCan';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
+import { useStockOverview } from '~/hooks/useStockOverview';
 import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import type { BusinessInsight } from '~/types/analytics';
@@ -112,14 +114,8 @@ export default function DashboardOverviewPage() {
     staleTime: 30_000,
   });
 
-  // Stock does not depend on the period or the seller in the filter bar, so its
-  // key carries neither: flipping the filters does not refetch it, and the copy
-  // saved on the phone is found again offline.
-  const stockQuery = useQuery({
-    queryKey: queryKeys.dashboard('stock', { days: STOCK_ANALYSIS_DAYS }),
-    queryFn: () => dashboardApi.getStockOverview(),
-    staleTime: 5 * 60_000,
-  });
+  // Stock does not depend on the period or the seller in the filter bar (see the hook).
+  const stockQuery = useStockOverview();
 
   // Своя, самая свежая выдача транзакций — не пересчитывается из overview,
   // это просто "последние N по времени", как и на странице должника.
@@ -154,32 +150,15 @@ export default function DashboardOverviewPage() {
   );
 
   if (!overview) {
-    if (overviewQuery.isError) {
+    if (overviewQuery.isError || overviewQuery.fetchStatus === 'paused') {
       return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-          <AlertTriangle className="text-destructive size-8" />
-          <p className="font-medium">{t('loadError')}</p>
-          <Button variant="outline" onClick={() => overviewQuery.refetch()}>
-            {t('actions.retry', { ns: 'common' })}
-          </Button>
-        </div>
+        <QueryFallback
+          isError={overviewQuery.isError}
+          isOffline={overviewQuery.fetchStatus === 'paused'}
+          onRetry={() => overviewQuery.refetch()}
+        />
       );
     }
-
-    // Paused = no connection and nothing saved for this view yet. A spinner that
-    // never ends would read as "slow", not as "offline".
-    if (overviewQuery.fetchStatus === 'paused') {
-      return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-          <WifiOff className="text-muted-foreground/50 size-8" />
-          <p className="text-muted-foreground max-w-xs text-sm">{t('offline.noCachedData', { ns: 'common' })}</p>
-          <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
-            {t('offlineHint.action', { ns: 'sync' })}
-          </Link>
-        </div>
-      );
-    }
-
     return <OverviewSkeleton />;
   }
 

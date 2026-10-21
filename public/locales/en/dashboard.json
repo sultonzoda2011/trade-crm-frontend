@@ -117,7 +117,47 @@
       "daysLeft_one": "At the current pace it lasts about {{count}} day.",
       "daysLeft_other": "At the current pace it lasts about {{count}} days.",
       "belowMinimum": "Below your minimum ({{min}} {{unit}})."
+    },
+    "pace": {
+      "perDay": "Sells about {{rate}} {{unit}} a day.",
+      "perWeek": "Sells about {{rate}} {{unit}} a week."
+    },
+    "afterOrder": "If you order, it will last about {{days}} days."
+  },
+  "reorderCard": {
+    "title": "What to order",
+    "shown": "Showing the most urgent: {{shown}} of {{total}}. The rest are in the product list."
+  },
+  "stockHealth": {
+    "title": "Stock health",
+    "total": "Goods in stock",
+    "totalHint": "At selling price, not purchase price: the system has no purchase price.",
+    "empty": "No products yet",
+    "emptyHint": "Add products and stock levels and ordering hints will appear here.",
+    "emptyAction": "Open products",
+    "allHealthy": "All products are in good shape",
+    "healthy": "{{healthy}} of {{total}} are fine",
+    "hint": {
+      "OUT_OF_STOCK": "Nothing left",
+      "CRITICAL": "At the current pace it lasts only a few days",
+      "LOW_STOCK": "Below your minimum level",
+      "HIGH_RETURNS": "A noticeable share of sales comes back",
+      "SLOW_MOVING": "More than {{days}} days of stock, worth {{amount}}",
+      "SLOW_MOVING_NO_DAYS": "Stock for a long time, worth {{amount}}",
+      "NO_SALES": "Not a single sale in {{days}} days"
     }
+  },
+  "returnsCard": {
+    "title": "What gets returned",
+    "basis": "Last {{days}} days, whole shop",
+    "none": "No returns",
+    "summary": "{{units}} units returned — {{percent}}% of sales",
+    "vs": "vs previous {{days}} days",
+    "top": "Most returned",
+    "back": "{{units}} units returned"
+  },
+  "inventoryTab": {
+    "scope": "Stock as of now, for the whole shop. Counted over sales of the last {{days}} days, so period and seller are not selectable here."
   },
   "leaders": {
     "title": "Best sellers",
@@ -167,26 +207,6 @@
   "offline": {
     "dataFrom": "No internet. Showing data from {{time}}"
   },
-  "returns": {
-    "title": "Returns",
-    "amount": "Refunded amount",
-    "rate": "Return rate",
-    "units": "Units returned",
-    "unitsBack": "{{count}} returned",
-    "topProducts": "Most returned products"
-  },
-  "inventory": {
-    "title": "Inventory health",
-    "stockValue": "Stock value",
-    "frozenValue": "Frozen in slow stock"
-  },
-  "reorder": {
-    "title": "What to reorder",
-    "empty": "Nothing to reorder",
-    "inStock": "{{count}} in stock",
-    "daysLeft": "{{days}} days left",
-    "noVelocity": "no sales velocity"
-  },
   "products": {
     "topByRevenue": "Top by revenue",
     "topByUnits": "Top by units",
@@ -199,9 +219,6 @@
     "uncategorized": "Uncategorized"
   },
   "insights": {
-    "title": "Needs attention",
-    "open": "Open",
-    "allClear": "Nothing urgent",
     "inventory": {
       "outOfStock": "Out of stock: {{count}} products. E.g. {{example}}",
       "critical_one": "Almost out: {{count}} product. {{example}} — {{days}} days left",

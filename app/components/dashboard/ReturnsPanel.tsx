@@ -1,99 +1,93 @@
-import { Undo2 } from 'lucide-react';
+import { CheckCircle2, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { ComparisonIndicator } from '~/components/dashboard/ComparisonIndicator';
 import { Panel } from '~/components/layout/Panel';
+import { STOCK_ANALYSIS_DAYS } from '~/config/dashboard';
 import { fmtTJS } from '~/lib/format';
-import { cn } from '~/lib/utils';
 import type { OverviewReturns } from '~/types/dashboard';
 
 interface ReturnsPanelProps {
   returns: OverviewReturns;
-  className?: string;
 }
 
 const percent = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 
-export function ReturnsPanel({ returns, className }: ReturnsPanelProps) {
+/**
+ * What customers bring back, over the same window the rest of the Inventory tab
+ * uses, for the whole shop.
+ *
+ * The comparison with the previous window is shown only when there was something
+ * to compare with: "nothing to compare" under every figure is noise, and a
+ * percentage from zero is not a percentage. Returns are bad news, so the
+ * indicator is inverted (more returns is red).
+ *
+ * The amount is the backend's figure and is priced at list price, so with
+ * discounts it can differ a little from what was actually refunded.
+ */
+export function ReturnsPanel({ returns }: ReturnsPanelProps) {
   const { t } = useTranslation('dashboard');
 
+  if (returns.units === 0) {
+    return (
+      <Panel title={t('returnsCard.title')} bodyClassName="space-y-1">
+        <p className="text-muted-foreground text-sm leading-snug">{t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
+        <div className="flex items-center gap-3 pt-2">
+          <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
+            <CheckCircle2 className="size-5" />
+          </span>
+          <p className="text-base leading-snug font-semibold">{t('returnsCard.none')}</p>
+        </div>
+      </Panel>
+    );
+  }
+
   return (
-    <Panel
-      title={t('returns.title')}
-      className={`h-full min-h-0 ${className ?? ''}`}
-      bodyClassName="
-        flex
-        min-h-0
-        flex-1
-        flex-col
-        gap-[clamp(1rem,1.5vw,1.25rem)]
-      ">
-      {/* Summary */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
-        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
-          <p className="text-muted-foreground text-xs font-medium">{t('returns.amount')}</p>
-
-          <p className="mt-1 break-words font-mono text-lg font-bold sm:text-xl">{fmtTJS(returns.amount)}</p>
-
-          <ComparisonIndicator comparison={returns.comparison.amount} invert className="mt-1" />
-        </div>
-
-        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
-          <p className="text-muted-foreground text-xs font-medium">{t('returns.rate')}</p>
-
-          <p className="mt-1 font-mono text-lg font-bold sm:text-xl">{percent(returns.returnRate)}</p>
-
-          <ComparisonIndicator comparison={returns.comparison.returnRate} invert className="mt-1" />
-        </div>
-
-        <div className="min-w-0 rounded-xl border p-3 sm:border-0 sm:p-0">
-          <p className="text-muted-foreground text-xs font-medium">{t('returns.units')}</p>
-
-          <p className="mt-1 font-mono text-lg font-bold sm:text-xl">{returns.units}</p>
-        </div>
+    <Panel title={t('returnsCard.title')} bodyClassName="overflow-hidden p-0">
+      <div className="px-4 pt-3 pb-3">
+        <p className="text-muted-foreground text-sm leading-snug">{t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
+        <p className="mt-2 font-mono text-3xl leading-tight font-bold tabular-nums break-words md:text-4xl">
+          {fmtTJS(returns.amount)}
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm leading-snug">
+          {t('returnsCard.summary', { units: returns.units, percent: Math.round(returns.returnRate * 1000) / 10 })}
+        </p>
+        {returns.comparison.amount.previous > 0 && (
+          <ComparisonIndicator
+            comparison={returns.comparison.amount}
+            invert
+            vsLabel={t('returnsCard.vs', { days: STOCK_ANALYSIS_DAYS })}
+            className="mt-1 text-sm"
+          />
+        )}
       </div>
 
-      {/* Top returned products */}
       {returns.topProducts.length > 0 && (
-        <div className="border-border min-h-0 border-t pt-4">
-          <p className="text-muted-foreground mb-3 flex items-center gap-1.5 text-xs font-semibold">
-            <Undo2 className="size-3.5 shrink-0" />
-            <span>{t('returns.topProducts')}</span>
+        <>
+          <p className="text-muted-foreground border-border border-t px-4 pt-3 pb-1 text-sm font-medium">
+            {t('returnsCard.top')}
           </p>
-
           <div className="divide-border divide-y">
             {returns.topProducts.map((product) => (
               <Link
                 key={product.productId}
                 to={`/products/${product.productId}`}
-                className={cn(
-                  'hover:bg-muted/40',
-                  'flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2.5',
-                  'transition-colors',
-                  'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
-                )}>
-                <span className="min-w-0 flex-1 break-words text-sm">{product.productName}</span>
-
-                <span className="flex shrink-0 items-center gap-2 sm:gap-3">
-                  <span className="text-muted-foreground hidden text-xs whitespace-nowrap sm:inline">
-                    {t('returns.unitsBack', {
-                      count: product.refundedUnits,
-                    })}
-                  </span>
-
-                  <span className="text-destructive min-w-10.5 text-right font-mono text-sm font-medium">
-                    {percent(product.returnRate)}
+                className="active:bg-muted/70 flex min-h-14 items-center gap-3 px-4 py-3 transition-colors">
+                <span className="min-w-0 flex-1">
+                  <span className="block text-base leading-snug font-semibold break-words">{product.productName}</span>
+                  <span className="text-muted-foreground block text-sm leading-snug">
+                    {t('returnsCard.back', { units: product.refundedUnits })}
                   </span>
                 </span>
+                <span className="text-destructive shrink-0 font-mono text-base font-semibold tabular-nums">
+                  {percent(product.returnRate)}
+                </span>
+                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
               </Link>
             ))}
           </div>
-        </div>
-      )}
-
-      {returns.topProducts.length === 0 && (
-        <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">{t('empty')}</div>
+        </>
       )}
     </Panel>
   );
