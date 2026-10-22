@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
 import BreadCrumbs from '~/components/ui/bread-crumb';
@@ -24,17 +24,36 @@ export default function CreateProductPage() {
   const { t } = useTranslation(['products', 'common', 'validation']);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  // «Создать копию» на карточке товара: форма открывается с данными исходного товара.
+  const copyFromId = searchParams.get('copyFrom');
+
+  const { data: sourceResponse } = useQuery({
+    queryKey: queryKeys.detail('products', copyFromId),
+    queryFn: () => productsApi.getById(copyFromId!),
+    enabled: !!copyFromId,
+    staleTime: 30_000,
+  });
+  const source = sourceResponse?.data;
+
+  // Чтобы подпись категории была видна, даже если её нет в первой странице выдачи.
+  const sourceCategory = source?.category ?? null;
+  const categorySeed = useMemo(
+    () => (sourceCategory ? [{ id: sourceCategory.id, name: sourceCategory.name }] : undefined),
+    [sourceCategory]
+  );
 
   const categories = useAsyncSelectOptions({
     queryKey: queryKeys.options('categories', { scope: 'form', limit: 20 }),
     fetcher: async (search) => (await categoriesApi.getAll(1, 20, { search: search || undefined }))?.data?.data ?? [],
     getValue: (c) => c.id,
     getLabel: (c) => c.name,
+    seed: categorySeed,
   });
 
   const unitOptions = useMemo(() => getUnitOptions(t), [t]);
 
-  const { control, handleSubmit } = useForm<CreateProductSchema>({
+  const { control, handleSubmit, reset } = useForm<CreateProductSchema>({
     resolver: zodResolver(createProductSchema(t)),
     defaultValues: {
       name: '',
@@ -47,6 +66,22 @@ export default function CreateProductPage() {
       image: null,
     },
   });
+
+  // Остаток не переносим: копия — это новая позиция, её количество вводят заново.
+  // Фото тоже не переносим: бэкенд принимает только загруженный файл, а не ссылку.
+  useEffect(() => {
+    if (!source) return;
+    reset({
+      name: t('copyName', { name: source.name }),
+      description: source.description,
+      price: source.price,
+      quantity: 0,
+      unit: source.unit,
+      lowStockThreshold: source.lowStockThreshold,
+      categoryId: source.categoryId ?? '',
+      image: null,
+    });
+  }, [source, reset, t]);
 
   const { mutate, isPending } = useMutation({
     mutationFn: (data: CreateProductSchema) => {
@@ -86,7 +121,10 @@ export default function CreateProductPage() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{t('create')}</h1>
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight">{t('create')}</h1>
+          {source ? <p className="text-muted-foreground mt-1 text-sm">{t('copyHint', { name: source.name })}</p> : null}
+        </div>
         {/* На телефоне действия продублированы в sticky-панели снизу, здесь только для md+. */}
         <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate('/products')}>

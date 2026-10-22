@@ -2,6 +2,8 @@
   "title": "Products",
   "notFound": "Product not found",
   "create": "Create product",
+  "copyName": "{{name}} (copy)",
+  "copyHint": "Pre-filled from “{{name}}”. Check the name, then set the stock and photo.",
   "edit": "Edit product",
   "createSuccess": "Product created successfully",
   "createError": "Error creating product",
@@ -17,7 +19,10 @@
     "areYouSure": "Are you sure you want to delete this product?",
     "deleteSuccess": "Product deleted",
     "deleteError": "Error deleting product",
-    "all": "All products"
+    "all": "All products",
+    "edit": "Edit",
+    "duplicate": "Duplicate",
+    "delete": "Delete"
   },
   "filters": {
     "search": "Search products",

@@ -1,9 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
-import { Package, Store } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Copy, Package, Pencil, Store, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useParams } from 'react-router';
+import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { productsApi } from '~/api/products';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -15,6 +18,7 @@ import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
@@ -27,6 +31,8 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const queryClient = useQueryClient();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const {
     data: response,
@@ -37,6 +43,22 @@ export default function ProductDetailPage() {
     queryFn: () => productsApi.getById(id!),
     enabled: !!id,
     staleTime: 30_000,
+  });
+
+  const { mutate: deleteProduct, isPending: isDeleting } = useMutation({
+    mutationFn: () => productsApi.delete(id!),
+    onSuccess: () => {
+      // Карточка удалённого товара больше не существует — убираем её из кеша до инвалидации списков,
+      // иначе активный запрос уйдёт за ней на сервер и получит 404.
+      queryClient.removeQueries({ queryKey: queryKeys.detail('products', id) });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      toast.success(t('actions.deleteSuccess'));
+      setDeleteOpen(false);
+      navigate('/products', { replace: true });
+    },
+    onError: () => {
+      toast.error(t('actions.deleteError'));
+    },
   });
 
   const product = response?.data;
@@ -83,125 +105,163 @@ export default function ProductDetailPage() {
     reorderPriority === 'OUT_OF_STOCK' || reorderPriority === 'CRITICAL' || reorderPriority === 'WARNING';
   const showReorderBadge = reorderIsActionable && !healthCoversStock;
   const { metrics, comparison, sales } = product;
+  const canEdit = can(Action.PRODUCTS_EDIT);
+  const canCopy = can(Action.PRODUCTS_CREATE);
+  const canDelete = can(Action.PRODUCTS_DELETE);
 
   return (
-    <DetailPage
-      crumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-        { label: product.name },
-      ]}
-      hero={
-        <DetailHero
-          avatar={<EntityAvatar name={product.name} image={product.image} icon={Package} shape="square" size="lg" />}
-          title={product.name}
-          subtitle={product.market?.name}
-          badges={
-            <>
-              {product.category && (
-                <Badge variant="secondary" className="font-normal">
-                  {product.category.name}
-                </Badge>
-              )}
-              {health ? (
-                <Badge variant="outline" className={PRODUCT_HEALTH_BADGE[health]}>
-                  {t(`health.${health}`)}
-                </Badge>
-              ) : (
-                isLowStock && (
-                  <Badge variant="destructive" className="font-normal">
-                    {t('lowStock')}
+    <>
+      <DetailPage
+        crumbs={[
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
+          { label: product.name },
+        ]}
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={product.name} image={product.image} icon={Package} shape="square" size="lg" />}
+            title={product.name}
+            subtitle={product.market?.name}
+            badges={
+              <>
+                {product.category && (
+                  <Badge variant="secondary" className="font-normal">
+                    {product.category.name}
                   </Badge>
-                )
-              )}
-              {showReorderBadge && reorderPriority && (
-                <Badge variant="outline" className={REORDER_PRIORITY_BADGE[reorderPriority]}>
-                  {t(`reorderPriority.${reorderPriority}`)}
-                </Badge>
-              )}
-            </>
-          }
-          editTo={can(Action.PRODUCTS_EDIT) ? `/products/${product.id}/edit` : undefined}
-          editLabel={t('actions.edit')}
-          stats={[
-            { label: t('fields.price'), value: fmtTJS(product.price) },
-            {
-              label: t('fields.quantity'),
-              value: `${product.quantity} ${unit}`,
-              tone: isLowStock ? 'danger' : 'default',
-            },
-            { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
+                )}
+                {health ? (
+                  <Badge variant="outline" className={PRODUCT_HEALTH_BADGE[health]}>
+                    {t(`health.${health}`)}
+                  </Badge>
+                ) : (
+                  isLowStock && (
+                    <Badge variant="destructive" className="font-normal">
+                      {t('lowStock')}
+                    </Badge>
+                  )
+                )}
+                {showReorderBadge && reorderPriority && (
+                  <Badge variant="outline" className={REORDER_PRIORITY_BADGE[reorderPriority]}>
+                    {t(`reorderPriority.${reorderPriority}`)}
+                  </Badge>
+                )}
+              </>
+            }
+            stats={[
+              { label: t('fields.price'), value: fmtTJS(product.price) },
+              {
+                label: t('fields.quantity'),
+                value: `${product.quantity} ${unit}`,
+                tone: isLowStock ? 'danger' : 'default',
+              },
+              { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
+            ]}
+            actions={
+              canEdit || canCopy || canDelete ? (
+                <>
+                  {canEdit && (
+                    <Button size="lg" render={<Link to={`/products/${product.id}/edit`} />}>
+                      <Pencil data-icon="inline-start" />
+                      {t('actions.edit')}
+                    </Button>
+                  )}
+                  {canCopy && (
+                    <Button
+                      size="lg"
+                      variant="secondary"
+                      render={<Link to={`/products/create?copyFrom=${product.id}`} />}>
+                      <Copy data-icon="inline-start" />
+                      {t('actions.duplicate')}
+                    </Button>
+                  )}
+                  {canDelete && (
+                    <Button size="lg" variant="destructive" onClick={() => setDeleteOpen(true)}>
+                      <Trash2 data-icon="inline-start" />
+                      {t('actions.delete')}
+                    </Button>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
+        }
+        aside={
+          product.market ? (
+            <ListGroup title={t('fields.market')}>
+              <EntityRow
+                name={product.market.name}
+                subtitle={product.market.address ?? undefined}
+                image={product.market.image}
+                shape="square"
+                icon={Store}
+                to={`/markets/${product.marketId}`}
+                state={marketState}
+              />
+            </ListGroup>
+          ) : undefined
+        }>
+        <DetailFacts
+          facts={[
+            { label: t('fields.description'), value: product.description, long: true, show: !!product.description },
+            { label: t('fields.category'), value: product.category?.name ?? '—' },
+            { label: t('fields.lowStockThreshold'), value: `${product.lowStockThreshold} ${unit}` },
+            { label: t('fields.createdAt'), value: formatDate(product.createdAt, true) },
+            { label: t('fields.updatedAt'), value: formatDate(product.updatedAt, true) },
           ]}
         />
-      }
-      aside={
-        product.market ? (
-          <ListGroup title={t('fields.market')}>
-            <EntityRow
-              name={product.market.name}
-              subtitle={product.market.address ?? undefined}
-              image={product.market.image}
-              shape="square"
-              icon={Store}
-              to={`/markets/${product.marketId}`}
-              state={marketState}
-            />
-          </ListGroup>
-        ) : undefined
-      }>
-      <DetailFacts
-        facts={[
-          { label: t('fields.description'), value: product.description, long: true, show: !!product.description },
-          { label: t('fields.category'), value: product.category?.name ?? '—' },
-          { label: t('fields.lowStockThreshold'), value: `${product.lowStockThreshold} ${unit}` },
-          { label: t('fields.createdAt'), value: formatDate(product.createdAt, true) },
-          { label: t('fields.updatedAt'), value: formatDate(product.updatedAt, true) },
-        ]}
-      />
 
-      <MetricGrid
-        title={t('metrics.title')}
-        metrics={[
-          {
-            label: t('metrics.revenue'),
-            value: fmtTJS(metrics.revenue),
-            trend: <TrendBadge comparison={comparison.revenue} />,
-          },
-          {
-            label: t('metrics.netUnitsSold'),
-            value: metrics.netUnitsSold,
-            trend: <TrendBadge comparison={comparison.netUnitsSold} />,
-          },
-          {
-            label: t('metrics.transactionCount'),
-            value: metrics.transactionCount,
-            trend: <TrendBadge comparison={comparison.transactionCount} />,
-          },
-          { label: t('metrics.refundedUnits'), value: metrics.refundedUnits },
-          { label: t('metrics.returnRate'), value: `${Math.round(metrics.returnRate * 100)}%` },
-          { label: t('metrics.avgDailySales'), value: metrics.avgDailySales.toFixed(1) },
-          {
-            label: t('metrics.daysOfStock'),
-            value:
-              metrics.daysOfStockRemaining == null
-                ? t('metrics.noVelocity')
-                : t('metrics.daysUnit', { count: metrics.daysOfStockRemaining }),
-          },
-          ...(metrics.recommendedQuantity > 0
-            ? [{ label: t('metrics.recommendedQuantity'), value: `${metrics.recommendedQuantity} ${unit}` }]
-            : []),
-        ]}
-      />
+        <MetricGrid
+          title={t('metrics.title')}
+          metrics={[
+            {
+              label: t('metrics.revenue'),
+              value: fmtTJS(metrics.revenue),
+              trend: <TrendBadge comparison={comparison.revenue} />,
+            },
+            {
+              label: t('metrics.netUnitsSold'),
+              value: metrics.netUnitsSold,
+              trend: <TrendBadge comparison={comparison.netUnitsSold} />,
+            },
+            {
+              label: t('metrics.transactionCount'),
+              value: metrics.transactionCount,
+              trend: <TrendBadge comparison={comparison.transactionCount} />,
+            },
+            { label: t('metrics.refundedUnits'), value: metrics.refundedUnits },
+            { label: t('metrics.returnRate'), value: `${Math.round(metrics.returnRate * 100)}%` },
+            { label: t('metrics.avgDailySales'), value: metrics.avgDailySales.toFixed(1) },
+            {
+              label: t('metrics.daysOfStock'),
+              value:
+                metrics.daysOfStockRemaining == null
+                  ? t('metrics.noVelocity')
+                  : t('metrics.daysUnit', { count: metrics.daysOfStockRemaining }),
+            },
+            ...(metrics.recommendedQuantity > 0
+              ? [{ label: t('metrics.recommendedQuantity'), value: `${metrics.recommendedQuantity} ${unit}` }]
+              : []),
+          ]}
+        />
 
-      <MetricGrid
-        title={t('metrics.allTime')}
-        metrics={[
-          { label: t('metrics.transactionCount'), value: sales.count },
-          { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
-          { label: t('metrics.refundedUnits'), value: sales.refundedUnits },
-          { label: t('metrics.revenue'), value: fmtTJS(sales.revenue) },
-        ]}
+        <MetricGrid
+          title={t('metrics.allTime')}
+          metrics={[
+            { label: t('metrics.transactionCount'), value: sales.count },
+            { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
+            { label: t('metrics.refundedUnits'), value: sales.refundedUnits },
+            { label: t('metrics.revenue'), value: fmtTJS(sales.revenue) },
+          ]}
+        />
+      </DetailPage>
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={() => deleteProduct()}
+        isLoading={isDeleting}
+        title={t('actions.confirm', { ns: 'common' })}
+        description={t('actions.areYouSure')}
       />
-    </DetailPage>
+    </>
   );
 }
