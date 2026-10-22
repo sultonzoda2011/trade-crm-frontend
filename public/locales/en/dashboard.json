@@ -207,16 +207,34 @@
   "offline": {
     "dataFrom": "No internet. Showing data from {{time}}"
   },
-  "products": {
-    "topByRevenue": "Top by revenue",
-    "topByUnits": "Top by units",
-    "netUnits": "{{count}} units",
-    "returned": "returned"
-  },
   "categories": {
-    "title": "Categories",
     "empty": "No category sales",
     "uncategorized": "Uncategorized"
+  },
+  "categoryCard": {
+    "title": "Sales by category",
+    "hint": "How much money each group of goods brought. Compared {{vs}}.",
+    "noCompare": "How much money each group of goods brought. Over such a short span we do not compare with the previous period.",
+    "noPrevious": "No sales in the previous period",
+    "share": "{{percent}}% of sales",
+    "shareLow": "under 1% of sales",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less"
+  },
+  "productsTab": {
+    "topRevenue": {
+      "title": "Earned the most money",
+      "hint": "Revenue for the period net of returns. It is not profit: the app has no purchase price."
+    },
+    "topUnits": {
+      "title": "Bought most often",
+      "hint": "Units sold in the period net of returns: pieces, kg or boxes, depending on how the product is counted.",
+      "note": "This list is picked from the 20 products with the highest revenue. A cheap product that sells by the thousand may not make it here."
+    },
+    "brought": "earned {{amount}}",
+    "share": "{{percent}}% of all sales",
+    "shareLow": "under 1% of all sales",
+    "emptyHint": "Rankings appear once there are sales in the period. You can pick a longer period."
   },
   "insights": {
     "inventory": {
