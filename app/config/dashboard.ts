@@ -45,4 +45,5 @@ export const STOCK_ROWS_VISIBLE = 4;
 export const LEADERS_VISIBLE = 3;
 export const CATEGORY_CHANGES_VISIBLE = 4;
 export const CATEGORIES_VISIBLE = 5;
+export const SELLERS_VISIBLE = 5;
 export const RECENT_TRANSACTIONS_LIMIT = 5;

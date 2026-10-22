@@ -267,14 +267,20 @@
       "growing": "Returns are up {{percent}}% vs the previous period"
     }
   },
-  "table": {
-    "seller": "Seller",
-    "salesCount": "Sales",
-    "salesAmount": "Sales amount",
-    "refundsCount": "Refunds",
-    "refundsAmount": "Refund amount",
-    "debtsCount": "Debts",
-    "debtsAmount": "Debt issued"
+  "sellersTab": {
+    "title": "Who sold how much",
+    "hint": "Cash and card sales net of returns, plus goods given on credit. A return is taken off the seller who made the sale.",
+    "cash": "Cash and card",
+    "credit": "On credit",
+    "share": "{{percent}}% of all sales",
+    "shareLow": "under 1% of all sales",
+    "noPrevious": "No sales in the previous period",
+    "noSalesRow": "No sales in this period",
+    "returns": "Returns: {{amount}}",
+    "deleted": "Deleted employee",
+    "showAll": "Show all ({{count}})",
+    "showLess": "Show less",
+    "emptyHint": "Sellers appear once there are sales in the period. You can pick a longer period."
   },
   "period": {
     "from": "From",
