@@ -60,11 +60,15 @@ This tab answers three questions: what to order, how the shelves are doing, and 
 
 ### Products
 
-Product rankings for the period:
+This tab answers "what brings in the money", "what do people buy most often" and "which groups of goods carry the sales". Both filters — period and seller — apply here. The data is the same as on "Overview" for the same period, so the numbers agree and switching tabs doesn't reload anything.
 
-- **"Top by revenue"** — which products brought in the most money.
-- **"Top by units"** — which sell in the largest quantities.
-- **"Categories"** — how groups of products sell.
+**Earned the most money.** Up to five products with the highest revenue for the period, net of returns. Each shows how much was sold, how much came back and what share of all sales it gave. This is **revenue, not profit**: the app has no purchase price, and the tab says so.
+
+**Bought most often.** Up to five products by units sold (pieces, kg, boxes — however the product is counted), net of returns, and how much money each earned. The list is picked among the **20 products with the highest revenue**: that is how the server sends it. So a cheap product that sells by the thousand may not make it here — when the list could have been cut, a note under it says so.
+
+**Sales by category.** How much money each group of goods brought and what share of sales it is. The five biggest are shown first, the rest open with **"Show all"** — otherwise the shares wouldn't add up to 100%. Products without a category are one row of their own. For periods of three days or more, the change against the previous period is shown next to each; if the category had no sales then, it says so instead of inventing a percentage. For short periods ("Today", the first days of a week or month) the comparison is not shown.
+
+There is no comparison for individual products: the server doesn't send the previous period per product, and we don't make it up.
 
 ### Sellers
 
