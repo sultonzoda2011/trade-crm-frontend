@@ -72,7 +72,13 @@ There is no comparison for individual products: the server doesn't send the prev
 
 ### Sellers
 
-A report on the sellers' work. At the top are four figures: the number of sellers, **"Sales amount"**, **"Refunds amount"** and **"Issued on credit"**. Below is a table showing, per seller: how many sales and for what amount, how many refunds and for what amount, and how much credit was issued.
+Who sold how much. Both filters — period and seller — apply here.
+
+At the top is the total **"Sold"** (the same as on "Overview") and what it is made of: **"Cash and card"** and **"On credit"**. Below are the sellers in order, best first. For each: how much they sold, what share of all sales that is, how it compares with the previous period, and, if there were returns, for how much. The first five are shown; the rest open with **"Show all"**.
+
+The owner and the administrator sell too, so they are in the list — marked with their role. Tapping a row opens a card: for a seller, the seller card; for the owner, their profile (when the owner is the one looking) or the user card (when an administrator is looking).
+
+A return is taken off the seller who made the sale, not the one who took the goods back. For short periods (today, the first days of the week) percentages against the past are not shown: at the top, as on "Overview", it says how much there was before.
 
 ## How to read the comparison
 

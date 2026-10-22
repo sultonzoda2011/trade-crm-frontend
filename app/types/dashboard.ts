@@ -5,7 +5,7 @@ import type {
   ProductMetrics,
   ReorderPriority,
 } from '~/types/analytics';
-import type { ApiResponse } from '~/types/common';
+import type { ApiResponse, Role } from '~/types/common';
 
 export interface RevenueTrendData {
   date: string; // YYYY-MM-DD format
@@ -21,13 +21,25 @@ export interface PaymentTypeDistribution {
 }
 
 export interface SellerReportRow {
-  seller: { id: string; name: string; email: string; image: string | null } | null;
+  /**
+   * `null` — the account was deleted after it made sales; the figures still count.
+   * `role` is optional: copies of the report saved on a phone before the backend
+   * sent it have no such field (the seller is then treated as a plain SELLER).
+   */
+  seller: { id: string; name: string; email: string; image: string | null; role?: Role } | null;
+  /** Cash and card sales, net of the returns of sales this seller made. */
   salesCount: number;
   salesAmount: number;
   refundsCount: number;
   refundsAmount: number;
+  /** Goods handed out on credit. */
   debtsCount: number;
   debtsAmount: number;
+  /** Against the previous window of the same length. Optional for the same reason as `role`. */
+  comparison?: {
+    salesAmount: MetricComparison;
+    debtsAmount: MetricComparison;
+  };
 }
 export type SellersReportResponse = ApiResponse<SellerReportRow[]>;
 

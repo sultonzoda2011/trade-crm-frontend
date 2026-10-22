@@ -13,7 +13,7 @@ function noteKey(pathname: string): string | null {
     const map: Record<string, string> = {
       products: 'dashboardProducts',
       inventory: 'dashboardInventory',
-      'sellers-report': 'dashboardSellers',
+      sellers: 'dashboardSellers',
     };
     return map[second ?? ''] ?? 'dashboard';
   }

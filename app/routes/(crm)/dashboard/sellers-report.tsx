@@ -1,27 +1,54 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Row } from '@tanstack/react-table';
-import { Banknote, RefreshCw, ShoppingCart, User, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { WifiOff } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useOutletContext } from 'react-router';
+
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
-import { DataTable } from '~/components/shared/DataTable';
-import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
-import { StatCard } from '~/components/shared/StatCard';
+import { QueryFallback } from '~/components/dashboard/QueryFallback';
+import { SellersRanking } from '~/components/dashboard/SellersRanking';
+import { SellersSummary } from '~/components/dashboard/SellersSummary';
+import { Panel } from '~/components/layout/Panel';
+import { Reveal } from '~/components/shared/Reveal';
 import { Skeleton } from '~/components/ui/skeleton';
 import { Action } from '~/config/actions';
+import { MIN_DAYS_FOR_TREND } from '~/config/dashboard';
 import { useCan } from '~/hooks/useCan';
-import { useDataTable } from '~/hooks/useDataTable';
-import { fmtTJS } from '~/lib/format';
+import { useNetworkStatus } from '~/hooks/useNetworkStatus';
+import { sellerRowLink } from '~/lib/dashboard-links';
+import { getPeriodDays } from '~/lib/date';
+import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
-import { getColumns } from '~/routes/(crm)/dashboard/configs/columns';
-import type { SellerReportRow } from '~/types/dashboard';
+import { rankSellers, summarize } from '~/lib/seller-report';
 import type { DashboardFilters } from './layout';
 
+function SellersSkeleton() {
+  return (
+    <div className="space-y-5 md:space-y-6">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+        <Skeleton className="h-60 rounded-2xl" />
+        <Skeleton className="h-80 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The Sellers tab: who sold how much, and what each of them is made of.
+ *
+ * Period and seller filters apply. The list is the Overview's "Sold" split per
+ * person, so with no seller picked the total here equals the one there.
+ *
+ * Whom a row opens depends on who it is and who is looking: the owner's own row
+ * leads to their profile, an admin opening an owner (or another admin) goes to the
+ * user card, a seller to the seller card — see `sellerRowLink`.
+ */
 export default function SellersReportPage() {
   const { t } = useTranslation(['dashboard', 'common']);
-  const { period, sellerId } = useOutletContext<DashboardFilters>();
   const location = useLocation();
+  const isOnline = useNetworkStatus();
+  const { can, user } = useCan();
+  const { period, sellerId } = useOutletContext<DashboardFilters>();
 
   const params = useMemo(() => {
     const p: DashboardParams = {};
@@ -30,138 +57,69 @@ export default function SellersReportPage() {
     return p;
   }, [period, sellerId]);
 
-  const { data, isLoading, isFetching, isError } = useQuery({
+  const query = useQuery({
     queryKey: queryKeys.dashboard('sellers-report', params),
     queryFn: () => dashboardApi.getSellersReport(params),
     staleTime: 30_000,
   });
 
-  const rows = useMemo(() => data?.data ?? [], [data]);
+  const report = query.data?.data;
+  const rows = useMemo(() => rankSellers(report ?? []), [report]);
+  const totals = useMemo(() => summarize(rows), [rows]);
 
-  const summary = useMemo(() => {
-    const totals = { sellers: 0, salesAmount: 0, refundsAmount: 0, debtsAmount: 0 };
-    for (const row of rows) {
-      if (row.seller) totals.sellers++;
-      totals.salesAmount += row.salesAmount;
-      totals.refundsAmount += row.refundsAmount;
-      totals.debtsAmount += row.debtsAmount;
+  if (!report) {
+    if (query.isError || query.fetchStatus === 'paused') {
+      return (
+        <QueryFallback
+          isError={query.isError}
+          isOffline={query.fetchStatus === 'paused'}
+          onRetry={() => query.refetch()}
+        />
+      );
     }
-    return totals;
-  }, [rows]);
-
-  const { can } = useCan();
-  const canViewSellers = can(Action.SELLERS_VIEW);
-  const columns = useMemo(() => getColumns({ t, canViewSellers }), [t, canViewSellers]);
-
-  // Эндпоинт отчёта отдаёт все строки одним массивом, серверной пагинации у
-  // него нет — нарезаем страницы на клиенте. Раньше пагинации не было вообще:
-  // единственная таблица в приложении, где список рос без ограничения.
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-
-  const totalPages = Math.max(1, Math.ceil(rows.length / limit));
-  const currentPage = Math.min(page, totalPages);
-
-  const pageRows = useMemo(
-    () => rows.slice((currentPage - 1) * limit, currentPage * limit),
-    [rows, currentPage, limit]
-  );
-
-  const { table } = useDataTable({
-    columns,
-    data: pageRows,
-    storageKey: 'sellers-report-columns',
-  });
-
-  const renderMobileCard = (row: Row<SellerReportRow>) => {
-    const report = row.original;
-    const seller = report.seller;
-
-    return (
-      <EntityMobileCard
-        image={seller?.image ?? null}
-        fallbackIcon={User}
-        title={seller?.name ?? '—'}
-        subtitle={seller?.email}
-        stats={[
-          { icon: ShoppingCart, label: t('table.salesCount'), value: report.salesCount ?? 0 },
-          { label: t('table.salesAmount'), value: fmtTJS(report.salesAmount), valueClassName: 'text-success' },
-          { icon: RefreshCw, label: t('table.refundsCount'), value: report.refundsCount ?? 0 },
-          { label: t('table.refundsAmount'), value: fmtTJS(report.refundsAmount), valueClassName: 'text-destructive' },
-          { icon: Banknote, label: t('table.debtsCount'), value: report.debtsCount ?? 0 },
-          { label: t('table.debtsAmount'), value: fmtTJS(report.debtsAmount), valueClassName: 'text-warning' },
-        ]}
-      />
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 rounded-xl" />
-          ))}
-        </div>
-        <Skeleton className="h-64 w-full rounded-xl" />
-      </div>
-    );
+    return <SellersSkeleton />;
   }
 
+  // The report carries no `durationDays` like the overview does; the window is the same
+  // calendar one, so it is counted from the period itself. A day or two is too short to compare.
+  const comparable = getPeriodDays(period) >= MIN_DAYS_FOR_TREND;
+
+  const viewer = { id: user?.id, canViewUsers: can(Action.USERS_VIEW), canViewSellers: can(Action.SELLERS_VIEW) };
+  // Back from a card returns to this tab with the same period and seller still picked.
+  const linkState = { fromPath: `${location.pathname}${location.search}`, fromName: t('title') };
+
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard icon={Users} label={t('table.seller')} value={summary.sellers} />
+    <div className="space-y-5 md:space-y-6">
+      {!isOnline && (
+        <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
+          <WifiOff className="size-4 shrink-0" />
+          {t('offline.dataFrom', { time: formatDate(new Date(query.dataUpdatedAt), true) })}
+        </p>
+      )}
 
-        <StatCard
-          icon={ShoppingCart}
-          label={t('table.salesAmount')}
-          value={fmtTJS(summary.salesAmount)}
-          valueClassName="text-success"
-          iconClassName="bg-success/10 text-success"
-        />
-
-        <StatCard
-          icon={RefreshCw}
-          label={t('table.refundsAmount')}
-          value={fmtTJS(summary.refundsAmount)}
-          valueClassName="text-destructive"
-          iconClassName="bg-destructive/10 text-destructive"
-        />
-
-        <StatCard
-          icon={Banknote}
-          label={t('table.debtsAmount')}
-          value={fmtTJS(summary.debtsAmount)}
-          valueClassName="text-warning"
-          iconClassName="bg-warning/10 text-warning"
-        />
-      </div>
-
-      <DataTable
-        table={table}
-        isLoading={isLoading}
-        isFetching={isFetching}
-        isError={isError}
-        pinLastColumn
-        page={currentPage}
-        limit={limit}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onLimitChange={(size) => {
-          setLimit(size);
-          setPage(1);
-        }}
-        renderMobileCard={renderMobileCard}
-        getRowLink={(row) =>
-          row.original.seller && canViewSellers
-            ? {
-                to: `/sellers/${row.original.seller.id}`,
-                state: { fromPath: location.pathname, fromName: t('usersReport') },
-              }
-            : undefined
-        }
-      />
+      {rows.length === 0 ? (
+        <Reveal index={0}>
+          <Panel bodyClassName="space-y-1">
+            <p className="text-base leading-snug font-semibold">{t(`summary.noSales.${period}`)}</p>
+            <p className="text-muted-foreground text-sm leading-snug">{t('sellersTab.emptyHint')}</p>
+          </Panel>
+        </Reveal>
+      ) : (
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+          <Reveal index={0}>
+            <SellersSummary totals={totals} period={period} comparable={comparable} />
+          </Reveal>
+          <Reveal index={1}>
+            <SellersRanking
+              rows={rows}
+              totalSold={totals.sold}
+              comparable={comparable}
+              getLink={(seller) => sellerRowLink(seller, viewer)}
+              linkState={linkState}
+            />
+          </Reveal>
+        </div>
+      )}
     </div>
   );
 }

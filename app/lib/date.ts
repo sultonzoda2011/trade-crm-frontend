@@ -84,6 +84,16 @@ export function getPeriodRange(period: Period): { from: Dayjs; to?: Dayjs } {
 }
 
 /**
+ * How many calendar days the selected period spans (inclusive), on the backend's
+ * UTC calendar. Used to decide whether a window is long enough to be compared
+ * with the previous one when the response itself does not carry `durationDays`.
+ */
+export function getPeriodDays(period: Period): number {
+  const { from, to } = getPeriodRange(period);
+  return (to ?? from).diff(from, 'day') + 1;
+}
+
+/**
  * The same window as `getPeriodRange`, as the `YYYY-MM-DD` pair list pages
  * understand (`dateFrom` / `dateTo`). Both ends are inclusive days; `api/crud`
  * turns the `dateTo` day into end-of-day. Used by dashboard drill-down links so
