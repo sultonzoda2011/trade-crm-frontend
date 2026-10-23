@@ -9,6 +9,8 @@ interface EntityFormPageProps {
   /** `id` of the `<form>`, so the header and sticky-bar buttons can submit it. */
   formId: string;
   title: string;
+  /** Одна строка под заголовком — например, «Данные взяты из …» у формы-копии. */
+  hint?: string;
   breadcrumbs: { label: string; link?: string }[];
   /** Where Cancel and the failed-submit escape hatch lead. */
   cancelTo: string;
@@ -61,6 +63,7 @@ function SubmitButton({
 export function EntityFormPage({
   formId,
   title,
+  hint,
   breadcrumbs,
   cancelTo,
   submitLabel,
@@ -73,14 +76,21 @@ export function EntityFormPage({
   const { t } = useTranslation('common');
   const navigate = useNavigate();
 
-  const form = <form id={formId} onSubmit={onFormSubmit} className="space-y-4">{children}</form>;
+  const form = (
+    <form id={formId} onSubmit={onFormSubmit} className="space-y-4">
+      {children}
+    </form>
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-32 md:max-w-none md:pb-8">
       <BreadCrumbs items={breadcrumbs} />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+          {hint ? <p className="text-muted-foreground mt-1 text-sm">{hint}</p> : null}
+        </div>
         <div className="hidden gap-3 md:flex">
           <Button variant="outline" onClick={() => navigate(cancelTo)}>
             {t('actions.cancel')}

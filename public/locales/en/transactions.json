@@ -136,5 +136,10 @@
   "createQueuedSlow": "Weak connection — transaction saved and sending in the background",
   "payQueuedSlow": "Weak connection — payment saved and sending in the background",
   "refundQueuedSlow": "Weak connection — refund saved and sending in the background",
-  "debtorNotCreated": "The debtor was not created on the server — make sure they are in the list and create the transaction again"
+  "debtorNotCreated": "The debtor was not created on the server — make sure they are in the list and create the transaction again",
+  "actions": {
+    "areYouSure": "Are you sure you want to delete this transaction?",
+    "deleteSuccess": "Transaction deleted",
+    "deleteError": "Error deleting transaction"
+  }
 }

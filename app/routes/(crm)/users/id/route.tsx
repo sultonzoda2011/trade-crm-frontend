@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { usersApi } from '~/api/users';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -19,6 +20,8 @@ import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
+import { getClientUser } from '~/lib/auth-utils';
 import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 
@@ -28,6 +31,14 @@ export default function UserDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'users',
+    api: usersApi,
+    id,
+    t,
+    redirectTo: '/users',
+    alsoInvalidate: ['sellers'],
+  });
 
   const {
     data: response,
@@ -77,72 +88,77 @@ export default function UserDetailPage() {
   const markets = ownedMarkets.length > 0 ? ownedMarkets.slice(0, 5) : user.market ? [user.market] : [];
 
   return (
-    <DetailPage
-      crumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        {
-          link: location.state?.fromPath,
-          label: location.state?.fromName || t('navigation.users', { ns: 'common' }),
-        },
-        { label: user.name },
-      ]}
-      hero={
-        <DetailHero
-          avatar={<EntityAvatar name={user.name} image={user.image} size="lg" />}
-          title={user.name}
-          subtitle={user.email}
-          badges={
-            <Badge variant="outline" className={roleConfig?.className}>
-              {roleLabel}
-            </Badge>
-          }
-          editTo={can(Action.USERS_EDIT) ? `/users/${user.id}/edit` : undefined}
-          editLabel={t('actions.edit')}
+    <>
+      <DetailPage
+        crumbs={[
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+          {
+            link: location.state?.fromPath,
+            label: location.state?.fromName || t('navigation.users', { ns: 'common' }),
+          },
+          { label: user.name },
+        ]}
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={user.name} image={user.image} size="lg" />}
+            title={user.name}
+            subtitle={user.email}
+            badges={
+              <Badge variant="outline" className={roleConfig?.className}>
+                {roleLabel}
+              </Badge>
+            }
+            manage={{
+              editTo: can(Action.USERS_EDIT) ? `/users/${user.id}/edit` : undefined,
+              onDelete: can(Action.USERS_DELETE) && user.id !== getClientUser()?.id ? requestDelete : undefined,
+            }}
+          />
+        }
+        aside={
+          markets.length > 0 ? (
+            <ListGroup title={t('fields.market')}>
+              {markets.map((market) => (
+                <EntityRow
+                  key={market.id}
+                  name={market.name}
+                  subtitle={market.address ?? undefined}
+                  image={market.image}
+                  shape="square"
+                  icon={Store}
+                  to={`/markets/${market.id}`}
+                  state={fromState}
+                />
+              ))}
+            </ListGroup>
+          ) : undefined
+        }>
+        <DetailFacts
+          facts={[
+            { label: t('fields.email'), value: user.email },
+            { label: t('fields.role'), value: roleLabel },
+            { label: t('fields.createdAt'), value: formatDate(user.createdAt, true) },
+            { label: t('fields.updatedAt'), value: formatDate(user.updatedAt, true) },
+          ]}
         />
-      }
-      aside={
-        markets.length > 0 ? (
-          <ListGroup title={t('fields.market')}>
-            {markets.map((market) => (
-              <EntityRow
-                key={market.id}
-                name={market.name}
-                subtitle={market.address ?? undefined}
-                image={market.image}
-                shape="square"
-                icon={Store}
-                to={`/markets/${market.id}`}
-                state={fromState}
+
+        {userTransactions.length > 0 && (
+          <ListGroup
+            title={t('transactionsHistory')}
+            action={
+              <PanelViewAll
+                to="/transactions"
+                state={{ fromSellerId: user.id, fromSellerName: user.name }}
+                label={t('viewAll')}
+                count={totalTx}
               />
+            }>
+            {userTransactions.map((tx) => (
+              <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} />
             ))}
           </ListGroup>
-        ) : undefined
-      }>
-      <DetailFacts
-        facts={[
-          { label: t('fields.email'), value: user.email },
-          { label: t('fields.role'), value: roleLabel },
-          { label: t('fields.createdAt'), value: formatDate(user.createdAt, true) },
-          { label: t('fields.updatedAt'), value: formatDate(user.updatedAt, true) },
-        ]}
-      />
-
-      {userTransactions.length > 0 && (
-        <ListGroup
-          title={t('transactionsHistory')}
-          action={
-            <PanelViewAll
-              to="/transactions"
-              state={{ fromSellerId: user.id, fromSellerName: user.name }}
-              label={t('viewAll')}
-              count={totalTx}
-            />
-          }>
-          {userTransactions.map((tx) => (
-            <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} />
-          ))}
-        </ListGroup>
-      )}
-    </DetailPage>
+        )}
+      </DetailPage>
+      <ConfirmDialog {...deleteDialog} />
+    </>
   );
 }

@@ -1,5 +1,6 @@
-import { Pencil } from 'lucide-react';
+import { Copy, Pencil, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { cn } from '~/lib/utils';
@@ -22,41 +23,44 @@ export interface HeroStat {
   state?: unknown;
 }
 
+/**
+ * Управление самой записью: изменить, сделать копию, удалить. Передавайте только
+ * то, что разрешено роли и бэкенду, — остальные кнопки просто не появятся.
+ */
+export interface HeroManage {
+  editTo?: string;
+  /** Куда ведёт «Копия» — обычно форма создания с `?copyFrom=<id>`. */
+  copyTo?: string;
+  onDelete?: () => void;
+}
+
 interface DetailHeroProps {
   avatar: ReactNode;
   title: string;
   subtitle?: ReactNode;
   badges?: ReactNode;
-  /** Куда ведёт «Изменить». Не передавайте, если у роли нет права — кнопка просто не появится. */
-  editTo?: string;
-  editLabel?: string;
   /** Главная цифра страницы: долг должника, сумма сделки. */
   figure?: { label: string; value: ReactNode; tone?: Tone; caption?: ReactNode };
   /** 2–4 коротких показателя в ряд под шапкой. */
   stats?: HeroStat[];
   /** Главные действия — кнопки на всю ширину. */
   actions?: ReactNode;
+  /** Изменить / копия / удалить — одним рядом под главными действиями. */
+  manage?: HeroManage;
 }
 
 /**
  * Шапка страницы «по id»: аватар, имя, значки, главная цифра, показатели и
  * главные действия — в одной карточке.
  *
- * «Изменить» — стеклянная круглая кнопка в углу, а не строка в списке
- * действий: правка относится к самой записи, и в этом углу её ищет рука.
- * Мягкий цветной отсвет за углом нужен стеклу — на сплошном фоне оно не видно.
+ * Изменить, копия и удаление — отдельный ряд внизу карточки (`manage`): они
+ * относятся к самой записи, а не к её содержимому, поэтому не смешиваются с
+ * главными действиями страницы. Мягкий цветной отсвет в углу — фон шапки.
  */
-export function DetailHero({
-  avatar,
-  title,
-  subtitle,
-  badges,
-  editTo,
-  editLabel,
-  figure,
-  stats,
-  actions,
-}: DetailHeroProps) {
+export function DetailHero({ avatar, title, subtitle, badges, figure, stats, actions, manage }: DetailHeroProps) {
+  const { t } = useTranslation('common');
+  const hasManage = !!manage && !!(manage.editTo || manage.copyTo || manage.onDelete);
+
   return (
     <section className="bg-card relative overflow-hidden rounded-2xl p-4 sm:p-5">
       <div
@@ -75,11 +79,6 @@ export function DetailHero({
           {subtitle ? <div className="text-muted-foreground text-sm leading-snug break-words">{subtitle}</div> : null}
           {badges ? <div className="flex flex-wrap items-center gap-1.5 pt-0.5">{badges}</div> : null}
         </div>
-        {editTo ? (
-          <Button variant="glass" size="icon" aria-label={editLabel} render={<Link to={editTo} />}>
-            <Pencil className="size-4" strokeWidth={1.75} />
-          </Button>
-        ) : null}
       </div>
 
       {figure ? (
@@ -136,6 +135,33 @@ export function DetailHero({
       ) : null}
 
       {actions ? <div className="relative mt-4 flex flex-col gap-2 sm:flex-row [&>*]:sm:flex-1">{actions}</div> : null}
+
+      {hasManage ? (
+        <div
+          className={cn(
+            'relative flex flex-wrap gap-2 [&>*]:min-w-32 [&>*]:flex-1',
+            actions ? 'mt-2' : 'mt-4 border-t pt-4'
+          )}>
+          {manage.editTo ? (
+            <Button variant="secondary" render={<Link to={manage.editTo} />}>
+              <Pencil data-icon="inline-start" />
+              {t('actions.edit')}
+            </Button>
+          ) : null}
+          {manage.copyTo ? (
+            <Button variant="secondary" render={<Link to={manage.copyTo} />}>
+              <Copy data-icon="inline-start" />
+              {t('actions.duplicate')}
+            </Button>
+          ) : null}
+          {manage.onDelete ? (
+            <Button variant="destructive" onClick={manage.onDelete}>
+              <Trash2 data-icon="inline-start" />
+              {t('actions.delete')}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -16,6 +17,7 @@ import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 
@@ -27,6 +29,14 @@ export default function CategoryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'categories',
+    api: categoriesApi,
+    id,
+    t,
+    redirectTo: '/categories',
+    alsoInvalidate: ['products'],
+  });
 
   const {
     data: response,
@@ -73,65 +83,71 @@ export default function CategoryDetailPage() {
   const productsCount = category._count.products;
 
   return (
-    <DetailPage
-      crumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-        { label: category.name },
-      ]}
-      hero={
-        <DetailHero
-          avatar={<EntityAvatar name={category.name} image={category.image} icon={Tag} shape="square" size="lg" />}
-          title={category.name}
-          editTo={can(Action.CATEGORIES_MANAGE) ? `/categories/${category.id}/edit` : undefined}
-          editLabel={t('actions.edit')}
-          stats={[{ label: t('fields.productsCount'), value: productsCount }]}
-        />
-      }
-      aside={
-        <ListGroup title={t('fields.market')}>
-          <EntityRow
-            name={market?.name ?? category.marketId}
-            subtitle={market?.address ?? undefined}
-            image={market?.image}
-            shape="square"
-            icon={Store}
-            to={`/markets/${category.marketId}`}
-            state={listState}
-          />
-        </ListGroup>
-      }>
-      <DetailFacts
-        facts={[
-          { label: t('fields.description'), value: category.description, long: true, show: !!category.description },
-          { label: t('fields.createdAt'), value: formatDate(category.createdAt, true) },
-          { label: t('fields.updatedAt'), value: formatDate(category.updatedAt, true) },
+    <>
+      <DetailPage
+        crumbs={[
+          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
+          { label: category.name },
         ]}
-      />
-
-      {categoryProducts.length > 0 && (
-        <ListGroup
-          title={t('fields.productsCount')}
-          action={
-            productsCount > PREVIEW_LIMIT ? (
-              <PanelViewAll to="/products" state={filterState} label={t('viewAll')} count={productsCount} />
-            ) : undefined
-          }>
-          {categoryProducts.map((product) => (
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={category.name} image={category.image} icon={Tag} shape="square" size="lg" />}
+            title={category.name}
+            manage={{
+              editTo: can(Action.CATEGORIES_MANAGE) ? `/categories/${category.id}/edit` : undefined,
+              copyTo: can(Action.CATEGORIES_MANAGE) ? `/categories/create?copyFrom=${category.id}` : undefined,
+              onDelete: can(Action.CATEGORIES_MANAGE) ? requestDelete : undefined,
+            }}
+            stats={[{ label: t('fields.productsCount'), value: productsCount }]}
+          />
+        }
+        aside={
+          <ListGroup title={t('fields.market')}>
             <EntityRow
-              key={product.id}
-              name={product.name}
-              subtitle={`${product.quantity} ${t('unit.' + product.unit, { ns: 'products' })}`}
-              image={product.image}
+              name={market?.name ?? category.marketId}
+              subtitle={market?.address ?? undefined}
+              image={market?.image}
               shape="square"
-              icon={Package}
-              to={`/products/${product.id}`}
+              icon={Store}
+              to={`/markets/${category.marketId}`}
               state={listState}
-              value={<span className="text-foreground font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>}
             />
-          ))}
-        </ListGroup>
-      )}
-    </DetailPage>
+          </ListGroup>
+        }>
+        <DetailFacts
+          facts={[
+            { label: t('fields.description'), value: category.description, long: true, show: !!category.description },
+            { label: t('fields.createdAt'), value: formatDate(category.createdAt, true) },
+            { label: t('fields.updatedAt'), value: formatDate(category.updatedAt, true) },
+          ]}
+        />
+
+        {categoryProducts.length > 0 && (
+          <ListGroup
+            title={t('fields.productsCount')}
+            action={
+              productsCount > PREVIEW_LIMIT ? (
+                <PanelViewAll to="/products" state={filterState} label={t('viewAll')} count={productsCount} />
+              ) : undefined
+            }>
+            {categoryProducts.map((product) => (
+              <EntityRow
+                key={product.id}
+                name={product.name}
+                subtitle={`${product.quantity} ${t('unit.' + product.unit, { ns: 'products' })}`}
+                image={product.image}
+                shape="square"
+                icon={Package}
+                to={`/products/${product.id}`}
+                state={listState}
+                value={<span className="text-foreground font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>}
+              />
+            ))}
+          </ListGroup>
+        )}
+      </DetailPage>
+      <ConfirmDialog {...deleteDialog} />
+    </>
   );
 }

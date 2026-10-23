@@ -9,6 +9,7 @@ import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -26,6 +27,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sh
 import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { fmtNum, fmtTJS, formatDate, formatDateShort } from '~/lib/format';
 import { loadTransactionForPay } from '~/lib/load-transaction-for-pay';
@@ -41,6 +43,14 @@ export default function DebtorDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'debtors',
+    api: debtorsApi,
+    id,
+    t,
+    redirectTo: '/debtors',
+    alsoInvalidate: ['transactions'],
+  });
   const queryClient = useQueryClient();
   const payModal = useTransactionsModals((s) => s.pay);
   const [pickDebtOpen, setPickDebtOpen] = useState(false);
@@ -78,7 +88,9 @@ export default function DebtorDetailPage() {
   });
   const openDebts = (debtsResponse?.data?.data ?? [])
     .map((tx) => withPendingPayments(tx, queueOps))
-    .filter((tx) => tx.type === 'DEBT' && tx.remainingAmount > 0 && (tx.status === 'ACTIVE' || tx.status === 'PARTIAL'));
+    .filter(
+      (tx) => tx.type === 'DEBT' && tx.remainingAmount > 0 && (tx.status === 'ACTIVE' || tx.status === 'PARTIAL')
+    );
 
   // Модалке оплаты нужен полный Transaction — дотягиваем его по id.
   // Без связи или на слабой берётся копия с устройства (см. loadTransactionForPay); networkMode 'always' —
@@ -157,8 +169,10 @@ export default function DebtorDetailPage() {
                 </Badge>
               ) : undefined
             }
-            editTo={can(Action.DEBTORS_EDIT) ? `/debtors/${debtor.id}/edit` : undefined}
-            editLabel={t('actions.edit', { ns: 'common' })}
+            manage={{
+              editTo: can(Action.DEBTORS_EDIT) ? `/debtors/${debtor.id}/edit` : undefined,
+              onDelete: can(Action.DEBTORS_DELETE) ? requestDelete : undefined,
+            }}
             figure={{
               label: t('totalDebt'),
               tone: hasDebt ? 'default' : 'success',
@@ -316,6 +330,7 @@ export default function DebtorDetailPage() {
       </Sheet>
 
       <CreatePaymentModal />
+      <ConfirmDialog {...deleteDialog} />
     </>
   );
 }
