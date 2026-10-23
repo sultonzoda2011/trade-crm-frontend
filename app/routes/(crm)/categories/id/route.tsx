@@ -96,7 +96,6 @@ export default function CategoryDetailPage() {
             title={category.name}
             manage={{
               editTo: can(Action.CATEGORIES_MANAGE) ? `/categories/${category.id}/edit` : undefined,
-              copyTo: can(Action.CATEGORIES_MANAGE) ? `/categories/create?copyFrom=${category.id}` : undefined,
               onDelete: can(Action.CATEGORIES_MANAGE) ? requestDelete : undefined,
             }}
             stats={[{ label: t('fields.productsCount'), value: productsCount }]}

@@ -10,6 +10,7 @@
   "passwordMinLength": "Пароль должен содержать не менее 8 символов",
   "invalidDate": "Некорректная дата",
   "quantityMin": "Минимум 1",
+  "quantityMax": "Слишком большое число",
   "discountMin": "Минимум 0",
   "discountExceedsTotal": "Скидка не может быть больше суммы позиции ({{max}} TJS)",
   "markupMin": "Минимум 0",

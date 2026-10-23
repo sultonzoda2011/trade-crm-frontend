@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, Store } from 'lucide-react';
+import { Package, PackagePlus, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { RestockProductModal } from '~/components/modals/RestockProductModal';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
@@ -16,12 +17,14 @@ import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
+import { useProductsModals } from '~/routes/(crm)/products/store';
 
 export default function ProductDetailPage() {
   const { t } = useTranslation(['products', 'common']);
@@ -41,6 +44,7 @@ export default function ProductDetailPage() {
     staleTime: 30_000,
   });
 
+  const restockModal = useProductsModals((s) => s.restock);
   const { requestDelete, deleteDialog } = useDeleteEntity({
     entity: 'products',
     api: productsApi,
@@ -141,9 +145,25 @@ export default function ProductDetailPage() {
               },
               { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
             ]}
+            actions={
+              can(Action.PRODUCTS_EDIT) ? (
+                <Button
+                  size="lg"
+                  onClick={() =>
+                    restockModal.open({
+                      id: product.id,
+                      name: product.name,
+                      quantity: product.quantity,
+                      unit: product.unit,
+                    })
+                  }>
+                  <PackagePlus data-icon="inline-start" />
+                  {t('restock.button')}
+                </Button>
+              ) : undefined
+            }
             manage={{
               editTo: can(Action.PRODUCTS_EDIT) ? `/products/${product.id}/edit` : undefined,
-              copyTo: can(Action.PRODUCTS_CREATE) ? `/products/create?copyFrom=${product.id}` : undefined,
               onDelete: can(Action.PRODUCTS_DELETE) ? requestDelete : undefined,
             }}
           />
@@ -218,6 +238,7 @@ export default function ProductDetailPage() {
         />
       </DetailPage>
       <ConfirmDialog {...deleteDialog} />
+      <RestockProductModal />
     </>
   );
 }

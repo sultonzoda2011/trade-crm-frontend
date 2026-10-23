@@ -1,4 +1,4 @@
-import { Copy, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -24,13 +24,11 @@ export interface HeroStat {
 }
 
 /**
- * Управление самой записью: изменить, сделать копию, удалить. Передавайте только
+ * Управление самой записью: изменить и удалить. Передавайте только
  * то, что разрешено роли и бэкенду, — остальные кнопки просто не появятся.
  */
 export interface HeroManage {
   editTo?: string;
-  /** Куда ведёт «Копия» — обычно форма создания с `?copyFrom=<id>`. */
-  copyTo?: string;
   onDelete?: () => void;
 }
 
@@ -45,7 +43,7 @@ interface DetailHeroProps {
   stats?: HeroStat[];
   /** Главные действия — кнопки на всю ширину. */
   actions?: ReactNode;
-  /** Изменить / копия / удалить — одним рядом под главными действиями. */
+  /** Изменить / удалить — одним рядом под главными действиями. */
   manage?: HeroManage;
 }
 
@@ -59,7 +57,7 @@ interface DetailHeroProps {
  */
 export function DetailHero({ avatar, title, subtitle, badges, figure, stats, actions, manage }: DetailHeroProps) {
   const { t } = useTranslation('common');
-  const hasManage = !!manage && !!(manage.editTo || manage.copyTo || manage.onDelete);
+  const hasManage = !!manage && !!(manage.editTo || manage.onDelete);
 
   return (
     <section className="bg-card relative overflow-hidden rounded-2xl p-4 sm:p-5">
@@ -146,12 +144,6 @@ export function DetailHero({ avatar, title, subtitle, badges, figure, stats, act
             <Button variant="secondary" render={<Link to={manage.editTo} />}>
               <Pencil data-icon="inline-start" />
               {t('actions.edit')}
-            </Button>
-          ) : null}
-          {manage.copyTo ? (
-            <Button variant="secondary" render={<Link to={manage.copyTo} />}>
-              <Copy data-icon="inline-start" />
-              {t('actions.duplicate')}
             </Button>
           ) : null}
           {manage.onDelete ? (

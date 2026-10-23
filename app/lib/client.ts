@@ -121,6 +121,7 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/products/:id', methods: ['get'], action: Action.PRODUCTS_VIEW },
   { pattern: '/products/:id', methods: ['patch'], action: Action.PRODUCTS_EDIT },
   { pattern: '/products/:id', methods: ['delete'], action: Action.PRODUCTS_DELETE },
+  { pattern: '/products/:id/restock', methods: ['post'], action: Action.PRODUCTS_EDIT },
   { pattern: '/sellers', methods: ['get'], action: Action.SELLERS_VIEW },
   { pattern: '/sellers', methods: ['post'], action: Action.SELLERS_CREATE },
   { pattern: '/sellers/:id', methods: ['get'], action: Action.SELLERS_VIEW },

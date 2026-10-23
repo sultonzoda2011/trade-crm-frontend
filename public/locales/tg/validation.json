@@ -10,6 +10,7 @@
   "passwordMinLength": "Рамз бояд ҳадди аққал 8 аломат бошад",
   "invalidDate": "Санаи нодуруст",
   "quantityMin": "Ҳадди аққал 1",
+  "quantityMax": "Рақам аз ҳад калон аст",
   "discountMin": "Ҳадди аққал 0",
   "discountExceedsTotal": "Тахфиф аз маблағи мол зиёд буда наметавонад ({{max}} TJS)",
   "markupMin": "Ҳадди аққал 0",
