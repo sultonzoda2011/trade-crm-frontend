@@ -2,13 +2,21 @@
   "title": "Products",
   "notFound": "Product not found",
   "create": "Create product",
-  "copyName": "{{name}} (copy)",
-  "copyHint": "Pre-filled from “{{name}}”. Check the name, then set the stock and photo.",
   "edit": "Edit product",
   "createSuccess": "Product created successfully",
   "createError": "Error creating product",
   "updateSuccess": "Product updated successfully",
   "updateError": "Error updating product",
+  "restock": {
+    "button": "Restock",
+    "title": "Restock: {{name}}",
+    "quantity": "How many to add",
+    "current": "In stock now",
+    "after": "Will be",
+    "submit": "Add",
+    "success": "Stock updated: +{{quantity}} {{unit}}",
+    "hint": "The number is added to the current stock. To correct the stock, use “Edit”."
+  },
   "fields": {
     "transactionItems": "Transactions",
     "unit": "Unit",

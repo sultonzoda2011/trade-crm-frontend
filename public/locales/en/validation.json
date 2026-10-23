@@ -10,6 +10,7 @@
   "passwordMinLength": "Password must be at least 8 characters",
   "invalidDate": "Invalid date",
   "quantityMin": "Minimum 1",
+  "quantityMax": "The number is too large",
   "discountMin": "Minimum 0",
   "discountExceedsTotal": "Discount can't exceed the item total ({{max}} TJS)",
   "markupMin": "Minimum 0",

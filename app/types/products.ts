@@ -50,6 +50,14 @@ export interface ProductDetail extends Product {
     transactionCount: MetricComparison;
   };
 }
+/** Что окну «Пополнить» нужно знать о товаре — берётся со страницы товара. */
+export interface RestockTarget {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: ProductUnit;
+}
+
 export interface ProductInfo {
   id: string;
   name: string;
