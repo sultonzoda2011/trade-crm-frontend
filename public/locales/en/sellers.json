@@ -15,5 +15,10 @@
   "payoutError": "Failed to record the payout",
   "creditsHistory": "Payout History",
   "noCredits": "No payouts yet",
-  "noBalance": "No markup yet"
+  "noBalance": "No markup yet",
+  "actions": {
+    "areYouSure": "Are you sure you want to delete this seller?",
+    "deleteSuccess": "Seller deleted",
+    "deleteError": "Error deleting seller"
+  }
 }

@@ -54,7 +54,10 @@
     "payLoadError": "Failed to load the transaction",
     "giveDebt": "Give on credit",
     "acceptPayment": "Accept payment",
-    "pickDebtTitle": "Which debt to pay?"
+    "pickDebtTitle": "Which debt to pay?",
+    "areYouSure": "Are you sure you want to delete this debtor?",
+    "deleteSuccess": "Debtor deleted",
+    "deleteError": "Error deleting debtor"
   },
   "noDebt": "No debt",
   "createSuccess": "Debtor created",

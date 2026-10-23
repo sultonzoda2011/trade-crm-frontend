@@ -6,6 +6,7 @@ import { useLocation, useNavigate, useParams } from 'react-router';
 import { sellersApi } from '~/api/sellers';
 import { PayoutSellerModal } from '~/components/modals/PayoutSellerModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -19,6 +20,7 @@ import { TransactionRow } from '~/components/shared/TransactionRow';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
@@ -29,6 +31,14 @@ export default function SellerDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'sellers',
+    api: sellersApi,
+    id,
+    t,
+    redirectTo: '/sellers',
+    alsoInvalidate: ['users'],
+  });
   const payoutModal = useSellersModals((s) => s.payout);
 
   const {
@@ -93,8 +103,10 @@ export default function SellerDetailPage() {
             avatar={<EntityAvatar name={seller.name} image={seller.image} size="lg" />}
             title={seller.name}
             subtitle={seller.email}
-            editTo={can(Action.SELLERS_EDIT) ? `/sellers/${seller.id}/edit` : undefined}
-            editLabel={t('actions.edit')}
+            manage={{
+              editTo: can(Action.SELLERS_EDIT) ? `/sellers/${seller.id}/edit` : undefined,
+              onDelete: can(Action.SELLERS_DELETE) ? requestDelete : undefined,
+            }}
             stats={
               hasBalance
                 ? [
@@ -202,6 +214,7 @@ export default function SellerDetailPage() {
         )}
       </DetailPage>
       <PayoutSellerModal />
+      <ConfirmDialog {...deleteDialog} />
     </>
   );
 }

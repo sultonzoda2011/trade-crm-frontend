@@ -2,8 +2,10 @@ import { Package, Store } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
+import { marketsApi } from '~/api/markets';
 
 import { SellerAvatars } from '~/components/markets/SellerAvatars';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -17,6 +19,7 @@ import { Badge } from '~/components/ui/badge';
 
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { getClientUser } from '~/lib/auth-utils';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { Role } from '~/types/common';
@@ -66,6 +69,14 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
   const location = useLocation();
 
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'markets',
+    api: marketsApi,
+    id: market.id,
+    t,
+    redirectTo: '/markets',
+    alsoInvalidate: ['users', 'sellers', 'products', 'categories', 'debtors', 'transactions'],
+  });
 
   const sellersByProduct = useMemo(() => {
     const sellersMap = new Map<string, UserInfo[]>();
@@ -211,59 +222,64 @@ export function MarketDetailView({ market, isOwnMarket, previews }: MarketDetail
   const tabs = isOwnMarket ? [employeesTab, productsTab, debtorsTab, transactionsTab] : [employeesTab];
 
   return (
-    <DetailPage
-      crumbs={
-        // Список магазинов открыт только админу; у владельца и продавца «назад» — на главную.
-        can(Action.MARKETS_VIEW)
-          ? [
-              { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+    <>
+      <DetailPage
+        crumbs={
+          // Список магазинов открыт только админу; у владельца и продавца «назад» — на главную.
+          can(Action.MARKETS_VIEW)
+            ? [
+                { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
+                {
+                  link: location.state?.fromPath ?? '/markets',
+                  label: location.state?.fromName || t('navigation.markets', { ns: 'common' }),
+                },
+                { label: market.name },
+              ]
+            : [{ label: t('navigation.dashboard', { ns: 'common' }), link: '/' }, { label: market.name }]
+        }
+        hero={
+          <DetailHero
+            avatar={<EntityAvatar name={market.name} image={market.image} icon={Store} shape="square" size="lg" />}
+            title={market.name}
+            subtitle={market.address}
+            manage={{
+              editTo: can(Action.MARKETS_EDIT) ? `/markets/${market.id}/edit` : undefined,
+              onDelete: can(Action.MARKETS_DELETE) ? requestDelete : undefined,
+            }}
+            stats={[
+              { label: t('fields.products'), value: market.count.products, to: '/products', state: filterState },
+              { label: t('fields.debtors'), value: market.count.debtors, to: '/debtors', state: filterState },
               {
-                link: location.state?.fromPath ?? '/markets',
-                label: location.state?.fromName || t('navigation.markets', { ns: 'common' }),
+                label: t('fields.transactions'),
+                value: market.count.transactions,
+                to: '/transactions',
+                state: filterState,
               },
-              { label: market.name },
-            ]
-          : [{ label: t('navigation.dashboard', { ns: 'common' }), link: '/' }, { label: market.name }]
-      }
-      hero={
-        <DetailHero
-          avatar={<EntityAvatar name={market.name} image={market.image} icon={Store} shape="square" size="lg" />}
-          title={market.name}
-          subtitle={market.address}
-          editTo={can(Action.MARKETS_EDIT) ? `/markets/${market.id}/edit` : undefined}
-          editLabel={t('actions.edit')}
-          stats={[
-            { label: t('fields.products'), value: market.count.products, to: '/products', state: filterState },
-            { label: t('fields.debtors'), value: market.count.debtors, to: '/debtors', state: filterState },
-            {
-              label: t('fields.transactions'),
-              value: market.count.transactions,
-              to: '/transactions',
-              state: filterState,
-            },
+            ]}
+          />
+        }
+        aside={
+          <ListGroup title={t('fields.owner')}>
+            <EntityRow
+              name={market.owner.name}
+              subtitle={market.owner.email}
+              image={market.owner.image}
+              to={ownerTo}
+              state={ownerState}
+            />
+          </ListGroup>
+        }>
+        <DetailFacts
+          facts={[
+            { label: t('fields.address'), value: market.address },
+            { label: t('fields.createdAt'), value: formatDate(market.createdAt, true) },
+            { label: t('fields.updatedAt'), value: formatDate(market.updatedAt, true) },
           ]}
         />
-      }
-      aside={
-        <ListGroup title={t('fields.owner')}>
-          <EntityRow
-            name={market.owner.name}
-            subtitle={market.owner.email}
-            image={market.owner.image}
-            to={ownerTo}
-            state={ownerState}
-          />
-        </ListGroup>
-      }>
-      <DetailFacts
-        facts={[
-          { label: t('fields.address'), value: market.address },
-          { label: t('fields.createdAt'), value: formatDate(market.createdAt, true) },
-          { label: t('fields.updatedAt'), value: formatDate(market.updatedAt, true) },
-        ]}
-      />
 
-      <MarketEntityTabs variant="grouped" defaultValue="employees" tabs={tabs} />
-    </DetailPage>
+        <MarketEntityTabs variant="grouped" defaultValue="employees" tabs={tabs} />
+      </DetailPage>
+      <ConfirmDialog {...deleteDialog} />
+    </>
   );
 }

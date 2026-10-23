@@ -7,6 +7,7 @@ import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
+import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
@@ -25,6 +26,7 @@ import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
@@ -38,6 +40,15 @@ export default function TransactionDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'transactions',
+    api: transactionsApi,
+    id,
+    t,
+    redirectTo: '/transactions',
+    // Остатки товаров, долги и баланс продавцов считаются по транзакциям — обновляем их кеш тоже.
+    alsoInvalidate: ['debtors', 'products', 'sellers'],
+  });
   const payModal = useTransactionsModals((s) => s.pay);
   const refundModal = useTransactionsModals((s) => s.refund);
 
@@ -166,6 +177,9 @@ export default function TransactionDetailPage() {
                 </>
               ) : undefined
             }
+            manage={{
+              onDelete: can(Action.TRANSACTIONS_DELETE) ? requestDelete : undefined,
+            }}
           />
         }
         aside={
@@ -397,6 +411,7 @@ export default function TransactionDetailPage() {
 
       <CreatePaymentModal />
       <RefundTransactionModal />
+      <ConfirmDialog {...deleteDialog} />
     </>
   );
 }

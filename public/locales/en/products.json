@@ -19,10 +19,7 @@
     "areYouSure": "Are you sure you want to delete this product?",
     "deleteSuccess": "Product deleted",
     "deleteError": "Error deleting product",
-    "all": "All products",
-    "edit": "Edit",
-    "duplicate": "Duplicate",
-    "delete": "Delete"
+    "all": "All products"
   },
   "filters": {
     "search": "Search products",

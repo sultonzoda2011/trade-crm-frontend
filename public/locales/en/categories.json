@@ -2,6 +2,8 @@
   "title": "Categories",
   "notFound": "Category not found",
   "create": "Create category",
+  "copyName": "{{name}} (copy)",
+  "copyHint": "Pre-filled from “{{name}}”. Check the name and add a photo.",
   "edit": "Edit category",
   "createSuccess": "Category created successfully",
   "createError": "Error creating category",

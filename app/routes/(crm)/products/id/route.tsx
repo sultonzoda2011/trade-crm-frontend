@@ -1,9 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Copy, Package, Pencil, Store, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Package, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
-import { toast } from 'sonner';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { productsApi } from '~/api/products';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
@@ -18,10 +16,10 @@ import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TrendBadge } from '~/components/shared/TrendBadge';
 import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
+import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 
@@ -31,8 +29,6 @@ export default function ProductDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const queryClient = useQueryClient();
-  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const {
     data: response,
@@ -45,20 +41,12 @@ export default function ProductDetailPage() {
     staleTime: 30_000,
   });
 
-  const { mutate: deleteProduct, isPending: isDeleting } = useMutation({
-    mutationFn: () => productsApi.delete(id!),
-    onSuccess: () => {
-      // Карточка удалённого товара больше не существует — убираем её из кеша до инвалидации списков,
-      // иначе активный запрос уйдёт за ней на сервер и получит 404.
-      queryClient.removeQueries({ queryKey: queryKeys.detail('products', id) });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
-      toast.success(t('actions.deleteSuccess'));
-      setDeleteOpen(false);
-      navigate('/products', { replace: true });
-    },
-    onError: () => {
-      toast.error(t('actions.deleteError'));
-    },
+  const { requestDelete, deleteDialog } = useDeleteEntity({
+    entity: 'products',
+    api: productsApi,
+    id,
+    t,
+    redirectTo: '/products',
   });
 
   const product = response?.data;
@@ -105,9 +93,6 @@ export default function ProductDetailPage() {
     reorderPriority === 'OUT_OF_STOCK' || reorderPriority === 'CRITICAL' || reorderPriority === 'WARNING';
   const showReorderBadge = reorderIsActionable && !healthCoversStock;
   const { metrics, comparison, sales } = product;
-  const canEdit = can(Action.PRODUCTS_EDIT);
-  const canCopy = can(Action.PRODUCTS_CREATE);
-  const canDelete = can(Action.PRODUCTS_DELETE);
 
   return (
     <>
@@ -156,33 +141,11 @@ export default function ProductDetailPage() {
               },
               { label: t('metrics.netUnitsSold'), value: sales.unitsSold },
             ]}
-            actions={
-              canEdit || canCopy || canDelete ? (
-                <>
-                  {canEdit && (
-                    <Button size="lg" render={<Link to={`/products/${product.id}/edit`} />}>
-                      <Pencil data-icon="inline-start" />
-                      {t('actions.edit')}
-                    </Button>
-                  )}
-                  {canCopy && (
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      render={<Link to={`/products/create?copyFrom=${product.id}`} />}>
-                      <Copy data-icon="inline-start" />
-                      {t('actions.duplicate')}
-                    </Button>
-                  )}
-                  {canDelete && (
-                    <Button size="lg" variant="destructive" onClick={() => setDeleteOpen(true)}>
-                      <Trash2 data-icon="inline-start" />
-                      {t('actions.delete')}
-                    </Button>
-                  )}
-                </>
-              ) : undefined
-            }
+            manage={{
+              editTo: can(Action.PRODUCTS_EDIT) ? `/products/${product.id}/edit` : undefined,
+              copyTo: can(Action.PRODUCTS_CREATE) ? `/products/create?copyFrom=${product.id}` : undefined,
+              onDelete: can(Action.PRODUCTS_DELETE) ? requestDelete : undefined,
+            }}
           />
         }
         aside={
@@ -254,14 +217,7 @@ export default function ProductDetailPage() {
           ]}
         />
       </DetailPage>
-      <ConfirmDialog
-        open={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        onConfirm={() => deleteProduct()}
-        isLoading={isDeleting}
-        title={t('actions.confirm', { ns: 'common' })}
-        description={t('actions.areYouSure')}
-      />
+      <ConfirmDialog {...deleteDialog} />
     </>
   );
 }
