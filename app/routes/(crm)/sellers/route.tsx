@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flexRender } from '@tanstack/react-table';
 import { Plus, Store, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +19,7 @@ import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
 import { getClientUser } from '~/lib/auth-utils';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/sellers/configs/columns';
 import { getSellerFilters } from '~/routes/(crm)/sellers/configs/filters';
@@ -145,8 +145,22 @@ export default function SellersPage() {
                 state: { fromPath: location.pathname, fromName: t('title') },
               }
         }
+        getSwipeActions={(row) =>
+          buildRowSwipeActions({
+            t,
+            onEdit: can(Action.SELLERS_EDIT)
+              ? () =>
+                  navigate(`/sellers/${row.original.id}/edit`, {
+                    state: { fromPath: location.pathname, fromName: t('title') },
+                  })
+              : undefined,
+            onDelete:
+              can(Action.SELLERS_DELETE) && getClientUser()?.id !== row.original.id
+                ? () => deleteModal.open(row.original.id)
+                : undefined,
+          })
+        }
         renderMobileCard={(row) => {
-          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const s = row.original;
           return (
             <EntityMobileCard
@@ -154,7 +168,6 @@ export default function SellersPage() {
               fallbackIcon={UserRound}
               title={s.name}
               subtitle={s.email}
-              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
               stats={[{ icon: Store, label: t('fields.market'), value: s.market?.name ?? '—' }]}
             />
           );

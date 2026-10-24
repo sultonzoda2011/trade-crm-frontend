@@ -8,7 +8,7 @@ export interface SwipeAction {
   key: string;
   label: string;
   icon: LucideIcon;
-  tone: 'primary' | 'destructive';
+  tone: 'primary' | 'success' | 'destructive';
   onSelect: () => void;
 }
 
@@ -23,6 +23,7 @@ const OPEN_EVENT = 'swipe-row:open';
 
 const TONE_CLASS: Record<SwipeAction['tone'], string> = {
   primary: 'bg-primary text-primary-foreground',
+  success: 'bg-success text-white',
   destructive: 'bg-destructive text-white',
 };
 

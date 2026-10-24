@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flexRender } from '@tanstack/react-table';
-import { Plus } from 'lucide-react';
+import { CreditCard, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
@@ -15,6 +14,7 @@ import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { renderActionsCell } from '~/components/shared/ListPageLayout';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { TransactionMobileCard } from '~/components/transactions/TransactionMobileCard';
@@ -27,6 +27,7 @@ import { useFilterParams } from '~/hooks/useFilterParams';
 import { useTransactionRows } from '~/hooks/useOfflineOverlay';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { getColumns } from '~/routes/(crm)/transactions/configs/columns';
 import { getTransactionFilters } from '~/routes/(crm)/transactions/configs/filters';
 import { useTransactionsModals, useTransactionsStore } from '~/routes/(crm)/transactions/store';
@@ -36,6 +37,7 @@ export default function TransactionsPage() {
   const queryClient = useQueryClient();
   const { can } = useCan();
   const deleteModal = useTransactionsModals((s) => s.delete);
+  const payModal = useTransactionsModals((s) => s.pay);
 
   const {
     page,
@@ -225,16 +227,36 @@ export default function TransactionsPage() {
             ? undefined
             : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
         }
-        renderMobileCard={(row) => {
-          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
-          return (
-            <TransactionMobileCard
-              row={row}
-              t={t}
-              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
-            />
-          );
+        // Страницы правки у транзакции нет (её не редактируют, только оплачивают
+        // и удаляют), поэтому «Изменить» здесь не показываем. Продажа из очереди
+        // ещё не создана на сервере — у неё свои кнопки (см. renderMobileCard).
+        getSwipeActions={(row) => {
+          const tx = row.original;
+          if (tx.pending) return undefined;
+          return buildRowSwipeActions({
+            t,
+            leading:
+              can(Action.TRANSACTIONS_EDIT) && tx.remainingAmount > 0
+                ? [
+                    {
+                      key: 'pay',
+                      label: t('pay'),
+                      icon: CreditCard,
+                      tone: 'success',
+                      onSelect: () => payModal.open(tx),
+                    },
+                  ]
+                : [],
+            onDelete: can(Action.TRANSACTIONS_DELETE) ? () => deleteModal.open(tx.id) : undefined,
+          });
         }}
+        renderMobileCard={(row) => (
+          <TransactionMobileCard
+            row={row}
+            t={t}
+            actionsCell={row.original.pending ? renderActionsCell(row) : undefined}
+          />
+        )}
       />
       <CreatePaymentModal />
       <ConfirmDialog

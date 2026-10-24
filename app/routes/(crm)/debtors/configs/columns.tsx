@@ -1,38 +1,24 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TFunction } from 'i18next';
 import { Banknote, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
-import { toast } from 'sonner';
 import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { PendingRowActions } from '~/components/shared/PendingRowActions';
 import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
+import { useOpenPay } from '~/hooks/useOpenPay';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { loadTransactionForPay } from '~/lib/load-transaction-for-pay';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
-import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 import type { DebtorRow } from '~/types/pending';
 
 function DebtorActionsCell({ row, t }: { row: DebtorRow; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
-  const payModal = useTransactionsModals((s) => s.pay);
   const location = useLocation();
   const { can } = useCan();
-  const queryClient = useQueryClient();
 
-  // Карточка/строка знает только id транзакции (см. activeDebtTransactionId в
-  // профиле должника) — модалке оплаты нужен полный Transaction (товары,
-  // totalAmount), поэтому перед открытием дотягиваем его — а без связи или на слабой берём копию с устройства.
-  // networkMode 'always': иначе без сети TanStack Query вообще не запустил бы загрузку и кнопка крутилась бы вечно.
-  const { mutate: openPay, isPending: isPayLoading } = useMutation({
-    networkMode: 'always',
-    mutationFn: (transactionId: string) => loadTransactionForPay(queryClient, transactionId),
-    onSuccess: (transaction) => payModal.open(transaction),
-    onError: () => toast.error(t('actions.payLoadError', { ns: 'debtors' })),
-  });
+  const { mutate: openPay, isPending: isPayLoading } = useOpenPay(t('actions.payLoadError', { ns: 'debtors' }));
 
   // Должник ещё не создан на сервере: просмотр, правка и оплата для него бессмысленны — только повторить или убрать.
   if (row.pending) return <PendingRowActions pending={row.pending} />;
