@@ -189,6 +189,16 @@ export function BottomNav() {
           hidden && 'translate-y-[160%] opacity-0'
         )}
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) * 0.5 + 12px)' }}>
+        {/*
+          Подложка под капсулой: фон страницы, плавно переходящий в прозрачный над панелью.
+          Без неё список виден и сквозь стекло, и в полосе между капсулой и краем экрана
+          (там строки читались целиком, будто панели нет). -top-8 закрывает ещё и вылет
+          центральной «+», а нижняя часть почти непрозрачна — под панелью текст не просвечивает.
+        */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-8 bottom-0 -z-10 bg-[linear-gradient(to_top,var(--background)_0%,var(--background)_55%,color-mix(in_srgb,var(--background)_85%,transparent)_72%,transparent_100%)]"
+        />
         <div
           className="liquid-glass pointer-events-auto relative mx-auto max-w-md rounded-full p-1.5"
           style={{ height: CAPSULE_HEIGHT }}>

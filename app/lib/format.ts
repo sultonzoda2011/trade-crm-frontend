@@ -21,3 +21,9 @@ export function formatDate(date: string | Date | null | undefined, withTime = fa
   const fmt = withTime ? 'DD.MM.YYYY HH:mm' : 'DD.MM.YYYY';
   return dayjs(date).format(fmt);
 }
+
+/** Время для строк списка: «14:35». */
+export function formatTime(date: string | Date | null | undefined): string {
+  if (!date) return '';
+  return dayjs(date).format('HH:mm');
+}

@@ -141,5 +141,33 @@
     "areYouSure": "Are you sure you want to delete this transaction?",
     "deleteSuccess": "Transaction deleted",
     "deleteError": "Error deleting transaction"
+  },
+  "list": {
+    "quick": {
+      "period": "Period",
+      "kind": "Operation type",
+      "anyDate": "All time",
+      "all": "All",
+      "sale": "Sales",
+      "debt": "On credit",
+      "refund": "Refunds",
+      "unpaid": "Unpaid",
+      "overdue": "Overdue"
+    },
+    "summary": {
+      "sold": "Sold",
+      "debt": "On credit",
+      "refunds": "Refunds"
+    },
+    "day": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "total": "Total {{amount}}"
+    },
+    "retail": {
+      "SALE": "Retail sale",
+      "REFUND": "Retail refund"
+    },
+    "moreItems": "+ {{count}} more"
   }
 }

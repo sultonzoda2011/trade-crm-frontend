@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import type { Row } from '@tanstack/react-table';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { toast } from 'sonner';
@@ -13,11 +14,18 @@ import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { DataTable } from '~/components/shared/DataTable';
+import { DataTable, type MobileRowGroup } from '~/components/shared/DataTable';
 import { renderActionsCell } from '~/components/shared/ListPageLayout';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { TransactionDayHeader } from '~/components/transactions/TransactionDayHeader';
 import { TransactionMobileCard } from '~/components/transactions/TransactionMobileCard';
+import {
+  TransactionQuickFilters,
+  filtersNotShownByChips,
+  getActivePeriod,
+} from '~/components/transactions/TransactionQuickFilters';
+import { TransactionsSummary } from '~/components/transactions/TransactionsSummary';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -28,9 +36,11 @@ import { useTransactionRows } from '~/hooks/useOfflineOverlay';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
 import { buildRowSwipeActions } from '~/lib/swipe-actions';
+import { groupRowsByDay } from '~/lib/transaction-view';
 import { getColumns } from '~/routes/(crm)/transactions/configs/columns';
 import { getTransactionFilters } from '~/routes/(crm)/transactions/configs/filters';
 import { useTransactionsModals, useTransactionsStore } from '~/routes/(crm)/transactions/store';
+import type { TransactionRow } from '~/types/pending';
 
 export default function TransactionsPage() {
   const { t } = useTranslation(['transactions', 'common']);
@@ -175,6 +185,30 @@ export default function TransactionsPage() {
     [t, debtorOptions, categoryOptions, productOptions, sellerOptions]
   );
 
+  // Дни имеют смысл, пока список идёт по дате: при сортировке по сумме они перемешаны,
+  // и заголовок «Сегодня» пришлось бы повторять десять раз подряд.
+  const groupedByDay = (filters.find((f) => f.key === 'sortBy')?.value ?? 'createdAt') === 'createdAt';
+
+  const getMobileGroups = useCallback(
+    (rows: Row<TransactionRow>[]): MobileRowGroup<TransactionRow>[] =>
+      groupedByDay
+        ? groupRowsByDay(rows, page, totalPages).map((g) => ({
+            key: `${g.key}-${g.rows[0]?.id}`,
+            header: <TransactionDayHeader dayKey={g.key} net={g.net} />,
+            rows: g.rows,
+          }))
+        : [{ key: 'all', rows }],
+    [groupedByDay, page, totalPages]
+  );
+
+  // Сводка за период — только когда в списке нет ничего, кроме периода: цифры считает дашборд по
+  // всему периоду, а не по фильтру, и рядом с «Продажи · Наличные» они бы не совпадали с рядами.
+  const activePeriod = getActivePeriod(filters);
+  const hasOtherFilters =
+    debouncedSearch.length > 0 || filters.some((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+  const summaryPeriod =
+    activePeriod && activePeriod !== 'all' && !hasOtherFilters && can(Action.DASHBOARDS_VIEW) ? activePeriod : null;
+
   useFilterParams({
     page,
     limit,
@@ -208,7 +242,9 @@ export default function TransactionsPage() {
           )}
         </div>
       </ListPageToolbar>
-      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
+      <TransactionQuickFilters filters={filters} onChange={setFilters} />
+      {summaryPeriod && <TransactionsSummary period={summaryPeriod} />}
+      <ActiveFilterPills filters={filtersNotShownByChips(filters)} config={filterConfig} onRemove={removeFilter} />
       <DataTable
         table={table}
         pinLastColumn
@@ -221,6 +257,7 @@ export default function TransactionsPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        getMobileGroups={getMobileGroups}
         getRowLink={(row) =>
           // Страницы у продажи из очереди ещё нет — открывать нечего.
           row.original.pending
@@ -255,6 +292,7 @@ export default function TransactionsPage() {
             row={row}
             t={t}
             actionsCell={row.original.pending ? renderActionsCell(row) : undefined}
+            showDate={!groupedByDay}
           />
         )}
       />

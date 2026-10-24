@@ -70,9 +70,14 @@ export function getTransactionTitle(
     type: string;
   },
   t: TFunction,
-  opts?: { skipDebtor?: boolean }
+  opts?: { skipDebtor?: boolean; retail?: boolean }
 ): string {
   if (!opts?.skipDebtor && tx.debtor?.name) return tx.debtor.name;
   if (tx.customerName) return tx.customerName;
+  // Операция без клиента: «Розничная продажа» понятнее голого «Продажа» —
+  // в списке рядом стоят и клиентские, и розничные строки.
+  if (opts?.retail && (tx.type === 'SALE' || tx.type === 'REFUND')) {
+    return t(`list.retail.${tx.type}`, { ns: 'transactions' });
+  }
   return t(`type.${tx.type}`, { ns: 'transactions' });
 }
