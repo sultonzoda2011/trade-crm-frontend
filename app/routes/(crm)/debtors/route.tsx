@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flexRender } from '@tanstack/react-table';
-import { Plus } from 'lucide-react';
+import { Banknote, Plus } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
@@ -8,6 +7,7 @@ import { toast } from 'sonner';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
+import { renderActionsCell } from '~/components/shared/ListPageLayout';
 import { DebtorMobileCard } from '~/components/debtors/DebtorMobileCard';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
@@ -19,8 +19,10 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
+import { useOpenPay } from '~/hooks/useOpenPay';
 import { useDebtorRows } from '~/hooks/useOfflineOverlay';
 import { queryKeys } from '~/lib/query-keys';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { getColumns } from '~/routes/(crm)/debtors/configs/columns';
 import { getDebtorFilters } from '~/routes/(crm)/debtors/configs/filters';
 import { useDebtorsModals, useDebtorsStore } from '~/routes/(crm)/debtors/store';
@@ -33,6 +35,7 @@ export default function DebtorsPage() {
   const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useDebtorsModals((s) => s.delete);
+  const { mutate: openPay } = useOpenPay(t('actions.payLoadError'));
 
   const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
     useDebtorsStore();
@@ -148,16 +151,39 @@ export default function DebtorsPage() {
             ? undefined
             : { to: `/debtors/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
         }
-        renderMobileCard={(row) => {
-          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
-          return (
-            <DebtorMobileCard
-              row={row}
-              t={t}
-              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
-            />
-          );
+        // Должник из очереди ещё не создан на сервере: правка и удаление ему не
+        // подходят, у такой строки свои кнопки «повторить / убрать» (см. renderMobileCard).
+        getSwipeActions={(row) => {
+          const debtor = row.original;
+          if (debtor.pending) return undefined;
+          const activeDebtId = debtor.activeDebtTransactionId;
+          return buildRowSwipeActions({
+            t,
+            leading:
+              activeDebtId && can(Action.TRANSACTIONS_EDIT)
+                ? [
+                    {
+                      key: 'pay',
+                      label: t('actions.pay'),
+                      icon: Banknote,
+                      tone: 'success',
+                      onSelect: () => openPay(activeDebtId),
+                    },
+                  ]
+                : [],
+            onEdit: can(Action.DEBTORS_EDIT)
+              ? () =>
+                  navigate(`/debtors/${debtor.id}/edit`, {
+                    state: { fromPath: location.pathname, fromName: t('title') },
+                  })
+              : undefined,
+            onDelete: can(Action.DEBTORS_DELETE) ? () => deleteModal.open(debtor.id) : undefined,
+          });
         }}
+        renderMobileCard={(row) => (
+          // Только очередь: у обычных строк действия — свайпом.
+          <DebtorMobileCard row={row} t={t} actionsCell={row.original.pending ? renderActionsCell(row) : undefined} />
+        )}
       />
       <CreatePaymentModal />
       <ConfirmDialog

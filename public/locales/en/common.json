@@ -264,5 +264,9 @@
   "noTransactions": "No transactions yet",
   "noProducts": "No products yet",
   "noDebtors": "No debtors yet",
-  "hasProducts": "Has products"
+  "hasProducts": "Has products",
+  "swipe": {
+    "edit": "Edit",
+    "delete": "Delete"
+  }
 }

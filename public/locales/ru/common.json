@@ -264,5 +264,9 @@
   "noTransactions": "Пока нет транзакций",
   "noProducts": "Пока нет товаров",
   "noDebtors": "Пока нет должников",
-  "hasProducts": "Есть товары"
+  "hasProducts": "Есть товары",
+  "swipe": {
+    "edit": "Изменить",
+    "delete": "Удалить"
+  }
 }

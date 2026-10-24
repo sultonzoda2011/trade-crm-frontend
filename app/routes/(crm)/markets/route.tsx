@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flexRender } from '@tanstack/react-table';
 import { Package, Plus, Receipt, Store, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,6 +19,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/markets/configs/columns';
@@ -150,8 +150,19 @@ export default function MarketsPage() {
           to: `/markets/${row.original.id}`,
           state: { fromPath: location.pathname, fromName: t('title') },
         })}
+        getSwipeActions={(row) =>
+          buildRowSwipeActions({
+            t,
+            onEdit: can(Action.MARKETS_EDIT)
+              ? () =>
+                  navigate(`/markets/${row.original.id}/edit`, {
+                    state: { fromPath: location.pathname, fromName: t('title') },
+                  })
+              : undefined,
+            onDelete: can(Action.MARKETS_DELETE) ? () => deleteModal.open(row.original.id) : undefined,
+          })
+        }
         renderMobileCard={(row) => {
-          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const m = row.original;
           return (
             <EntityMobileCard
@@ -159,7 +170,6 @@ export default function MarketsPage() {
               fallbackIcon={Store}
               title={m.name}
               subtitle={m.address}
-              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
               stats={[
                 { icon: Package, label: t('fields.products', 'Товары'), value: m.count.products },
                 { icon: Users, label: t('fields.debtors', 'Должники'), value: m.count.debtors },

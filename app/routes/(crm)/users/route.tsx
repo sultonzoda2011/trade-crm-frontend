@@ -14,6 +14,8 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useEntityList } from '~/hooks/useEntityList';
 import { mapToOptions } from '~/lib/mapToOptions';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
+import { getClientUser } from '~/lib/auth-utils';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/users/configs/columns';
 import { getUserFilters } from '~/routes/(crm)/users/configs/filters';
@@ -56,6 +58,21 @@ export default function UsersPage() {
         to: `/users/${row.original.id}`,
         state: { fromPath: location.pathname, fromName: t('title') },
       })}
+      getSwipeActions={(row) =>
+        buildRowSwipeActions({
+          t,
+          onEdit: can(Action.USERS_EDIT)
+            ? () =>
+                navigate(`/users/${row.original.id}/edit`, {
+                  state: { fromPath: location.pathname, fromName: t('title') },
+                })
+            : undefined,
+          onDelete:
+            can(Action.USERS_DELETE) && getClientUser()?.id !== row.original.id
+              ? () => deleteModal.open(row.original.id)
+              : undefined,
+        })
+      }
       createAction={
         can(Action.USERS_CREATE) ? (
           <Button
@@ -67,7 +84,7 @@ export default function UsersPage() {
           </Button>
         ) : null
       }
-      renderCard={(row, actions) => {
+      renderCard={(row) => {
         const u = row.original;
         const roleCfg = ROLE_CONFIG[u.role];
         return (
@@ -76,7 +93,6 @@ export default function UsersPage() {
             fallbackIcon={UserRound}
             title={u.name}
             subtitle={u.email}
-            actionsCell={actions}
             badges={roleCfg ? [{ label: roleCfg.label(t), className: roleCfg.className }] : []}
             stats={[{ icon: Store, label: t('fields.market'), value: u.market?.name ?? '—' }]}
           />

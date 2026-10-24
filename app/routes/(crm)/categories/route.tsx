@@ -1,9 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { flexRender } from '@tanstack/react-table';
 import { Package, Plus, Tag } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
@@ -19,6 +18,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
 import { useFilterParams } from '~/hooks/useFilterParams';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/categories/configs/columns';
 import { getCategoryFilters } from '~/routes/(crm)/categories/configs/filters';
@@ -27,6 +27,7 @@ import { useCategoriesModals, useCategoriesStore } from '~/routes/(crm)/categori
 export default function CategoriesPage() {
   const { t } = useTranslation(['categories', 'common']);
   const queryClient = useQueryClient();
+  const location = useLocation();
   const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useCategoriesModals((s) => s.delete);
@@ -133,8 +134,23 @@ export default function CategoriesPage() {
         totalPages={totalPages}
         onPageChange={setPage}
         onLimitChange={setLimit}
+        getRowLink={(row) => ({
+          to: `/categories/${row.original.id}`,
+          state: { fromPath: location.pathname, fromName: t('title') },
+        })}
+        getSwipeActions={(row) =>
+          buildRowSwipeActions({
+            t,
+            onEdit: can(Action.CATEGORIES_MANAGE)
+              ? () =>
+                  navigate(`/categories/${row.original.id}/edit`, {
+                    state: { fromPath: location.pathname, fromName: t('title') },
+                  })
+              : undefined,
+            onDelete: can(Action.CATEGORIES_MANAGE) ? () => deleteModal.open(row.original.id) : undefined,
+          })
+        }
         renderMobileCard={(row) => {
-          const actionsCell = row.getVisibleCells().find((cell) => cell.column.id === 'actions');
           const c = row.original;
           return (
             <EntityMobileCard
@@ -142,7 +158,6 @@ export default function CategoriesPage() {
               fallbackIcon={Tag}
               title={c.name}
               subtitle={c.description}
-              actionsCell={actionsCell && flexRender(actionsCell.column.columnDef.cell, actionsCell.getContext())}
               stats={[{ icon: Package, label: t('fields.productsCount'), value: c._count.products }]}
             />
           );

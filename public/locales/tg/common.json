@@ -264,5 +264,9 @@
   "noTransactions": "Ҳанӯз муомила нест",
   "noProducts": "Ҳанӯз мол нест",
   "noDebtors": "Ҳанӯз қарздор нест",
-  "hasProducts": "Мол дорад"
+  "hasProducts": "Мол дорад",
+  "swipe": {
+    "edit": "Таҳрир",
+    "delete": "Нест кардан"
+  }
 }
