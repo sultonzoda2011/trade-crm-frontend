@@ -1,97 +1,98 @@
 # Dashboard and reports
 
-The dashboard is the home screen for the administrator and the owner. It opens right after you sign in and shows how business is going: what was sold, how much money came in, who owes you, what is running low, which products sell best, and how the sellers are doing. All the numbers are on one screen, split across tabs.
+The **"Dashboard"** screen (`/dashboard`) is the command center for administrators and market owners. It opens right after you sign in and brings together the full picture of your business on one screen: how much was sold, how much actual cash came in, who owes money, which items need restocking, which products bring in the most revenue, and how each seller is performing.
 
 > [!NOTE]
-> The dashboard is seen by the administrator and the owner. A seller does not have this screen — after signing in they go straight to the **"Transactions"** section to record sales.
+> The **"Dashboard"** is visible only to **Administrators** and **Owners**. Sellers do not have this screen — after signing in, they go straight to **"Transactions"** to record day-to-day sales.
 
-## Filters at the top
+## Period and seller filters
 
-Above the tabs are two filters. They apply to "Overview", "Products" and "Sellers". The **"Inventory"** tab has none: stock is counted as of now and for the whole shop, so period and seller would change nothing.
+Above the tabs sit two filters that control **"Overview"**, **"Products"**, and **"Sellers"**:
 
-- **"Period"** — the span the numbers are calculated over: **Today**, **Week**, **Month** or **Year**. On "Overview" the default is **Today**, on the other tabs it is **Month**. The week counts from Monday, the month from the 1st, the year from 1 January, always up to today. The exact date range is shown next to it.
-- **"Seller"** — you can view the overall numbers (**"All sellers"**) or pick one seller to see only their results.
+- **Period (pill buttons):** **"Today"**, **"Week"**, **"Month"**, or **"Year"**. The **"Overview"** tab defaults to **"Today"** (acting as your evening assistant), while **"Products"** and **"Sellers"** default to **"Month"**. The week starts on Monday, the month on the 1st, and the year on January 1st, always running up to today. Next to the buttons, a calendar label displays the exact date range.
+- **Seller (picker sheet):** defaults to **"All sellers"**, or you can tap it to search and pick a single seller to inspect only their numbers.
 
-The filters are kept when you switch tabs (and come back when you return from "Inventory"), and you can share a link to a specific tab with the filter already applied.
+Your filter selection stays in the URL when you switch between tabs (and is restored when you return from "Inventory"), so you can bookmark or share a direct link to any filtered view.
 
-## Dashboard tabs
+> [!TIP]
+> On the **"Inventory"** tab, the period and seller filters are intentionally hidden: stock health and sales velocity are always evaluated across the whole store over the last **28 days** (4 full weeks).
 
-The dashboard is split into four tabs: **"Overview"**, **"Inventory"**, **"Products"** and **"Sellers"**.
+## The four dashboard tabs
 
-### Overview
+The dashboard is organized into four tabs: **"Overview"**, **"Inventory"**, **"Products"**, and **"Sellers"**.
 
-The main tab answers the evening question "how did the day go?". It opens with the period set to **"Today"**; the other tabs default to the **month**.
+### 1. Overview
 
-**Sold.** The big card at the top: the value of goods that left the shop in the period — cash, card and credit together, minus returns. Under it are two lines that must not be confused:
+The main tab is designed to answer the owner's daily question: *"How did today go, and what needs my attention right now?"*
+
+- **Sold.** The headline card at the top shows net goods sold during the period (cash, card, and credit combined, already net of returns). If any returns occurred during the period, a note beneath the total states the exact amount subtracted. Below the main figure are two lines that should never be confused:
 
 | Line | What it means |
 | --- | --- |
-| Money received | Money that actually came in: cash and card sales plus payments on older debts in this period |
-| Given on credit | Goods that left without payment. They become money only when the debt is paid back |
+| **Money received** | Actual cash and card money that came in during the period: cash/card sales **plus** payments collected on older debts |
+| **Given on credit** | Goods handed over without immediate payment. This becomes cash only when the debtor pays it back |
 
-When a single seller is picked, payments on older debts are not added to "Money received": the system counts them for the whole shop, not per seller, and crediting them to one seller would be untrue. In that case the line is called "Received in cash or by card". If there were returns in the period, a note under the card says how much — it is already subtracted from "Sold".
+> [!IMPORTANT]
+> When you filter by a **single seller**, payments on older debts are excluded from their total (debt repayments are tracked at the store level rather than credited to an individual seller). In that view, the label changes to **"Received in cash or by card"**.
 
-**Needs attention.** A short list of what matters right now: overdue debts, products running out, a sharp rise in returns. Every row is a link that takes you straight to the matter. The first four are shown, the rest behind **"Show all"**. If all is calm it says "Nothing urgent".
+- **Needs attention.** A concise list of urgent signals right now: overdue debts, items critically low on stock, a sharp spike in returns, or a drop in sales. Every row is a direct link to the relevant filtered list. Up to 4 items are shown initially, with the rest behind **"Show all"**. When everything is in order, the card simply says **"Nothing urgent"**.
+- **Owed to us.** The total unpaid debt **right now** across all debtors and how many people owe money. Below, the total is broken down into three clickable rows:
+  - **"Overdue"** — past the due date;
+  - **"Due soon"** — approaching the payment deadline;
+  - **"Not due yet, or no due date"** — all remaining active debts.
+  At the bottom of the card are two action buttons: **"Who to call first"** (opens high-risk debtors `/debtors?risk=HIGH`) and **"All debtors"** (`/debtors`).
+- **Running low.** Items that need restocking based on sales velocity over the **last 28 days**: how much is left, how many days the stock will last at the current pace, whether it has fallen below your minimum threshold, and a suggested order quantity.
+- **Best sellers.** The top 3 products by net revenue for the period, with an **"All products"** button that switches to the Products tab.
+- **Selling better or worse & Sales by day chart.** For periods of 3 days or longer, you see the daily revenue trend chart and categories whose sales shifted by 15% or more ("was → now"). On short periods (such as **"Today"**), instead of showing an empty single-point chart, the layout automatically swaps in **"How customers paid"** right next to the top sellers.
+- **How customers paid.** A single breakdown bar comparing cash, card, and credit with exact amounts and percentage shares.
+- **Details.** Operation count, average sale amount, discounts granted, and returns.
+- **Latest operations.** The 5 most recent transactions with one-tap navigation to each transaction and a **"View all"** button (preserving any active seller filter).
 
-**Owed to us.** How much is unpaid **right now** (not "issued in the period") and by how many people. Below it, how much of that is overdue, how much is coming due, and how much is not due yet or has no due date. The rows open the matching debt list, and **"Who to call first"** opens the high-risk debtors.
+### 2. Inventory
 
-**Running low.** Products it is time to restock, with an explanation for each: how much is left, how many days it lasts at the current pace, whether the stock is below your minimum, and roughly how much to order. It is calculated **from the last 28 days of sales** and does not change with the period switch — one day of sales is not enough to judge stock. If there were no sales at all in 28 days, "how long it lasts" cannot be calculated, and the card says so. There is no "add to purchase" button because the app has no purchase list; the row opens the product.
+This tab focuses on stock management and answers three questions: **what to order**, **how healthy the stock is**, and **what customers return**. Everything is calculated store-wide over the **last 28 days**, matching the "Running low" card on "Overview".
 
-**Best sellers.** The three products that earned the most in the period (minus returns). **"All products"** leads to the Products tab.
-
-**Selling better or worse.** Categories whose sales changed noticeably (by 15% or more) compared with the previous period, with "was → now" amounts. Individual products are not compared: the server gives no previous-period figures per product, and we won't make them up. This card is hidden for short periods (see below).
-
-**Sales by day** is a chart. **How customers paid** shows cash, card and credit in one bar, with amount and share. **Details** has the number of operations, the average sale, discounts and returns. **Latest operations** lists the five most recent transactions.
-
-With no internet the saved data is shown, with a line saying what time it is from. If nothing has been saved for a tab yet, it says so plainly with a link to sync.
-
-### Inventory
-
-This tab answers three questions: what to order, how the shelves are doing, and what customers bring back. Everything is counted as of now, for the whole shop, **over sales of the last 28 days** — the same window as the "Running low" card on "Overview", so the two tabs never disagree. Period and seller are not selectable here.
-
-**What to order.** Products it's time to restock, the most urgent first. Each row says how much is left, how many days it lasts at the current pace, how much sells per day or week, whether the stock is below your minimum, roughly how much to order and how long it will last after the order. "Order" is an estimate based on recent sales; the decision is yours. The list shows at most ten of the most urgent products; if more need ordering, the card says so ("showing 10 of 14") and **"View all"** opens the full product list. If there were no sales at all in 28 days, how long the stock lasts can't be calculated, and the card says so.
-
-**Stock health.** At the top is the value of all goods in stock. It is **at selling price**, not purchase price: the app has no purchase price, so profit or "how much was invested" can't be read from it. Below are only the states that have products: out of stock, critically low, below your minimum, high returns, slow-moving, no sales. Each row links to the list of exactly those products. For slow-moving products the amount sitting in them is shown; for products with no sales at all there is no amount — the server doesn't calculate it and we don't make it up. At the bottom: how many products are fine out of the total.
-
-**What gets returned.** The amount returned over 28 days, how many units came back and what share of sales that is. The comparison with the previous 28 days appears only if there were returns then: a percentage from zero means nothing. Below are the products returned most often. The returned amount is priced at the product's list price, so with discounts it can differ a little from the money actually refunded.
+- **What to order.** Up to 10 of the most urgent items to restock, ordered by priority. Each row shows current stock, estimated days remaining at the current daily/weekly sales pace, whether stock is below your minimum threshold, suggested order quantity, and how many days the stock will last after restocking. Tapping any row opens the product detail page where you can immediately use **"Restock"**.
+- **Stock health.** At the top is the total value of all goods currently in stock **at selling price** (since the app does not track purchase cost, this reflects retail shelf value rather than invested capital). Below are interactive rows for each active health state:
+  - out of stock;
+  - critically low;
+  - below your minimum threshold;
+  - high returns;
+  - slow-moving (showing the retail value tied up on the shelf);
+  - no sales in the last 28 days.
+  Each row opens the product catalog pre-filtered to that exact health status. A footer note tells you how many products are in good standing out of the total catalog.
+- **What gets returned.** Total value and units returned over the last 28 days, return share of sales, comparison against the prior 28 days, and the products returned most frequently.
 
 > [!NOTE]
-> Counters on "Inventory" cover the last 28 days, while the product lists (`/products?health=…`) use the calendar month. So the number on a card and the number in the list it opens can differ by a product or two. This is a server limitation, not an error.
+> Counters on the "Inventory" tab use a rolling **28-day** window, while the filtered catalog lists (`/products?health=…`) use the current calendar month. Because of this slight window difference, the count on a card and the count in the opened list may occasionally differ by one or two items.
 
-### Products
+### 3. Products
 
-This tab answers "what brings in the money", "what do people buy most often" and "which groups of goods carry the sales". Both filters — period and seller — apply here. The data is the same as on "Overview" for the same period, so the numbers agree and switching tabs doesn't reload anything.
+Answers which products bring in the most money, which sell in the highest volume, and how categories perform (respecting both the period and seller filters):
 
-**Earned the most money.** Up to five products with the highest revenue for the period, net of returns. Each shows how much was sold, how much came back and what share of all sales it gave. This is **revenue, not profit**: the app has no purchase price, and the tab says so.
+- **Earned the most money.** Up to 5 top products by net revenue (minus returns), showing units sold, units returned, and share of total store revenue.
+- **Bought most often.** Up to 5 top products by net units sold (pieces, kg, liters, boxes, or meters). This ranking is drawn from the 20 highest-revenue products returned by the server, as noted beneath the list.
+- **Sales by category.** Revenue and share of total sales per category. The top 5 categories are displayed first, with **"Show all"** revealing the rest, plus a dedicated row for uncategorized items. For periods of 3 days or more, each row also shows the change against the previous period.
 
-**Bought most often.** Up to five products by units sold (pieces, kg, boxes — however the product is counted), net of returns, and how much money each earned. The list is picked among the **20 products with the highest revenue**: that is how the server sends it. So a cheap product that sells by the thousand may not make it here — when the list could have been cut, a note under it says so.
+### 4. Sellers
 
-**Sales by category.** How much money each group of goods brought and what share of sales it is. The five biggest are shown first, the rest open with **"Show all"** — otherwise the shares wouldn't add up to 100%. Products without a category are one row of their own. For periods of three days or more, the change against the previous period is shown next to each; if the category had no sales then, it says so instead of inventing a percentage. For short periods ("Today", the first days of a week or month) the comparison is not shown.
+Shows who sold how much during the selected period:
 
-There is no comparison for individual products: the server doesn't send the previous period per product, and we don't make it up.
+- At the top is the total **"Sold"** broken down into **"Cash and card"** and **"On credit"**.
+- Below is the **"Who sold how much"** ranking ordered from highest to lowest: net sales, share of store sales, comparison with the previous period, and return amounts. The first 5 sellers are shown, with **"Show all"** expanding the full list.
+- Owners and administrators who record sales also appear in the ranking with their role badge, while removed accounts are labeled **"Deleted staff member"**.
+- **Smart row links:** tapping a seller opens their seller card (`/sellers/:id`), tapping your own row as an owner opens your **"Profile"** (`/profile`), and tapping an owner/admin as an administrator opens their user card (`/users/:id`).
+- Returns are always deducted from the seller who made the original sale.
 
-### Sellers
+## Period comparisons and offline mode
 
-Who sold how much. Both filters — period and seller — apply here.
+- **Fair equal-length comparisons.** Every period is compared against a previous stretch of the **exact same length** (for example, the first 10 days of this month vs. the first 10 days of last month).
+- **No false morning alarms.** On short stretches (**"Today"** or the first two days of a week/month), misleading percentage drops are hidden — instead, the card calmly displays the previous period's figure for reference.
+- **Offline support.** When there is no internet connection, the dashboard displays the most recently cached data on your device along with a banner at the top: *"Offline. Showing data from {time}"*.
 
-At the top is the total **"Sold"** (the same as on "Overview") and what it is made of: **"Cash and card"** and **"On credit"**. Below are the sellers in order, best first. For each: how much they sold, what share of all sales that is, how it compares with the previous period, and, if there were returns, for how much. The first five are shown; the rest open with **"Show all"**.
+## Access by role
 
-The owner and the administrator sell too, so they are in the list — marked with their role. Tapping a row opens a card: for a seller, the seller card; for the owner, their profile (when the owner is the one looking) or the user card (when an administrator is looking).
-
-A return is taken off the seller who made the sale, not the one who took the goods back. For short periods (today, the first days of the week) percentages against the past are not shown: at the top, as on "Overview", it says how much there was before.
-
-## How to read the comparison
-
-A rise or fall is shown **vs the same days last week**, **vs the same point last month or year**: the previous period is taken at the same length. So an unfinished month is compared with the same stretch of last month, not with the whole of last month.
-
-For short stretches — **"Today"**, the first two days of a week or month — no percentage is shown; instead it says what the figure was before. The reason is simple: in the morning any day looks like a "collapse" next to a whole yesterday, and that alarm should not be raised. For the same reason the chart and the "Selling better or worse" card are hidden for short periods, and the "sales are down" alert does not fire.
-
-For sales and the average sale a rise is good. For returns and debts it's the opposite: less is better, so a rise there is highlighted as a warning.
-
-## Who sees the dashboard
-
-| | Administrator | Owner | Seller |
+| Feature | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| Dashboard and all tabs | yes | yes | no |
-
-The owner sees the figures for their own market. The administrator sees the data overall; if they have no market of their own, a link **"All markets"** appears at the bottom of the Overview.
+| Dashboard and all 4 tabs | Yes (system-wide) | Yes (own market) | No |
+| "All markets →" link at the bottom of Overview | Yes (when not tied to a single market) | No | No |

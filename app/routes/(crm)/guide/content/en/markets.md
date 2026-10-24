@@ -1,71 +1,62 @@
 # Markets
 
-A market is a point of trade: a shop or a place where trading is done. Each market has its own owner, sellers, products, debtors, and all deals attached to it. This is how the program keeps the data of different points separate so it doesn't get mixed up.
+In Trade CRM, a market represents an individual store or trading location. Each market has its own owner, team of sellers, product catalog, debtor list, and transaction history, keeping the records of different locations cleanly separated.
 
 ## Two entry points: "Markets" and "My market"
 
-Depending on your role the section is named differently:
+Depending on your role, the navigation menu shows one of two items:
 
-- **"Markets"** — seen by the administrator. It is a list of every market in the system.
-- **"My market"** — seen by the owner. It goes straight to the page of their single market.
+- **"Markets"** (`/markets`) — visible to **Administrators**. Opens the master list of all markets in the system with search and filters.
+- **"My market"** (`/markets/:id`) — visible to **Owners** and **Sellers**. Opens the detail page of their assigned market directly.
 
-Both lead to the same market page — with figures and tabs.
+## Markets list (for administrators)
 
-## The market list
-
-In the **"Markets"** section the administrator sees these columns:
+The **"Markets"** table shows:
 
 | Column | What it shows |
 | --- | --- |
-| Name | The market image, name and address |
-| Products | How many products this market has |
-| Debtors | How many debtors |
-| Owner | Who owns the market |
+| **Name** | Market photo/logo, name, and street address |
+| **Products** | Number of products in this market |
+| **Debtors** | Number of debtors in this market |
+| **Owner** | The user who owns and manages this location |
 
-Hidden columns (the **"Columns"** button): **"Transactions"** and **"Created"**. Next to each row are the actions: open, edit, delete.
+Use **"Columns"** to reveal **"Transactions"** and **"Created at"**, or open **"Filters"** to filter by owner, creation date, **"Has users"**, or **"Has products"**.
+
+On a phone, swiping a market row **to the left** reveals quick **"Edit"** and **"Delete"** buttons.
+
+## How to create or edit a market
+
+Only an **Administrator** can create a new market via **"Create market"** (`/markets/create`):
+
+- **"Image"** — photo or logo of the location;
+- **"Name"** `*` — market or store name;
+- **"Address"** `*` — physical address;
+- **"Owner"** `*` — pick the market owner from the searchable selection sheet.
+
+When editing a market (`/markets/:id/edit`):
+- **Administrators** can update any field — including reassigning the **"Owner"** — or delete the market.
+- **Owners** can update their own market's photo, name, and address (changing the owner and deleting the market are restricted to administrators).
+
+## Market detail page and tabs
+
+At the top of the market page sit the market photo, name, address, owner badge, and three **clickable counters** — **"Products"**, **"Debtors"**, and **"Transactions"**. Clicking any of these counters takes you straight to that section pre-filtered to this market.
+
+Below the header are the market's tabs:
+
+1. **"Employees"** — the owner and sellers assigned to this location.
+2. **"Products"** — the market's product catalog, showing prices, **"Sold X"** counts, and mini-avatars of the sellers who sold each item.
+3. **"Debtors"** — the market's debtors.
+4. **"Transactions"** — the market's transaction history.
 
 > [!NOTE]
-> A market has no "open/closed" status. Only counters are shown beside it — how many products, debtors and deals.
+> When an **Owner** or **Seller** opens **"My market"**, **all four tabs** are available. When an **Administrator** opens another market from the `/markets` list, only the **"Employees"** tab is displayed.
 
-## How to create a market
-
-Only the administrator can create markets. Press **"Create market"** and fill in:
-
-- **"Image"** — a photo or logo of the market.
-- **"Name"** `*` — what the point is called.
-- **"Address"** `*` — where it is located.
-- **"Owner"** `*` — who will own this market.
-
-> [!IMPORTANT]
-> Required fields are marked with an asterisk `*`: name, address and owner.
-
-## The market page
-
-At the top are the market's name, address and image, plus a row of figures: how many **products**, **debtors** and **transactions**.
-
-Below are the tabs that gather everything belonging to the market:
-
-- **"Employees"** — the sellers and the owner of this point.
-- **"Products"** — the market's product catalog.
-- **"Debtors"** — the market's debtors.
-- **"Transactions"** — the market's deals.
-
-On the **"My market"** page the owner sees all four tabs. Which tabs are available depends on whether it is your own market or one you opened from the list.
-
-## Editing and permissions
-
-What you can do depends on your role:
-
-- The **administrator** can create markets, edit any market (including changing the owner) and delete markets.
-- The **owner** can only change their market's image, name and address. They cannot change the owner or delete the market — the owner-change field simply won't appear for them.
-
-## Who can do what
+## Access by role
 
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| See the list of all markets | yes | no | no |
-| Open their own market page | yes | yes | no |
-| Create a market | yes | no | no |
-| Edit a market | yes (any) | yes (own, limited) | no |
-| Change a market's owner | yes | no | no |
-| Delete a market | yes | no | no |
+| Master "Markets" list (`/markets`) | Yes | No | No |
+| "My market" menu item (`/markets/:id`) | No (uses "Markets") | Yes (all 4 tabs) | Yes (all 4 tabs) |
+| Create and delete markets | Yes | No | No |
+| Edit market name, address, and image | Yes (any market) | Yes (own market) | No |
+| Assign or change the market owner | Yes | No | No |

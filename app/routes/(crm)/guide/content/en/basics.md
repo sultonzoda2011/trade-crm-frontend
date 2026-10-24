@@ -1,103 +1,100 @@
 # Getting started
 
-Welcome to **Trade CRM** — a system for managing markets, sellers, products, debtors, and sales. This guide explains every screen and every interface detail in plain language. If you're not sure what to do, you've come to the right place.
+Welcome to **Trade CRM** — a system for managing markets, sellers, products, debtors, and sales. This guide explains every screen and every interface detail in plain language. If you're not sure where to begin, you've come to the right place.
 
 > [!TIP]
-> There's a search box at the top of the page. Start typing a word (for example, "refund", "debtor", "discount") and the guide will find the right section and highlight the matches.
+> There is a search bar at the top of the guide. Start typing any word (for example, "refund", "debtor", "queue", "inventory") — the guide will automatically find matching sections, show the match count, and highlight the words in the text.
 
 ## How to use this guide
 
-The list of sections is on the left. Click a section to open it. On a phone, the section list is hidden behind a **"Contents"** button — tap it, pick a section, and it opens.
+On a computer, the table of contents sits on the left. Click any section to open it. On a phone, the section list is tucked behind the **"Contents"** button — tap it, choose a section, and it opens right away.
 
-Each section is split into subheadings. Scroll through to read everything, or use search to jump straight to the part you need.
+Each section is broken into clear subheadings. Scroll through the page or use the search box at the top to jump straight to the answer you need.
 
 ## Signing in
 
-To start working, you need to sign in with your account.
+To start working, sign in with your account:
 
-1. Open the app — you'll see the sign-in page.
-2. Enter the **login** (or email) and **password** given to you by your administrator.
-3. Press the **"Sign in"** button.
+1. Open the app — you will see the sign-in screen.
+2. Enter the **email** and **password** provided by your administrator or market owner.
+3. Press **"Sign in"**.
 
-If the login or password is wrong, an error message appears — check your keyboard layout and letter case (upper/lower) and try again.
+If your email or password is incorrect, an error message will appear — check your keyboard layout and letter case, then try again.
 
 > [!NOTE]
-> Accounts are created by the administrator. If you don't have a login and password, contact them. You cannot reset the password yourself.
+> Accounts are created by the administrator (or by the market owner for their sellers). You cannot reset a forgotten password on your own — contact your manager.
 
-After signing in, the app remembers you: you won't have to enter your login and password again next time you open it. To sign out, open the profile menu in the top-right corner and choose **"Sign out"**.
+After signing in, the app remembers your session so you don't need to enter your credentials every time. To sign out, tap your avatar in the top-right corner and select **"Sign out"**.
 
 ## Interface overview
 
-The screen has three parts.
+The layout adapts automatically to your screen size — desktop, tablet, or phone.
 
-On the left is the **side menu** (navigation). You use it to move between sections: products, transactions, debtors, and so on. The menu can be collapsed into a narrow strip of icons to save space — click the collapse icon next to the logo.
+### Desktop and mobile navigation
 
-At the top is the **header**. It contains search, the theme toggle, the language switcher, and your profile menu.
+- **On a computer or tablet**, the **side menu** on the left groups sections logically ("Main", "Trade", "Catalog", "Team", "Administration"). You can collapse it into a narrow icon strip using the toggle button next to the logo to give tables more room.
+- **On a phone**, the side menu is replaced by a floating **bottom navigation bar**:
+  - The left and right slots hold the most frequently used sections for your role (such as **"Home"**, **"Transactions"**, **"Debtors"**).
+  - The raised **"+"** button in the center opens the new sale screen (`/transactions/create`) from anywhere in one tap.
+  - The **"More"** button on the far right opens a bottom sheet with all remaining sections.
+  - Whenever the on-screen keyboard opens or you enter a create/edit form, the bottom bar hides itself automatically so it never blocks your input.
 
-In the center is the **work area**, where the content of the selected section is shown.
+### App header
 
-### System search
+The top bar contains:
 
-The header has a search button with a magnifying-glass icon. Click it, or use the keyboard shortcut **Ctrl + K** (on a computer), to open quick search.
+- **Sync button** (circular refresh icon) and **connection / queue badge** — lets you refresh data in one click or open the **"Sync"** screen. When you are online and the send queue is empty, extra status badges stay hidden to keep the header clean.
+- **Quick search** (on desktop).
+- **Theme and language toggles** (shown directly in the header on wide screens, and inside the user menu on phones and tablets).
+- **Profile avatar** — opens the user menu (**"Profile"**, **"Sync"**, **"Theme"**, **"Language"**, **"Sign out"**).
 
-This search instantly finds a page, product, market, or user and takes you straight to it — no need to click through the menu by hand.
+### System-wide quick search (`Ctrl + K`)
 
-### Theme
+On a computer, click the **"Search"** button in the header or press **Ctrl + K** (**Cmd + K** on Mac).
 
-The app supports **light** and **dark** themes. Switch the theme with the sun/moon icon in the header (on a computer) or in the profile menu (on a phone). The theme is remembered.
+From the command palette you can:
+- jump straight to any section available to your role;
+- trigger a quick action — **"Create product"** or **"Create transaction"**;
+- type 2 or more characters to find a specific **product** (with photo and price), **market** (with address), or **user** and open its page immediately.
 
-### Language
+### Theme and language
 
-The interface is available in three languages: **Russian**, **English**, and **Tajik**. You can change the language in the header or in the profile menu. All text, including this guide, switches to the chosen language immediately.
+- **Theme:** both **light** and **dark** themes are supported. Switch anytime using the sun/moon icon in the header or the **"Theme"** item in the user menu.
+- **Language:** the entire interface and this guide are available in **Russian (РУ)**, **English (EN)**, and **Tajik (ТҶ)**. Your choice is saved automatically.
 
 ## Required fields and the asterisk "*"
 
-This is an important detail that appears on every form.
-
-When there is a red asterisk **`*`** next to a field's name, it means the field is **required**. The form cannot be saved without it.
+On every create or edit form, some field labels have a red asterisk **`*`** next to them.
 
 > [!IMPORTANT]
-> The asterisk `*` = "required". For example, the label "Name *" means the name must be entered. Fields without an asterisk are optional — you can leave them empty.
+> An asterisk `*` marks a **required field** (for example, "Name *"). The form cannot be saved without it. Fields without an asterisk are optional and can be left blank.
 
-If you try to save a form without filling in a required field, a **red hint** appears beneath it describing the error (for example, "Required field" or "Enter a valid email"). Fix the highlighted fields and the save button will work.
+If you try to save a form with a missing or invalid required field, a **red hint** appears directly underneath explaining what needs to be fixed. As soon as you correct the field, the error clears.
 
-Error hints are shown in the current interface language and update as soon as you fix the field.
+## Common interface elements and gestures
 
-## Common interface elements
+These patterns work the same way across every section of Trade CRM:
 
-These elements work the same way in every section — learn them once.
+- **Tables and lists.** Tapping or clicking any row opens the detail page for that record. On a computer, numeric and date columns can be sorted by clicking their header, and the column toggle button lets you hide columns you don't need.
+- **Swipe left on mobile lists (quick actions).** On a phone, **swipe any row to the left** (or **long-press the row for half a second**) to reveal colored action buttons on the right — such as **"Pay"**, **"Restock"**, **"Edit"**, or **"Delete"**. You can perform everyday actions right from the list without opening the detail page. Tapping an open row closes the action buttons.
+- **Selection sheets (pickers).** Choosing a product, debtor, seller, category, or market opens a tall, finger-friendly bottom sheet with built-in search. When offline, the sheet automatically uses data saved on your device and shows a note reminding you that the list is running from local storage.
+- **Filters and active filter pills.** The **"Filters"** button opens a side panel to filter by date range, amount, status, or market. Active filters appear above the list as compact "pills" — date or number ranges are combined into a single readable pill that you can clear with one tap, or you can clear everything with **"Reset"**.
+- **Detail page header.** Every detail page (product, transaction, debtor, seller, market) starts with a unified header showing the photo or avatar, status badges, and action buttons (**"Edit"**, **"Delete"**, plus section-specific buttons like **"Restock"** on a product or **"Pay"** and **"Refund"** on a transaction).
+- **Delete confirmation.** Deleting any record always asks for confirmation in a modal dialog so nothing is ever removed by accident.
 
-**Tables and lists.** Data is shown as a list. Clicking a row usually opens the detail page for that record. Some columns can be sorted by clicking the header.
+## Roles and permissions
 
-**Filters.** Above the list there is a search box and filters (for example, by market, status, or date). Active filters are shown as separate "pills" — you can remove them one by one or clear them all at once.
-
-**Pagination.** When there are many records, they are split across pages. A page switcher sits at the bottom of the list.
-
-**Modal windows.** Creating and editing often opens in a pop-up window over the page. On a phone these windows expand to full screen for convenience. Close a window with the close button or by tapping outside it.
-
-**Delete confirmation.** Deleting always asks for confirmation in a separate window — you can't delete a record by accident.
-
-**Status badges.** Statuses (for example, "Paid", "Partial", "Refund") are shown as colored badges so the state is visible at a glance.
-
-**Product icons in transactions.** In sales, instead of a confusing number you see small product images and a clear title (the debtor's or customer's name). Hover over the group of images to see the list of products with quantities.
-
-## Roles and access
-
-What you see in the app depends on your **role**. Sections you don't have access to simply don't appear in the menu.
+What you see in the navigation and which buttons are active depend on your **role**. Features outside your permissions are hidden automatically.
 
 | Role | What they can do |
 | --- | --- |
-| Administrator | Full access: users, all markets, products, sales, reports |
-| Owner | Manages their own market, sellers, products, and sales |
-| Seller | Records sales, works with the products and debtors of their market |
+| **Administrator** | Full access across the entire system: Dashboard and analytics, all markets, users, sellers, products, categories, debtors, sales, and refunds |
+| **Owner** | Full management of their own market: Dashboard and reports, sellers and commission payouts, products, categories, debtors, sales, payments, and refunds |
+| **Seller** | Working in their market: recording credit sales, viewing transactions, adding and editing debtors, browsing the product catalog, and viewing "My market" |
 
 > [!NOTE]
-> If it seems like a section is missing, it's most likely not available for your role. This is normal and set up for security.
+> Sellers do not have access to the **"Dashboard"**, recording debt payments or refunds, deleting debtors, or modifying the product catalog — after signing in, they go straight to **"Transactions"**.
 
-## Using the app on a phone
+## Working offline
 
-Trade CRM works like a regular Android app. Some data is stored in the app, so it opens quickly. If the connection drops, you'll see a notification at the top of the screen — but that's not the end of it: sales, payments, and refunds can still be recorded offline, and they're sent on their own once the connection comes back. See **"Offline mode and syncing"** for details.
-
----
-
-Ready to go further? Pick a section on the left — each screen is covered in detail there: sales, debtors, products, markets, and reports.
+Trade CRM is built for unreliable connections and works smoothly as an Android app. Lists and cards are cached on your device, and new sales, debtors, payments, and refunds created offline are placed in the send queue, appear immediately in lists with a **"Queued"** badge, and sync to the server automatically once your connection returns. See **"Offline mode and syncing"** for full details.

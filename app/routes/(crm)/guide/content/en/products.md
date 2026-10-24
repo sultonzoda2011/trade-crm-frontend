@@ -1,101 +1,99 @@
 # Products and categories
 
-Products are everything you sell. The **"Products"** section in the left-hand menu is your catalog: prices, stock levels, and hints about what to restock. Categories help group products together (for example, "Drinks", "Household chemicals").
+The **"Products"** section (`/products`) is your store catalog, holding unit prices, units of measure, live stock counts, and automated stock health insights. The **"Categories"** section (`/categories`) lets you organize products into departments (such as "Beverages", "Groceries", or "Household") for faster browsing and reporting.
 
 > [!NOTE]
-> Products and categories are managed by the administrator and the owner. A seller picks products when recording a sale but does not edit the catalog itself.
+> Every role — including **Sellers** — can browse the product catalog and open product detail pages to check prices, photos, and available stock. Creating, restocking, editing, and deleting products, as well as managing categories, are available to **Administrators** and **Owners**.
 
-## The product list
+## Products list and mobile view
 
-By default the list shows these columns:
+On a computer, the table displays these columns by default:
 
 | Column | What it shows |
 | --- | --- |
-| Name | The product image and name |
-| Price | The price per unit |
-| Quantity | How much is in stock (turns red when the balance is at the threshold or below) |
-| Health | The product's health: healthy, low, critical, and so on |
-| Reorder priority | Whether it needs restocking and how urgently |
+| **Name** | Product photo and title |
+| **Price** | Selling price per unit |
+| **Quantity** | Current stock on hand (highlighted in red when at or below your low-stock threshold) |
+| **Health** | Automated stock health rating (see table below) |
+| **Reorder Priority** | Urgency recommendation for restocking |
 
-More columns can be turned on with the **"Columns"** button: **"Days of stock"**, **"Sold"**, **"Revenue"**, **"Category"**, **"Market"**, **"Transactions"**, **"Created"**.
+Use the **"Columns"** button to show optional columns: **"Days of Stock"**, **"Sold"**, **"Revenue"**, **"Category"**, **"Market"**, **"Transactions"**, and **"Created At"**.
 
-### Calculation period
+### Compact mobile row and swipe actions
 
-Above the list there is a **"Calculation period"** filter. It's important to understand: it sets the **window over which the figures are calculated** — how much was sold, the revenue, how many days the stock will last. It is **not** the date a product was added. For example, choosing "last 30 days" shows sales and revenue for the past month, while all the products still remain in the list.
+On a phone, each product is presented as a clean row showing its photo, name, category, price, stock count, and a **single combined status indicator**:
+- **"Out"** (red) — out of stock;
+- **"Low · Xd"** (red) — critically low stock, only a few days left;
+- **"Soon · Xd"** (amber) — time to plan a reorder;
+- **"Returns"** (amber) — high return rate;
+- **"Slow"** (gray) — slow-moving item;
+- **green dot with days of stock** (or `>1y`) — stock is healthy.
 
-### Product health
+Swipe any product row **to the left** (or long-press for half a second) to reveal quick **"Edit"** and **"Delete"** buttons (for Administrators and Owners).
 
-The program rates each product's "health" on its own and shows a colored badge:
+### Filters and the "Analysis Period"
 
-| Badge | What it means |
+Above the list sit the search box and the **"Filters"** panel (filter by category, market, stock health, reorder priority, and price range).
+
+Pay special attention to the **"Analysis Period"** filter: it sets the time window (for example, 7, 30, or 90 days) over which the system calculates units sold, revenue, and estimated **"Days of Stock"**. It never hides products from your catalog — it only adjusts the sales window used for those metrics.
+
+### Stock health and reorder priority badges
+
+| Health / Priority | What it means |
 | --- | --- |
-| Healthy | All good — the product sells and is in stock |
-| Low stock | The balance is nearing the threshold — running out soon |
-| Critical stock | Very little left |
-| Out of stock | None in stock |
-| High returns | The product is returned often — worth looking into |
-| Slow moving | Sits in stock, sells slowly |
-| No sales | Not a single sale in the chosen period |
+| **Healthy** / **Stock is fine** | Selling steadily with plenty of stock on hand |
+| **Low stock** / **Reorder soon** | Stock is approaching your threshold — plan to restock soon |
+| **Critically low** / **Reorder now** | Only a few days of supply remain — restock immediately |
+| **Out of stock** | Zero units left on hand |
+| **High returns** | Customers are returning this item more often than usual |
+| **Slow moving** / **No sales** | Selling slowly or had zero sales during the selected period |
 
-### Reorder priority
+## Product detail page and quick "Restock"
 
-Alongside, the program hints at what to restock:
+Tap any product to open its detail page (`/products/:id`). The header provides three management buttons:
 
-| Badge | What it means |
-| --- | --- |
-| Order urgently | Stock is critical — buy this first |
-| Order soon | Running out soon — plan a purchase |
-| Out of stock | None left — needs replenishing |
-| Enough in stock | No need to restock yet |
-| No reorder needed | The product doesn't need replenishing |
+- **"Restock"** — the primary action when a new shipment arrives;
+- **"Edit"** — change the product's name, price, description, photo, or overwrite its stock count;
+- **"Delete"** — remove the product (with confirmation).
 
-## How to add a product
+### How to restock a product
 
-Press **"Create product"** and fill in the form:
+When new inventory arrives, you don't need to do mental math on the edit screen:
 
-- **"Image"** — a photo of the product (uploaded from your device).
-- **"Name"** `*` — what the product is called.
-- **"Category"** — which group it belongs to (may be left empty).
-- **"Price"** `*` — the price per unit, at least 1.
-- **"Quantity"** `*` — how much is in stock now, at least 0.
-- **"Unit of measure"** — how the product is counted (defaults to "pcs").
-- **"Low-stock threshold"** — the quantity at which the product counts as running out.
-- **"Description"** `*` — a short description of the product.
-
-> [!IMPORTANT]
-> Required fields are marked with an asterisk `*`: name, price, quantity and description. Without them the product cannot be saved.
-
-Units of measure:
-
-| Label | Meaning |
-| --- | --- |
-| pcs | pieces |
-| kg | kilograms |
-| L | liters |
-| m | meters |
-| box | boxes |
+1. Open the product detail page and click **"Restock"**.
+2. In the **"Restock: [Product Name]"** modal, enter the incoming quantity in **"How many to add"** or tap one of the quick chips: **`+10`**, **`+50`**, **`+100`**.
+3. The preview beneath immediately shows **"In stock now"** → **"Will be"**.
+4. Click **"Add"** — the new units are added to your current stock automatically.
 
 > [!TIP]
-> The **"Low-stock threshold"** is a handy safeguard against a product running out unexpectedly. As soon as the quantity drops to the threshold or below, the number turns red and the product gets a "Low stock" badge and a reorder hint.
+> **"Restock"** always **adds** to the current stock count. If you are doing a stocktake and need to correct an inaccurate number directly, use **"Edit"** instead.
 
-## Product image
+## How to create a product
 
-The photo is uploaded straight from your phone or computer. It appears in the list and on the product card, and also as a small avatar in the transactions where the product was sold.
+Click **"Create product"** (`/products/create`) and fill in the form:
 
-## Categories
+- **"Image"** — upload a product photo from your phone or computer.
+- **"Name"** `*` — product title.
+- **"Category"** — pick a category from the selection sheet (optional).
+- **"Price"** `*` — selling price per unit (at least 1).
+- **"Quantity"** `*` — starting stock on hand (0 or more).
+- **"Unit"** — **pcs** (pieces), **kg** (kilograms), **l** (liters), **m** (meters), or **box** (boxes).
+- **"Low Stock Threshold"** — minimum stock level at which the quantity turns red and triggers a low-stock alert.
+- **"Description"** `*` — short description of the product.
 
-Categories are groups of products. A category has an **"Image"**, a **"Name"** `*` and a **"Description"**. Categories are created and edited in separate pop-up windows. To put a product in a category, select it in the **"Category"** field when creating or editing the product.
+## Product categories
 
-Categories make it faster to find products and to filter lists and reports by group.
+The **"Categories"** section (`/categories`) manages all product groups:
 
-## Who can do what
+- Clicking **"Create category"** opens `/categories/create` with fields for **"Image"**, **"Name"** `*`, and **"Description"**.
+- Tapping any category opens its detail page (`/categories/:id`) listing all products in that category along with **"Edit"** and **"Delete"** buttons (also available via left swipe on mobile).
+
+## Access by role
 
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| View the product catalog | yes | yes | no |
-| Create, edit, delete products | yes | yes | no |
-| Manage categories | yes | yes | no |
-| Pick a product when selling | yes | yes | yes |
-
-> [!NOTE]
-> A seller has no access to the products and categories section as a catalog — trying to open it shows an "Access denied" message. But they can still pick products when recording a credit sale.
+| View product catalog and detail pages (`/products`) | Yes | Yes | Yes |
+| Pick products when recording a transaction | Yes | Yes | Yes |
+| Quick stock addition ("Restock") | Yes | Yes | No |
+| Create, edit, and delete products | Yes | Yes | No |
+| View and manage "Categories" | Yes | Yes | No |
