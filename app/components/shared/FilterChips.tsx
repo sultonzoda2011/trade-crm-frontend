@@ -15,23 +15,28 @@ export function getFilterValue(filters: ActiveFilter[], key: string): string | u
 export function FilterChip({
   active,
   onClick,
+  disabled = false,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  /** Сочетание с уже выбранными фильтрами невозможно (см. `~/lib/filter-rules`). */
+  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-pressed={active}
+      disabled={disabled}
       onClick={() => {
         haptic('selection');
         onClick();
       }}
       className={cn(
         'h-10 shrink-0 touch-manipulation rounded-full px-4 text-sm font-medium whitespace-nowrap transition-[background-color,color,transform] duration-200 select-none [-webkit-tap-highlight-color:transparent] active:scale-95 md:h-9',
-        active ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground active:bg-muted'
+        active ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground active:bg-muted',
+        'disabled:text-muted-foreground disabled:pointer-events-none disabled:line-through disabled:opacity-45'
       )}>
       {children}
     </button>

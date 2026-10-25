@@ -17,6 +17,7 @@ import {
 } from '~/components/ui/sheet';
 import { countActiveFilters } from '~/components/shared/ActiveFilterPills';
 import { FilterField } from '~/components/shared/FilterField';
+import type { FilterConflict } from '~/lib/filter-rules';
 import { applyFilter } from '~/store/useTableStore';
 
 interface FilterSheetProps {
@@ -24,6 +25,8 @@ interface FilterSheetProps {
   filters: ActiveFilter[];
   onApply: (filters: ActiveFilter[]) => void;
   onReset: () => void;
+  /** Несовместимые пары фильтров: пункты, которые не сочетаются с уже выбранным, отключаются. */
+  rules?: readonly FilterConflict[];
 }
 
 type SheetOpenChangeDetails = {
@@ -50,7 +53,7 @@ function isFlatpickrInteraction(event?: Event): boolean {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetProps) {
+export function FilterSheet({ config, filters, onApply, onReset, rules }: FilterSheetProps) {
   const { t } = useTranslation('common');
   const [draft, setDraft] = useState<ActiveFilter[]>(filters);
   const [open, setOpen] = useState(false);
@@ -136,7 +139,7 @@ export function FilterSheet({ config, filters, onApply, onReset }: FilterSheetPr
         <ScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 p-4">
             {config.map((field, i) => (
-              <FilterField key={i} field={field} draft={draft} onChange={setDraftValue} />
+              <FilterField key={i} field={field} draft={draft} rules={rules} onChange={setDraftValue} />
             ))}
           </div>
         </ScrollArea>
