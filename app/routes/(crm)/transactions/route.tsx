@@ -28,6 +28,7 @@ import {
 import { TransactionsSummary } from '~/components/transactions/TransactionsSummary';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { TRANSACTION_FILTER_RULES } from '~/config/filterRules';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -230,7 +231,13 @@ export default function TransactionsPage() {
         onSearchChange={setSearch}>
         <ColumnToggle table={table} />
         <div className="flex w-full items-center gap-2 sm:w-auto">
-          <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
+          <FilterSheet
+            config={filterConfig}
+            filters={filters}
+            onApply={setFilters}
+            onReset={resetFilters}
+            rules={TRANSACTION_FILTER_RULES}
+          />
           {can(Action.TRANSACTIONS_CREATE) && (
             <Button
               aria-label={t('create')}

@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { FilterChip as Chip, FilterChipGroup as ChipGroup, getFilterValue } from '~/components/shared/FilterChips';
+import { TRANSACTION_FILTER_RULES } from '~/config/filterRules';
 import type { Period } from '~/config/period';
 import { getPeriodDateParams } from '~/lib/date';
+import { isOptionBlocked } from '~/lib/filter-rules';
 import { applyFilter } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
@@ -97,6 +99,9 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
   const kind = getActiveKind(filters);
   const debtState = getActiveDebtState(filters);
   const payment = getActivePayment(filters);
+  // «Все» не блокируется никогда; остальные пункты — если не сочетаются с выбранным в других группах.
+  const blocked = (key: string, value: string) =>
+    value !== 'all' && isOptionBlocked(TRANSACTION_FILTER_RULES, filters, key, value);
 
   const selectPeriod = (next: Exclude<Period, 'year'> | 'all') => {
     let result = applyFilter(applyFilter(filters, 'dateFrom', ''), 'dateTo', '');
@@ -125,21 +130,21 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
       </ChipGroup>
       <ChipGroup label={t('list.quick.kind')}>
         {KINDS.map((k) => (
-          <Chip key={k} active={kind === k} onClick={() => selectKind(k)}>
+          <Chip key={k} active={kind === k} disabled={blocked('type', k)} onClick={() => selectKind(k)}>
             {t(KIND_LABEL_KEY[k])}
           </Chip>
         ))}
       </ChipGroup>
       <ChipGroup label={t('debtStatus.title')}>
         {DEBT_STATES.map((d) => (
-          <Chip key={d} active={debtState === d} onClick={() => selectDebtState(d)}>
+          <Chip key={d} active={debtState === d} disabled={blocked('debtStatus', d)} onClick={() => selectDebtState(d)}>
             {t(DEBT_STATE_LABEL_KEY[d])}
           </Chip>
         ))}
       </ChipGroup>
       <ChipGroup label={t('fields.paymentType')}>
         {PAYMENTS.map((p) => (
-          <Chip key={p} active={payment === p} onClick={() => selectPayment(p)}>
+          <Chip key={p} active={payment === p} disabled={blocked('paymentType', p)} onClick={() => selectPayment(p)}>
             {p === 'all' ? t('list.quick.all') : t(`paymentType.${p}`)}
           </Chip>
         ))}

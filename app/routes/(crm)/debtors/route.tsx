@@ -16,6 +16,7 @@ import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { DEBTOR_FILTER_RULES } from '~/config/filterRules';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useDebounce } from '~/hooks/useDebounce';
@@ -121,7 +122,13 @@ export default function DebtorsPage() {
         searchPlaceholder={t('filters.search')}
         searchValue={search}
         onSearchChange={setSearch}>
-        <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
+        <FilterSheet
+          config={filterConfig}
+          filters={filters}
+          onApply={setFilters}
+          onReset={resetFilters}
+          rules={DEBTOR_FILTER_RULES}
+        />
         <ColumnToggle table={table} />
         {can(Action.DEBTORS_CREATE) && (
           <Button

@@ -14,6 +14,8 @@ import { cn } from '~/lib/utils';
 export interface CustomSelectOption {
   value: string | number | boolean;
   label: string;
+  /** Пункт виден, но выбрать его нельзя (например, несовместим с другим фильтром). */
+  disabled?: boolean;
 }
 
 export interface CustomSelectProps {
@@ -105,7 +107,7 @@ export function CustomSelect(props: CustomSelectProps) {
           <ComboboxEmpty>{loading ? t('customSelect.loading') : effectiveEmptyText}</ComboboxEmpty>
           <ComboboxList>
             {options.map((opt) => (
-              <ComboboxItem key={String(opt.value)} value={opt}>
+              <ComboboxItem key={String(opt.value)} value={opt} disabled={opt.disabled}>
                 {opt.label}
               </ComboboxItem>
             ))}

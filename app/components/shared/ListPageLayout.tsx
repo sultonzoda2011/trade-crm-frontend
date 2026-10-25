@@ -9,6 +9,7 @@ import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { useFilterParams } from '~/hooks/useFilterParams';
 import type { EntityListResult } from '~/hooks/useEntityList';
+import type { FilterConflict } from '~/lib/filter-rules';
 import type { ActiveFilter, FilterConfig } from '~/types/filters';
 
 /**
@@ -57,6 +58,8 @@ interface ListPageLayoutProps<TData> {
   createAction?: ReactNode;
   /** Ряд быстрых чипсов под поиском (см. DebtorQuickFilters, ProductQuickFilters). */
   quickFilters?: ReactNode;
+  /** Несовместимые пары фильтров страницы (см. `~/lib/filter-rules`). */
+  filterRules?: readonly FilterConflict[];
   /** Какие активные фильтры показать плашками; по умолчанию все. Нужно, когда часть уже видна в чипсах. */
   pillFilters?: ActiveFilter[];
   showFilterPills?: boolean;
@@ -82,6 +85,7 @@ export function ListPageLayout<TData>({
   getSwipeActions,
   createAction,
   quickFilters,
+  filterRules,
   pillFilters,
   showFilterPills = false,
   syncUrl = false,
@@ -98,6 +102,7 @@ export function ListPageLayout<TData>({
           filters={list.filters}
           onApply={list.setFilters}
           onReset={list.resetFilters}
+          rules={filterRules}
         />
         <ColumnToggle table={table} />
         {createAction}
