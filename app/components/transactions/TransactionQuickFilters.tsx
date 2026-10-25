@@ -1,9 +1,7 @@
-import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FilterChip as Chip, FilterChipGroup as ChipGroup, getFilterValue } from '~/components/shared/FilterChips';
 import type { Period } from '~/config/period';
 import { getPeriodDateParams } from '~/lib/date';
-import { haptic } from '~/lib/haptics';
-import { cn } from '~/lib/utils';
 import { applyFilter } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
@@ -23,15 +21,10 @@ const KIND_LABEL_KEY: Record<Kind, string> = {
   OVERDUE: 'list.quick.overdue',
 };
 
-function valueOf(filters: ActiveFilter[], key: string): string | undefined {
-  const v = filters.find((f) => f.key === key)?.value;
-  return v == null || v === '' ? undefined : String(v);
-}
-
 /** Какой из быстрых периодов сейчас выбран. `null` — даты заданы вручную (диапазон из фильтра). */
 export function getActivePeriod(filters: ActiveFilter[]): Exclude<Period, 'year'> | 'all' | null {
-  const from = valueOf(filters, 'dateFrom');
-  const to = valueOf(filters, 'dateTo');
+  const from = getFilterValue(filters, 'dateFrom');
+  const to = getFilterValue(filters, 'dateTo');
   if (!from && !to) return 'all';
   return (
     QUICK_PERIODS.find((p) => {
@@ -43,8 +36,8 @@ export function getActivePeriod(filters: ActiveFilter[]): Exclude<Period, 'year'
 
 /** Выбранный «вид» операций: тип или состояние долга. `null` — задан чем-то, чего у чипсов нет. */
 function getActiveKind(filters: ActiveFilter[]): Kind | null {
-  const type = valueOf(filters, 'type');
-  const debtStatus = valueOf(filters, 'debtStatus');
+  const type = getFilterValue(filters, 'type');
+  const debtStatus = getFilterValue(filters, 'debtStatus');
   if (debtStatus) return debtStatus === 'OUTSTANDING' || debtStatus === 'OVERDUE' ? (debtStatus as Kind) : null;
   if (!type) return 'all';
   return type === 'SALE' || type === 'DEBT' || type === 'REFUND' ? type : null;
@@ -57,7 +50,7 @@ function getActiveKind(filters: ActiveFilter[]): Kind | null {
 export function filtersNotShownByChips(filters: ActiveFilter[]): ActiveFilter[] {
   const periodCovered = getActivePeriod(filters) !== null;
   const kindCovered = getActiveKind(filters) !== null;
-  const payment = valueOf(filters, 'paymentType');
+  const payment = getFilterValue(filters, 'paymentType');
   const paymentCovered = payment === 'CASH' || payment === 'CARD';
   return filters.filter((f) => {
     if ((f.key === 'dateFrom' || f.key === 'dateTo') && periodCovered) return false;
@@ -67,27 +60,7 @@ export function filtersNotShownByChips(filters: ActiveFilter[]): ActiveFilter[] 
   });
 }
 
-function Chip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={() => {
-        haptic('selection');
-        onClick();
-      }}
-      className={cn(
-        'h-10 shrink-0 touch-manipulation rounded-full px-4 text-sm font-medium whitespace-nowrap transition-[background-color,color,transform] duration-200 select-none [-webkit-tap-highlight-color:transparent] active:scale-95 md:h-9',
-        active ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground active:bg-muted'
-      )}>
-      {children}
-    </button>
-  );
-}
-
 // На телефоне ряд выходит за поля страницы (-mx-3) и прокручивается пальцем до самого края экрана.
-// Чипсы переносятся на новую строку, а не уходят за край экрана: всё нужное видно сразу.
-const ROW = 'flex flex-wrap gap-2';
 
 interface TransactionQuickFiltersProps {
   filters: ActiveFilter[];
@@ -104,7 +77,7 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
   const { t } = useTranslation(['transactions', 'common']);
   const period = getActivePeriod(filters);
   const kind = getActiveKind(filters);
-  const payment = valueOf(filters, 'paymentType');
+  const payment = getFilterValue(filters, 'paymentType');
 
   const selectPeriod = (next: Exclude<Period, 'year'> | 'all') => {
     let result = applyFilter(applyFilter(filters, 'dateFrom', ''), 'dateTo', '');
@@ -149,19 +122,6 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
           </Chip>
         ))}
       </ChipGroup>
-    </div>
-  );
-}
-
-/** Подпись над рядом чипсов: без неё непонятно, какой ряд про период, а какой про тип. */
-function ChipGroup({ label, children }: { label: string; children: ReactNode }) {
-  const id = useId();
-  return (
-    <div role="group" aria-labelledby={id} className="space-y-1.5">
-      <p id={id} className="text-muted-foreground px-1 text-xs font-medium">
-        {label}
-      </p>
-      <div className={ROW}>{children}</div>
     </div>
   );
 }

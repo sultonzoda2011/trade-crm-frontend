@@ -9,6 +9,7 @@ import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
 import { renderActionsCell } from '~/components/shared/ListPageLayout';
 import { DebtorMobileCard } from '~/components/debtors/DebtorMobileCard';
+import { DebtorQuickFilters, filtersNotShownByDebtorChips } from '~/components/debtors/DebtorQuickFilters';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
@@ -132,7 +133,12 @@ export default function DebtorsPage() {
           </Button>
         )}
       </ListPageToolbar>
-      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
+      <DebtorQuickFilters filters={filters} onChange={setFilters} />
+      <ActiveFilterPills
+        filters={filtersNotShownByDebtorChips(filters)}
+        config={filterConfig}
+        onRemove={removeFilter}
+      />
       <DataTable
         table={table}
         pinLastColumn
