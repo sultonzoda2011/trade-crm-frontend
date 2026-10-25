@@ -8,18 +8,25 @@ import type { ActiveFilter } from '~/types/filters';
 /** Периоды, для которых есть и готовый диапазон дат, и цифры дашборда за тот же период. */
 export const QUICK_PERIODS: Exclude<Period, 'year'>[] = ['today', 'week', 'month'];
 
-type Kind = 'all' | 'SALE' | 'DEBT' | 'REFUND' | 'OUTSTANDING' | 'OVERDUE';
-const KINDS: Kind[] = ['all', 'SALE', 'DEBT', 'REFUND', 'OUTSTANDING', 'OVERDUE'];
-const PAYMENTS = ['CASH', 'CARD'] as const;
-
+type Kind = 'all' | 'SALE' | 'DEBT' | 'REFUND';
+const KINDS: Kind[] = ['all', 'SALE', 'DEBT', 'REFUND'];
 const KIND_LABEL_KEY: Record<Kind, string> = {
   all: 'list.quick.all',
   SALE: 'list.quick.sale',
   DEBT: 'list.quick.debt',
   REFUND: 'list.quick.refund',
+};
+
+type DebtState = 'all' | 'OUTSTANDING' | 'OVERDUE';
+const DEBT_STATES: DebtState[] = ['all', 'OUTSTANDING', 'OVERDUE'];
+const DEBT_STATE_LABEL_KEY: Record<DebtState, string> = {
+  all: 'list.quick.all',
   OUTSTANDING: 'list.quick.unpaid',
   OVERDUE: 'list.quick.overdue',
 };
+
+type Payment = 'all' | 'CASH' | 'CARD';
+const PAYMENTS: Payment[] = ['all', 'CASH', 'CARD'];
 
 /** Какой из быстрых периодов сейчас выбран. `null` — даты заданы вручную (диапазон из фильтра). */
 export function getActivePeriod(filters: ActiveFilter[]): Exclude<Period, 'year'> | 'all' | null {
@@ -34,13 +41,25 @@ export function getActivePeriod(filters: ActiveFilter[]): Exclude<Period, 'year'
   );
 }
 
-/** Выбранный «вид» операций: тип или состояние долга. `null` — задан чем-то, чего у чипсов нет. */
+/** Выбранный тип операции. `null` — тип задан значением, которого у чипсов нет (плашка останется). */
 function getActiveKind(filters: ActiveFilter[]): Kind | null {
   const type = getFilterValue(filters, 'type');
-  const debtStatus = getFilterValue(filters, 'debtStatus');
-  if (debtStatus) return debtStatus === 'OUTSTANDING' || debtStatus === 'OVERDUE' ? (debtStatus as Kind) : null;
   if (!type) return 'all';
   return type === 'SALE' || type === 'DEBT' || type === 'REFUND' ? type : null;
+}
+
+/** Выбранное состояние долга. `null` — например «Скоро срок»: у чипсов его нет, плашка останется. */
+function getActiveDebtState(filters: ActiveFilter[]): DebtState | null {
+  const state = getFilterValue(filters, 'debtStatus');
+  if (!state) return 'all';
+  return state === 'OUTSTANDING' || state === 'OVERDUE' ? state : null;
+}
+
+/** Выбранный способ оплаты. `null` — например «Кредит»: у чипсов его нет, плашка останется. */
+function getActivePayment(filters: ActiveFilter[]): Payment | null {
+  const payment = getFilterValue(filters, 'paymentType');
+  if (!payment) return 'all';
+  return payment === 'CASH' || payment === 'CARD' ? payment : null;
 }
 
 /**
@@ -50,17 +69,16 @@ function getActiveKind(filters: ActiveFilter[]): Kind | null {
 export function filtersNotShownByChips(filters: ActiveFilter[]): ActiveFilter[] {
   const periodCovered = getActivePeriod(filters) !== null;
   const kindCovered = getActiveKind(filters) !== null;
-  const payment = getFilterValue(filters, 'paymentType');
-  const paymentCovered = payment === 'CASH' || payment === 'CARD';
+  const debtCovered = getActiveDebtState(filters) !== null;
+  const paymentCovered = getActivePayment(filters) !== null;
   return filters.filter((f) => {
     if ((f.key === 'dateFrom' || f.key === 'dateTo') && periodCovered) return false;
-    if ((f.key === 'type' || f.key === 'debtStatus') && kindCovered) return false;
+    if (f.key === 'type' && kindCovered) return false;
+    if (f.key === 'debtStatus' && debtCovered) return false;
     if (f.key === 'paymentType' && paymentCovered) return false;
     return true;
   });
 }
-
-// На телефоне ряд выходит за поля страницы (-mx-3) и прокручивается пальцем до самого края экрана.
 
 interface TransactionQuickFiltersProps {
   filters: ActiveFilter[];
@@ -70,14 +88,15 @@ interface TransactionQuickFiltersProps {
 /**
  * Быстрые фильтры под поиском — те же `dateFrom/dateTo`, `type`, `debtStatus` и
  * `paymentType`, что и в шторке фильтров, поэтому они живут в одном состоянии
- * и попадают в адресную строку. Период и вид операции — две независимые группы;
- * внутри вида выбран один пункт, способ оплаты включается и выключается отдельно.
+ * и попадают в адресную строку. Четыре независимые группы, в каждой выбран один
+ * пункт, поэтому сочетать можно, например, «Продажи» + «Не закрыты» + «Карта».
  */
 export function TransactionQuickFilters({ filters, onChange }: TransactionQuickFiltersProps) {
   const { t } = useTranslation(['transactions', 'common']);
   const period = getActivePeriod(filters);
   const kind = getActiveKind(filters);
-  const payment = getFilterValue(filters, 'paymentType');
+  const debtState = getActiveDebtState(filters);
+  const payment = getActivePayment(filters);
 
   const selectPeriod = (next: Exclude<Period, 'year'> | 'all') => {
     let result = applyFilter(applyFilter(filters, 'dateFrom', ''), 'dateTo', '');
@@ -88,15 +107,9 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
     onChange(result);
   };
 
-  const selectKind = (next: Kind) => {
-    let result = applyFilter(applyFilter(filters, 'type', ''), 'debtStatus', '');
-    if (next === 'SALE' || next === 'DEBT' || next === 'REFUND') result = applyFilter(result, 'type', next);
-    else if (next !== 'all') result = applyFilter(result, 'debtStatus', next);
-    onChange(result);
-  };
-
-  const togglePayment = (next: (typeof PAYMENTS)[number]) =>
-    onChange(applyFilter(filters, 'paymentType', payment === next ? '' : next));
+  const selectKind = (next: Kind) => onChange(applyFilter(filters, 'type', next === 'all' ? '' : next));
+  const selectDebtState = (next: DebtState) => onChange(applyFilter(filters, 'debtStatus', next === 'all' ? '' : next));
+  const selectPayment = (next: Payment) => onChange(applyFilter(filters, 'paymentType', next === 'all' ? '' : next));
 
   return (
     <div className="space-y-3">
@@ -116,9 +129,18 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
             {t(KIND_LABEL_KEY[k])}
           </Chip>
         ))}
+      </ChipGroup>
+      <ChipGroup label={t('debtStatus.title')}>
+        {DEBT_STATES.map((d) => (
+          <Chip key={d} active={debtState === d} onClick={() => selectDebtState(d)}>
+            {t(DEBT_STATE_LABEL_KEY[d])}
+          </Chip>
+        ))}
+      </ChipGroup>
+      <ChipGroup label={t('fields.paymentType')}>
         {PAYMENTS.map((p) => (
-          <Chip key={p} active={payment === p} onClick={() => togglePayment(p)}>
-            {t(`paymentType.${p}`)}
+          <Chip key={p} active={payment === p} onClick={() => selectPayment(p)}>
+            {p === 'all' ? t('list.quick.all') : t(`paymentType.${p}`)}
           </Chip>
         ))}
       </ChipGroup>
