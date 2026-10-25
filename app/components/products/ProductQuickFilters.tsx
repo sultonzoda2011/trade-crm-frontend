@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { FilterChip as Chip, FilterChipGroup as ChipGroup, getFilterValue } from '~/components/shared/FilterChips';
 import { getProductHealthOptions, getReorderPriorityOptions } from '~/config/analyticsBadges';
+import { PRODUCT_FILTER_RULES } from '~/config/filterRules';
+import { isOptionBlocked } from '~/lib/filter-rules';
 import { applyFilter } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
@@ -20,6 +22,8 @@ export function ProductQuickFilters({ filters, onChange }: ProductQuickFiltersPr
   const { t } = useTranslation(['products', 'common']);
   const health = getFilterValue(filters, 'health');
   const reorder = getFilterValue(filters, 'reorderPriority');
+  // Пункт отключается, если не сочетается с фильтром, выбранным в шторке или пришедшим по ссылке.
+  const blocked = (key: string, value: string) => isOptionBlocked(PRODUCT_FILTER_RULES, filters, key, value);
 
   const select = (key: (typeof FILTER_KEYS)[number], next: string | undefined) =>
     onChange(applyFilter(filters, key, next ?? ''));
@@ -31,7 +35,11 @@ export function ProductQuickFilters({ filters, onChange }: ProductQuickFiltersPr
           {t('filters.all', { ns: 'common' })}
         </Chip>
         {getProductHealthOptions(t).map((o) => (
-          <Chip key={o.value} active={health === o.value} onClick={() => select('health', o.value)}>
+          <Chip
+            key={o.value}
+            active={health === o.value}
+            disabled={blocked('health', o.value)}
+            onClick={() => select('health', o.value)}>
             {o.label}
           </Chip>
         ))}
@@ -41,7 +49,11 @@ export function ProductQuickFilters({ filters, onChange }: ProductQuickFiltersPr
           {t('filters.all', { ns: 'common' })}
         </Chip>
         {getReorderPriorityOptions(t).map((o) => (
-          <Chip key={o.value} active={reorder === o.value} onClick={() => select('reorderPriority', o.value)}>
+          <Chip
+            key={o.value}
+            active={reorder === o.value}
+            disabled={blocked('reorderPriority', o.value)}
+            onClick={() => select('reorderPriority', o.value)}>
             {o.label}
           </Chip>
         ))}

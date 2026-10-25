@@ -30,6 +30,19 @@ export const TRANSACTION_FILTER_RULES: readonly FilterConflict[] = [
   ],
 ];
 
+/**
+ * «Нужно заказать» и «Заказ не нужен» не бывают вместе. Ссылка с дашборда
+ * (`/products?needsReorder=true`) выбирает первое, а чипсы срочности закупки
+ * при этом не должны предлагать второе. Остальные пары `health` / `reorderPriority`
+ * бэкенд считает сам, и по коду фронтенда их связь не подтвердить, поэтому их здесь нет.
+ */
+export const PRODUCT_FILTER_RULES: readonly FilterConflict[] = [
+  [
+    { key: 'needsReorder', values: ['true'] },
+    { key: 'reorderPriority', values: ['NOT_NEEDED'] },
+  ],
+];
+
 /** Просроченный долг — это активный долг: «просрочен» и «нет активных долгов» не бывают вместе. */
 export const DEBTOR_FILTER_RULES: readonly FilterConflict[] = [
   [

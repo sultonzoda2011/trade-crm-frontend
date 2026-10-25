@@ -11,6 +11,7 @@ import { ProductRow } from '~/components/products/ProductRow';
 import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { PRODUCT_FILTER_RULES } from '~/config/filterRules';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useEntityList } from '~/hooks/useEntityList';
@@ -78,6 +79,7 @@ export default function ProductsPage() {
       table={table}
       filterConfig={filterConfig}
       quickFilters={<ProductQuickFilters filters={list.filters} onChange={list.setFilters} />}
+      filterRules={PRODUCT_FILTER_RULES}
       showFilterPills
       pillFilters={filtersNotShownByProductChips(list.filters)}
       syncUrl

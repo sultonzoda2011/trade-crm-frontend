@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { FilterChip as Chip, FilterChipGroup as ChipGroup, getFilterValue } from '~/components/shared/FilterChips';
+import { DEBTOR_FILTER_RULES } from '~/config/filterRules';
+import { isOptionBlocked } from '~/lib/filter-rules';
 import { applyFilter } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
@@ -27,6 +29,8 @@ export function DebtorQuickFilters({ filters, onChange }: DebtorQuickFiltersProp
   const { t } = useTranslation(['debtors', 'common']);
   const scope = getDebtScope(filters);
   const risk = getFilterValue(filters, 'risk');
+  // Пункт отключается, если не сочетается с фильтром, выбранным в шторке (например, «Нет активных долгов»).
+  const blocked = (key: string, value: string) => isOptionBlocked(DEBTOR_FILTER_RULES, filters, key, value);
 
   const selectScope = (next: DebtScope) => {
     let result = applyFilter(filters, 'hasActiveDebts', '');
@@ -44,10 +48,13 @@ export function DebtorQuickFilters({ filters, onChange }: DebtorQuickFiltersProp
         <Chip active={scope === 'all'} onClick={() => selectScope('all')}>
           {t('filters.all', { ns: 'common' })}
         </Chip>
-        <Chip active={scope === 'withDebt'} onClick={() => selectScope('withDebt')}>
+        <Chip
+          active={scope === 'withDebt'}
+          disabled={blocked('hasActiveDebts', 'true')}
+          onClick={() => selectScope('withDebt')}>
           {t('quick.withDebt')}
         </Chip>
-        <Chip active={scope === 'overdue'} onClick={() => selectScope('overdue')}>
+        <Chip active={scope === 'overdue'} disabled={blocked('overdue', 'true')} onClick={() => selectScope('overdue')}>
           {t('quick.overdue')}
         </Chip>
       </ChipGroup>
@@ -56,7 +63,7 @@ export function DebtorQuickFilters({ filters, onChange }: DebtorQuickFiltersProp
           {t('filters.all', { ns: 'common' })}
         </Chip>
         {RISKS.map((r) => (
-          <Chip key={r} active={risk === r} onClick={() => selectRisk(r)}>
+          <Chip key={r} active={risk === r} disabled={blocked('risk', r)} onClick={() => selectRisk(r)}>
             {t(`risk.${r}`)}
           </Chip>
         ))}
