@@ -9,7 +9,7 @@ import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import { useFilterParams } from '~/hooks/useFilterParams';
 import type { EntityListResult } from '~/hooks/useEntityList';
-import type { FilterConfig } from '~/types/filters';
+import type { ActiveFilter, FilterConfig } from '~/types/filters';
 
 /**
  * Render a row's `actions` cell. Every mobile card needs it and every page used
@@ -55,6 +55,10 @@ interface ListPageLayoutProps<TData> {
    * the whole permission layer is still unsettled (see the A8 impact report).
    */
   createAction?: ReactNode;
+  /** Ряд быстрых чипсов под поиском (см. DebtorQuickFilters, ProductQuickFilters). */
+  quickFilters?: ReactNode;
+  /** Какие активные фильтры показать плашками; по умолчанию все. Нужно, когда часть уже видна в чипсах. */
+  pillFilters?: ActiveFilter[];
   showFilterPills?: boolean;
   syncUrl?: boolean;
 }
@@ -77,6 +81,8 @@ export function ListPageLayout<TData>({
   getRowLink,
   getSwipeActions,
   createAction,
+  quickFilters,
+  pillFilters,
   showFilterPills = false,
   syncUrl = false,
 }: ListPageLayoutProps<TData>) {
@@ -97,8 +103,10 @@ export function ListPageLayout<TData>({
         {createAction}
       </ListPageToolbar>
 
+      {quickFilters}
+
       {showFilterPills ? (
-        <ActiveFilterPills filters={list.filters} config={filterConfig} onRemove={list.removeFilter} />
+        <ActiveFilterPills filters={pillFilters ?? list.filters} config={filterConfig} onRemove={list.removeFilter} />
       ) : null}
 
       <DataTable

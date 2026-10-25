@@ -63,5 +63,10 @@
   "createSuccess": "Debtor created",
   "createError": "Failed to create debtor",
   "createQueuedOffline": "No connection — debtor saved and will be sent automatically once you're back online",
-  "createQueuedSlow": "Weak connection — debtor saved and sending in the background"
+  "createQueuedSlow": "Weak connection — debtor saved and sending in the background",
+  "quick": {
+    "debtScope": "Debt",
+    "withDebt": "Has debt",
+    "overdue": "Overdue"
+  }
 }
