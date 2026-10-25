@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Period } from '~/config/period';
 import { getPeriodDateParams } from '~/lib/date';
@@ -86,7 +86,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 // На телефоне ряд выходит за поля страницы (-mx-3) и прокручивается пальцем до самого края экрана.
-const ROW = 'scrollbar-hide -mx-3 flex snap-x gap-2 overflow-x-auto px-3 md:mx-0 md:flex-wrap md:px-0';
+// Чипсы переносятся на новую строку, а не уходят за край экрана: всё нужное видно сразу.
+const ROW = 'flex flex-wrap gap-2';
 
 interface TransactionQuickFiltersProps {
   filters: ActiveFilter[];
@@ -125,8 +126,8 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
     onChange(applyFilter(filters, 'paymentType', payment === next ? '' : next));
 
   return (
-    <div className="space-y-2">
-      <div role="group" aria-label={t('list.quick.period')} className={ROW}>
+    <div className="space-y-3">
+      <ChipGroup label={t('list.quick.period')}>
         <Chip active={period === 'all'} onClick={() => selectPeriod('all')}>
           {t('list.quick.anyDate')}
         </Chip>
@@ -135,8 +136,8 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
             {t(`period.${p}`, { ns: 'common' })}
           </Chip>
         ))}
-      </div>
-      <div role="group" aria-label={t('list.quick.kind')} className={ROW}>
+      </ChipGroup>
+      <ChipGroup label={t('list.quick.kind')}>
         {KINDS.map((k) => (
           <Chip key={k} active={kind === k} onClick={() => selectKind(k)}>
             {t(KIND_LABEL_KEY[k])}
@@ -147,7 +148,20 @@ export function TransactionQuickFilters({ filters, onChange }: TransactionQuickF
             {t(`paymentType.${p}`)}
           </Chip>
         ))}
-      </div>
+      </ChipGroup>
+    </div>
+  );
+}
+
+/** Подпись над рядом чипсов: без неё непонятно, какой ряд про период, а какой про тип. */
+function ChipGroup({ label, children }: { label: string; children: ReactNode }) {
+  const id = useId();
+  return (
+    <div role="group" aria-labelledby={id} className="space-y-1.5">
+      <p id={id} className="text-muted-foreground px-1 text-xs font-medium">
+        {label}
+      </p>
+      <div className={ROW}>{children}</div>
     </div>
   );
 }
