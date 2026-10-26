@@ -4,10 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
 import { DebtorMobileCard } from '~/components/debtors/DebtorMobileCard';
+import { DebtorQuickFilters, filtersNotShownByDebtorChips } from '~/components/debtors/DebtorQuickFilters';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { DEBTOR_FILTER_RULES } from '~/config/filterRules';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useEntityList } from '~/hooks/useEntityList';
@@ -52,6 +54,9 @@ export default function DebtorsPage() {
       list={list}
       table={table}
       filterConfig={filterConfig}
+      filterRules={DEBTOR_FILTER_RULES}
+      quickFilters={<DebtorQuickFilters filters={list.filters} onChange={list.setFilters} />}
+      pillFilters={filtersNotShownByDebtorChips(list.filters)}
       showFilterPills
       syncUrl
       // Если в очереди уже что-то есть, показываем это, а не заглушку офлайна.

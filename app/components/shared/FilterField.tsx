@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { ActiveFilter, FilterConfig } from '~/types/filters';
+import { type FilterConflict, isOptionBlocked } from '~/lib/filter-rules';
 import { CustomInput } from '~/components/shared/CustomInput';
 import { Label } from '~/components/ui/label';
 import { CustomSelect } from '~/components/shared/CustomSelect';
@@ -8,6 +9,8 @@ import { DateInputField } from '~/components/shared/DateInputField';
 interface FilterFieldProps {
   field: FilterConfig;
   draft: ActiveFilter[];
+  /** Несовместимые пары фильтров: пункты, которые не сочетаются с выбранным, отключаются. */
+  rules?: readonly FilterConflict[];
   onChange: (key: string, value: any) => void;
 }
 
@@ -15,13 +18,14 @@ function getValue(filters: ActiveFilter[], key: string): any {
   return filters.find((f) => f.key === key)?.value ?? '';
 }
 
-export function FilterField({ field, draft, onChange }: FilterFieldProps) {
+export function FilterField({ field, draft, rules, onChange }: FilterFieldProps) {
   const { t } = useTranslation('common');
 
   if (field.type === 'select') {
     const options = field.options.map((opt) => ({
       value: String(opt.value),
       label: opt.label,
+      disabled: isOptionBlocked(rules, draft, field.key, String(opt.value)),
     }));
     const raw = getValue(draft, field.key);
     const current = raw === '' || raw == null ? null : String(raw);
@@ -68,8 +72,16 @@ export function FilterField({ field, draft, onChange }: FilterFieldProps) {
     const raw = getValue(draft, field.key);
     const current = raw === '' || raw == null ? null : String(raw);
     const options = [
-      { value: 'true', label: field.trueLabel ?? t('filters.yes') },
-      { value: 'false', label: field.falseLabel ?? t('filters.no') },
+      {
+        value: 'true',
+        label: field.trueLabel ?? t('filters.yes'),
+        disabled: isOptionBlocked(rules, draft, field.key, 'true'),
+      },
+      {
+        value: 'false',
+        label: field.falseLabel ?? t('filters.no'),
+        disabled: isOptionBlocked(rules, draft, field.key, 'false'),
+      },
     ];
 
     return (

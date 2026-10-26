@@ -44,9 +44,10 @@ export default function CrmLayout() {
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden md:m-2 md:rounded-2xl md:border md:shadow-sm">
         <Header />
         <ScrollArea className="bg-background min-h-0 flex-1">
-          {/* pb на мобиле — место под плавающий BottomNav (сам бар + отступ от
-              края + вылет центральной FAB-кнопки над баром). */}
-          <div className="p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] md:p-6">
+          {/* pb на мобиле — место под плавающий BottomNav: сам бар (64) + отступ от края (12) +
+              вылет центральной «+» (10) + зона плавного перехода подложки (32) + запас.
+              Прокрутка до конца оставляет последнюю строку целиком над панелью. */}
+          <div className="p-3 pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:p-6">
             {/* Мягкое появление при смене экрана — переход ощущается как в приложении, а не как перезагрузка страницы. */}
             <motion.div
               key={routeKey}

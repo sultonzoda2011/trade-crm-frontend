@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import type { Row } from '@tanstack/react-table';
 import { CreditCard, Plus } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
 import { categoriesApi } from '~/api/categories';
@@ -9,10 +10,19 @@ import { productsApi } from '~/api/products';
 import { sellersApi } from '~/api/sellers';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
+import type { MobileRowGroup } from '~/components/shared/DataTable';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
+import { TransactionDayHeader } from '~/components/transactions/TransactionDayHeader';
 import { TransactionMobileCard } from '~/components/transactions/TransactionMobileCard';
+import {
+  TransactionQuickFilters,
+  filtersNotShownByChips,
+  getActivePeriod,
+} from '~/components/transactions/TransactionQuickFilters';
+import { TransactionsSummary } from '~/components/transactions/TransactionsSummary';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
+import { TRANSACTION_FILTER_RULES } from '~/config/filterRules';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
 import { useEntityList } from '~/hooks/useEntityList';
@@ -20,9 +30,11 @@ import { useTransactionRows } from '~/hooks/useOfflineOverlay';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
 import { buildRowSwipeActions } from '~/lib/swipe-actions';
+import { groupRowsByDay } from '~/lib/transaction-view';
 import { getColumns } from '~/routes/(crm)/transactions/configs/columns';
 import { getTransactionFilters } from '~/routes/(crm)/transactions/configs/filters';
 import { useTransactionsModals, useTransactionsStore } from '~/routes/(crm)/transactions/store';
+import type { TransactionRow } from '~/types/pending';
 
 export default function TransactionsPage() {
   const { t } = useTranslation(['transactions', 'common']);
@@ -116,6 +128,31 @@ export default function TransactionsPage() {
     [t, debtorOptions, categoryOptions, productOptions, sellerOptions]
   );
 
+  // Дни имеют смысл, пока список идёт по дате: при сортировке по сумме они перемешаны,
+  // и заголовок «Сегодня» пришлось бы повторять десять раз подряд.
+  const groupedByDay = (list.filters.find((f) => f.key === 'sortBy')?.value ?? 'createdAt') === 'createdAt';
+
+  const getMobileGroups = useCallback(
+    (rows: Row<TransactionRow>[]): MobileRowGroup<TransactionRow>[] =>
+      groupedByDay
+        ? groupRowsByDay(rows, list.page, list.totalPages).map((g) => ({
+            key: `${g.key}-${g.rows[0]?.id}`,
+            header: <TransactionDayHeader dayKey={g.key} net={g.net} />,
+            rows: g.rows,
+          }))
+        : [{ key: 'all', rows }],
+    [groupedByDay, list.page, list.totalPages]
+  );
+
+  // Сводка за период — только когда в списке нет ничего, кроме периода: цифры считает дашборд по
+  // всему периоду, а не по фильтру, и рядом с «Продажи · Наличные» они бы не совпадали с рядами.
+  const activePeriod = getActivePeriod(list.filters);
+  const hasOtherFilters =
+    list.debouncedSearch.length > 0 ||
+    list.filters.some((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
+  const summaryPeriod =
+    activePeriod && activePeriod !== 'all' && !hasOtherFilters && can(Action.DASHBOARDS_VIEW) ? activePeriod : null;
+
   return (
     <ListPageLayout
       title={t('title')}
@@ -123,10 +160,19 @@ export default function TransactionsPage() {
       list={list}
       table={table}
       filterConfig={filterConfig}
+      filterRules={TRANSACTION_FILTER_RULES}
+      quickFilters={
+        <>
+          <TransactionQuickFilters filters={list.filters} onChange={list.setFilters} />
+          {summaryPeriod && <TransactionsSummary period={summaryPeriod} />}
+        </>
+      }
+      pillFilters={filtersNotShownByChips(list.filters)}
       showFilterPills
       syncUrl
       // Если в очереди уже что-то есть, показываем это, а не заглушку офлайна.
       isOfflineEmptyOverride={list.isOfflineEmpty && transactions.length === 0}
+      getMobileGroups={getMobileGroups}
       getRowLink={(row) =>
         // Страницы у продажи из очереди ещё нет — открывать нечего.
         row.original.pending
@@ -172,6 +218,7 @@ export default function TransactionsPage() {
           row={row}
           t={t}
           actionsCell={row.original.pending ? actions : undefined}
+          showDate={!groupedByDay}
         />
       )}>
       <CreatePaymentModal />

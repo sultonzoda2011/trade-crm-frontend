@@ -3,13 +3,14 @@ import type { ReactNode } from 'react';
 import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { DataTable } from '~/components/shared/DataTable';
+import { DataTable, type MobileRowGroup } from '~/components/shared/DataTable';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
 import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import type { EntityListResult } from '~/hooks/useEntityList';
 import { useFilterParams } from '~/hooks/useFilterParams';
-import type { FilterConfig } from '~/types/filters';
+import type { FilterConflict } from '~/lib/filter-rules';
+import type { ActiveFilter, FilterConfig } from '~/types/filters';
 
 /**
  * Render a row's `actions` cell. Every mobile card needs it and every page used
@@ -50,11 +51,19 @@ interface ListPageLayoutProps<TData, TServerData = TData> {
   getRowLink?: (row: Row<TData>) => { to: string; state?: unknown } | undefined;
   /** Свайп-действия мобильной строки (уже отфильтрованные по правам). */
   getSwipeActions?: (row: Row<TData>) => SwipeAction[] | undefined;
+  /** Разбивает мобильный список на блоки (например, по дням). */
+  getMobileGroups?: (rows: Row<TData>[]) => MobileRowGroup<TData>[];
   /**
    * The create control stays with the page: RBAC gating is decided per route and
    * the whole permission layer is still unsettled (see the A8 impact report).
    */
   createAction?: ReactNode;
+  /** Ряд быстрых чипсов под поиском (см. DebtorQuickFilters, ProductQuickFilters). */
+  quickFilters?: ReactNode;
+  /** Несовместимые пары фильтров страницы (см. `~/lib/filter-rules`). */
+  filterRules?: readonly FilterConflict[];
+  /** Какие активные фильтры показать плашками; по умолчанию все. Нужно, когда часть уже видна в чипсах. */
+  pillFilters?: ActiveFilter[];
   showFilterPills?: boolean;
   syncUrl?: boolean;
   /** Override `list.isOfflineEmpty` when an offline overlay adds queued local rows. */
@@ -80,7 +89,11 @@ export function ListPageLayout<TData, TServerData = TData>({
   renderCard,
   getRowLink,
   getSwipeActions,
+  getMobileGroups,
   createAction,
+  quickFilters,
+  filterRules,
+  pillFilters,
   showFilterPills = false,
   syncUrl = false,
   isOfflineEmptyOverride,
@@ -98,13 +111,16 @@ export function ListPageLayout<TData, TServerData = TData>({
           filters={list.filters}
           onApply={list.setFilters}
           onReset={list.resetFilters}
+          rules={filterRules}
         />
         <ColumnToggle table={table} />
         {createAction}
       </ListPageToolbar>
 
+      {quickFilters}
+
       {showFilterPills ? (
-        <ActiveFilterPills filters={list.filters} config={filterConfig} onRemove={list.removeFilter} />
+        <ActiveFilterPills filters={pillFilters ?? list.filters} config={filterConfig} onRemove={list.removeFilter} />
       ) : null}
 
       <DataTable
@@ -121,6 +137,7 @@ export function ListPageLayout<TData, TServerData = TData>({
         onLimitChange={list.setLimit}
         getRowLink={getRowLink}
         getSwipeActions={getSwipeActions}
+        getMobileGroups={getMobileGroups}
         renderMobileCard={(row) => renderCard(row, renderActionsCell(row))}
       />
 

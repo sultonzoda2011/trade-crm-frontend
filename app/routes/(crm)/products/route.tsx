@@ -6,6 +6,7 @@ import { Link, useLocation, useNavigate } from 'react-router';
 import { categoriesApi } from '~/api/categories';
 import { productsApi } from '~/api/products';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
+import { ProductQuickFilters, filtersNotShownByProductChips } from '~/components/products/ProductQuickFilters';
 import { ProductRow } from '~/components/products/ProductRow';
 import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import { Button } from '~/components/ui/button';
@@ -76,7 +77,9 @@ export default function ProductsPage() {
       list={list}
       table={table}
       filterConfig={filterConfig}
+      quickFilters={<ProductQuickFilters filters={list.filters} onChange={list.setFilters} />}
       showFilterPills
+      pillFilters={filtersNotShownByProductChips(list.filters)}
       syncUrl
       getRowLink={(row) => ({
         to: `/products/${row.original.id}`,

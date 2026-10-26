@@ -18,6 +18,13 @@ import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 import { DEFAULT_PAGE_LIMIT } from '~/store/useTableStore';
 
+/** Блок мобильного списка: необязательный заголовок и строки, которые лежат на одной карточке. */
+export interface MobileRowGroup<TData> {
+  key: string;
+  header?: ReactNode;
+  rows: Row<TData>[];
+}
+
 interface DataTableProps<TData> {
   table: Table<TData>;
   pinLastColumn?: boolean;
@@ -65,6 +72,11 @@ interface DataTableProps<TData> {
    * жеста. Кнопки обязаны быть уже отфильтрованы по правам (`useCan`).
    */
   getSwipeActions?: (row: Row<TData>) => SwipeAction[] | undefined;
+  /**
+   * Разбивает мобильный список на блоки (например, по дням): у каждого свой
+   * заголовок и своя карточка. Без пропса весь список — одна карточка, как раньше.
+   */
+  getMobileGroups?: (rows: Row<TData>[]) => MobileRowGroup<TData>[];
 }
 
 export function DataTable<TData>({
@@ -82,6 +94,7 @@ export function DataTable<TData>({
   renderMobileCard,
   getRowLink,
   getSwipeActions,
+  getMobileGroups,
 }: DataTableProps<TData>) {
   const { t } = useTranslation('common');
   const { t: tSync } = useTranslation('sync');
@@ -109,47 +122,62 @@ export function DataTable<TData>({
           ) : table.getRowModel().rows.length === 0 ? (
             <EmptyState />
           ) : (
-            // Все строки — одна сгруппированная карточка с разделителями с отступом
+            // Строки блока — одна сгруппированная карточка с разделителями с отступом
             // слева (как в iOS «Настройках»), а не стопка отдельных карточек.
-            <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
-              {table.getRowModel().rows.map((row, index) => {
-                const link = getRowLink?.(row);
-                const card = renderMobileCard(row);
-                const swipeActions = getSwipeActions?.(row);
-                const content = (
-                  <>
-                    {link && (
-                      <Link
-                        to={link.to}
-                        state={link.state}
-                        aria-label={t('actions.view')}
-                        draggable={false}
-                        // z-1: шапка строки и её кнопка действий позиционированы
-                        // (relative), без слоя оверлей уходил бы под них; кнопки
-                        // действий внутри строки поднимаются выше (z-2), чтобы ⋮
-                        // оставался нажимаемым. active — iOS-подсветка нажатия.
-                        className="focus-visible:ring-ring/50 active:bg-muted/70 absolute inset-0 z-1 transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
-                      />
-                    )}
-                    {card}
-                  </>
-                );
+            // Без `getMobileGroups` весь список — один такой блок.
+            <div className="flex shrink-0 flex-col gap-4">
+              {(getMobileGroups?.(table.getRowModel().rows) ?? [{ key: 'all', rows: table.getRowModel().rows }]).map(
+                (group, groupIndex, groups) => {
+                  // Сквозной номер строки на всю страницу — от него зависит задержка появления.
+                  const offset = groups.slice(0, groupIndex).reduce((sum, g) => sum + g.rows.length, 0);
+                  return (
+                    <section key={group.key}>
+                      {group.header}
+                      <div className="bg-card overflow-hidden rounded-2xl">
+                        {group.rows.map((row, rowIndex) => {
+                          const index = offset + rowIndex;
+                          const link = getRowLink?.(row);
+                          const card = renderMobileCard(row);
+                          const swipeActions = getSwipeActions?.(row);
+                          const content = (
+                            <>
+                              {link && (
+                                <Link
+                                  to={link.to}
+                                  state={link.state}
+                                  aria-label={t('actions.view')}
+                                  draggable={false}
+                                  // z-1: шапка строки и её кнопка действий позиционированы
+                                  // (relative), без слоя оверлей уходил бы под них; кнопки
+                                  // действий внутри строки поднимаются выше (z-2), чтобы ⋮
+                                  // оставался нажимаемым. active — iOS-подсветка нажатия.
+                                  className="focus-visible:ring-ring/50 active:bg-muted/70 absolute inset-0 z-1 transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
+                                />
+                              )}
+                              {card}
+                            </>
+                          );
 
-                return (
-                  <motion.div
-                    key={row.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
-                    className="not-last:after:bg-border relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:content-['']">
-                    {swipeActions && swipeActions.length > 0 ? (
-                      <SwipeableRow actions={swipeActions}>{content}</SwipeableRow>
-                    ) : (
-                      content
-                    )}
-                  </motion.div>
-                );
-              })}
+                          return (
+                            <motion.div
+                              key={row.id}
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.28, ease: 'easeOut', delay: Math.min(index, 11) * 0.04 }}
+                              className="not-last:after:bg-border relative not-last:after:absolute not-last:after:right-0 not-last:after:bottom-0 not-last:after:left-[72px] not-last:after:h-px not-last:after:content-['']">
+                              {swipeActions && swipeActions.length > 0 ? (
+                                <SwipeableRow actions={swipeActions}>{content}</SwipeableRow>
+                              ) : (
+                                content
+                              )}
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                }
+              )}
             </div>
           )}
         </div>
