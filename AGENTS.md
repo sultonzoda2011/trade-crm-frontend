@@ -19,14 +19,14 @@
 | State           | **Zustand 5**                   | Table + modal factories              |
 | Server state    | **TanStack React Query 5**      | `staleTime: 60s`, `keepPreviousData` |
 | HTTP            | **Axios**                       | Единственный HTTP client             |
-| Forms           | **React Hook Form**             | Через project wrapper                |
+| Forms           | **React Hook Form**             | Через project wrapper (`useForm`)    |
 | Validation      | **Zod 4**                       | i18n-aware schema factories          |
 | Auth            | **Bearer token + localStorage** | `accessToken` + `user`               |
 | i18n            | **react-i18next**               | `ru / en / tg`                       |
-| Tables          | **TanStack Table**              | Data tables                          |
+| Tables          | **TanStack Table**              | Data tables (`DataTable`)            |
 | Virtualization  | **TanStack Virtual**            | Для больших таблиц                   |
-| Charts          | **Recharts**                    | Dashboard                            |
-| Dates           | **Day.js**                      | Через project helpers                |
+| Charts          | **Recharts**                    | Dashboard + mini-charts              |
+| Dates           | **Day.js**                      | Через project helpers (`date.ts`)    |
 | Icons           | **lucide-react**                | Иконки                               |
 | Toasts          | **Sonner**                      | Global toaster                       |
 | Date picker     | **Flatpickr**                   | Themed                               |
@@ -154,11 +154,6 @@ File-system routing не используется.
 │   ├── /:id
 │   └── /:id/edit
 │
-├── /categories
-│   ├── /create
-│   ├── /:id
-│   └── /:id/edit
-│
 ├── /debtors
 │   ├── /create
 │   ├── /:id
@@ -266,8 +261,8 @@ canAccess(role, pathname)
 /sellers/create
 /sellers/:id/edit
 
-/categories/create
-/categories/:id/edit
+/products/create
+/products/:id/edit
 
 /debtors/create
 /debtors/:id/edit
@@ -441,10 +436,8 @@ MARKETS_DELETE
 PRODUCTS_VIEW
 PRODUCTS_CREATE
 PRODUCTS_EDIT
+PRODUCTS_RESTOCK
 PRODUCTS_DELETE
-
-CATEGORIES_VIEW
-CATEGORIES_MANAGE
 
 TRANSACTIONS_VIEW
 TRANSACTIONS_CREATE
@@ -604,7 +597,6 @@ auth.ts
 users.ts
 markets.ts
 products.ts
-categories.ts
 sellers.ts
 debtors.ts
 transactions.ts
@@ -634,13 +626,13 @@ jsonWrites()
 multipartWrites()
 ```
 
-Новые entity modules должны переиспользовать эти abstractions, когда endpoint соответствует стандартному CRUD behavior.
-
-Не копировать одинаковый pagination/filter logic в каждом API module.
+- Для детальных страниц `users`, `markets`, `sellers`, `debtors` используется `nestedDetailRequest` (`GET /<entity>/:id/full`), который загружает карточку сущности вместе с превью связанных списков и аналитикой одним запросом.
+- Новые entity modules должны переиспользовать эти abstractions, когда endpoint соответствует стандартному CRUD behavior.
+- Не копировать одинаковый pagination/filter logic в каждом API module.
 
 ---
 
-# 12. Query architecture
+# 12. Query & Mutation hooks
 
 Server state использует:
 
@@ -667,6 +659,43 @@ mutation retry: false
 
 ---
 
+## Standardized Entity List Hook (`useEntityList`)
+
+Все списочные страницы (`users`, `markets`, `sellers`, `products`, `debtors`, `transactions`) используют:
+
+```text
+app/hooks/useEntityList.ts
+```
+
+`useEntityList` автоматически:
+1. подписывается на нужные поля table store (`page`, `limit`, `search`, `filters`, `sorting` и setters);
+2. применяет `useDebounce(search, 300)`;
+3. преобразует `ActiveFilter[]` и `sorting` в API query params через `filtersToParams`;
+4. выполняет `useQuery` по ключу `[...queryKeyPrefix, 'list', queryParams]`;
+5. возвращает `{ rows, total, totalPages, isLoading, isFetching, queryResult, ...storeSlice }`.
+
+Не дублировать ручное чтение table store + `useDebounce` + `filtersToParams` + `useQuery` в каждом `route.tsx`.
+
+---
+
+## Standardized Entity Mutation Hook (`useEntityMutation`)
+
+Для стандартных online CRUD-мутаций (create/update/delete на страницах `users`, `markets`, `sellers`, `products`, `debtors/edit`, delete modals) использовать:
+
+```text
+app/hooks/useEntityMutation.ts
+```
+
+`useEntityMutation` инкапсулирует:
+- `useMutation`
+- инвалидацию `invalidateKeys` по префиксам (`queryClient.invalidateQueries({ queryKey: [key] })`)
+- показ `toast.success(t(successToastKey))`
+- вызов `onSuccess(result, input)` (закрытие модалки / `navigate(...)`)
+
+> **Важно:** Для офлайн-совместимых мутаций (`createDebtor`, `createTransaction`, `payTransaction`, `refundTransaction`) вместо `useEntityMutation` используется `useDetachedMutation` (см. раздел 30 «Offline & Sync»).
+
+---
+
 # 13. Query keys
 
 Все project query keys должны находиться в:
@@ -681,9 +710,13 @@ app/lib/query-keys.ts
 
 ```text
 users
+markets
+sellers
 products
+debtors
 transactions
-...
+dashboard
+profile
 ```
 
 Поэтому invalidation выполняется по prefix:
@@ -733,6 +766,7 @@ page
 limit
 search
 filters
+sorting
 ```
 
 и:
@@ -745,13 +779,14 @@ setFilter()
 removeFilter()
 setFilters()
 resetFilters()
+setSorting()
 ```
 
 ---
 
 ## Important
 
-`setLimit`, `setSearch`, `setFilter`, `setFilters`, `resetFilters` должны сбрасывать page на `1`.
+`setLimit`, `setSearch`, `setFilter`, `setFilters`, `resetFilters`, `setSorting` должны сбрасывать page на `1`.
 
 `removeFilter()` не обязан сбрасывать page.
 
@@ -780,9 +815,10 @@ Store должен быть typed.
 ```ts
 type ProductModals = {
   delete: string;
+  restock: Product;
 };
 
-export const useProductsModals = createModalStore<ProductModals>(['delete']);
+export const useProductsModals = createModalStore<ProductModals>(['delete', 'restock']);
 ```
 
 ---
@@ -805,7 +841,7 @@ const modals = useProductsModals();
 
 ---
 
-# 16. Tables
+# 16. Tables & `ListPageLayout`
 
 Использовать:
 
@@ -814,15 +850,32 @@ const modals = useProductsModals();
 @tanstack/react-virtual
 ```
 
-Reusable table:
+Reusable table и единый layout списочных страниц:
 
 ```text
 app/components/shared/DataTable.tsx
+app/components/shared/ListPageLayout.tsx
+app/components/shared/ActionButtons.tsx
 ```
 
 ---
 
-## Columns
+## `ListPageLayout`
+
+Все 6 списочных страниц (`users`, `markets`, `sellers`, `products`, `debtors`, `transactions`) строятся через `ListPageLayout<TData, TServerData>`.
+
+Он берет на себя:
+- заголовок страницы со счётчиком `total` и кнопкой создания (с проверкой `createAction` через `useCan()`);
+- `summarySlot` (например, `TransactionsSummary`);
+- строку поиска + кнопку `FilterSheet` (`filterConfig`, `filterRules`);
+- плашки активных фильтров (`pillFilters` с авто-исключением ключей быстрых чипов `quickFilterKeys` и применением `filterRules` при удалении);
+- быстрые фильтр-чипы (`quickFilters`: `ProductQuickFilters`, `DebtorQuickFilters`, `TransactionQuickFilters`);
+- переключение между десктопной таблицей (`DataTable` или кастомный `renderTable`) и мобильным списком карточек (`renderMobileCard`, опционально с группировкой `getMobileGroups`);
+- скелетон загрузки, `EmptyState`, пагинацию (`PaginationBar` / `MobilePagination`) и слот `children` для модалок.
+
+---
+
+## Columns & `ActionButtons`
 
 Entity columns должны находиться в:
 
@@ -839,11 +892,7 @@ getColumns({
 });
 ```
 
-Использовать:
-
-```ts
-createColumnHelper<T>();
-```
+Использовать `createColumnHelper<T>()` и общий компонент `ActionButtons` (`app/components/shared/ActionButtons.tsx`) для кнопок действий (`onView`, `onEdit`, `onDelete`, `onPay`, `onRefund`, `onRestock`) как в колонках таблиц, так и в мобильных карточках (`app/components/cards/*`).
 
 Не определять большие `ColumnDef[]` непосредственно внутри route component.
 
@@ -851,19 +900,11 @@ createColumnHelper<T>();
 
 ## Background fetching
 
-При использовании DataTable передавать:
-
-```ts
-isFetching;
-```
-
-Чтобы текущие rows оставались видимыми во время background refetch.
-
-Не показывать полный skeleton на каждый page/filter change.
+При использовании `DataTable` / `ListPageLayout` передавать `isFetching` (через `list`), чтобы текущие rows оставались видимыми во время background refetch. Не показывать полный skeleton на каждый page/filter change.
 
 ---
 
-# 17. Filters
+# 17. Filters & Conflict Rules
 
 Filter definitions находятся в:
 
@@ -871,58 +912,31 @@ Filter definitions находятся в:
 configs/filters.ts
 ```
 
-Использовать:
-
-```text
-FilterConfig
-```
-
-Поддерживаемые variants:
-
-```text
-select
-number-range
-date-range
-boolean
-```
+Использовать `FilterConfig` (`select`, `number-range`, `date-range`, `boolean`).
 
 ---
 
-## Search
+## Filter Conflict Rules (`FilterRule`)
 
-Search должен использовать debounce:
+Для взаимоисключающих фильтров (например, `health` vs `reorderPriority` у товаров, `risk` vs `overdue`/`includePaid` у должников, быстрые пресеты у транзакций) используются декларативные правила:
 
 ```text
-search
- ↓
-useDebounce
- ↓
-query
+app/types/filters.ts      # тип FilterRule
+app/lib/filter-rules.ts   # applyFilterWithRules(), clearFilterGroup(), isGroupActive()
 ```
 
-Не отправлять API request на каждый keystroke.
+Правила объявляются в `configs/filters.ts` соответствующей сущности (`PRODUCT_FILTER_RULES`, `DEBTOR_FILTER_RULES`, `TRANSACTION_FILTER_RULES`) и передаются в `ListPageLayout` (`filterRules`), `FilterSheet` и компоненты быстрых фильтров.
 
 ---
 
-## Filter params
+## Search & Filter params
 
-Преобразование:
-
-```text
-ActiveFilter[]
-```
-
-в API query params должно выполняться через:
-
-```text
-app/lib/filtersToParams.ts
-```
-
-Не собирать эти query params вручную внутри каждой страницы.
+- Search использует debounce (`useDebounce`, встроен в `useEntityList`).
+- Преобразование `ActiveFilter[]` в API query params выполняется через `app/lib/filtersToParams.ts`. Не собирать query params вручную внутри страниц.
 
 ---
 
-# 18. Forms
+# 18. Forms & `EntityFormPage`
 
 Основной form stack:
 
@@ -934,19 +948,18 @@ Zod
 @hookform/resolvers/zod
 ```
 
-Использовать wrapper:
+Использовать:
+- хук `app/hooks/useForm.ts`
+- обёртку страницы формы `app/components/shared/EntityFormPage.tsx`
+- переиспользуемые поля сущности `app/components/forms/*FormFields.tsx` (`UserFormFields`, `MarketFormFields`, `SellerFormFields`, `ProductFormFields`, `DebtorFormFields`)
 
-```text
-app/hooks/useForm.ts
-```
+`EntityFormPage` унифицирует для всех create/edit страниц:
+- skeleton при загрузке (`isLoading`)
+- `EmptyState` если запись не найдена (`notFound`)
+- `BreadCrumbs` и заголовок
+- карточку формы, `FormWrapper` и кнопки `Submit` / `Cancel`
 
-а не напрямую:
-
-```ts
-useForm();
-```
-
-из `react-hook-form`, если wrapper покрывает нужный flow.
+Create и Edit страницы одной сущности не должны дублировать JSX разметку полей — поля выносятся в `*FormFields.tsx`.
 
 ---
 
@@ -965,19 +978,7 @@ createProductSchema(t);
 updateProductSchema(t);
 ```
 
-Schemas должны быть factories, если содержат user-facing translated messages.
-
----
-
-## Schema memoization
-
-В component:
-
-```ts
-const schema = useMemo(() => createProductSchema(t), [t]);
-```
-
-Не создавать translation-dependent schema заново без необходимости.
+Schemas должны быть factories, если содержат user-facing translated messages, и мемоизироваться через `useMemo(() => createProductSchema(t), [t])`.
 
 ---
 
@@ -1008,52 +1009,15 @@ buildMultipart()
 app/lib/date.ts
 ```
 
-Использовать:
+Использовать `toDayjs()`, `toDate()`, а для отображения — `formatDate()` из `app/lib/format.ts`.
 
-```text
-toDayjs()
-toDate()
-```
-
-Для отображения:
-
-```text
-formatDate()
-```
-
-из:
-
-```text
-app/lib/format.ts
-```
-
-Не использовать разбросанные:
-
-```ts
-dayjs(date).format(...)
-```
-
-по всему application code.
-
-Это особенно важно для day-first input formats.
+Не использовать разбросанные `dayjs(date).format(...)` по всему application code.
 
 ---
 
 # 22. i18n
 
-Languages:
-
-```text
-ru
-en
-tg
-```
-
-Default/fallback:
-
-```text
-ru
-```
+Languages: `ru`, `en`, `tg` (default/fallback: `ru`).
 
 Locales:
 
@@ -1064,69 +1028,10 @@ public/locales/
 └── tg/
 ```
 
----
-
-## User-facing strings
-
-Не писать:
-
-```tsx
-<Button>Create</Button>
-```
-
-в feature code.
-
-Использовать translations:
-
-```tsx
-<Button>{t('actions.create')}</Button>
-```
-
----
-
-## Namespace
-
-Entity pages должны использовать explicit namespaces:
-
-```ts
-useTranslation(['products', 'common']);
-```
-
-Config factories получают `t`:
-
-```ts
-getColumns({ t });
-getProductFilters(t);
-```
-
----
-
-## Create-page titles
-
-Заголовок и breadcrumb на `/<entity>/create` должны использовать entity-scoped ключ `t('create')` (из namespace сущности), а не generic `t('actions.create')` из `common`.
-
-Значение `create` в locale-файле сущности должно быть explicit, с названием сущности:
-
-```json
-// debtors.json
-{ "create": "Создать должника" }
-
-// sellers.json
-{ "create": "Создать продавца" }
-
-// markets.json
-{ "create": "Создать рынок" }
-```
-
-Не:
-
-```json
-{ "create": "Создать" }
-```
-
-Причина: generic "Создать" неоднозначен вне контекста страницы (breadcrumb, browser tab, push-уведомление). Правило применяется ко всем create-страницам: `users`, `markets`, `sellers`, `products`, `categories`, `debtors`.
-
-Не вызывать React hooks внутри обычных config factories.
+- Все user-facing строки проходят через `t(...)`.
+- Entity pages используют explicit namespaces: `useTranslation(['products', 'common'])`.
+- Заголовок и breadcrumb на `/<entity>/create` используют entity-scoped ключ `t('create')` с явным названием сущности (например, `"Создать должника"`), а не generic `t('actions.create')`.
+- Справочник `/guide` (`public/locales/{ru,en,tg}/guide.json`) разбит на 9 разделов (`gettingStarted`, `dashboard`, `products`, `transactions`, `debtors`, `markets`, `sellers`, `users`, `sync`) и синхронизирован на всех 3 языках.
 
 ---
 
@@ -1135,810 +1040,207 @@ getProductFilters(t);
 Основные layers:
 
 ```text
-components/ui/
-components/ui/form/
-components/shared/
-components/modals/
-components/dashboard/
-components/layout/
-```
-
----
-
-## UI primitives
-
-Использовать существующие components из:
-
-```text
-app/components/ui/
-```
-
-Не создавать новый primitive, если существующий уже покрывает задачу.
-
----
-
-## Shared components
-
-Переиспользуемый application-level UI:
-
-```text
-app/components/shared/
-```
-
-Примеры:
-
-```text
-DataTable
-FilterSheet
-ConfirmDialog
-Modal
-EmptyState
-InfoItem
-BreadCrumbs
-...
+components/ui/          # базовые примитивы (@base-ui/react + shadcn)
+components/ui/form/     # FormInput, FormTextarea, FormCustomSelect, FormPasswordInput, FormImageUpload, PickerField
+components/forms/       # переиспользуемые наборы полей сущностей (*FormFields.tsx)
+components/cards/       # мобильные карточки сущностей (*Card.tsx)
+components/shared/      # ListPageLayout, EntityFormPage, DataTable, FilterSheet, ActionButtons, DetailLayout, KpiGrid, MiniCharts, SignalBlock, MobileCard и др.
+components/modals/      # PayTransactionModal, RefundTransactionModal, RestockProductModal, ConfirmDialog
+components/dashboard/   # виджеты дашборда и аналитических вкладок
+components/guide/       # модульные компоненты справочника (GuideSidebar, GuideArticleView, GuideSearchModal, guide-highlight)
+components/sync/        # секции страницы /sync
+components/layout/      # Header, Sidebar, NavMain, BottomNav, UserNav, ModeToggle, LanguageSwitcher, Panel
 ```
 
 ---
 
 ## Modals
 
-Modal components находятся в:
-
-```text
-app/components/modals/
-```
-
-Visibility должна контролироваться store.
-
-Не делать unnecessary conditional mounting:
-
-```tsx
-{
-  isOpen && <Modal />;
-}
-```
-
-если компонент использует exit animation.
-
-Для delete/confirmation flows использовать:
-
-```text
-ConfirmDialog
-```
+Modal components находятся в `app/components/modals/`. Visibility контролируется через `createModalStore()`.
+- Для подтверждения удаления использовать `ConfirmDialog`.
+- Для пополнения остатка товара (`POST /products/:id/restock`) использовать `RestockProductModal`.
+- Для оплаты долга и возврата продажи — `PayTransactionModal` и `RefundTransactionModal`.
 
 ---
 
 # 24. Page structure
 
-Entity page обычно разделяется:
+Entity page разделяется на:
 
 ```text
-route.tsx
-store.ts
+route.tsx               # список через useEntityList + ListPageLayout
+store.ts                # createTableStore + createModalStore
 configs/
-├── columns.tsx
-└── filters.ts
+├── columns.tsx         # колонки таблицы (getColumns)
+└── filters.ts          # FilterConfig[] + FilterRule[]
 id/
-├── route.tsx
+└── route.tsx           # детальная страница (DetailLayout, KpiGrid, SignalBlock и т.д.)
 create/
-└── route.tsx
+└── route.tsx           # создание через EntityFormPage + *FormFields
 id/edit/
-└── route.tsx
+└── route.tsx           # редактирование через EntityFormPage + *FormFields
 ```
 
-Не создавать route-local `components/` directory без реальной необходимости.
-
-Reusable UI должен находиться в `app/components/`.
+Сложные интерактивные страницы (например, `app/routes/(crm)/transactions/create/`) декомпозируются на локальные подкомпоненты и хуки (`ProductPickerSection`, `CartSummaryPanel`, `CartItemCard`, `TransactionConfirmSheet`, `useTransactionCart`).
 
 ---
 
 # 25. CUD architecture
 
-В текущей версии frontend create/edit flows существуют как page routes для entities:
+Create/edit flows существуют как page routes (`EntityFormPage`) для entities:
 
 ```text
 users
 markets
 sellers
 products
-categories
 debtors
 ```
+
+Products дополнительно поддерживают модальное пополнение склада (`RestockProductModal` → `POST /products/:id/restock`).
 
 Transactions:
 
 ```text
-create page
-pay modal
-refund flow
-delete confirmation
+create page (/transactions/create — корзина со скидками/наценками по позициям и шторкой подтверждения)
+pay modal (PayTransactionModal)
+refund modal (RefundTransactionModal — полный или частичный возврат по позициям)
+delete confirmation (ConfirmDialog)
 ```
-
-При изменении существующего flow сначала проверить текущий route и store, а не создавать альтернативный architecture pattern.
 
 ---
 
 # 26. Detail pages
 
-Detail pages должны переиспользовать established application components.
-
-Предпочитать:
+Detail pages используют общие строительные блоки из `app/components/shared/`:
 
 ```text
 ByIdSkeleton
 BreadCrumbs
+DetailLayout (DetailHero, DetailSection, DetailStatRow и др.)
+KpiGrid
+MiniCharts
+SignalBlock
 InfoItem
 Panel
 ```
 
-Breadcrumb state должен передаваться из списка, если list navigation already provides:
-
-```text
-fromPath
-fromName
-```
-
-Не хардкодить одинаковые breadcrumb paths в каждой detail page.
+Для `users`, `markets`, `sellers`, `debtors` данные загружаются одним запросом через `GET /<entity>/:id/full` (`nestedDetailRequest`).
 
 ---
 
 # 27. Navigation & layout
 
-Основные layout components:
-
-```text
-app/components/layout/
-├── Header
-├── Sidebar
-├── NavMain
-├── BottomNav
-├── UserNav
-├── ModeToggle
-├── LanguageSwitcher
-└── Panel
-```
-
-CRM layout отвечает за:
-
-```text
-sidebar
-header
-main scroll area
-auth guard
-route-level access
-```
-
-Mobile navigation используется отдельно через `BottomNav`.
+Основные layout components находятся в `app/components/layout/`.
+CRM layout (`app/routes/(crm)/layout.tsx`) отвечает за sidebar, header, main scroll area, auth guard и route-level access. На мобильных экранах используется `BottomNav`.
 
 ---
 
 # 28. Theme
 
-Theme provider:
-
-```text
-app/components/theme-provider.tsx
-```
-
-используется с:
-
-```text
-next-themes
-```
-
-Design tokens находятся в:
-
-```text
-app/styles/global.css
-```
-
----
-
-## Current font
-
-Основной шрифт:
-
-```text
-Inter Variable
-```
-
-Не вводить Geist/Manrope или другой font без изменения design-system решения.
-
----
-
-## Current primary
-
-Light:
-
-```text
-#007aff
-```
-
-Dark:
-
-```text
-#0a84ff
-```
-
-Всегда предпочитать semantic classes:
-
-```text
-text-primary
-bg-primary
-text-success
-bg-warning/15
-text-destructive
-```
-
-а не прямые hex values в components.
+Theme provider (`app/components/theme-provider.tsx`) использует `next-themes`. Design tokens находятся в `app/styles/global.css`.
+- Основной шрифт: `Inter Variable`.
+- Предпочитать semantic classes (`text-primary`, `bg-primary`, `text-success`, `bg-warning/15`, `text-destructive`), а не прямые hex values в компонентах.
 
 ---
 
 # 29. Mobile / Capacitor
 
-Mobile shell использует:
-
-```text
-Capacitor 8
-```
-
-Config:
-
-```text
-capacitor.config.ts
-```
-
-Current:
-
-```text
-appId: com.tradecrm.app
-appName: TradeCRM
-webDir: build/client
-```
-
-Android plugins include:
-
-```text
-StatusBar
-Keyboard
-App
-Network
-SQLite
-```
-
----
-
-## Android-specific rules
-
-UI должен учитывать Android WebView:
-
-- не полагаться на session cookies;
-- не использовать sticky hover behavior;
-- поддерживать touch targets;
-- учитывать keyboard resize;
-- учитывать status bar;
-- избегать browser-only APIs без guard, если код может выполняться native.
+Mobile shell использует **Capacitor 8** (`capacitor.config.ts`, `appId: com.tradecrm.app`, `webDir: build/client`).
+UI учитывает Android WebView:
+- не полагается на session cookies;
+- не использует sticky hover behavior;
+- поддерживает свайп-действия на мобильных карточках (`SwipeableCard` / `MobileCard`) и крупные touch targets.
 
 ---
 
 # 30. Offline & Sync
 
-Offline-поддержка — не самописная очередь, а комбинация встроенных механизмов TanStack Query поверх персистентного хранилища.
+Offline-поддержка построена поверх встроенных механизмов TanStack Query и персистентного хранилища (SQLite на Android / IndexedDB в браузере):
 
 ```text
 app/lib/
-├── network-status.ts     # единственный источник истины о сети, подключён к onlineManager React Query
-├── offline-storage.ts    # SQLite (native/@capacitor-community/sqlite) или IndexedDB (браузер)
-├── query-persister.ts    # персист query-кеша, построчно; версия через CACHE_BUSTER
-├── offline-mutations.ts  # offline-определения createDebtor/createTransaction/payTransaction/refundTransaction
-├── offline-queue.ts      # витрина очереди для UI (/sync)
-├── offline-overlay.ts    # подмешивает очередь к спискам: строки «в очереди», пересчёт долгов/остатков/склада
-├── offline-sent.ts       # когда операция дошла до сервера (чтобы строка не мигала до обновления списка)
-├── client-ids.ts         # временные id `local-…` и их соответствие настоящим (должник → долг без связи)
-├── detached-submit.ts    # «отпустить» форму через 1.5 с или сразу офлайн, не дожидаясь сервера
-└── load-transaction-for-pay.ts  # транзакция для окна оплаты: сеть ≤4 с, иначе копия с устройства
-├── offline-errors.ts     # PlainError — ошибка без Authorization-заголовка, безопасна для персиста
-├── offline-sync.ts       # логика «Синхронизировать всё»
-└── offline-session.ts    # владелец кеша/очереди при логине/логауте
-
-app/hooks/useNetworkStatus.ts, useCapacitorNetworkStatus.ts, useOfflineQueue.ts, useCacheCoverage.ts, useStorageStats.ts
-app/hooks/useOfflineOverlay.ts, useDetachedMutation.ts, useCreateDebtor.ts
-app/components/shared/PendingBadge.tsx, PendingRowActions.tsx   # метка «в очереди» и действия повторить/убрать
-app/store/useSyncStore.ts   # глобальный прогресс «Синхронизировать всё»
+├── network-status.ts            # единственный источник истины о сети, подключён к onlineManager React Query
+├── offline-storage.ts           # SQLite (native/@capacitor-community/sqlite) или IndexedDB (браузер)
+├── query-persister.ts           # построчный персист query-кеша; версия через CACHE_BUSTER
+├── offline-mutations.ts         # offline-определения createDebtor/createTransaction/payTransaction/refundTransaction
+├── offline-queue.ts             # витрина очереди для UI (/sync)
+├── offline-overlay.ts           # подмешивает очередь к спискам: строки «в очереди», пересчёт долгов/остатков/склада
+├── offline-sent.ts              # удержание принятых сервером операций в оверлее до рефетча списка
+├── client-ids.ts                # временные id `local-…` и их маппинг на серверные UUID
+├── detached-submit.ts           # «отпустить» форму через 1.5 с или сразу офлайн
+├── load-transaction-for-pay.ts  # транзакция для окна оплаты: сеть ≤4 с, иначе копия с устройства
+├── offline-errors.ts            # PlainError — ошибка без Authorization-заголовка, безопасна для персиста
+├── offline-sync.ts              # логика «Синхронизировать всё»
+└── offline-session.ts           # владелец кеша/очереди при логине/логауте
 ```
 
-## Источник истины о сети
-
-`navigator.onLine` в Android WebView ненадёжен. Используется **Capacitor Network** через `useCapacitorNetworkStatus()` → `network-status.ts` → `onlineManager` TanStack Query. Не проверять связь напрямую через `navigator.onLine`.
-
-## Offline-mutations
-
-В очередь попадают **только четыре** мутации: `createDebtor`, `createTransaction`, `payTransaction`, `refundTransaction` (`OFFLINE_MUTATION_KEYS` в `offline-mutations.ts`). Остальной CRUD (markets/products/users/...) офлайн не поддерживает — это осознанно неполное покрытие, а не офлайн-режим для всего приложения.
-
-Очередь последовательная (`OFFLINE_QUEUE_SCOPE`): операции уходят по одной в порядке создания — поэтому «новый должник → дать ему долг» работает без связи.
-
-## Очередь видна в списках (overlay)
-
-Строки очереди **не патчатся в кеш** react-query, а выводятся из `MutationCache` и подмешиваются при рендере (`offline-overlay.ts`, хуки `useDebtorRows` / `useTransactionRows` / `usePendingDebtors` / `usePendingStock`). Ушла из очереди — оверлея нет, откатывать нечего.
-
-- Новый должник/транзакция — строка сверху с `PendingBadge`, без ссылки на страницу; действия — только «повторить»/«убрать» (`PendingRowActions`).
-- Оплата и новый долг сразу меняют сумму долга должника и остаток транзакции (`pendingOps` → `PendingEffectsNote`); продажа из очереди вычитается из остатка товара в форме продажи.
-- Принятая сервером операция (`sent`) остаётся в оверлее, пока список не перезапросился после её принятия (`dataUpdatedAt` > `sentAt`), максимум `SENT_OVERLAY_MAX_MS`. Поэтому успешные мутации живут в `MutationCache` ~минуту (`query-client.ts`).
-- Новый список/страница, показывающие должников или транзакции, должны брать данные через эти хуки, иначе очередь в них не видна.
-
-## Временные id
-
-Должник из очереди живёт под `local-<uuid>` (`client-ids.ts`). Продажа ссылается на него; перед отправкой `withRealDebtor` подменяет id настоящим (соответствие `clientId → realId` пишется в localStorage в `onSuccess` создания должника). Если должник не создался — продажа падает с понятной ошибкой, а не уходит с мусорным id.
-
-## Формы не ждут сервер
-
-Формы отправляют через `useDetachedMutation(key)` (`submitDetached`): офлайн — закрываются сразу; онлайн — по ответу или через `DETACH_AFTER_MS` (1.5 с), что раньше. Ошибка сервера за это время оставляет человека на форме. В `useMutation` передаётся **только `mutationKey`** — собственные `onSuccess`/`onError` перекрыли бы те, что в `setMutationDefaults`, и списки перестали бы обновляться. Навигация и закрытие окна — только через `release`.
-
-Механизм:
-
-```text
-mutationFn вызывается
-    ↓ (если устройство офлайн)
-networkMode: 'online' → mutation сразу isPaused
-    ↓
-root.tsx персистит paused-мутации в ту же SQLite-базу, что и кеш чтения
-    ↓ (при восстановлении сети)
-queryClient.resumePausedMutations()
-    ↓
-Backend дедуплицирует повтор по Idempotency-Key
-```
-
-`mutationKey` в офлайн-мутациях — идентификатор *определения* мутации (для `setMutationDefaults`), а не ключ чтения из `query-keys.ts`: функции не сериализуются, в SQLite попадают только `mutationKey`/`variables`/`state`.
-
-> [!IMPORTANT]
-> Добавляя новую offline-мутацию, обязательно реализовать идемпотентность на бэкенде (`Idempotency-Key`) — без неё `resumePausedMutations()` может выполнить операцию дважды. Для POST /debtors она уже есть.
-
-## Выбор из списка (шторка + данные с устройства)
-
-Поля формы «выбрать из списка» — `FormCustomSelect` → `PickerField` (шторка снизу с поиском, как выбор товара), а не выпадающий список. Для списков из API данные берёт `useAsyncSelectOptions`: пока нет сети или сервер ещё не ответил (слабая связь), он собирает записи сущности из **любых** сохранённых запросов (`[entity,'list'|'options',…]`, в том числе восстановленных с диска) и ищет по ним локально. Список не зависит от того, совпал ли именно ключ формы с тем, что положила синхронизация. Если выбор — подмножество сущности (только владельцы среди пользователей), обязательно передавать `accept`, а для людей — `getSearchText` (имя + телефон). Новое поле выбора делать через `FormCustomSelect`/`PickerField`; `CustomSelect` (combobox) оставлен только для компактных inline-контролов (размер страницы, фильтры).
-
-## Персист кеша
-
-Построчно (один query = одна запись), не единым блобом. `CACHE_BUSTER` в `query-persister.ts` бампается при несовместимом изменении формы кеша (например, рефакторинг `query-keys.ts`), чтобы старые персистентные записи не ломали новую версию приложения — не забывать бампать при таких изменениях.
-
-## Владение кешем
-
-Кеш и очередь принадлежат вошедшему пользователю (`offline-session.ts`):
-
-- logout стирает кеш и очередь;
-- login под другим пользователем стирает их тоже;
-- истёкшая сессия (401) ничего не стирает.
-
-## UI
-
-Экран `/sync` (`app/routes/(crm)/sync/route.tsx`) собран из `SyncHero`, `QueueSection`, `CoverageSection`, `StorageSection` (`app/components/sync/`), данные — через `useSyncStore`, `useOfflineQueue`, `useCacheCoverage`, `useStorageStats`. Пользовательское описание — в `/guide` → «Офлайн-режим и синхронизация».
+Key rules:
+1. **Источник истины о сети:** только `useNetworkStatus()` / `network-status.ts` (через Capacitor Network), никогда `navigator.onLine`.
+2. **Офлайн-мутации:** только `createDebtor`, `createTransaction`, `payTransaction`, `refundTransaction` (`OFFLINE_MUTATION_KEYS`). Все 4 защищены `@Idempotent()` (`Idempotency-Key`) на бэкенде.
+3. **Оверлей очереди:** списки должников и транзакций обязаны пропускать данные через `useDebtorRows` / `useTransactionRows` (`useOfflineOverlay.ts`), а остатки товаров в корзине — через `usePendingStock`.
+4. **Отправка без ожидания (`useDetachedMutation`):** формы офлайн-мутаций передают в `useMutation` **только `mutationKey`** (чтобы не перетереть `setMutationDefaults`) и закрываются/переходят по `release`.
 
 ---
 
-# 31. Session persistence
+# 31. Error handling & Loading / Empty states
 
-Session специально хранится в:
-
-```text
-localStorage
-```
-
-а не в session cookie.
-
-Причина:
-
-Android WebView может удалить обычную session cookie после завершения процесса приложения.
-
-`localStorage` используется как persistent client storage.
+- Глобальный Axios interceptor в `app/lib/client.ts` обрабатывает сетевые ошибки, `401` (сброс сессии и переход на `/login`) и `4xx/5xx` (показ toast).
+- Первая загрузка страницы использует соответствующий skeleton (`TableSkeleton`, `ByIdSkeleton`, `FormPageSkeleton`, `DashboardSkeleton`).
+- Фоновый refetch использует `isFetching` с сохранением текущих данных (`keepPreviousData`).
+- Для пустых списков и ненайденных записей используется `EmptyState`.
 
 ---
 
-# 32. Error handling
+# 32. Important domain conventions
 
-Axios response interceptor:
-
-```text
-network error
-    ↓
-errors.noConnection
-
-401
-    ↓
-clearSession()
-    ↓
-/login
-
-4xx / 5xx
-    ↓
-server message OR translated error
-    ↓
-toast
-```
-
-Не добавлять собственные глобальные error handlers в каждой page без необходимости.
+- **Roles:** Backend `ADMIN | OWNER | SELLER` ↔ Frontend `Role.Admin | Role.Owner | Role.Seller` (`normalizeRole` в `auth-utils.ts`).
+- **Transaction types:** `DEBT | SALE | REFUND`.
+- **Payment types:** `CASH | CARD | CREDIT`.
+- **Transaction statuses:** `ACTIVE | PARTIAL | PAID | REFUNDED | PARTIALLY_REFUNDED`.
 
 ---
 
-# 33. Query invalidation after mutations
-
-Typical mutation flow:
-
-```text
-mutation
-   ↓
-invalidateQueries()
-   ↓
-toast.success()
-   ↓
-close modal / navigate
-   ↓
-reset form
-```
-
-После create/update/delete не забывать invalidation соответствующей entity.
-
-Использовать prefix:
-
-```ts
-queryClient.invalidateQueries({
-  queryKey: ['products'],
-});
-```
-
----
-
-# 34. Loading states
-
-Для first load использовать appropriate skeleton.
-
-Для background refetch:
-
-```text
-isFetching
-```
-
-и сохранять текущие data.
-
-Не превращать каждую pagination operation в full-page loading state.
-
----
-
-# 35. Empty states
-
-Использовать:
-
-```text
-EmptyState
-```
-
-вместо самодельного:
-
-```tsx
-<p>No data</p>
-```
-
----
-
-# 36. Utility `cn`
-
-Все conditional Tailwind classes должны объединяться через:
-
-```text
-~/lib/utils.ts
-```
-
-```ts
-cn(...)
-```
-
-Не использовать ad-hoc string concatenation.
-
----
-
-# 37. Installed but currently unused
-
-Не начинать использовать библиотеку только потому, что она есть в `package.json`.
-
-Перед использованием проверить actual imports.
-
-В проекте есть dependencies, которые могут быть legacy/unused, например:
-
-```text
-radix-ui
-@fontsource-variable/geist
-@react-router/fs-routes
-@react-router/node
-@react-router/serve
-isbot
-i18next-fs-backend
-@tanstack/devtools-vite
-```
-
-Не считать наличие dependency признаком принятого architecture pattern.
-
----
-
-# 38. Type organization
-
-Entity types находятся в:
-
-```text
-app/types/
-```
-
-Основные модули:
-
-```text
-common
-auth
-users
-markets
-products
-sellers
-debtors
-transactions
-dashboard
-profile
-filters
-```
-
-Не inline-определять большие domain types внутри route components.
-
----
-
-# 39. Important domain conventions
-
-### Roles
-
-```text
-ADMIN
-OWNER
-SELLER
-```
-
-Frontend enum:
-
-```text
-Role.Admin
-Role.Owner
-Role.Seller
-```
-
----
-
-### Product units
-
-```text
-PCS
-KG
-L
-M
-BOX
-```
-
----
-
-### Transaction types
-
-```text
-DEBT
-SALE
-REFUND
-```
-
----
-
-### Payment types
-
-```text
-CASH
-CARD
-CREDIT
-```
-
----
-
-### Transaction statuses
-
-```text
-ACTIVE
-PARTIAL
-PAID
-REFUNDED
-PARTIALLY_REFUNDED
-```
-
----
-
-# 40. Backend contract
-
-Backend:
-
-```text
-NestJS
-Prisma
-PostgreSQL
-```
-
-API:
-
-```text
-/api
-```
-
-Default development backend:
-
-```text
-http://localhost:4000
-```
-
-Swagger:
-
-```text
-/api/docs
-```
-
----
-
-# 41. Market scoping
-
-Domain access is market-aware.
-
-Backend security remains authoritative.
-
-Frontend should not assume that hiding a button or route is sufficient authorization.
-
-Important backend behavior:
-
-```text
-OWNER
-→ own market scope
-
-SELLER
-→ assigned market scope
-```
-
-Cross-market authorization decisions are enforced server-side.
-
----
-
-# 42. New feature checklist
+# 33. New feature checklist
 
 При добавлении новой feature проверить:
 
 ```text
 [ ] routes.ts
 [ ] ROUTE_PERMISSIONS
-[ ] Action enum
-[ ] ACTION_PERMISSIONS
-[ ] API_ROUTE_ACTIONS
-[ ] navigation.ts
-[ ] API module
-[ ] types
-[ ] validations
-[ ] translations
-[ ] query key
-[ ] query invalidation
-[ ] table store (если list)
-[ ] modal store (если modal flow)
-[ ] responsive/mobile behavior
-[ ] typecheck
-[ ] build
+[ ] Action enum + ACTION_PERMISSIONS + API_ROUTE_ACTIONS
+[ ] navigation.ts (если пункт меню)
+[ ] API module (через crud.ts helpers)
+[ ] types + validations + translations (ru / en / tg)
+[ ] query key в query-keys.ts
+[ ] useEntityList + ListPageLayout (если списочная страница)
+[ ] EntityFormPage + *FormFields (если create/edit страница)
+[ ] useEntityMutation (или useDetachedMutation + Idempotency-Key для offline)
+[ ] FilterRule[] (если есть взаимоисключающие фильтры)
+[ ] responsive/mobile behavior (карточки + свайп/ActionButtons)
+[ ] npm run typecheck && npm run build
 ```
 
 ---
 
-# 43. New endpoint checklist
-
-Новый API endpoint должен быть проверен в:
-
-```text
-app/api/<entity>.ts
-```
-
-и:
-
-```text
-app/lib/client.ts
-```
-
-Если endpoint требует permission, соответствующая запись должна появиться в:
-
-```text
-API_ROUTE_ACTIONS
-```
-
-Не оставлять endpoint без intention-specific RBAC mapping.
-
----
-
-# 44. New route checklist
-
-Новый protected route требует:
-
-```text
-app/routes.ts
-+
-app/config/permissions.ts
-```
-
-Если route содержит gated UI:
-
-```text
-+
-app/config/actions.ts
-```
-
-Если feature делает API requests:
-
-```text
-+
-app/lib/client.ts
-```
-
-Если route должен появиться в navigation:
-
-```text
-+
-app/config/navigation.ts
-```
-
----
-
-# 45. Don't
+# 34. Don't
 
 Не:
 
 ```text
-❌ использовать raw fetch
-❌ импортировать axios напрямую в feature code
-❌ использовать Radix как UI foundation
-❌ создавать новые роли через inline strings
-❌ делать role-based UI через raw string comparison
+❌ использовать raw fetch или импортировать axios напрямую в feature code
+❌ использовать Radix как UI foundation (используется @base-ui/react)
+❌ делать role-based UI через raw string comparison вместо useCan()
 ❌ добавлять route без ROUTE_PERMISSIONS
 ❌ добавлять endpoint без проверки API_ROUTE_ACTIONS
-❌ дублировать CRUD helpers
-❌ дублировать filter-to-query-param logic
-❌ создавать query keys вручную
-❌ хардкодить translated strings
-❌ использовать arbitrary tiny text sizes
-❌ создавать новый QueryClient внутри component
-❌ подписываться на весь Zustand store
+❌ дублировать шаблон списочной страницы вместо useEntityList + ListPageLayout
+❌ дублировать шаблон create/edit страницы вместо EntityFormPage + *FormFields
+❌ дублировать CRUD helpers или filter-to-query-param logic
+❌ создавать query keys вручную вне query-keys.ts
+❌ хардкодить переводимые строки
+❌ подписываться на весь Zustand store целиком
 ❌ показывать full skeleton при каждом background refetch
 ❌ возвращать auth на cookie-based architecture
 ❌ добавлять мутацию в OFFLINE_MUTATION_KEYS без Idempotency-Key на бэкенде
 ❌ проверять связь через navigator.onLine вместо useNetworkStatus()
-```
-
----
-
-# 46. Final engineering principle
-
-TradeCRM — не набор независимых страниц.
-
-Основной принцип проекта:
-
-```text
-shared infrastructure
-        ↓
-entity conventions
-        ↓
-consistent UX
-        ↓
-centralized permissions
-        ↓
-centralized API client
-        ↓
-typed domain models
-```
-
-Перед написанием нового кода сначала искать существующий pattern в соседних entity.
-
-Предпочтение всегда отдаётся:
-
-```text
-reuse > duplication
-existing pattern > new pattern
-centralized config > local hardcode
-typed abstraction > ad-hoc implementation
 ```
