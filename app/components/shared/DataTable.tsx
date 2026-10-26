@@ -1,25 +1,19 @@
 import { type Row, type Table, flexRender } from '@tanstack/react-table';
-import { AlertCircle, WifiOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
-import { CustomSelect } from '~/components/shared/CustomSelect';
+import { DataTablePagination } from '~/components/shared/DataTablePagination';
+import {
+  DataTableDesktopSkeletonRows,
+  DataTableErrorBlock,
+  DataTableMobileSkeleton,
+  DataTableOfflineBlock,
+} from '~/components/shared/DataTableStates';
 import { EmptyState } from '~/components/shared/EmptyState';
 import { SwipeableRow, type SwipeAction } from '~/components/shared/SwipeableRow';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '~/components/ui/pagination';
 import { ScrollArea } from '~/components/ui/scroll-area';
-import { Skeleton } from '~/components/ui/skeleton';
 import { TableBody, TableCell, TableHead, TableHeader, TableRow, Table as UITable } from '~/components/ui/table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { cn } from '~/lib/utils';
 import { DEFAULT_PAGE_LIMIT } from '~/store/useTableStore';
@@ -85,109 +79,6 @@ interface DataTableProps<TData> {
   getMobileGroups?: (rows: Row<TData>[]) => MobileRowGroup<TData>[];
 }
 
-function getpages(current: number, total: number): (number | 'ellipsis')[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  const pages: (number | 'ellipsis')[] = [1];
-  if (current > 3) pages.push('ellipsis');
-  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) pages.push(i);
-  if (current < total - 2) pages.push('ellipsis');
-  pages.push(total);
-  return pages;
-}
-
-function PageControls({
-  page,
-  limit,
-  totalPages,
-  onPageChange,
-  onLimitChange,
-  t,
-  compact,
-}: {
-  page: number;
-  limit: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  onLimitChange: (size: number) => void;
-  t: (key: string, opts?: Record<string, unknown>) => string;
-  compact?: boolean;
-}) {
-  const pages = getpages(page, totalPages || 1);
-  // На телефоне при единственной странице панель — просто шум.
-  if (compact && (totalPages || 1) <= 1) return null;
-
-  return (
-    <div className="flex w-full flex-row items-center justify-between gap-2 px-3 py-2">
-      <div className={cn('text-muted-foreground flex shrink-0 items-center gap-2 text-sm', compact && 'hidden')}>
-        <span className="sm:inline">{t('table.list')}</span>
-        <CustomSelect
-          value={limit}
-          options={[10, 20, 50].map((size) => ({ value: size, label: size.toString() }))}
-          onChange={(v) => onLimitChange(Number(v))}
-          className="w-17.5"
-          isClearable={false}
-        />
-      </div>
-      <Pagination className={cn('mx-0 w-auto', compact && 'mx-auto')}>
-        <PaginationContent className="flex-nowrap gap-0.5">
-          <PaginationItem>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <PaginationPrevious
-                    onClick={() => onPageChange(Math.max(1, page - 1))}
-                    text=""
-                    className={cn('size-9', page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
-                  />
-                }
-              />
-              <TooltipContent side="top">{t('table.previousPage')}</TooltipContent>
-            </Tooltip>
-          </PaginationItem>
-          {compact ? (
-            <PaginationItem>
-              <span className="text-muted-foreground px-1 text-sm whitespace-nowrap tabular-nums">
-                {t('table.pageOf', { page, total: totalPages || 1 })}
-              </span>
-            </PaginationItem>
-          ) : (
-            pages.map((pageNumber, i) =>
-              pageNumber === 'ellipsis' ? (
-                <PaginationItem key={`e-${i}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={pageNumber}>
-                  <PaginationLink
-                    isActive={pageNumber === page}
-                    onClick={() => onPageChange(pageNumber)}
-                    className="size-9 cursor-pointer tabular-nums">
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )
-          )}
-          <PaginationItem>
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <PaginationNext
-                    onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-                    text=""
-                    className={cn('size-9', page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer')}
-                  />
-                }
-              />
-              <TooltipContent side="top">{t('table.nextPage')}</TooltipContent>
-            </Tooltip>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    </div>
-  );
-}
-
 export function DataTable<TData>({
   table,
   pinLastColumn,
@@ -219,31 +110,15 @@ export function DataTable<TData>({
             isFetching && !isLoading && 'pointer-events-none opacity-60'
           )}>
           {isLoading ? (
-            <div className="bg-card shrink-0 overflow-hidden rounded-2xl">
-              {Array.from({ length: Math.min(limit, 6) }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3">
-                  <Skeleton className="size-11 shrink-0 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-4 w-1/2" />
-                    <Skeleton className="h-3 w-1/3" />
-                  </div>
-                  <Skeleton className="h-4 w-16" />
-                </div>
-              ))}
-            </div>
+            <DataTableMobileSkeleton limit={limit} />
           ) : isError ? (
-            <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
-              <AlertCircle className="text-destructive size-8" />
-              <p className="text-sm">{t('table.error')}</p>
-            </div>
+            <DataTableErrorBlock message={t('table.error')} />
           ) : isOfflineEmpty ? (
-            <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
-              <WifiOff className="text-muted-foreground/40 size-8" />
-              <p className="max-w-56 text-sm">{t('offline.noCachedData')}</p>
-              <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
-                {tSync('offlineHint.action')}
-              </Link>
-            </div>
+            <DataTableOfflineBlock
+              message={t('offline.noCachedData')}
+              actionLabel={tSync('offlineHint.action')}
+              compact
+            />
           ) : table.getRowModel().rows.length === 0 ? (
             <EmptyState />
           ) : (
@@ -307,7 +182,7 @@ export function DataTable<TData>({
           )}
         </div>
         {onPageChange && onLimitChange && (
-          <PageControls
+          <DataTablePagination
             page={page}
             limit={limit}
             totalPages={totalPages}
@@ -349,48 +224,24 @@ export function DataTable<TData>({
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                Array.from({ length: limit }).map((_, rowIndex) => (
-                  <TableRow key={rowIndex}>
-                    {visibleColumns.map((_, colIndex) => {
-                      const isLast = colIndex === visibleColumns.length - 1;
-                      const isLastPinned = isLast && pinLastColumn;
-                      const widths = ['w-3/4', 'w-1/2', 'w-4/5', 'w-2/3', 'w-3/5', 'w-2/5'];
-                      return (
-                        <TableCell
-                          key={colIndex}
-                          className={cn(
-                            isLastPinned &&
-                              'bg-card sticky right-0 z-10 w-20 min-w-20 border-l shadow-[-4px_0_8px_rgba(0,0,0,0.06)]'
-                          )}>
-                          {isLastPinned ? (
-                            <Skeleton className="mx-auto size-7 rounded-md" />
-                          ) : (
-                            <Skeleton className={cn('h-4', widths[(rowIndex * 3 + colIndex) % widths.length])} />
-                          )}
-                        </TableCell>
-                      );
-                    })}
-                  </TableRow>
-                ))
+                <DataTableDesktopSkeletonRows
+                  limit={limit}
+                  columnCount={visibleColumns.length}
+                  pinLastColumn={pinLastColumn}
+                />
               ) : isError ? (
                 <TableRow>
                   <TableCell colSpan={visibleColumns.length}>
-                    <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12">
-                      <AlertCircle className="text-destructive size-8" />
-                      <p className="text-sm">{t('table.error')}</p>
-                    </div>
+                    <DataTableErrorBlock message={t('table.error')} />
                   </TableCell>
                 </TableRow>
               ) : isOfflineEmpty ? (
                 <TableRow>
                   <TableCell colSpan={visibleColumns.length}>
-                    <div className="text-muted-foreground flex flex-col items-center justify-center gap-2 py-12 text-center">
-                      <WifiOff className="text-muted-foreground/40 size-8" />
-                      <p className="max-w-64 text-sm">{t('offline.noCachedData')}</p>
-                      <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
-                        {tSync('offlineHint.action')}
-                      </Link>
-                    </div>
+                    <DataTableOfflineBlock
+                      message={t('offline.noCachedData')}
+                      actionLabel={tSync('offlineHint.action')}
+                    />
                   </TableCell>
                 </TableRow>
               ) : table.getRowModel().rows.length === 0 ? (
@@ -421,7 +272,7 @@ export function DataTable<TData>({
         </ScrollArea>
       </div>
       {onPageChange && onLimitChange && (
-        <PageControls
+        <DataTablePagination
           page={page}
           limit={limit}
           totalPages={totalPages}

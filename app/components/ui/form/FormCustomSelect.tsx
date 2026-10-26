@@ -1,6 +1,7 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
 import type { CustomSelectOption } from '~/components/shared/CustomSelect';
 import { PickerField } from '~/components/shared/PickerField';
+import { FormFieldWrapper } from '~/components/ui/form/FormFieldWrapper';
 
 interface FormCustomSelectProps<T extends FieldValues> {
   control: Control<T>;
@@ -34,10 +35,12 @@ export function FormCustomSelect<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <div className={className}>
+        <FormFieldWrapper
+          error={fieldState.error?.message}
+          className={className}
+          errorClassName="mt-1">
           <PickerField {...props} value={field.value ?? null} onChange={field.onChange} />
-          {fieldState.error && <p className="text-destructive mt-1 text-sm">{fieldState.error.message}</p>}
-        </div>
+        </FormFieldWrapper>
       )}
     />
   );

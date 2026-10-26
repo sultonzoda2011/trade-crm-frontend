@@ -16,39 +16,39 @@
   "sections": {
     "basics": {
       "title": "Getting started",
-      "summary": "Sign-in, interface, search, theme, language, required fields, and roles."
+      "summary": "Sign-in, desktop and mobile navigation, quick search, swipe actions, picker sheets, filters, and roles."
     },
     "dashboard": {
       "title": "Dashboard and reports",
-      "summary": "The home screen: revenue, deals, debts, stock, products and a sellers report."
+      "summary": "The home screen for owners and administrators: Overview, Inventory, Products, and Sellers."
     },
     "transactions": {
       "title": "Sales and transactions",
-      "summary": "How to record a sale, a credit sale and a refund; statuses and payments."
+      "summary": "Recording cash/card sales and debts, quick due dates, payments, and partial or full refunds."
     },
     "debtors": {
       "title": "Debtors and payments",
-      "summary": "Debtor cards, risk level, and where to record a debt payment."
+      "summary": "Debtor profiles, one-tap debt payment and credit issuance, and repayment risk scores."
     },
     "products": {
       "title": "Products and categories",
-      "summary": "The catalog, units, stock, reorder thresholds and categories."
+      "summary": "The catalog, quick stock addition (\"Restock\"), stock health badges, units, and categories."
     },
     "markets": {
       "title": "Markets",
-      "summary": "Your market and all markets: staff, products, debtors and deals."
+      "summary": "\"Markets\" and \"My market\": staff, products, debtors, transactions, and role permissions."
     },
     "people": {
       "title": "Sellers and users",
-      "summary": "Accounts and roles, a seller's markup and its payout."
+      "summary": "Accounts and roles, seller markup balance, payouts, and payout history."
     },
     "offline": {
       "title": "Offline mode and syncing",
-      "summary": "Working without internet, the sync screen, the send queue and device storage."
+      "summary": "Working without internet, the send queue, per-section refresh, and device storage."
     },
     "profile": {
       "title": "Profile and settings",
-      "summary": "Personal details, password change, theme, language and signing out."
+      "summary": "Personal details, avatar, password change, sync shortcut, theme, language, and signing out."
     }
   }
 }

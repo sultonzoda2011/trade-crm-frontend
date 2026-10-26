@@ -1,12 +1,13 @@
-import { ChevronRight, MoreHorizontal, Plus, type LucideIcon } from 'lucide-react';
+import { MoreHorizontal, Plus, type LucideIcon } from 'lucide-react';
 import { motion } from 'motion/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sheet';
+import { BottomNavMoreSheet } from '~/components/layout/BottomNavMoreSheet';
 import { Action } from '~/config/actions';
 import { type NavItem, type NavKey, getSidebarConfig, getVisibleNavigation } from '~/config/navigation';
 import { useCan } from '~/hooks/useCan';
+import { useKeyboardOpen } from '~/hooks/useKeyboardOpen';
 import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
@@ -34,33 +35,6 @@ const FORM_ROUTE = /\/(create|edit)$/;
 const CAPSULE_HEIGHT = 64;
 
 type Slot = { kind: 'link'; item: NavItem; active: boolean } | { kind: 'more'; active: boolean } | { kind: 'create' };
-
-/**
- * Прячем панель, пока открыта клавиатура: Capacitor `Keyboard.resize: 'body'`
- * иначе поднимает её над клавиатурой и съедает пол-экрана.
- */
-function useKeyboardOpen() {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    const NON_TEXT = new Set(['checkbox', 'radio', 'button', 'submit', 'reset', 'file', 'range', 'color']);
-    const isTextField = (el: EventTarget | null) => {
-      if (!(el instanceof HTMLElement)) return false;
-      if (el instanceof HTMLInputElement) return !NON_TEXT.has(el.type);
-      return el instanceof HTMLTextAreaElement || el.isContentEditable;
-    };
-    const onIn = (e: FocusEvent) => setOpen(isTextField(e.target));
-    const onOut = () => setOpen(false);
-    document.addEventListener('focusin', onIn);
-    document.addEventListener('focusout', onOut);
-    return () => {
-      document.removeEventListener('focusin', onIn);
-      document.removeEventListener('focusout', onOut);
-    };
-  }, []);
-
-  return open;
-}
 
 const TAB_CLASS =
   'relative z-10 flex h-full min-w-0 flex-1 basis-0 touch-manipulation flex-col items-center justify-center gap-[3px] overflow-hidden rounded-full px-0.5 transition-[transform,filter] duration-200 ease-out select-none active:scale-[0.88] active:brightness-90 [-webkit-tap-highlight-color:transparent]';
@@ -208,50 +182,13 @@ export function BottomNav() {
         </div>
       </nav>
 
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen}>
-        <SheetContent
-          side="bottom"
-          showCloseButton={false}
-          className="gap-0 bg-transparent shadow-none data-[side=bottom]:inset-x-3 data-[side=bottom]:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] data-[side=bottom]:border-t-0 data-[side=bottom]:pb-0">
-          <div className="liquid-glass relative flex max-h-[75dvh] flex-col overflow-hidden rounded-[2rem]">
-            {/* Ручка лежит поверх общей зоны захвата шторки (её перекрывает стекло), поэтому сама — зона перетаскивания. */}
-            <div data-sheet-drag aria-hidden className="mx-auto flex w-full shrink-0 touch-none justify-center pt-2.5 pb-1">
-              <div className="bg-foreground/25 h-1 w-9 rounded-full" />
-            </div>
-            <SheetHeader className="px-5 pt-2 pb-3">
-              <SheetTitle className="text-center text-base font-semibold">{moreLabel}</SheetTitle>
-            </SheetHeader>
-            <div className="relative min-h-0 overflow-y-auto px-3 pb-3">
-              <ul className="bg-foreground/[0.05] divide-foreground/10 divide-y overflow-hidden rounded-3xl">
-                {rest.map((item) => {
-                  const Icon = item.icon as LucideIcon | undefined;
-                  const active = isPathActive(item.url);
-                  return (
-                    <li key={item.key}>
-                      <Link
-                        to={item.url || '#'}
-                        onClick={() => setMoreOpen(false)}
-                        aria-current={active ? 'page' : undefined}
-                        className={cn(
-                          'active:bg-foreground/10 flex h-14 touch-manipulation items-center gap-3 px-3.5 text-base transition-colors [-webkit-tap-highlight-color:transparent]',
-                          active && 'text-primary font-semibold'
-                        )}>
-                        {Icon && (
-                          <span className={cn('grid size-9 shrink-0 place-items-center', active ? 'text-primary' : 'text-muted-foreground')}>
-                            <Icon aria-hidden className="size-[18px]" />
-                          </span>
-                        )}
-                        <span className="min-w-0 flex-1 break-words">{item.title}</span>
-                        <ChevronRight aria-hidden className="text-muted-foreground/70 size-5 shrink-0" />
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+      <BottomNavMoreSheet
+        open={moreOpen}
+        onOpenChange={setMoreOpen}
+        title={moreLabel}
+        items={rest}
+        isPathActive={isPathActive}
+      />
     </>
   );
 }

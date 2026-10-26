@@ -1,27 +1,20 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Package, Plus, Receipt, Store, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { toast } from 'sonner';
 import { marketsApi } from '~/api/markets';
 import { usersApi } from '~/api/users';
-import { ColumnToggle } from '~/components/shared/ColumnToggle';
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { DataTable } from '~/components/shared/DataTable';
 import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
-import { FilterSheet } from '~/components/shared/FilterSheet';
-import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
-import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
-import { useDebounce } from '~/hooks/useDebounce';
-import { useFilterParams } from '~/hooks/useFilterParams';
-import { buildRowSwipeActions } from '~/lib/swipe-actions';
+import { useEntityList } from '~/hooks/useEntityList';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
+import { buildRowSwipeActions } from '~/lib/swipe-actions';
 import { getColumns } from '~/routes/(crm)/markets/configs/columns';
 import { getMarketFilters } from '~/routes/(crm)/markets/configs/filters';
 import { useMarketsModals, useMarketsStore } from '~/routes/(crm)/markets/store';
@@ -29,58 +22,12 @@ import { Role } from '~/types/common';
 
 export default function MarketsPage() {
   const { t } = useTranslation(['markets', 'common']);
-  const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useMarketsModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
-    useMarketsStore();
-
-  const debouncedSearch = useDebounce(search);
-
-  const {
-    data: response,
-    isLoading,
-    isFetching,
-    isError,
-    fetchStatus,
-  } = useQuery({
-    queryKey: queryKeys.list('markets', { page, limit, search: debouncedSearch, filters }),
-    queryFn: () => {
-      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
-      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
-      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
-      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
-      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-      return marketsApi.getAll(
-        page,
-        limit,
-        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
-        mf
-      );
-    },
-    staleTime: 30_000,
-  });
-
-  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
-  // от "список реально пуст" (см. app/lib/network-status.ts).
-  const isOfflineEmpty = fetchStatus === 'paused' && !response;
-
-  const { mutate: deleteMarket, isPending: isDeletePending } = useMutation({
-    mutationFn: (id: string) => marketsApi.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('markets') });
-      toast.success(t('actions.deleteSuccess'));
-      deleteModal.close();
-    },
-    onError: () => {
-      toast.error(t('actions.deleteError'));
-    },
-  });
-
-  const columns = useMemo(() => getColumns({ t }), [t]);
+  const list = useEntityList({ entity: 'markets', store: useMarketsStore, api: marketsApi, t, deleteModal });
 
   // Список владельцев для фильтра `ownerId` — страница доступна только Admin
   // (ROUTE_PERMISSIONS['/markets']), поэтому запрос `/users` ничем не огорожен.
@@ -89,41 +36,43 @@ export default function MarketsPage() {
     queryFn: () => usersApi.getAll(1, 100, {}, [{ key: 'role', value: Role.Owner }]),
   });
   const ownerOptions = useMemo(() => mapToOptions(ownersResponse?.data?.data ?? [], 'id', 'name'), [ownersResponse]);
-
   const filterConfig = useMemo(() => getMarketFilters(t, ownerOptions), [t, ownerOptions]);
-
-  // Фильтры из ссылки (с дашборда, из карточек) и из адресной строки при перезагрузке.
-  useFilterParams({
-    page,
-    limit,
-    search,
-    filters,
-    setPage,
-    setLimit,
-    setSearch,
-    setFilters,
-    filterConfigs: filterConfig,
-  });
-  const markets = useMemo(() => response?.data?.data ?? [], [response]);
-  const totalPages = response?.data?.meta?.totalPages || 1;
+  const columns = useMemo(() => getColumns({ t }), [t]);
 
   const { table } = useDataTable({
     columns,
-    data: markets,
+    data: list.rows,
     storageKey: 'markets-table-columns',
     initialVisibility: { 'count.transactions': false, createdAt: false },
   });
 
   return (
-    <div className="flex-1 space-y-4">
-      <ListPageToolbar
-        title={t('title')}
-        searchPlaceholder={t('filters.search')}
-        searchValue={search}
-        onSearchChange={setSearch}>
-        <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
-        <ColumnToggle table={table} />
-        {can(Action.MARKETS_CREATE) && (
+    <ListPageLayout
+      title={t('title')}
+      searchPlaceholder={t('filters.search')}
+      list={list}
+      table={table}
+      filterConfig={filterConfig}
+      showFilterPills
+      syncUrl
+      getRowLink={(row) => ({
+        to: `/markets/${row.original.id}`,
+        state: { fromPath: location.pathname, fromName: t('title') },
+      })}
+      getSwipeActions={(row) =>
+        buildRowSwipeActions({
+          t,
+          onEdit: can(Action.MARKETS_EDIT)
+            ? () =>
+                navigate(`/markets/${row.original.id}/edit`, {
+                  state: { fromPath: location.pathname, fromName: t('title') },
+                })
+            : undefined,
+          onDelete: can(Action.MARKETS_DELETE) ? () => deleteModal.open(row.original.id) : undefined,
+        })
+      }
+      createAction={
+        can(Action.MARKETS_CREATE) ? (
           <Button
             aria-label={t('create')}
             className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
@@ -131,63 +80,25 @@ export default function MarketsPage() {
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
           </Button>
-        )}
-      </ListPageToolbar>
-      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
-      <DataTable
-        table={table}
-        pinLastColumn
-        isLoading={isLoading}
-        isFetching={isFetching}
-        isError={isError}
-        isOfflineEmpty={isOfflineEmpty}
-        page={page}
-        limit={limit}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onLimitChange={setLimit}
-        getRowLink={(row) => ({
-          to: `/markets/${row.original.id}`,
-          state: { fromPath: location.pathname, fromName: t('title') },
-        })}
-        getSwipeActions={(row) =>
-          buildRowSwipeActions({
-            t,
-            onEdit: can(Action.MARKETS_EDIT)
-              ? () =>
-                  navigate(`/markets/${row.original.id}/edit`, {
-                    state: { fromPath: location.pathname, fromName: t('title') },
-                  })
-              : undefined,
-            onDelete: can(Action.MARKETS_DELETE) ? () => deleteModal.open(row.original.id) : undefined,
-          })
-        }
-        renderMobileCard={(row) => {
-          const m = row.original;
-          return (
-            <EntityMobileCard
-              image={m.image}
-              fallbackIcon={Store}
-              title={m.name}
-              subtitle={m.address}
-              stats={[
-                { icon: Package, label: t('fields.products', 'Товары'), value: m.count.products },
-                { icon: Users, label: t('fields.debtors', 'Должники'), value: m.count.debtors },
-                { icon: Receipt, label: t('fields.transactions', 'Транзакции'), value: m.count.transactions },
-              ]}
-              badges={m.owner?.name ? [{ label: m.owner.name }] : []}
-            />
-          );
-        }}
-      />
-      <ConfirmDialog
-        open={deleteModal.isOpen}
-        onOpenChange={(open) => !open && deleteModal.close()}
-        onConfirm={() => deleteModal.data != null && deleteMarket(deleteModal.data)}
-        isLoading={isDeletePending}
-        title={t('actions.confirm')}
-        description={t('actions.areYouSure')}
-      />
-    </div>
+        ) : null
+      }
+      renderCard={(row) => {
+        const m = row.original;
+        return (
+          <EntityMobileCard
+            image={m.image}
+            fallbackIcon={Store}
+            title={m.name}
+            subtitle={m.address}
+            stats={[
+              { icon: Package, label: t('fields.products', 'Товары'), value: m.count.products },
+              { icon: Users, label: t('fields.debtors', 'Должники'), value: m.count.debtors },
+              { icon: Receipt, label: t('fields.transactions', 'Транзакции'), value: m.count.transactions },
+            ]}
+            badges={m.owner?.name ? [{ label: m.owner.name }] : []}
+          />
+        );
+      }}
+    />
   );
 }

@@ -5,18 +5,12 @@ import { toast } from 'sonner';
 import type { StoreApi, UseBoundStore } from 'zustand';
 import type { ListOptions } from '~/api/crud';
 import { useDebounce } from '~/hooks/useDebounce';
+import { splitListOptions } from '~/lib/filtersToParams';
 import { queryKeys, type Entity } from '~/lib/query-keys';
 import type { ModalSlice } from '~/store/createModalStore';
 import type { TableStoreState } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 import type { ApiResponse, PaginatedData } from '~/types/common';
-
-/**
- * The filter keys the list endpoints accept as `options` rather than as active
- * filters — every list page used to re-derive these five lines in its own
- * `queryFn`, identically.
- */
-const OPTION_KEYS = ['dateFrom', 'dateTo', 'sortBy', 'sortOrder'] as const;
 
 export interface EntityListApi<TRow> {
   getAll: (
@@ -28,7 +22,7 @@ export interface EntityListApi<TRow> {
   delete: (id: string) => Promise<unknown>;
 }
 
-export interface UseEntityListArgs<TRow> {
+export interface UseEntityListArgs<TRow, TDisplayRow = TRow> {
   /** Registry entity — decides the query-key family and the invalidation prefix. */
   entity: Entity;
   /** The route's own scoped table store, per the `createTableStore()` convention. */
@@ -38,6 +32,11 @@ export interface UseEntityListArgs<TRow> {
   t: TFunction;
   /** The route's `delete` modal slice. */
   deleteModal: ModalSlice<string>;
+  /**
+   * Optional row transformer (e.g. merging offline overlay rows on debtors/transactions).
+   * Receives the raw server rows and the query's `dataUpdatedAt` timestamp.
+   */
+  transformRows?: (serverRows: TRow[], meta: { dataUpdatedAt: number; debouncedSearch: string }) => TDisplayRow[];
 }
 
 /**
@@ -51,7 +50,14 @@ export interface UseEntityListArgs<TRow> {
  * page subscribed to the entire Zustand store and re-rendered on any field
  * change; the selectors here take one slice each.
  */
-export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseEntityListArgs<TRow>) {
+export function useEntityList<TRow, TDisplayRow = TRow>({
+  entity,
+  store,
+  api,
+  t,
+  deleteModal,
+  transformRows,
+}: UseEntityListArgs<TRow, TDisplayRow>) {
   const page = store((s) => s.page);
   const limit = store((s) => s.limit);
   const search = store((s) => s.search);
@@ -70,6 +76,7 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
 
   const {
     data: response,
+    dataUpdatedAt,
     isLoading,
     isFetching,
     isError,
@@ -77,15 +84,7 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
   } = useQuery({
     queryKey: queryKeys.list(entity, { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
-      const read = (key: (typeof OPTION_KEYS)[number]) => filters.find((f) => f.key === key)?.value;
-      const options: ListOptions = {
-        search: debouncedSearch || undefined,
-        dateFrom: read('dateFrom') as string | undefined,
-        dateTo: read('dateTo') as string | undefined,
-        sortBy: (read('sortBy') as string) || 'createdAt',
-        sortOrder: (read('sortOrder') as 'asc' | 'desc') || 'desc',
-      };
-      const activeFilters = filters.filter((f) => !OPTION_KEYS.includes(f.key as (typeof OPTION_KEYS)[number]));
+      const { options, activeFilters } = splitListOptions(filters, debouncedSearch);
       return api.getAll(page, limit, options, activeFilters);
     },
     staleTime: 30_000,
@@ -103,7 +102,14 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
     },
   });
 
-  const rows = useMemo(() => response?.data?.data ?? [], [response]);
+  const serverRows = useMemo(() => response?.data?.data ?? [], [response]);
+  const rows = useMemo<TDisplayRow[]>(
+    () =>
+      transformRows
+        ? transformRows(serverRows, { dataUpdatedAt, debouncedSearch })
+        : (serverRows as unknown as TDisplayRow[]),
+    [serverRows, transformRows, dataUpdatedAt, debouncedSearch]
+  );
   const totalPages = response?.data?.meta?.totalPages || 1;
   // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна (см.
   // app/lib/network-status.ts) — отличаем от "список реально пуст", чтобы
@@ -126,6 +132,9 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
 
   return {
     rows,
+    serverRows,
+    dataUpdatedAt,
+    debouncedSearch,
     totalPages,
     isLoading,
     isFetching,
@@ -146,4 +155,4 @@ export function useEntityList<TRow>({ entity, store, api, t, deleteModal }: UseE
   };
 }
 
-export type EntityListResult<TRow> = ReturnType<typeof useEntityList<TRow>>;
+export type EntityListResult<TRow> = ReturnType<typeof useEntityList<any, TRow>>;

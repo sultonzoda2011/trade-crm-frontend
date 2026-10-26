@@ -97,21 +97,43 @@ export const getAccessToken = (): string | null => readStored(TOKEN_KEY);
 export const removeAccessToken = (): void => removeStored(TOKEN_KEY);
 
 /** Сохраняет user info (для RBAC на клиенте) */
-export const setUserInfo = (user: UserInfo): void => writeStored(USER_KEY, JSON.stringify(user));
+let cachedUserRaw: string | null = null;
+let cachedUserParsed: UserInfo | null = null;
+
+export const setUserInfo = (user: UserInfo): void => {
+  const serialized = JSON.stringify(user);
+  cachedUserRaw = serialized;
+  cachedUserParsed = user;
+  writeStored(USER_KEY, serialized);
+};
 
 /** Читает user info из хранилища */
 export const getUserInfo = (): UserInfo | null => {
   try {
     const raw = readStored(USER_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as UserInfo;
+    if (!raw) {
+      cachedUserRaw = null;
+      cachedUserParsed = null;
+      return null;
+    }
+    if (raw === cachedUserRaw && cachedUserParsed) {
+      return cachedUserParsed;
+    }
+    const parsed = JSON.parse(raw) as UserInfo;
+    cachedUserRaw = raw;
+    cachedUserParsed = parsed;
+    return parsed;
   } catch {
     return null;
   }
 };
 
 /** Удаляет user info */
-export const removeUserInfo = (): void => removeStored(USER_KEY);
+export const removeUserInfo = (): void => {
+  cachedUserRaw = null;
+  cachedUserParsed = null;
+  removeStored(USER_KEY);
+};
 
 /** Очищает всё, что относится к сессии (токен + user info) */
 export const clearSession = (): void => {

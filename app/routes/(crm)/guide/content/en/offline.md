@@ -1,59 +1,74 @@
 # Offline mode and syncing
 
-Trade CRM can work without an internet connection. Some data is stored right on the device, so lists and detail pages open even without a connection, and new debtors, sales, debts, payments, and refunds are never lost — they go into a queue, show up in the lists right away, and are sent to the server on their own as soon as the connection comes back.
+Trade CRM is built to keep working even when your internet connection drops or becomes unstable. Downloaded lists and detail pages are stored right on your device, and new debtors, sales, credit transactions, payments, and refunds are never lost — they enter the send queue, appear in lists right away, and sync to the server automatically as soon as your connection returns.
 
 > [!NOTE]
-> Offline mode relies on data that was already downloaded earlier. If you open the app offline for the very first time, there's no data yet — you need to sync once while you have a connection.
+> Offline mode relies on data previously saved to your device. After signing in for the first time while online, tap **"Sync everything"** so your phone or computer is ready to work without a connection.
 
-## Where to check the connection status
+## Header status badge and quick sync button
 
-The app header has a connection indicator — green when there's internet, red ("Offline") when there isn't. If there are unsent operations in the queue or a sync is running, a counter appears next to the indicator. Tap the indicator to open the **"Sync"** screen (`/sync`). You can also reach it from the profile menu.
+On the right side of the top header bar sit a circular refresh button and a smart status badge:
+
+- **When you are online and the queue is empty**, status badges stay hidden so the header remains clean. Only the circular refresh icon is shown — tap it anytime to trigger a background refresh right from the page you're on.
+- **When something is happening or needs attention**, a status badge appears next to the refresh icon:
+  - **"Downloading · X%"** (blue) — offline data is currently syncing;
+  - **"X queued"** (gray) — operations are waiting to be sent;
+  - **"Offline"** or **"Offline · X queued"** (red) — no connection; the app is running from device storage;
+  - **"Errors: X"** (red) — the server rejected an operation and needs your decision.
+
+Tapping any of these badges (or choosing **"Sync"** from the user menu or side navigation) opens the **"Sync"** screen (`/sync`).
 
 ## The "Sync" screen
 
-### Connection and "Sync everything"
+The Sync screen is organized into four sections that give you full control over your connection, send queue, and local storage.
 
-At the top of the screen you can see whether you're online or offline right now, and when offline data was last updated. The **"Sync everything"** button re-downloads everything needed to work offline: products, debtors, transactions, markets, sellers, and users (within what your role can see).
+### 1. Connection status and "Sync everything"
 
-While downloading, progress is shown ("Downloaded X of Y"). You can stop the download with the **"Cancel"** button — whatever has already downloaded stays on the device.
+The hero card at the top shows whether you are currently connected (**"Connected to the internet"** or **"No internet"**) and when your device data was last refreshed.
+
+- The **"Sync everything"** button downloads the latest records across all sections available to your role.
+- While downloading, a progress bar shows **"Downloaded X of Y"**. You can pause at any time with **"Stop"** — everything already downloaded stays saved on your device.
+- When all sections are already fresh, the button reads **"Everything up to date"**; when offline, it reads **"No connection"**.
 
 > [!TIP]
-> If the server temporarily limits the number of requests, the app will wait on its own and continue — the message shows how many seconds are left.
+> If the server temporarily asks the app to slow down requests, a live countdown in seconds appears automatically and the download resumes on its own once the wait is over.
 
-### Send queue
+### 2. Send queue
 
-This shows every operation created offline that hasn't been sent to the server yet: new debtors, transactions, payments, and refunds. Each operation has a status:
+This section lists every operation created while offline or on a weak connection: new debtors, sales, credit transactions, debt payments, and refunds.
 
 | Status | What it means |
 | --- | --- |
-| Waiting to send | Created, but there's no connection yet |
-| Sending… | Going to the server right now |
-| Weak connection — retrying | Sending failed, retrying automatically |
-| Not sent | The server rejected it — needs your attention |
+| **Waiting to send** | Created on the device and waiting for a connection or its turn in line |
+| **Sending…** | Being sent to the server right now |
+| **Weak connection — retrying (attempt X)** | The request dropped; the app is retrying automatically |
+| **Not sent** | The server rejected the operation (the exact error message is shown in red below) |
 
-While there's a connection, the queue sends itself, one operation at a time, in the order it was created. Resending is safe: the server won't run the same operation twice.
+Managing the queue:
 
-For an operation marked "Not sent", you'll see **"Retry"** and **"Remove"** buttons. Before removing one, keep in mind that if the connection dropped right as it was sending, the server may have already accepted it — check the transactions list before treating it as cancelled.
+- As long as you have internet, the queue sends itself **automatically** in the exact order operations were recorded. Retrying is completely safe: every operation carries a unique idempotency key, so the server will never duplicate a sale, debtor, or payment.
+- In the section header you can use **"Send now"** (for waiting items when online) or **"Retry all"** (when any items have failed).
+- Each individual item has **"Retry"** and **"Remove"** buttons. You can remove an item not only when it is marked **"Not sent"**, but also while it is still **"Waiting to send"** (before the first send attempt) if you change your mind or spot a mistake.
 
 > [!IMPORTANT]
-> If you log out while operations are still waiting in the queue, they're deleted from the device and never reach the server. The app warns you about this before you log out and shows how many operations are queued.
+> If you try to sign out while unsent operations are still in the queue, the app warns you with a confirmation dialog. Choosing **"Sign out and delete"** permanently removes those unsent operations from the device before they reach the server.
 
-### What's stored on the device
+### 3. Saved on this device (per-section sync)
 
-This list shows how many records per section (transactions, debtors, products, categories, sellers, markets, users) are available offline, and how many there are in total. The newest records are kept; older ones only open with a connection.
+This list shows all 7 data sections available to your role: **Transactions**, **Debtors**, **Products**, **Categories**, **Sellers**, **Markets**, and **Users**.
 
-### Device storage
+- Each row displays how many cards are saved locally out of the total (for example, **"45 of 100"**) along with a green checkmark when 100% of that section is cached.
+- **Targeted refresh:** every row has its own **"Refresh"** icon button on the right. If you only need to update products or debtors, you can refresh just that single section without re-downloading the entire database. Sections updated within the last 5 minutes lock their refresh button briefly to avoid unnecessary data usage.
 
-Shows how much space the stored data takes up. The **"Clear stored data"** button removes it from the device — without internet, screens will be empty until you sync again. The queue of unsent operations isn't affected.
+### 4. Device storage
 
-## Working without a connection
+Displays how much space local data uses (**"Used"** in KB/MB) and the number of **"Saved requests"**. The **"Clear saved data"** button (with confirmation) wipes cached pages from the device while **leaving the send queue untouched**, so unsent sales and payments are never lost.
 
-- Lists and detail pages that have already been synced open as usual.
-- Data that isn't on the device yet shows a "This data hasn't been downloaded yet" hint with a link to the sync screen.
-- You can add a debtor, make a sale or a debt, take a payment, or make a refund while offline — it's queued and sent on its own once there's a connection.
-- The same goes for a weak connection: if the server doesn't answer for a couple of seconds, the window closes by itself and the operation finishes in the background — no need to wait at the screen.
-- A queued operation shows up in the lists right away with a "Queued" label. You can give a debt to a new debtor straight away — pick them in the sale as usual. Queued payments and new debts are already counted in the totals, and sold goods in the stock.
-- While an operation is queued, its row can't be opened or edited — only retried or removed if it failed to send.
+## Everyday work without internet
 
-> [!TIP]
-> Before heading somewhere you know won't have internet, open the "Sync" screen and tap **"Sync everything"** while you still have a connection.
+- **No waiting on slow connections.** Even when you have a weak signal and the server takes more than a couple of seconds to respond, forms close immediately and finish sending in the background so you can keep working.
+- **Instant visibility in lists.** Any debtor or transaction created offline appears at the top of its list right away with a **"Queued"** badge.
+- **Give credit to a new offline debtor right away.** After creating a new debtor offline, you can immediately open the new transaction form, pick that debtor in the selection sheet, and record a credit sale for them.
+- **Live balance and stock updates.** Queued payments, new debts, and refunds update displayed totals immediately, accompanied by a clear note (**"payment queued"**, **"new debt queued"**, or **"refund queued"**). Products sold offline are deducted from visible stock right away.
+- **Offline selection sheets.** When choosing a product, debtor, seller, or category without internet, the picker sheet uses your saved local data and displays a helpful banner: *"Showing saved data — the list may be incomplete without internet"*.
+- **Clear fallback for uncached items.** If you tap a record that was never downloaded to your device before going offline, you'll see **"This data hasn't been downloaded yet"** with an **"Open sync"** button instead of a broken page.

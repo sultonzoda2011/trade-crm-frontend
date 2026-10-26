@@ -1,7 +1,8 @@
-import { CheckCircle2, ChevronRight, WifiOff } from 'lucide-react';
+import { ChevronRight, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { StockRow } from '~/components/dashboard/StockRow';
 import { Panel } from '~/components/layout/Panel';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
@@ -79,15 +80,11 @@ export function StockWatch({ data, isLoading, isError, isOffline, onRetry, selle
       </div>
 
       {rows.length === 0 ? (
-        <div className="flex items-center gap-3 px-4 py-4">
-          <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
-            <CheckCircle2 className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-base leading-snug font-semibold">{t('stock.allGood')}</p>
-            <p className="text-muted-foreground text-sm leading-snug">{t('stock.allGoodHint')}</p>
-          </div>
-        </div>
+        <DashboardSuccessState
+          title={t('stock.allGood')}
+          hint={t('stock.allGoodHint')}
+          className="px-4 py-4"
+        />
       ) : (
         <div className="divide-border border-border divide-y border-t">
           {rows.map((product) => (

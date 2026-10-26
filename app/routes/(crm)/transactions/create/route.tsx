@@ -1,17 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import dayjs from 'dayjs';
-import {
-  AlertTriangle,
-  Banknote,
-  ChevronRight,
-  CreditCard,
-  HandCoins,
-  Package,
-  Plus,
-  SlidersHorizontal,
-  Trash2,
-  UserPlus,
-} from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -20,16 +9,13 @@ import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { CreateDebtorModal } from '~/components/modals/CreateDebtorModal';
-import { InitialAvatar } from '~/components/shared/InitialAvatar';
 import { ListGroup, ListRow } from '~/components/shared/ListGroup';
-import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import { DebtorPickerSheet } from '~/components/transactions/DebtorPickerSheet';
 import { ProductPickerSheet } from '~/components/transactions/ProductPickerSheet';
-import { QuantityStepper } from '~/components/transactions/QuantityStepper';
+import { TransactionItemCard } from '~/components/transactions/TransactionItemCard';
+import { TransactionPaymentSection } from '~/components/transactions/TransactionPaymentSection';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { FormDateInput } from '~/components/ui/form/FormDateInput';
-import { FormInput } from '~/components/ui/form/FormInput';
 import { Action } from '~/config/actions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { useCan } from '~/hooks/useCan';
@@ -37,9 +23,8 @@ import type { CreatedDebtor } from '~/hooks/useCreateDebtor';
 import { useDetachedMutation } from '~/hooks/useDetachedMutation';
 import { useForm } from '~/hooks/useForm';
 import { usePendingDebtors, usePendingStock } from '~/hooks/useOfflineOverlay';
-import { cldThumb } from '~/lib/cloudinary';
-import { fmtNum, fmtTJS } from '~/lib/format';
 import { resolveRealId } from '~/lib/client-ids';
+import { fmtTJS } from '~/lib/format';
 import {
   createIdempotencyKey,
   OFFLINE_MUTATION_KEYS,
@@ -54,7 +39,6 @@ import type { Product } from '~/types/products';
 import type { CreateTransactionRequest } from '~/types/transactions';
 import {
   createTransactionSchema,
-  isOverStock,
   type CreateTransactionInput,
   type CreateTransactionItemInput,
 } from '~/validations/transactions';
@@ -69,6 +53,15 @@ function getLastPaymentMethod(): 'CASH' | 'CARD' | 'DEBT' | null {
   } catch {
     return null;
   }
+}
+
+function getItemTotal(item: CreateTransactionItemInput | undefined, product: Product | undefined): number {
+  if (!item) return 0;
+  const q = Number(item.quantity) || 0;
+  const p = product?.price ?? 0;
+  const d = Number(item.discount) || 0;
+  const m = Number(item.markup) || 0;
+  return Math.max(q * p - d + m, 0);
 }
 
 export default function CreateTransactionPage() {
@@ -112,9 +105,6 @@ export default function CreateTransactionPage() {
     getLabel: (p) => p.name,
   });
 
-  const debtorOptions = debtors.options;
-  const productOptions = products.options;
-
   // Read stock/price from the accumulated set (products.byId), not just the latest search —
   // a row that already picked a product must keep its data even after the results narrow.
   // Продажи из очереди ещё не списали остатки на сервере — вычитаем их сами, иначе без связи один
@@ -132,11 +122,11 @@ export default function CreateTransactionPage() {
   // трогая общий хук useAsyncSelectOptions.
   const pickerItems = useMemo(
     () =>
-      productOptions
+      products.options
         .map((o) => products.byId.get(String(o.value)))
         .filter((p): p is Product => Boolean(p))
         .map((p) => ({ ...p, quantity: stockMap[p.id] ?? p.quantity })),
-    [productOptions, products.byId, stockMap]
+    [products.options, products.byId, stockMap]
   );
 
   const priceMap = useMemo(() => {
@@ -147,34 +137,23 @@ export default function CreateTransactionPage() {
 
   const transactionSchema = useMemo(() => createTransactionSchema(t, stockMap, priceMap), [t, stockMap, priceMap]);
 
+  const initialLastMethod = canCreateSale ? getLastPaymentMethod() : null;
+  const initialIsDebt = Boolean(prefill?.debtorId) || !canCreateSale || initialLastMethod === 'DEBT';
+
   const { control, handleSubmit, watch, setValue, formState } = useForm<CreateTransactionInput>({
     resolver: zodResolver(transactionSchema),
     mode: 'onChange',
     defaultValues: {
       debtorId: prefill?.debtorId ?? '',
       customerName: '',
-      // Большинство продавцов день за днём принимают один и тот же способ
-      // оплаты — не заставляем каждый раз тапать по нему заново.
-      type: (() => {
-        if (prefill?.debtorId) return 'DEBT';
-        const last = canCreateSale ? getLastPaymentMethod() : null;
-        return last === 'DEBT' || !canCreateSale ? 'DEBT' : 'SALE';
-      })(),
-      paymentType: (() => {
-        if (prefill?.debtorId) return 'CREDIT';
-        const last = canCreateSale ? getLastPaymentMethod() : null;
-        if (!canCreateSale || last === 'DEBT') return 'CREDIT';
-        return last === 'CARD' ? 'CARD' : 'CASH';
-      })(),
+      type: initialIsDebt ? 'DEBT' : 'SALE',
+      paymentType: initialIsDebt ? 'CREDIT' : initialLastMethod === 'CARD' ? 'CARD' : 'CASH',
       dueDate: dayjs().format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0, markup: 0 }],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'items',
-  });
+  const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
   const type = watch('type');
   const paymentType = watch('paymentType');
@@ -194,10 +173,8 @@ export default function CreateTransactionPage() {
     }
   }, [type, paymentType, setValue]);
 
-  const productMap = products.byId;
-
   const getProduct = (productId?: string | null): Product | undefined => {
-    const product = productId ? productMap.get(productId) : undefined;
+    const product = productId ? products.byId.get(productId) : undefined;
     return product ? { ...product, quantity: stockMap[product.id] ?? product.quantity } : undefined;
   };
 
@@ -218,21 +195,9 @@ export default function CreateTransactionPage() {
     const gross = q * p;
     const net = Math.max(gross - d + m, 0);
     calculatedTotal += net;
-    // net уже включает +markup, поэтому чистую скидку считаем без него,
-    // иначе надбавка маскировала бы скидку в этой сумме.
     totalDiscount += Math.max(gross - (net - m), 0);
     totalMarkup += m;
   }
-
-  const getItemTotal = (item?: CreateTransactionItemInput | undefined) => {
-    if (!item) return 0;
-    const product = getProduct(item.productId);
-    const q = Number(item.quantity) || 0;
-    const p = product?.price ?? 0;
-    const d = Number(item.discount) || 0;
-    const m = Number(item.markup) || 0;
-    return Math.max(q * p - d + m, 0);
-  };
 
   // Всё поведение отправки (повторы, инвалидация, тосты) — в setMutationDefaults (offline-mutations.ts):
   // оно срабатывает и когда экрана уже нет (очередь ушла на сервер после перезапуска приложения).
@@ -240,6 +205,28 @@ export default function CreateTransactionPage() {
   const { run, isSubmitting: isPending } = useDetachedMutation<QueuedCreateTransactionVars>(
     OFFLINE_MUTATION_KEYS.createTransaction
   );
+
+  const debtorId = watch('debtorId');
+  // Должники из очереди (создание которых ещё не дошло до сервера) тоже можно выбрать.
+  const pendingDebtors = usePendingDebtors(debtors.dataUpdatedAt);
+  const selectedDebtor: Debtor | undefined = debtorId
+    ? (debtors.byId.get(debtorId) ??
+      pendingDebtors.find((d) => d.id === debtorId) ??
+      (createdDebtor?.id === debtorId ? ({ ...createdDebtor } as Debtor) : undefined))
+    : undefined;
+  const debtorError = formState.errors.debtorId?.message;
+
+  const pickerDebtors: DebtorRow[] = useMemo(() => {
+    const query = debtorSearch.trim().toLowerCase();
+    const queued = pendingDebtors.filter(
+      (d) => !query || d.name.toLowerCase().includes(query) || d.phone.toLowerCase().includes(query)
+    );
+    const queuedIds = new Set(queued.map((d) => d.id));
+    const fromServer = debtors.options
+      .map((o) => debtors.byId.get(String(o.value)))
+      .filter((d): d is Debtor => Boolean(d) && !queuedIds.has(d!.id));
+    return [...queued, ...fromServer];
+  }, [pendingDebtors, debtors.options, debtors.byId, debtorSearch]);
 
   function onSubmit(data: CreateTransactionInput) {
     if (data.type === 'SALE' && !canCreateSale) {
@@ -289,27 +276,6 @@ export default function CreateTransactionPage() {
     );
   }
 
-  const debtorId = watch('debtorId');
-  // Должники из очереди (создание которых ещё не дошло до сервера) тоже можно выбрать.
-  const pendingDebtors = usePendingDebtors(debtors.dataUpdatedAt);
-  const selectedDebtor: Debtor | undefined = debtorId
-    ? (debtors.byId.get(debtorId) ??
-      pendingDebtors.find((d) => d.id === debtorId) ??
-      (createdDebtor?.id === debtorId ? ({ ...createdDebtor } as Debtor) : undefined))
-    : undefined;
-  const debtorError = formState.errors.debtorId?.message;
-  const pickerDebtors: DebtorRow[] = useMemo(() => {
-    const query = debtorSearch.trim().toLowerCase();
-    const queued = pendingDebtors.filter(
-      (d) => !query || d.name.toLowerCase().includes(query) || d.phone.toLowerCase().includes(query)
-    );
-    const queuedIds = new Set(queued.map((d) => d.id));
-    const fromServer = debtorOptions
-      .map((o) => debtors.byId.get(String(o.value)))
-      .filter((d): d is Debtor => Boolean(d) && !queuedIds.has(d!.id));
-    return [...queued, ...fromServer];
-  }, [pendingDebtors, debtorOptions, debtors.byId, debtorSearch]);
-  // Pending is handled by `loading` on the button (it swallows clicks and Enter), so it must not also dim it via `disabled`.
   const canSubmit = formState.isValid;
   const submitLabel = type === 'DEBT' ? t('submitDebt') : t('submitSale');
 
@@ -347,206 +313,59 @@ export default function CreateTransactionPage() {
         id="create-transaction-page-form"
         onSubmit={handleSubmit(onSubmit)}
         className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[5fr_3fr] lg:gap-6">
-        {/* На телефоне сначала «как платят / кому», потом товары; на десктопе — слева товары. */}
-        <div className="order-first space-y-5 lg:order-last">
-          {canCreateSale ? (
-            <SegmentedControl
-              value={paymentMethod}
-              onChange={(next) => {
-                try {
-                  localStorage.setItem(LAST_PAYMENT_METHOD_KEY, next);
-                } catch {
-                  // приватный режим / квота — не критично, просто не запомнится
-                }
-                if (next === 'DEBT') {
-                  setValue('type', 'DEBT', { shouldValidate: true });
-                  setValue('paymentType', 'CREDIT', { shouldValidate: true });
-                } else {
-                  setValue('type', 'SALE', { shouldValidate: true });
-                  setValue('paymentType', next, { shouldValidate: true });
-                }
-              }}
-              options={[
-                { value: 'CASH', label: t('paymentType.CASH'), icon: Banknote },
-                { value: 'CARD', label: t('paymentType.CARD'), icon: CreditCard },
-                { value: 'DEBT', label: t('type.DEBT'), icon: HandCoins },
-              ]}
-            />
-          ) : (
-            <div className="bg-card flex items-center gap-2 rounded-2xl px-4 py-3 text-base font-medium">
-              <HandCoins className="text-warning size-5" />
-              {t('type.DEBT')}
-            </div>
-          )}
-
-          {type === 'DEBT' && (
-            <>
-              <ListGroup
-                title={t('fields.debtor')}
-                footer={debtorError ? <span className="text-destructive">{debtorError}</span> : undefined}>
-                <ListRow
-                  leading={
-                    selectedDebtor ? (
-                      <InitialAvatar name={selectedDebtor.name} className="size-10" />
-                    ) : (
-                      <span className="bg-primary/12 text-primary flex size-10 items-center justify-center rounded-full">
-                        <UserPlus className="size-5" />
-                      </span>
-                    )
-                  }
-                  title={
-                    selectedDebtor ? (
-                      <span className="font-semibold">{selectedDebtor.name}</span>
-                    ) : (
-                      <span className="text-primary font-medium">{t('fields.pickDebtor')}</span>
-                    )
-                  }
-                  subtitle={selectedDebtor?.phone}
-                  chevron
-                  onClick={() => setDebtorPickerOpen(true)}
-                />
-              </ListGroup>
-
-              <div className="bg-card space-y-3 rounded-2xl p-4">
-                <FormDateInput
-                  control={control}
-                  name="dueDate"
-                  placeholder={t('fields.dueDate')}
-                  minDate={new Date()}
-                  label={t('fields.dueDate')}
-                  required
-                />
-                <div className="flex flex-wrap gap-2 px-1">
-                  {[7, 14, 30].map((days) => (
-                    <button
-                      key={days}
-                      type="button"
-                      onClick={() => setValue('dueDate', dayjs().add(days, 'day').format('YYYY-MM-DD'))}
-                      className="bg-primary/12 text-primary h-9 rounded-[10px] px-3.5 text-sm font-semibold active:opacity-60">
-                      +{days} {t('daysUnit', { ns: 'common' })}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-
-          {type === 'SALE' && (
-            <div className="bg-card rounded-2xl p-4">
-              <FormInput
-                control={control}
-                name="customerName"
-                label={t('fields.customer')}
-                placeholder={t('fields.customer')}
-              />
-            </div>
-          )}
-        </div>
+        <TransactionPaymentSection
+          canCreateSale={canCreateSale}
+          paymentMethod={paymentMethod}
+          type={type}
+          selectedDebtor={selectedDebtor}
+          debtorError={debtorError}
+          control={control}
+          t={t}
+          onPaymentMethodChange={(next) => {
+            try {
+              localStorage.setItem(LAST_PAYMENT_METHOD_KEY, next);
+            } catch {
+              // приватный режим / квота — не критично, просто не запомнится
+            }
+            if (next === 'DEBT') {
+              setValue('type', 'DEBT', { shouldValidate: true });
+              setValue('paymentType', 'CREDIT', { shouldValidate: true });
+            } else {
+              setValue('type', 'SALE', { shouldValidate: true });
+              setValue('paymentType', next, { shouldValidate: true });
+            }
+          }}
+          onOpenDebtorPicker={() => setDebtorPickerOpen(true)}
+          onSetDueDate={(date) => setValue('dueDate', date)}
+        />
 
         <div className="space-y-5 lg:order-first">
           <div className="space-y-3">
             {fields.map((field, index) => {
               const item = items[index];
               const product = getProduct(item?.productId);
-              const itemTotal = getItemTotal(item);
-              const overStock = isOverStock(item?.quantity, product?.quantity);
               const rowErrors = (
                 formState.errors.items as unknown as Array<{ productId?: { message?: string } } | undefined> | undefined
               )?.[index];
-              const productError = rowErrors?.productId?.message;
-              const isExpanded =
-                expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0);
 
               return (
-                <div key={field.id} className="bg-card divide-border divide-y overflow-hidden rounded-2xl">
-                  <div className="flex items-stretch">
-                    <button
-                      type="button"
-                      onClick={() => setPickerIndex(index)}
-                      className="active:bg-muted/70 flex min-h-16 min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left transition-colors">
-                      <span className="bg-muted flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
-                        {product?.image ? (
-                          <img
-                            src={cldThumb(product.image, { w: 96, h: 96 })}
-                            alt=""
-                            className="size-full object-cover"
-                          />
-                        ) : (
-                          <Package className="text-muted-foreground size-5" />
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        {product ? (
-                          <>
-                            <span className="line-clamp-2 block text-base leading-snug font-semibold">
-                              {product.name}
-                            </span>
-                            <span className="text-muted-foreground block text-sm leading-snug">
-                              {fmtNum(product.price)} TJS · {t('inStock')} {product.quantity}
-                            </span>
-                          </>
-                        ) : (
-                          <span className="text-primary block text-base font-medium">{t('fields.pickProduct')}</span>
-                        )}
-                      </span>
-                      <ChevronRight className="text-muted-foreground/50 size-5 shrink-0" />
-                    </button>
-                    {fields.length > 1 && (
-                      <button
-                        type="button"
-                        aria-label={t('actions.delete', { ns: 'common' })}
-                        onClick={() => remove(index)}
-                        className="text-destructive active:bg-destructive/10 flex w-12 shrink-0 items-center justify-center border-l">
-                        <Trash2 className="size-5" />
-                      </button>
-                    )}
-                  </div>
-
-                  {productError && <p className="text-destructive px-4 py-2 text-sm">{productError}</p>}
-
-                  <div className="flex items-center justify-between gap-3 px-4 py-3">
-                    <QuantityStepper control={control} name={`items.${index}.quantity`} />
-                    <span className="font-mono text-xl font-semibold">{fmtNum(itemTotal)}</span>
-                  </div>
-
-                  {overStock && (
-                    <p className="text-destructive flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium">
-                      <AlertTriangle className="size-4 shrink-0" />
-                      {t('stockError')}
-                    </p>
-                  )}
-
-                  {isExpanded ? (
-                    <div className="grid grid-cols-2 gap-3 px-3 py-3">
-                      <FormInput
-                        control={control}
-                        label={t('fields.discount')}
-                        name={`items.${index}.discount`}
-                        type="number"
-                        inputMode="decimal"
-                        min={0}
-                        placeholder="0"
-                      />
-                      <FormInput
-                        control={control}
-                        label={t('fields.markup')}
-                        name={`items.${index}.markup`}
-                        type="number"
-                        inputMode="decimal"
-                        min={0}
-                        placeholder="0"
-                      />
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setExpandedAdjustments((s) => ({ ...s, [field.id]: true }))}
-                      className="text-primary active:bg-muted/70 flex min-h-11 w-full items-center gap-2 px-4 text-sm font-medium">
-                      <SlidersHorizontal className="size-4" />
-                      {t('fields.discount')} / {t('fields.markup')}
-                    </button>
-                  )}
-                </div>
+                <TransactionItemCard
+                  key={field.id}
+                  index={index}
+                  canRemove={fields.length > 1}
+                  item={item}
+                  product={product}
+                  itemTotal={getItemTotal(item, product)}
+                  productError={rowErrors?.productId?.message}
+                  isExpanded={
+                    expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0)
+                  }
+                  control={control}
+                  t={t}
+                  onOpenPicker={() => setPickerIndex(index)}
+                  onRemove={() => remove(index)}
+                  onExpandAdjustments={() => setExpandedAdjustments((s) => ({ ...s, [field.id]: true }))}
+                />
               );
             })}
           </div>
@@ -630,7 +449,8 @@ export default function CreateTransactionPage() {
           form="create-transaction-page-form"
           size="lg"
           className="w-full"
-          disabled={!canSubmit} loading={isPending}>
+          disabled={!canSubmit}
+          loading={isPending}>
           {submitLabel}
         </Button>
       </div>

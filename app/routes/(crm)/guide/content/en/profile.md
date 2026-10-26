@@ -1,76 +1,88 @@
 # Profile and settings
 
-The profile page gathers everything about your account: name, email, role, registration date and — if you are tied to a market — a short summary of it. This is also where you change your personal details and password. The appearance settings (theme and language) and signing out live in the user menu at the top right.
+The **"Profile"** page (`/profile`) brings together everything related to your account: personal details, role, registration date, and — if you are assigned to a market — a summary card and live tabs for that market. From here you can also update your avatar, name, email, and password. Appearance controls (theme and language), the sync screen, and sign-out are always accessible in the user menu at the top right.
 
-## How to open the profile
+## How to open your profile
 
-Tap your avatar in the top-right corner — a menu opens. Choose **"Profile"** in it. You can also reach the page at `/profile`. The profile is available to every role — administrator, owner and seller alike.
+Tap your avatar in the top-right corner to open the user menu, then choose **"Profile"** at the top (or go directly to `/profile`). The profile page is available to every role — Administrator, Owner, and Seller.
 
 ## What's on the profile page
 
-At the top is a large header with your avatar, name, email and a colored role badge (Administrator, Owner or Seller).
+At the top sits your profile header with your avatar, name, email, and a colored role badge (**Administrator** in purple, **Owner** in amber, **Seller** in blue).
 
-Below is the **"General information"** block:
+### Left (main) column
+
+1. **"General information" panel:**
 
 | Field | What it shows |
 | --- | --- |
-| Role | Your role in the system |
-| Email | The address you sign in with |
-| Registration date | When the account was created |
+| **Role** | Your role and permission level in the system |
+| **Email** | The address you use to sign in |
+| **Registration date** | When your account was created |
 
-If you are tied to a market (usually an owner or a seller), a **"My market"** block appears: the market name as a link, the address and dates. Next to it is a market mini-card with the owner and the counters **"Products"**, **"Debtors"**, **"Deals"** and a **"Go to market"** button.
+2. **"My market" panel** (shown when your account is linked to a market):
+   - **"Market"** — the market's avatar and name as a clickable link;
+   - **"Address"** — physical location of the market;
+   - **"Created at"** and **"Updated at"** dates for the market record.
 
-Under that are tabs with your market's affairs: **"Deals"**, **"Products"**, **"Debtors"**. Which tabs are visible depends on your role and permissions.
+3. **Market activity tabs (`Transactions`, `Products`, `Debtors`):**
+   - Beneath the market details, interactive tabs preview the 5 most recent records in each category along with buttons to open the full lists: **"All transactions"**, **"All products"**, and **"All debtors"**.
+   - Only the tabs permitted for your role are shown.
 
-## Quick actions
+### Right (sidebar) column
 
-The **"Quick actions"** block has two buttons:
+1. **Market summary card** (when linked to a market):
+   - market photo, name, and address;
+   - market owner widget (photo, name, and email);
+   - three clickable counters — **"Products"**, **"Debtors"**, and **"Transactions"**;
+   - **"Go to market →"** button.
+2. **"Quick actions" panel:**
+   - **"Edit profile"** — opens the personal details modal;
+   - **"Change password"** — opens the password change modal.
 
-- **"Edit profile"** — opens a window with your personal details.
-- **"Change password"** — opens the password-change window.
+## Editing your profile and changing your password
 
-### Editing the profile
+### Edit profile
 
-In the **"Edit profile"** window you can change:
+Click **"Edit profile"** to update:
 
-- **"Avatar"** — your photo. Tap the image area and pick a file.
-- **"Name"** `*` — how others see you.
-- **"Email"** `*` — the sign-in address.
+- **Avatar** — tap the image area to upload a new photo from your phone or computer, or remove the current one.
+- **"Name"** `*` — how your name appears across the system.
+- **"Email"** `*` — your sign-in email address.
 
-Press **"Save"** to apply the changes.
+Press **"Save"** to apply your changes (or **"Cancel"** to close without saving).
 
-> [!NOTE]
-> The asterisk `*` next to a field name means the field is required — you can't save without it.
+### Change password
 
-### Changing the password
+Click **"Change password"**. All three fields are required (`*`):
 
-The **"Change password"** window has three fields, all required:
+- **"Current password"** `*` — your existing password;
+- **"New password"** `*` — the new password you want to set;
+- **"Confirm password"** `*` — repeat the new password to make sure there are no typos.
 
-- **"Current password"** `*` — your password right now.
-- **"New password"** `*` — the one you want to set.
-- **"Confirm password"** `*` — the new password again, to avoid a typo.
-
-Press **"Change password"**. If the new password and the confirmation don't match, the program warns you and won't save.
+Press **"Change password"**. If the new password and confirmation do not match, the form highlights the mismatch right away.
 
 > [!TIP]
-> Pick a password that's easy for you to remember but hard for others to guess. There is no separate "recover password" button in the program, so don't lose it.
+> There is no self-service email password reset in the app. If you forget your password, ask an administrator (or your market owner if you are a seller) to set a new one for you.
 
-## Theme, language and sign-out
+## User menu: sync, theme, language, and sign-out
 
-These settings are not on the profile page but in the **user menu** — the one that opens from your avatar at the top right.
+Tapping your avatar in the top-right corner opens the user menu with five items:
 
-- **"Theme"** — switches between the light and dark look. Tap to toggle back and forth.
-- **"Language"** — cycles the interface language: Russian → English → Tajik → Russian again. The current language is shown briefly on the right (РУ, EN or ТҶ). The choice is remembered, so the next time you sign in the language stays the same.
-- **"Sign out"** — ends the session and returns you to the sign-in page. It's the red item at the bottom of the menu.
+1. **"Profile"** — opens `/profile`.
+2. **"Sync"** — opens `/sync` to inspect the offline send queue and locally cached data.
+3. **"Theme"** — toggles immediately between light and dark mode.
+4. **"Language"** — cycles the interface language (**Русский → English → Тоҷикӣ**) with the current language code shown on the right (`РУ`, `EN`, `ТҶ`). Your preference is saved for a full year.
+5. **"Sign out"** (red item at the bottom) — ends your session and returns to the sign-in screen. If unsent operations are waiting in your offline queue, the app warns you before signing out.
 
 > [!NOTE]
-> In the header next to the avatar there are two more separate icon buttons: a sun/moon for the theme and a flag for the language. They do the same as the menu items — just in one click.
+> On wide desktop screens, dedicated icon buttons for the theme (sun/moon) and language also appear directly in the top header next to your avatar for one-click switching.
 
-## Who sees what
+## Access by role
 
-| | Administrator | Owner | Seller |
+| Feature | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| Their own profile page | yes | yes | yes |
-| Edit their own details and password | yes | yes | yes |
-| The "My market" block | if tied to a market | yes | yes |
-| Theme, language, sign-out | yes | yes | yes |
+| View own profile page | Yes | Yes | Yes |
+| Edit own name, email, avatar, and password | Yes | Yes | Yes |
+| "My market" panel and market tabs | If linked to a market | Yes | Yes |
+| User menu (Sync, Theme, Language, Sign out) | Yes | Yes | Yes |

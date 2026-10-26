@@ -1,26 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
+import { CreditCard, Store, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
-import { CreditCard, Package, Store, Undo2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import { useLocation, useNavigate, useParams } from 'react-router';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
+import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
 import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
-import { ListEmpty, ListGroup, ListRow } from '~/components/shared/ListGroup';
+import { ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { TransactionStatusBadge } from '~/components/shared/TransactionStatusBadge';
 import { RefundHistory } from '~/components/transactions/RefundHistory';
+import { TransactionItemsSection } from '~/components/transactions/TransactionItemsSection';
+import { TransactionPaymentsSection } from '~/components/transactions/TransactionPaymentsSection';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
 import { TransactionTimeline } from '~/components/transactions/TransactionTimeline';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
@@ -28,7 +29,6 @@ import { TRANSACTION_TYPE_BADGE } from '~/config/transactionBadges';
 import { useCan } from '~/hooks/useCan';
 import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { useOverlayOps } from '~/hooks/useOfflineOverlay';
-import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
 import { withPendingPayments } from '~/lib/offline-overlay';
 import { queryKeys } from '~/lib/query-keys';
@@ -253,159 +253,9 @@ export default function TransactionDetailPage() {
             )}
           </>
         }>
-        <ListGroup title={`${t('fields.items')} · ${transaction.items?.length ?? 0}`}>
-          {transaction.items.map((item) => (
-            <Link
-              key={item.id}
-              to={`/products/${item.productId}`}
-              className="active:bg-muted/70 flex min-h-16 items-center gap-3 px-4 py-3 md:hidden">
-              <span className="bg-muted flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
-                {item.product?.image ? (
-                  <img src={cldThumb(item.product.image, { w: 88, h: 88 })} alt="" className="size-full object-cover" />
-                ) : (
-                  <Package className="text-muted-foreground size-5" />
-                )}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="line-clamp-2 block text-base leading-snug font-semibold">
-                  {item.productName || item.product?.name || item.productId}
-                </span>
-                <span className="text-muted-foreground block text-sm leading-snug">
-                  {fmtNum(item.price)} × {item.quantity}
-                  {item.refundedQuantity > 0 && (
-                    <span className="text-destructive font-medium">
-                      {' '}
-                      · −{item.refundedQuantity} {t('fieldsRefund.refundedQuantity')}
-                    </span>
-                  )}
-                </span>
-              </span>
-              <span className="shrink-0 font-mono text-base font-semibold">
-                {fmtNum(item.totalPrice || item.price * item.quantity)}
-              </span>
-            </Link>
-          ))}
-          <div className="flex min-h-12 items-center justify-between px-4 py-2.5 md:hidden">
-            <span className="text-muted-foreground text-base">{t('fields.totalPrice')}</span>
-            <span className="font-mono text-lg font-bold">{fmtTJS(summary.totalAmount)}</span>
-          </div>
-
-          <div className="scrollbar-thin hidden max-h-72 overflow-x-auto overflow-y-auto md:block">
-            <table className="w-full text-left text-sm">
-              <thead className="text-muted-foreground bg-card sticky top-0 z-10 border-b text-xs">
-                <tr>
-                  <th className="px-4 py-2.5 font-medium">{t('fields.product')}</th>
-                  <th className="px-3 py-2.5 text-right font-medium">{t('fields.price')}</th>
-                  <th className="px-3 py-2.5 text-center font-medium">{t('fields.quantity')}</th>
-                  <th className="px-3 py-2.5 text-center font-medium">{t('fieldsRefund.refundedQuantity')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('fields.totalPrice')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {transaction.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-4 py-2.5 font-medium">
-                      <span className="flex items-center gap-2">
-                        <Avatar size="sm" className="shrink-0">
-                          {item.product?.image ? <AvatarImage src={item.product.image} alt={item.productName} /> : null}
-                          <AvatarFallback>
-                            {(item.productName || item.product?.name || '?').charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <Link to={`/products/${item.productId}`} className="text-primary hover:underline">
-                          {item.productName || item.product?.name || item.productId}
-                        </Link>
-                      </span>
-                    </td>
-                    <td className="px-3 py-2.5 text-right font-mono">{fmtTJS(item.price)}</td>
-                    <td className="px-3 py-2.5 text-center font-mono">{item.quantity}</td>
-                    <td className="px-3 py-2.5 text-center font-mono">
-                      {item.refundedQuantity > 0 ? (
-                        <span className="text-destructive font-semibold">−{item.refundedQuantity}</span>
-                      ) : (
-                        <span className="text-muted-foreground">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-2.5 text-right font-mono font-semibold">
-                      {fmtTJS(item.totalPrice || item.price * item.quantity)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="border-border border-t">
-                <tr>
-                  <td colSpan={4} className="text-muted-foreground px-4 py-2.5 text-right text-xs font-medium">
-                    {t('fields.totalPrice')}
-                  </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-sm font-semibold">
-                    {fmtTJS(summary.totalAmount)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </ListGroup>
-
+        <TransactionItemsSection items={transaction.items} totalAmount={summary.totalAmount} t={t} />
         <RefundHistory refundOf={transaction.refundOf} refunds={transaction.refunds} />
-
-        {showPayments && (
-          <ListGroup title={t('fields.payments')}>
-            {hasPayments ? (
-              <>
-                {transaction.payments.map((p) => (
-                  <div key={p.id} className="flex min-h-14 items-center gap-3 px-4 py-2.5 md:hidden">
-                    <EntityAvatar name={p.createdBy?.name ?? '?'} image={p.createdBy?.image} size="md" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-base leading-snug font-medium break-words">{p.createdBy?.name || '-'}</p>
-                      <p className="text-muted-foreground text-sm leading-snug break-words">
-                        {formatDate(p.createdAt, true)}
-                        {p.note && ` · ${p.note}`}
-                      </p>
-                    </div>
-                    <span className="text-success shrink-0 font-mono text-base font-semibold">+{fmtNum(p.amount)}</span>
-                  </div>
-                ))}
-                <div className="scrollbar-thin hidden max-h-72 overflow-x-auto overflow-y-auto md:block">
-                  <table className="w-full text-left text-sm">
-                    <thead className="text-muted-foreground bg-card sticky top-0 z-10 border-b text-xs">
-                      <tr>
-                        <th className="px-4 py-2.5 font-medium">{t('fields.amount')}</th>
-                        <th className="px-3 py-2.5 font-medium">{t('fields.note')}</th>
-                        <th className="px-3 py-2.5 font-medium">{t('fields.createdBy')}</th>
-                        <th className="px-4 py-2.5 text-right font-medium">{t('fields.createdAt')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {transaction.payments.map((p) => (
-                        <tr key={p.id}>
-                          <td className="text-success px-4 py-2.5 font-mono font-semibold">+{fmtTJS(p.amount)}</td>
-                          <td className="text-muted-foreground px-3 py-2.5">{p.note || '-'}</td>
-                          <td className="px-3 py-2.5">
-                            <span className="flex items-center gap-2">
-                              <Avatar size="sm" className="shrink-0">
-                                {p.createdBy?.image ? (
-                                  <AvatarImage src={p.createdBy.image} alt={p.createdBy.name} />
-                                ) : null}
-                                <AvatarFallback>{(p.createdBy?.name ?? '?').charAt(0).toUpperCase()}</AvatarFallback>
-                              </Avatar>
-                              <span className="break-words">{p.createdBy?.name || '-'}</span>
-                            </span>
-                          </td>
-                          <td className="text-muted-foreground px-4 py-2.5 text-right text-xs">
-                            {formatDate(p.createdAt, true)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </>
-            ) : (
-              <ListEmpty>{t('table.noData', { ns: 'common' })}</ListEmpty>
-            )}
-          </ListGroup>
-        )}
-
+        {showPayments && <TransactionPaymentsSection payments={transaction.payments ?? []} t={t} />}
         <TransactionTimeline events={transaction.timeline} currentId={transaction.id} />
       </DetailPage>
 
