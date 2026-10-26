@@ -116,10 +116,41 @@ function matchesFilters(filters: ActiveFilter[], fields: Record<string, unknown>
     if (NEUTRAL_FILTERS.has(key) || value === undefined || value === null || value === '') return true;
     if (key === 'dateFrom') return today >= String(value).slice(0, 10);
     if (key === 'dateTo') return today <= String(value).slice(0, 10);
+    // Сумма: границы включительно, как на сервере (`totalAmount >= min`, `<= max`).
+    if (key === 'minAmount' || key === 'maxAmount') {
+      const total = fields.totalAmount;
+      if (typeof total !== 'number') return false;
+      return key === 'minAmount' ? total >= Number(value) : total <= Number(value);
+    }
     if (!(key in fields)) return false;
     const accepted = Array.isArray(value) ? value.map(String) : [String(value)];
-    return accepted.includes(String(fields[key]));
+    const actual = fields[key];
+    // Поле с несколькими истинными значениями (состояния долга) совпадает, если пересекается с выбранным.
+    if (Array.isArray(actual)) return actual.some((item) => accepted.includes(String(item)));
+    return accepted.includes(String(actual));
   });
+}
+
+/** Окно «скоро срок» — то же, что `DUE_SOON_DAYS` на бэкенде. */
+const DUE_SOON_DAYS = 3;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Состояния долга строки из очереди — по тем же правилам, что фильтр `debtStatus` на сервере:
+ * не долг не имеет состояния вовсе; закрытый — SETTLED; открытый — OUTSTANDING, а при наличии срока
+ * ещё и OVERDUE (срок прошёл) или DUE_SOON (срок в ближайшие дни). Долг без срока просроченным не бывает.
+ */
+export function debtStatesOf(row: { type: string; status: string; dueDate?: string | null }, now: number): string[] {
+  if (row.type !== 'DEBT') return [];
+  if (row.status === 'PAID') return ['SETTLED'];
+  if (row.status !== 'ACTIVE' && row.status !== 'PARTIAL') return [];
+  const states = ['OUTSTANDING'];
+  const due = row.dueDate ? new Date(row.dueDate).getTime() : NaN;
+  if (!Number.isNaN(due)) {
+    if (due < now) states.push('OVERDUE');
+    else if (due <= now + DUE_SOON_DAYS * MS_PER_DAY) states.push('DUE_SOON');
+  }
+  return states;
 }
 
 const includesText = (haystack: Array<string | null | undefined>, needle: string) => {
@@ -190,6 +221,16 @@ function debtEffects(ops: OverlayOp[]): Map<string, DebtEffect> {
   return effects;
 }
 
+/**
+ * Поля новой строки должника для фильтров. Без долга у него нет ни просрочки, ни риска («Низкий» —
+ * как на сервере). Если очередь уже дала ему долг, срок и риск неизвестны, и фильтры по ним скрывают строку.
+ */
+function debtorFilterFields(id: string, effects: Map<string, DebtEffect>): Record<string, unknown> {
+  const effect = effects.get(norm(id));
+  const hasDebt = (effect?.debt ?? 0) - (effect?.pay ?? 0) > 0;
+  return hasDebt ? { hasActiveDebts: true } : { hasActiveDebts: false, overdue: false, risk: 'LOW' };
+}
+
 function withDebtEffect<T extends Debtor & PendingFields>(row: T, effects: Map<string, DebtEffect>): T {
   const effect = effects.get(norm(row.id));
   if (!effect) return row;
@@ -224,7 +265,8 @@ export function mergeDebtorRows(server: Debtor[], ops: OverlayOp[], opts: Debtor
     .map((op) => buildDebtorRow(op, opts.user))
     .filter(
       (row) =>
-        includesText([row.name, row.phone], opts.search ?? '') && matchesFilters(opts.filters ?? [], {}, now)
+        includesText([row.name, row.phone], opts.search ?? '') &&
+        matchesFilters(opts.filters ?? [], debtorFilterFields(row.id, effects), now)
     )
     .map((row) => withDebtEffect(row, effects))
     .sort((a, b) => (b.pending?.queuedAt ?? 0) - (a.pending?.queuedAt ?? 0));
@@ -289,9 +331,7 @@ function buildTransactionRow(op: OverlayOp, user: UserInfo | null): TransactionR
     updatedAt: at,
     items,
     createdBy: { id: user?.id ?? '', name: user?.name ?? '', email: user?.email ?? '', image: user?.image ?? null },
-    debtor: debtorId
-      ? { id: debtorId, name: preview?.debtorName ?? '', phone: preview?.debtorPhone ?? '' }
-      : null,
+    debtor: debtorId ? { id: debtorId, name: preview?.debtorName ?? '', phone: preview?.debtorPhone ?? '' } : null,
     market: { id: user?.marketId ?? '', name: '' },
     pending: metaOf(op),
   };
@@ -307,7 +347,10 @@ function withTransactionEffects(
   const refund = refunded.has(row.id);
   if (!pay && !refund) return row;
 
-  let next: TransactionRow = { ...row, pendingOps: { ...row.pendingOps, pay: pay || undefined, refund: refund || undefined } };
+  let next: TransactionRow = {
+    ...row,
+    pendingOps: { ...row.pendingOps, pay: pay || undefined, refund: refund || undefined },
+  };
   if (pay) {
     const remaining = Math.max(0, row.remainingAmount - pay);
     next = {
@@ -356,10 +399,7 @@ export function mergeTransactionRows(
     .map((op) => buildTransactionRow(op, opts.user))
     .filter(
       (row) =>
-        includesText(
-          [row.debtor?.name, row.customerName, ...row.items.map((i) => i.productName)],
-          opts.search ?? ''
-        ) &&
+        includesText([row.debtor?.name, row.customerName, ...row.items.map((i) => i.productName)], opts.search ?? '') &&
         matchesFilters(
           opts.filters ?? [],
           {
@@ -368,6 +408,8 @@ export function mergeTransactionRows(
             status: row.status,
             debtorId: row.debtorId ?? '',
             createdById: row.createdById,
+            totalAmount: row.totalAmount,
+            debtStatus: debtStatesOf(row, now),
           },
           now
         )
@@ -394,7 +436,6 @@ export function pendingStockUsage(ops: OverlayOp[], dataUpdatedAt: number, now =
   }
   return used;
 }
-
 
 // ───────────────────────────── вне React ─────────────────────────────
 

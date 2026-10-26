@@ -2,13 +2,22 @@ import type { FilterConflict } from '~/lib/filter-rules';
 
 /** Состояния долга, при которых остаток к оплате больше нуля. */
 const OPEN_DEBT = ['OUTSTANDING', 'OVERDUE', 'DUE_SOON'] as const;
+/** Любое состояние долга: фильтр `debtStatus` на бэкенде всегда сужает выборку до `type = DEBT`. */
+const ANY_DEBT_STATE = [...OPEN_DEBT, 'SETTLED'] as const;
 /** Способы, которыми платят сразу и сполна. */
 const PAID_ON_SPOT = ['CASH', 'CARD'] as const;
+/** Статусы, у которых остаток ещё не закрыт. */
+const UNSETTLED_STATUS = ['ACTIVE', 'PARTIAL'] as const;
+/** Статусы закрытой или возвращённой транзакции — остатка у неё нет. */
+const CLOSED_STATUS = ['PAID', 'REFUNDED', 'PARTIALLY_REFUNDED'] as const;
 
 /**
- * Сочетания, которых в транзакциях не бывает. Основание — форма создания и оверлей очереди:
- * долг (`DEBT`) всегда оформляется способом «Кредит», а продажа за наличные или карту
- * оплачивается сразу — остатка у неё нет (`remainingAmount: 0`, статус `PAID`).
+ * Сочетания, которых в транзакциях не бывает. Основание — форма создания, оверлей очереди и
+ * `TransactionsService` на бэкенде: долг (`DEBT`) всегда оформляется способом «Кредит», а продажа
+ * за наличные или карту оплачивается сразу — остатка у неё нет (`remainingAmount: 0`, статус `PAID`).
+ * Фильтр `debtStatus` бэкенд применяет вместе с `type = DEBT`, поэтому «Продажа» и «Возврат» с любым
+ * состоянием долга, как и способ «Наличные» / «Карта», дают пустой список. Состояние долга и статус
+ * согласованы так же, как в `applyDebtStatusFilter`: открытый долг — `ACTIVE` / `PARTIAL`, закрытый — `PAID`.
  * Фильтр по таким парам вернул бы пустой список, поэтому второй пункт отключается.
  */
 export const TRANSACTION_FILTER_RULES: readonly FilterConflict[] = [
@@ -21,12 +30,28 @@ export const TRANSACTION_FILTER_RULES: readonly FilterConflict[] = [
     { key: 'paymentType', values: ['CREDIT'] },
   ],
   [
-    { key: 'type', values: ['SALE'] },
-    { key: 'debtStatus', values: OPEN_DEBT },
+    { key: 'type', values: ['SALE', 'REFUND'] },
+    { key: 'debtStatus', values: ANY_DEBT_STATE },
   ],
   [
     { key: 'paymentType', values: PAID_ON_SPOT },
+    { key: 'debtStatus', values: ANY_DEBT_STATE },
+  ],
+  [
+    { key: 'status', values: CLOSED_STATUS },
     { key: 'debtStatus', values: OPEN_DEBT },
+  ],
+  [
+    { key: 'status', values: UNSETTLED_STATUS },
+    { key: 'debtStatus', values: ['SETTLED'] },
+  ],
+  [
+    { key: 'type', values: ['SALE'] },
+    { key: 'status', values: UNSETTLED_STATUS },
+  ],
+  [
+    { key: 'paymentType', values: PAID_ON_SPOT },
+    { key: 'status', values: UNSETTLED_STATUS },
   ],
 ];
 
@@ -101,5 +126,11 @@ export const DEBTOR_FILTER_RULES: readonly FilterConflict[] = [
   [
     { key: 'hasActiveDebts', values: ['false'] },
     { key: 'risk', values: ['MEDIUM', 'HIGH'] },
+  ],
+  // Без просрочки набирается максимум 6 баллов (размер долга + возврат + давность платежа),
+  // а «Высокий» начинается с 7 — такой риск всегда сопровождается просрочкой.
+  [
+    { key: 'overdue', values: ['false'] },
+    { key: 'risk', values: ['HIGH'] },
   ],
 ];
