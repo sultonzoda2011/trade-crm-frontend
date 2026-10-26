@@ -916,16 +916,20 @@ configs/filters.ts
 
 ---
 
-## Filter Conflict Rules (`FilterRule`)
+## Filter Conflict Rules (`FilterConflict`)
 
-Для взаимоисключающих фильтров (например, `health` vs `reorderPriority` у товаров, `risk` vs `overdue`/`includePaid` у должников, быстрые пресеты у транзакций) используются декларативные правила:
+Сочетания фильтров, которых в данных не бывает (выбор вернул бы пустой список), описываются декларативно — парами «ключ + значения», которые не встречаются вместе:
 
 ```text
-app/types/filters.ts      # тип FilterRule
-app/lib/filter-rules.ts   # applyFilterWithRules(), clearFilterGroup(), isGroupActive()
+app/config/filterRules.ts      # TRANSACTION_FILTER_RULES, PRODUCT_FILTER_RULES, DEBTOR_FILTER_RULES
+app/lib/filter-rules.ts        # тип FilterConflict, findBlockingFilter(), isOptionBlocked()
 ```
 
-Правила объявляются в `configs/filters.ts` соответствующей сущности (`PRODUCT_FILTER_RULES`, `DEBTOR_FILTER_RULES`, `TRANSACTION_FILTER_RULES`) и передаются в `ListPageLayout` (`filterRules`), `FilterSheet` и компоненты быстрых фильтров.
+- Основание правила — логика бэкенда (`resolveHealth` / `resolveReorderPriority` в `analytics.service.ts`, `scoreDebtorRisk`, `applyDebtStatusFilter`), а не догадка. Над каждым правилом в комментарии указано, откуда оно выведено; новое правило без такого основания не добавлять.
+- Правила передаются в `ListPageLayout` (`filterRules`), `FilterSheet` / `FilterField` и в компоненты быстрых чипсов (`*QuickFilters`, функция `blocked()`).
+- Заблокированный пункт отключён (`disabled`, зачёркнут), а **уже выбранное значение не блокируется никогда** — иначе пользователь не смог бы его снять.
+- Правило симметрично: выбор любой из двух сторон блокирует другую.
+- Новые чипсы строить на `app/components/shared/FilterChips.tsx` (`FilterChipGroup`, `FilterChip`), не писать свою раскладку.
 
 ---
 
