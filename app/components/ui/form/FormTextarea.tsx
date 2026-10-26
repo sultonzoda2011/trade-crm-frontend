@@ -1,7 +1,6 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
-import { Label } from '~/components/ui/label';
+import { FormFieldWrapper } from '~/components/ui/form/FormFieldWrapper';
 import { Textarea } from '~/components/ui/textarea';
-import { cn } from '~/lib/utils';
 
 interface FormTextareaProps<T extends FieldValues> extends React.ComponentProps<'textarea'> {
   control: Control<T>;
@@ -24,13 +23,13 @@ export function FormTextarea<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <div className={cn('space-y-1.5', className)}>
-          {label && (
-            <Label className="mt-3" htmlFor={name}>
-              {label}
-              {required && <span className="text-muted-foreground ml-0.5">*</span>}
-            </Label>
-          )}
+        <FormFieldWrapper
+          htmlFor={name}
+          label={label}
+          required={required}
+          error={fieldState.error?.message}
+          className={className}
+          labelClassName="mt-3">
           <Textarea
             id={name}
             aria-invalid={!!fieldState.error}
@@ -39,8 +38,7 @@ export function FormTextarea<T extends FieldValues>({
             {...field}
             value={field.value ?? ''}
           />
-          {fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
-        </div>
+        </FormFieldWrapper>
       )}
     />
   );

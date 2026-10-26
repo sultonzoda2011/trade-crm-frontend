@@ -1,118 +1,74 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Store, UserRound } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
-import { toast } from 'sonner';
 import { sellersApi } from '~/api/sellers';
-import { ColumnToggle } from '~/components/shared/ColumnToggle';
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { DataTable } from '~/components/shared/DataTable';
 import { EntityMobileCard } from '~/components/shared/EntityMobileCard';
-import { FilterSheet } from '~/components/shared/FilterSheet';
-import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
-import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
-import { useDebounce } from '~/hooks/useDebounce';
-import { useFilterParams } from '~/hooks/useFilterParams';
+import { useEntityList } from '~/hooks/useEntityList';
 import { getClientUser } from '~/lib/auth-utils';
 import { buildRowSwipeActions } from '~/lib/swipe-actions';
-import { queryKeys } from '~/lib/query-keys';
 import { getColumns } from '~/routes/(crm)/sellers/configs/columns';
 import { getSellerFilters } from '~/routes/(crm)/sellers/configs/filters';
 import { useSellersModals, useSellersStore } from '~/routes/(crm)/sellers/store';
 
 export default function SellersPage() {
   const { t } = useTranslation(['sellers', 'common']);
-  const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const { can } = useCan();
   const deleteModal = useSellersModals((s) => s.delete);
 
-  const { page, limit, search, filters, setPage, setLimit, setSearch, setFilters, resetFilters, removeFilter } =
-    useSellersStore();
-
-  const debouncedSearch = useDebounce(search);
-
-  const {
-    data: response,
-    isLoading,
-    isFetching,
-    isError,
-    fetchStatus,
-  } = useQuery({
-    queryKey: queryKeys.list('sellers', { page, limit, search: debouncedSearch, filters }),
-    queryFn: () => {
-      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
-      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
-      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
-      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
-      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-      return sellersApi.getAll(
-        page,
-        limit,
-        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
-        mf
-      );
-    },
-    staleTime: 30_000,
-  });
-
-  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем
-  // от "список реально пуст" (см. app/lib/network-status.ts).
-  const isOfflineEmpty = fetchStatus === 'paused' && !response;
-
-  const { mutate: deleteSeller, isPending: isDeletePending } = useMutation({
-    mutationFn: (id: string) => sellersApi.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('sellers') });
-      toast.success(t('actions.deleteSuccess'));
-      deleteModal.close();
-    },
-    onError: () => {
-      toast.error(t('actions.deleteError'));
-    },
-  });
-
-  const columns = useMemo(() => getColumns({ t }), [t]);
-
+  const list = useEntityList({ entity: 'sellers', store: useSellersStore, api: sellersApi, t, deleteModal });
   const filterConfig = useMemo(() => getSellerFilters(t), [t]);
-
-  // Фильтры из ссылки (с дашборда, из карточек) и из адресной строки при перезагрузке.
-  useFilterParams({
-    page,
-    limit,
-    search,
-    filters,
-    setPage,
-    setLimit,
-    setSearch,
-    setFilters,
-    filterConfigs: filterConfig,
-  });
-  const sellers = useMemo(() => response?.data?.data ?? [], [response]);
-  const totalPages = response?.data?.meta?.totalPages || 1;
+  const columns = useMemo(() => getColumns({ t }), [t]);
 
   const { table } = useDataTable({
     columns,
-    data: sellers,
+    data: list.rows,
     storageKey: 'sellers-table-columns',
   });
 
   return (
-    <div className="flex-1 space-y-4">
-      <ListPageToolbar
-        title={t('title')}
-        searchPlaceholder={t('filters.search')}
-        searchValue={search}
-        onSearchChange={setSearch}>
-        <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
-        <ColumnToggle table={table} />
-        {can(Action.SELLERS_CREATE) && (
+    <ListPageLayout
+      title={t('title')}
+      searchPlaceholder={t('filters.search')}
+      list={list}
+      table={table}
+      filterConfig={filterConfig}
+      showFilterPills
+      syncUrl
+      // Как и в колонке действий: свою карточку открываем как /profile —
+      // отдельной страницы «продавец сам о себе» нет.
+      getRowLink={(row) =>
+        getClientUser()?.id === row.original.id
+          ? { to: '/profile' }
+          : {
+              to: `/sellers/${row.original.id}`,
+              state: { fromPath: location.pathname, fromName: t('title') },
+            }
+      }
+      getSwipeActions={(row) =>
+        buildRowSwipeActions({
+          t,
+          onEdit: can(Action.SELLERS_EDIT)
+            ? () =>
+                navigate(`/sellers/${row.original.id}/edit`, {
+                  state: { fromPath: location.pathname, fromName: t('title') },
+                })
+            : undefined,
+          onDelete:
+            can(Action.SELLERS_DELETE) && getClientUser()?.id !== row.original.id
+              ? () => deleteModal.open(row.original.id)
+              : undefined,
+        })
+      }
+      createAction={
+        can(Action.SELLERS_CREATE) ? (
           <Button
             aria-label={t('create')}
             className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
@@ -120,67 +76,20 @@ export default function SellersPage() {
             <Plus data-icon="inline-start" />
             <span>{t('create')}</span>
           </Button>
-        )}
-      </ListPageToolbar>
-      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
-      <DataTable
-        table={table}
-        pinLastColumn
-        isLoading={isLoading}
-        isFetching={isFetching}
-        isError={isError}
-        isOfflineEmpty={isOfflineEmpty}
-        page={page}
-        limit={limit}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onLimitChange={setLimit}
-        // Как и в колонке действий: свою карточку открываем как /profile —
-        // отдельной страницы «продавец сам о себе» нет.
-        getRowLink={(row) =>
-          getClientUser()?.id === row.original.id
-            ? { to: '/profile' }
-            : {
-                to: `/sellers/${row.original.id}`,
-                state: { fromPath: location.pathname, fromName: t('title') },
-              }
-        }
-        getSwipeActions={(row) =>
-          buildRowSwipeActions({
-            t,
-            onEdit: can(Action.SELLERS_EDIT)
-              ? () =>
-                  navigate(`/sellers/${row.original.id}/edit`, {
-                    state: { fromPath: location.pathname, fromName: t('title') },
-                  })
-              : undefined,
-            onDelete:
-              can(Action.SELLERS_DELETE) && getClientUser()?.id !== row.original.id
-                ? () => deleteModal.open(row.original.id)
-                : undefined,
-          })
-        }
-        renderMobileCard={(row) => {
-          const s = row.original;
-          return (
-            <EntityMobileCard
-              image={s.image}
-              fallbackIcon={UserRound}
-              title={s.name}
-              subtitle={s.email}
-              stats={[{ icon: Store, label: t('fields.market'), value: s.market?.name ?? '—' }]}
-            />
-          );
-        }}
-      />
-      <ConfirmDialog
-        open={deleteModal.isOpen}
-        onOpenChange={(open) => !open && deleteModal.close()}
-        onConfirm={() => deleteModal.data != null && deleteSeller(deleteModal.data)}
-        isLoading={isDeletePending}
-        title={t('actions.confirm')}
-        description={t('actions.areYouSure')}
-      />
-    </div>
+        ) : null
+      }
+      renderCard={(row) => {
+        const s = row.original;
+        return (
+          <EntityMobileCard
+            image={s.image}
+            fallbackIcon={UserRound}
+            title={s.name}
+            subtitle={s.email}
+            stats={[{ icon: Store, label: t('fields.market'), value: s.market?.name ?? '—' }]}
+          />
+        );
+      }}
+    />
   );
 }

@@ -4,11 +4,11 @@ import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
 import { ColumnToggle } from '~/components/shared/ColumnToggle';
 import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable } from '~/components/shared/DataTable';
-import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
-import { useFilterParams } from '~/hooks/useFilterParams';
+import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import type { EntityListResult } from '~/hooks/useEntityList';
+import { useFilterParams } from '~/hooks/useFilterParams';
 import type { FilterConfig } from '~/types/filters';
 
 /**
@@ -39,10 +39,10 @@ function UrlQuerySync<TData>({ list, filterConfig }: { list: EntityListResult<TD
   return null;
 }
 
-interface ListPageLayoutProps<TData> {
+interface ListPageLayoutProps<TData, TServerData = TData> {
   title: string;
   searchPlaceholder: string;
-  list: EntityListResult<TData>;
+  list: EntityListResult<TServerData>;
   table: Table<TData>;
   filterConfig: FilterConfig[];
   /** Row → mobile card. `actions` is already the rendered actions cell. */
@@ -57,6 +57,10 @@ interface ListPageLayoutProps<TData> {
   createAction?: ReactNode;
   showFilterPills?: boolean;
   syncUrl?: boolean;
+  /** Override `list.isOfflineEmpty` when an offline overlay adds queued local rows. */
+  isOfflineEmptyOverride?: boolean;
+  /** Extra modals or overlays rendered alongside the table (e.g. `<CreatePaymentModal />`). */
+  children?: ReactNode;
 }
 
 /**
@@ -67,7 +71,7 @@ interface ListPageLayoutProps<TData> {
  * Seven pages repeated this same ~45-line scaffold; what genuinely varies per page
  * (columns, filter config, the mobile card body, the row link) stays as props.
  */
-export function ListPageLayout<TData>({
+export function ListPageLayout<TData, TServerData = TData>({
   title,
   searchPlaceholder,
   list,
@@ -79,7 +83,9 @@ export function ListPageLayout<TData>({
   createAction,
   showFilterPills = false,
   syncUrl = false,
-}: ListPageLayoutProps<TData>) {
+  isOfflineEmptyOverride,
+  children,
+}: ListPageLayoutProps<TData, TServerData>) {
   return (
     <div className="flex-1 space-y-4">
       <ListPageToolbar
@@ -107,7 +113,7 @@ export function ListPageLayout<TData>({
         isLoading={list.isLoading}
         isFetching={list.isFetching}
         isError={list.isError}
-        isOfflineEmpty={list.isOfflineEmpty}
+        isOfflineEmpty={isOfflineEmptyOverride ?? list.isOfflineEmpty}
         page={list.page}
         limit={list.limit}
         totalPages={list.totalPages}
@@ -117,6 +123,8 @@ export function ListPageLayout<TData>({
         getSwipeActions={getSwipeActions}
         renderMobileCard={(row) => renderCard(row, renderActionsCell(row))}
       />
+
+      {children}
 
       <ConfirmDialog {...list.deleteDialog} />
 

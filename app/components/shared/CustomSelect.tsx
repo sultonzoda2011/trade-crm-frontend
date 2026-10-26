@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ComboboxContent,
@@ -9,6 +8,7 @@ import {
   Combobox as ComboboxPrimitive,
 } from '~/components/ui/combobox';
 import { Label } from '~/components/ui/label';
+import { useOptionLabelCache } from '~/hooks/useOptionLabelCache';
 import { cn } from '~/lib/utils';
 
 export interface CustomSelectOption {
@@ -59,14 +59,7 @@ export function CustomSelect(props: CustomSelectProps) {
   const effectiveEmptyText = emptyText ?? t('customSelect.emptyText');
   const isAsync = typeof onSearch === 'function';
 
-  // Remember every option we've ever rendered, keyed by String(value). With server-side
-  // search the currently-selected option can drop out of `options` (the results narrowed to
-  // a different query), and we'd otherwise lose its label. Registering on each render is
-  // idempotent, so this also covers the plain local-filter case with no behaviour change.
-  const optionCacheRef = React.useRef<Map<string, CustomSelectOption>>(new Map());
-  for (const opt of options) optionCacheRef.current.set(String(opt.value), opt);
-
-  const selectedItem = React.useMemo(() => optionCacheRef.current.get(String(value)) ?? null, [value, options]);
+  const selectedItem = useOptionLabelCache(options, value);
 
   return (
     <div className={cn(label && 'space-y-1.5', className)}>

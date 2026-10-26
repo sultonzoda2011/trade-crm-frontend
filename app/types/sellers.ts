@@ -10,12 +10,6 @@ export interface Seller {
   createdAt: string;
   market: MarketInfo | null;
 }
-export interface SellerRequest {
-  name: string;
-  email: string;
-  password: string;
-  image?: string | File | null;
-}
 
 /** Баланс продавца по надбавкам (markup): earned - refunded - paidOut = balance. */
 export interface SellerBalance {

@@ -1,10 +1,10 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Banknote, Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { Banknote } from 'lucide-react';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { PendingRowActions } from '~/components/shared/PendingRowActions';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { IconActionButton } from '~/components/shared/RowActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
@@ -15,7 +15,6 @@ import type { DebtorRow } from '~/types/pending';
 
 function DebtorActionsCell({ row, t }: { row: DebtorRow; t: TFunction }) {
   const deleteModal = useDebtorsModals((s) => s.delete);
-  const location = useLocation();
   const { can } = useCan();
 
   const { mutate: openPay, isPending: isPayLoading } = useOpenPay(t('actions.payLoadError', { ns: 'debtors' }));
@@ -24,36 +23,24 @@ function DebtorActionsCell({ row, t }: { row: DebtorRow; t: TFunction }) {
   if (row.pending) return <PendingRowActions pending={row.pending} />;
 
   return (
-    <RowActionsCell>
-      {row.activeDebtTransactionId && can(Action.TRANSACTIONS_EDIT) && (
-        <IconActionButton
-          icon={<Banknote className="size-4" />}
-          label={t('actions.pay', { ns: 'debtors' })}
-          loading={isPayLoading}
-          onClick={() => row.activeDebtTransactionId && openPay(row.activeDebtTransactionId)}
-        />
-      )}
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={<Link to={`/debtors/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.DEBTORS_EDIT) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={<Link to={`/debtors/${row.id}/edit`} />}
-        />
-      )}
-      {can(Action.DEBTORS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/debtors"
+      t={t}
+      editAction={Action.DEBTORS_EDIT}
+      deleteAction={Action.DEBTORS_DELETE}
+      onDelete={deleteModal.open}
+      leadingActions={
+        row.activeDebtTransactionId && can(Action.TRANSACTIONS_EDIT) ? (
+          <IconActionButton
+            icon={<Banknote className="size-4" />}
+            label={t('actions.pay', { ns: 'debtors' })}
+            loading={isPayLoading}
+            onClick={() => row.activeDebtTransactionId && openPay(row.activeDebtTransactionId)}
+          />
+        ) : null
+      }
+    />
   );
 }
 

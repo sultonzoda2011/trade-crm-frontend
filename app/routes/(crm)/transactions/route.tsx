@@ -1,29 +1,21 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
-import { toast } from 'sonner';
 import { categoriesApi } from '~/api/categories';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { sellersApi } from '~/api/sellers';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
-import { ActiveFilterPills } from '~/components/shared/ActiveFilterPills';
-import { ColumnToggle } from '~/components/shared/ColumnToggle';
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
-import { DataTable } from '~/components/shared/DataTable';
-import { renderActionsCell } from '~/components/shared/ListPageLayout';
-import { FilterSheet } from '~/components/shared/FilterSheet';
-import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { TransactionMobileCard } from '~/components/transactions/TransactionMobileCard';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useDataTable } from '~/hooks/useDataTable';
-import { useDebounce } from '~/hooks/useDebounce';
-import { useFilterParams } from '~/hooks/useFilterParams';
+import { useEntityList } from '~/hooks/useEntityList';
 import { useTransactionRows } from '~/hooks/useOfflineOverlay';
 import { mapToOptions } from '~/lib/mapToOptions';
 import { queryKeys } from '~/lib/query-keys';
@@ -34,41 +26,32 @@ import { useTransactionsModals, useTransactionsStore } from '~/routes/(crm)/tran
 
 export default function TransactionsPage() {
   const { t } = useTranslation(['transactions', 'common']);
-  const queryClient = useQueryClient();
+  const location = useLocation();
   const { can } = useCan();
   const deleteModal = useTransactionsModals((s) => s.delete);
   const payModal = useTransactionsModals((s) => s.pay);
 
-  const {
-    page,
-    limit,
-    search,
-    filters,
-    setPage,
-    setLimit,
-    setSearch,
-    setFilter,
-    setFilters,
-    resetFilters,
-    removeFilter,
-  } = useTransactionsStore();
-
-  const location = useLocation();
-  const debouncedSearch = useDebounce(search);
+  const list = useEntityList({
+    entity: 'transactions',
+    store: useTransactionsStore,
+    api: transactionsApi,
+    t,
+    deleteModal,
+  });
 
   const hasProcessedState = useRef(false);
-
   useEffect(() => {
     if (hasProcessedState.current) return;
     const state = location.state as Record<string, unknown> | null;
     if (state?.fromDebtorId) {
-      setFilter('debtorId', state.fromDebtorId);
+      list.setFilter('debtorId', state.fromDebtorId);
     }
     if (state?.fromSellerId) {
-      setFilter('createdById', state.fromSellerId);
+      list.setFilter('createdById', state.fromSellerId);
     }
     hasProcessedState.current = true;
     window.history.replaceState({}, document.title);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { data: debtorsResponse } = useQuery({
@@ -110,58 +93,16 @@ export default function TransactionsPage() {
 
   const sellerOptions = useMemo(() => mapToOptions(sellersResponse?.data?.data ?? [], 'id', 'name'), [sellersResponse]);
 
-  const {
-    data: response,
-    isLoading,
-    isFetching,
-    isError,
-    fetchStatus,
-    dataUpdatedAt,
-  } = useQuery({
-    queryKey: queryKeys.list('transactions', { page, limit, search: debouncedSearch, filters }),
-    queryFn: () => {
-      const dateFrom = filters.find((f) => f.key === 'dateFrom')?.value as string | undefined;
-      const dateTo = filters.find((f) => f.key === 'dateTo')?.value as string | undefined;
-      const sortBy = (filters.find((f) => f.key === 'sortBy')?.value as string) || 'createdAt';
-      const sortOrder = (filters.find((f) => f.key === 'sortOrder')?.value as 'asc' | 'desc') || 'desc';
-      const mf = filters.filter((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-      return transactionsApi.getAll(
-        page,
-        limit,
-        { search: debouncedSearch || undefined, dateFrom, dateTo, sortBy, sortOrder },
-        mf
-      );
-    },
-    staleTime: 30_000,
-  });
-
-  const { mutate: deleteTransaction, isPending: isDeletePending } = useMutation({
-    mutationFn: (id: string) => transactionsApi.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
-      toast.success(t('actions.deleteSuccess'));
-      deleteModal.close();
-    },
-    onError: () => {
-      toast.error(t('actions.deleteError'));
-    },
-  });
-
   const columns = useMemo(() => getColumns({ t }), [t]);
 
-  const serverTransactions = useMemo(() => response?.data?.data ?? [], [response]);
   // Продажи и долги из очереди стоят сверху сразу, а оплаты/возвраты из очереди уже учтены в остатках —
   // см. offline-overlay.ts.
-  const transactions = useTransactionRows(serverTransactions, {
-    page,
-    search: debouncedSearch,
-    filters,
-    dataUpdatedAt,
+  const transactions = useTransactionRows(list.serverRows, {
+    page: list.page,
+    search: list.debouncedSearch,
+    filters: list.filters,
+    dataUpdatedAt: list.dataUpdatedAt,
   });
-  // Запрос ни разу не загрузился и сейчас на паузе из-за офлайна — отличаем от "список реально пуст"
-  // (см. app/lib/network-status.ts). Если в очереди уже что-то есть, показываем это, а не заглушку.
-  const isOfflineEmpty = fetchStatus === 'paused' && !response && transactions.length === 0;
-  const totalPages = response?.data?.meta?.totalPages || 1;
 
   const { table } = useDataTable({
     columns,
@@ -175,98 +116,65 @@ export default function TransactionsPage() {
     [t, debtorOptions, categoryOptions, productOptions, sellerOptions]
   );
 
-  useFilterParams({
-    page,
-    limit,
-    search,
-    filters,
-    setPage,
-    setLimit,
-    setSearch,
-    setFilters,
-    filterConfigs: filterConfig,
-  });
-
   return (
-    <div className="flex-1 space-y-4">
-      <ListPageToolbar
-        title={t('title')}
-        searchPlaceholder={t('filters.search', { ns: 'common' })}
-        searchValue={search}
-        onSearchChange={setSearch}>
-        <ColumnToggle table={table} />
-        <div className="flex w-full items-center gap-2 sm:w-auto">
-          <FilterSheet config={filterConfig} filters={filters} onApply={setFilters} onReset={resetFilters} />
-          {can(Action.TRANSACTIONS_CREATE) && (
-            <Button
-              aria-label={t('create')}
-              className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
-              render={<Link to="/transactions/create" />}>
-              <Plus data-icon="inline-start" />
-              <span className="truncate">{t('create')}</span>
-            </Button>
-          )}
-        </div>
-      </ListPageToolbar>
-      <ActiveFilterPills filters={filters} config={filterConfig} onRemove={removeFilter} />
-      <DataTable
-        table={table}
-        pinLastColumn
-        isLoading={isLoading}
-        isFetching={isFetching}
-        isError={isError}
-        isOfflineEmpty={isOfflineEmpty}
-        page={page}
-        limit={limit}
-        totalPages={totalPages}
-        onPageChange={setPage}
-        onLimitChange={setLimit}
-        getRowLink={(row) =>
-          // Страницы у продажи из очереди ещё нет — открывать нечего.
-          row.original.pending
-            ? undefined
-            : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
-        }
-        // Страницы правки у транзакции нет (её не редактируют, только оплачивают
-        // и удаляют), поэтому «Изменить» здесь не показываем. Продажа из очереди
-        // ещё не создана на сервере — у неё свои кнопки (см. renderMobileCard).
-        getSwipeActions={(row) => {
-          const tx = row.original;
-          if (tx.pending) return undefined;
-          return buildRowSwipeActions({
-            t,
-            leading:
-              can(Action.TRANSACTIONS_EDIT) && tx.remainingAmount > 0
-                ? [
-                    {
-                      key: 'pay',
-                      label: t('pay'),
-                      icon: CreditCard,
-                      tone: 'success',
-                      onSelect: () => payModal.open(tx),
-                    },
-                  ]
-                : [],
-            onDelete: can(Action.TRANSACTIONS_DELETE) ? () => deleteModal.open(tx.id) : undefined,
-          });
-        }}
-        renderMobileCard={(row) => (
-          <TransactionMobileCard
-            row={row}
-            t={t}
-            actionsCell={row.original.pending ? renderActionsCell(row) : undefined}
-          />
-        )}
-      />
+    <ListPageLayout
+      title={t('title')}
+      searchPlaceholder={t('filters.search', { ns: 'common' })}
+      list={list}
+      table={table}
+      filterConfig={filterConfig}
+      showFilterPills
+      syncUrl
+      // Если в очереди уже что-то есть, показываем это, а не заглушку офлайна.
+      isOfflineEmptyOverride={list.isOfflineEmpty && transactions.length === 0}
+      getRowLink={(row) =>
+        // Страницы у продажи из очереди ещё нет — открывать нечего.
+        row.original.pending
+          ? undefined
+          : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
+      }
+      // Страницы правки у транзакции нет (её не редактируют, только оплачивают
+      // и удаляют), поэтому «Изменить» здесь не показываем. Продажа из очереди
+      // ещё не создана на сервере — у неё свои кнопки (см. renderCard).
+      getSwipeActions={(row) => {
+        const tx = row.original;
+        if (tx.pending) return undefined;
+        return buildRowSwipeActions({
+          t,
+          leading:
+            can(Action.TRANSACTIONS_EDIT) && tx.remainingAmount > 0
+              ? [
+                  {
+                    key: 'pay',
+                    label: t('pay'),
+                    icon: CreditCard,
+                    tone: 'success',
+                    onSelect: () => payModal.open(tx),
+                  },
+                ]
+              : [],
+          onDelete: can(Action.TRANSACTIONS_DELETE) ? () => deleteModal.open(tx.id) : undefined,
+        });
+      }}
+      createAction={
+        can(Action.TRANSACTIONS_CREATE) ? (
+          <Button
+            aria-label={t('create')}
+            className="min-w-0 flex-1 gap-1.5 px-4 sm:flex-initial"
+            render={<Link to="/transactions/create" />}>
+            <Plus data-icon="inline-start" />
+            <span className="truncate">{t('create')}</span>
+          </Button>
+        ) : null
+      }
+      renderCard={(row, actions) => (
+        <TransactionMobileCard
+          row={row}
+          t={t}
+          actionsCell={row.original.pending ? actions : undefined}
+        />
+      )}>
       <CreatePaymentModal />
-      <ConfirmDialog
-        open={deleteModal.isOpen}
-        onOpenChange={(open) => !open && deleteModal.close()}
-        onConfirm={() => deleteModal.data != null && deleteTransaction(deleteModal.data)}
-        isLoading={isDeletePending}
-        title={t('actions.confirm', { ns: 'common' })}
-        description={t('actions.areYouSure', { ns: 'common' })}
-      />
-    </div>
+    </ListPageLayout>
   );
 }

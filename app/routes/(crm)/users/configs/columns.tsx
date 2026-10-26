@@ -1,44 +1,24 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
-import { useCan } from '~/hooks/useCan';
-import type { User } from '~/types/users';
 import { useUsersModals } from '~/routes/(crm)/users/store';
+import type { User } from '~/types/users';
 
 function UserActionsCell({ row, t }: { row: User; t: TFunction }) {
   const deleteModal = useUsersModals((s) => s.delete);
-  const location = useLocation();
-  const { can } = useCan();
-
   return (
-    <RowActionsCell>
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={<Link to={`/users/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.USERS_EDIT) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={<Link to={`/users/${row.id}/edit`} />}
-        />
-      )}
-      {can(Action.USERS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/users"
+      t={t}
+      editAction={Action.USERS_EDIT}
+      deleteAction={Action.USERS_DELETE}
+      onDelete={deleteModal.open}
+    />
   );
 }
 

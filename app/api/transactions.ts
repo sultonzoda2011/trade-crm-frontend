@@ -2,7 +2,6 @@ import {
   deleteRequest,
   detailRequest,
   idempotencyConfig as idempotencyHeaders,
-  jsonWrites,
   listRequest,
   nestedDetailRequest,
 } from '~/api/crud';
@@ -14,7 +13,6 @@ import type {
   TransactionDetailResponse,
   TransactionResponse,
   TransactionsResponse,
-  UpdateTransactionRequest,
 } from '~/types/transactions';
 
 const BASE = '/transactions';
@@ -25,13 +23,11 @@ export const transactionsApi = {
   // The enriched payload is called `detail` here, not `full` — the only endpoint that deviates.
   getDetail: nestedDetailRequest<TransactionDetailResponse>(BASE, 'detail'),
   delete: deleteRequest(BASE),
-  ...jsonWrites<CreateTransactionRequest, UpdateTransactionRequest>(BASE),
 
-  // create/pay/refund override the jsonWrites `create` and get a second, optional
-  // `idempotencyKey` param — the only three endpoints the backend's
-  // IdempotencyInterceptor is wired to (see trade-crm-backend). The key is generated
-  // once when a mutation is queued offline (app/lib/offline-mutations.ts) and reused
-  // on every retry/resume of that same operation, so a replay never double-charges.
+  // create/pay/refund get a second, optional `idempotencyKey` param — the only three
+  // endpoints the backend's IdempotencyInterceptor is wired to (see trade-crm-backend).
+  // The key is generated once when a mutation is queued offline (app/lib/offline-mutations.ts)
+  // and reused on every retry/resume of that same operation, so a replay never double-charges.
   create: async (request: CreateTransactionRequest, idempotencyKey?: string): Promise<TransactionResponse> => {
     const { data } = await apiClient.post(BASE, request, idempotencyHeaders(idempotencyKey));
     return data;

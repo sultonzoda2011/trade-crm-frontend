@@ -1,6 +1,6 @@
 import { type Control, Controller, type FieldValues, type Path } from 'react-hook-form';
 import { CustomInput, type CustomInputProps } from '~/components/shared/CustomInput';
-import { Label } from '~/components/ui/label';
+import { FormFieldWrapper } from '~/components/ui/form/FormFieldWrapper';
 import { cn } from '~/lib/utils';
 
 interface FormInputProps<T extends FieldValues> extends CustomInputProps {
@@ -25,13 +25,12 @@ export function FormInput<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <div className={cn('space-y-1.5 px-1', className)}>
-          {label && (
-            <Label htmlFor={name}>
-              {label}
-              {required && <span className="text-muted-foreground ml-0.5">*</span>}
-            </Label>
-          )}
+        <FormFieldWrapper
+          htmlFor={name}
+          label={label}
+          required={required}
+          error={fieldState.error?.message}
+          className={cn('px-1', className)}>
           <CustomInput
             id={name}
             type={type}
@@ -50,8 +49,7 @@ export function FormInput<T extends FieldValues>({
               }
             }}
           />
-          {fieldState.error && <p className="text-destructive text-sm">{fieldState.error.message}</p>}
-        </div>
+        </FormFieldWrapper>
       )}
     />
   );

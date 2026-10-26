@@ -1,44 +1,24 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
-import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 import type { Category } from '~/types/products';
 
 function CategoriesActionsCell({ row, t }: { row: Category; t: TFunction }) {
   const deleteModal = useCategoriesModals((s) => s.delete);
-  const location = useLocation();
-  const { can } = useCan();
-
   return (
-    <RowActionsCell>
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={<Link to={`/categories/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.CATEGORIES_MANAGE) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={<Link to={`/categories/${row.id}/edit`} />}
-        />
-      )}
-      {can(Action.CATEGORIES_MANAGE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/categories"
+      t={t}
+      editAction={Action.CATEGORIES_MANAGE}
+      deleteAction={Action.CATEGORIES_MANAGE}
+      onDelete={deleteModal.open}
+    />
   );
 }
 

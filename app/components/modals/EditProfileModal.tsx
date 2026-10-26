@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { profileApi } from '~/api/profile';
 import { Modal } from '~/components/shared/Modal';
-import { Button } from '~/components/ui/button';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { useForm } from '~/hooks/useForm';
-import { appendToFormData } from '~/lib/form-data';
+import { buildMultipart } from '~/lib/form-data';
 import { queryKeys } from '~/lib/query-keys';
 import { useProfileModals } from '~/routes/(crm)/profile/store';
 import { updateProfileSchema, type UpdateProfileSchema } from '~/validations/profile';
@@ -19,6 +19,7 @@ export function EditProfileModal() {
   const { t } = useTranslation(['profile', 'common', 'validation']);
   const queryClient = useQueryClient();
   const editModal = useProfileModals((s) => s.edit);
+  const isMobile = useIsMobile();
 
   const { control, handleSubmit, reset } = useForm<UpdateProfileSchema>({
     resolver: zodResolver(updateProfileSchema(t)),
@@ -35,16 +36,8 @@ export function EditProfileModal() {
   }, [editModal.data, reset]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data: UpdateProfileSchema) => {
-      const payload: Record<string, unknown> = {
-        name: data.name,
-        email: data.email,
-      };
-      if (data.image instanceof File) {
-        payload.image = data.image;
-      }
-      return profileApi.updateProfile(appendToFormData(payload));
-    },
+    mutationFn: (data: UpdateProfileSchema) =>
+      profileApi.updateProfile(buildMultipart({ name: data.name, email: data.email, image: data.image })),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.profileAll() });
       toast.success(t('updateSuccess'));
@@ -56,27 +49,20 @@ export function EditProfileModal() {
     },
   });
 
-  function onSubmit(data: UpdateProfileSchema) {
-    mutate(data);
-  }
-  const isMobile = useIsMobile();
-
   return (
     <Modal
       open={editModal.isOpen}
       onClose={editModal.close}
       title={t('editTitle')}
       footer={
-        <div className="flex w-full gap-2 sm:w-auto sm:justify-end">
-          <Button variant="outline" className="flex-1 sm:flex-initial" onClick={editModal.close}>
-            {t('actions.cancel')}
-          </Button>
-          <Button type="submit" form="edit-profile-form" className="flex-1 sm:flex-initial" loading={isPending}>
-            {t('actions.save')}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="edit-profile-form"
+          onCancel={editModal.close}
+          submitLabel={t('actions.save')}
+          isLoading={isPending}
+        />
       }>
-      <form id="edit-profile-form" onSubmit={handleSubmit(onSubmit)}>
+      <form id="edit-profile-form" onSubmit={handleSubmit((data) => mutate(data))}>
         <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
           <FormFileInput
             control={control}

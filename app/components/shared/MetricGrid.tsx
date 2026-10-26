@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { METRIC_TONE_CLASS, type MetricTone } from '~/config/tones';
 import { cn } from '~/lib/utils';
 
 export interface Metric {
@@ -6,15 +7,8 @@ export interface Metric {
   value: ReactNode;
   /** Динамика к прошлому периоду (`TrendBadge`) — стоит под значением. */
   trend?: ReactNode;
-  tone?: 'default' | 'success' | 'warning' | 'danger';
+  tone?: MetricTone;
 }
-
-const TONE = {
-  default: '',
-  success: 'text-success',
-  warning: 'text-warning',
-  danger: 'text-destructive',
-} as const;
 
 interface MetricGridProps {
   title?: ReactNode;
@@ -36,7 +30,7 @@ export function MetricGrid({ title, metrics, className }: MetricGridProps) {
             <p
               className={cn(
                 'mt-1 text-lg leading-tight font-semibold break-words tabular-nums',
-                TONE[metric.tone ?? 'default']
+                METRIC_TONE_CLASS[metric.tone ?? 'default']
               )}>
               {metric.value}
             </p>
