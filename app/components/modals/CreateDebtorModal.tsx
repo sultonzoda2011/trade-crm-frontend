@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
+import { DebtorFormFields } from '~/components/debtors/DebtorFormFields';
 import { Modal } from '~/components/shared/Modal';
-import { Button } from '~/components/ui/button';
-import { FormInput } from '~/components/ui/form/FormInput';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { useCreateDebtor, type CreatedDebtor } from '~/hooks/useCreateDebtor';
 import { useForm } from '~/hooks/useForm';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
@@ -38,32 +38,15 @@ export function CreateDebtorModal({ onCreated }: CreateDebtorModalProps) {
       onClose={createModal.close}
       title={t('actions.create')}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={createModal.close}>
-            {t('actions.cancel')}
-          </Button>
-          <Button type="submit" form="create-debtor-form" loading={isPending}>
-            {t('actions.save')}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="create-debtor-form"
+          onCancel={createModal.close}
+          submitLabel={t('actions.save')}
+          isLoading={isPending}
+        />
       }>
       <form id="create-debtor-form" className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <FormInput
-          control={control}
-          name="name"
-          label={t('fields.fullName')}
-          placeholder={t('fields.fullName')}
-          required
-        />
-        <FormInput
-          control={control}
-          name="phone"
-          type="tel"
-          inputMode="tel"
-          label={t('fields.phone')}
-          placeholder={t('fields.phone')}
-          required
-        />
+        <DebtorFormFields control={control} t={t} grid={false} />
       </form>
     </Modal>
   );

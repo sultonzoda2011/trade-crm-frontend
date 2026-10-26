@@ -2,13 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { showSuccess } from '~/store/useSuccessStore';
 import { profileApi } from '~/api/profile';
 import { Modal } from '~/components/shared/Modal';
-import { Button } from '~/components/ui/button';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { useProfileModals } from '~/routes/(crm)/profile/store';
+import { showSuccess } from '~/store/useSuccessStore';
 import { changePasswordSchema, type ChangePasswordSchema } from '~/validations/profile';
 
 export function ChangePasswordModal() {
@@ -37,26 +37,20 @@ export function ChangePasswordModal() {
     },
   });
 
-  function onSubmit(data: ChangePasswordSchema) {
-    mutate(data);
-  }
-
   return (
     <Modal
       open={passwordModal.isOpen}
       onClose={passwordModal.close}
       title={t('sections.password')}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={passwordModal.close}>
-            {t('actions.cancel')}
-          </Button>
-          <Button type="submit" form="change-password-form" loading={isPending}>
-            {t('actions.savePassword')}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="change-password-form"
+          onCancel={passwordModal.close}
+          submitLabel={t('actions.savePassword')}
+          isLoading={isPending}
+        />
       }>
-      <form id="change-password-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form id="change-password-form" onSubmit={handleSubmit((data) => mutate(data))} className="space-y-4">
         <FormInput
           control={control}
           name="currentPassword"

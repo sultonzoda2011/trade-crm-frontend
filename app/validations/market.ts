@@ -11,12 +11,5 @@ export const createMarketSchema = (t: TFunction) =>
 
 export type CreateMarketSchema = z.infer<ReturnType<typeof createMarketSchema>>;
 
-export const updateMarketSchema = (t: TFunction) =>
-  z.object({
-    name: z.string().min(1, t('required', { ns: 'validation' })),
-    address: z.string().min(1, t('required', { ns: 'validation' })),
-    ownerId: z.string().min(1, t('required', { ns: 'validation' })),
-    image: z.any().optional(),
-  });
-
-export type UpdateMarketSchema = z.infer<ReturnType<typeof updateMarketSchema>>;
+export const updateMarketSchema = createMarketSchema;
+export type UpdateMarketSchema = CreateMarketSchema;

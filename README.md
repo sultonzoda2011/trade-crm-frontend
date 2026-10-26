@@ -10,25 +10,21 @@ Backend: **NestJS + Prisma + PostgreSQL**.
 
 ## Возможности
 
-- CRUD для `Users`, `Markets`, `Sellers`, `Products`, `Categories`, `Debtors`, `Transactions`
-- RBAC с ролями `Admin`, `Owner`, `Seller`
-- Dashboard с аналитикой продаж, долгов, склада и продавцов
-- Продажи, продажи в долг, оплаты, частичные оплаты и возвраты
-- Управление должниками и уровнями риска
-- Каталог товаров, категории, единицы измерения и остатки
-- Управление рынками и продавцами
-- Поиск, сортировка, pagination и фильтры
-- Виртуализированные таблицы
-- Inline-фильтры и `FilterSheet`
-- Тёмная и светлая тема
-- Русский, английский и таджикский языки
-- Загрузка изображений для товаров, рынков и профиля
-- Встроенное offline-руководство `/guide`
-- **Офлайн-режим**: данные синхронизируются на устройство (SQLite на Android), продажи/оплаты/возвраты можно создавать без сети — они уходят в очередь и отправляются сами при восстановлении связи
-- Адаптация интерфейса под Android WebView
-- Сохранение авторизованной сессии в `localStorage`
-- Интеграция с Capacitor для Android
-- Автоматическая сборка APK через GitHub Actions
+- Управление сущностями `Users`, `Markets`, `Sellers`, `Products`, `Debtors`, `Transactions`
+- RBAC с ролями `Admin`, `Owner`, `Seller` (`ROUTE_PERMISSIONS`, `ACTION_PERMISSIONS`, `API_ROUTE_ACTIONS`, `useCan()`)
+- Многовкладочный Dashboard (`/dashboard`, `/dashboard/inventory`, `/dashboard/products`, `/dashboard/sellers`) с аналитикой продаж, долгов, склада и продавцов
+- Продажи, продажи в долг, скидки и наценки по позициям, частичные и полные оплаты, полные и частичные возвраты
+- Управление должниками, кредитным профилем, просрочками и уровнями риска (`LOW / MEDIUM / HIGH / CRITICAL`)
+- Каталог товаров с аналитикой скорости продаж, запаса в днях, здоровья остатков и быстрым пополнением склада (`RestockProductModal` → `POST /products/:id/restock`)
+- Поиск с debounce, сортировка, пагинация, `FilterSheet`, быстрые фильтр-чипы и декларативные правила разрешения конфликтующих фильтров (`FilterRule`)
+- Группировка транзакций по дням с дневными итогами и сводной полосой (`TransactionsSummary`)
+- Виртуализированные десктопные таблицы (`DataTable`) и мобильные карточки со свайп-действиями (`SwipeableCard`)
+- Тёмная, светлая и системная тема (`next-themes`)
+- Трёхъязычный интерфейс: русский (`ru`), английский (`en`) и таджикский (`tg`)
+- Загрузка изображений для товаров, рынков, продавцов, пользователей и профиля
+- Встроенное интерактивное руководство `/guide` по 9 разделам системы с мгновенным поиском и подсветкой совпадений
+- **Офлайн-режим и синхронизация (`/sync`)**: данные кэшируются на устройство (SQLite на Android, IndexedDB в браузере), а создание должников, продаж/долгов, оплат и возвратов работает без сети с мгновенным отображением в списках (`offline-overlay`) и фоновой идемпотентной отправкой при восстановлении связи
+- Автоматическая сборка Android APK через GitHub Actions
 
 ---
 
@@ -42,25 +38,24 @@ Backend: **NestJS + Prisma + PostgreSQL**.
 | Styling         | TailwindCSS 4 + `tw-animate-css`       |
 | Font            | Inter Variable                         |
 | UI primitives   | shadcn/ui + `@base-ui/react`           |
-| State           | Zustand                                |
+| State           | Zustand 5                              |
 | Server state    | TanStack React Query 5                 |
 | HTTP            | Axios                                  |
-| Forms           | React Hook Form                        |
-| Validation      | Zod                                    |
+| Forms           | React Hook Form (`useForm` wrapper)    |
+| Validation      | Zod 4                                  |
 | Auth            | Bearer token + `localStorage`          |
 | i18n            | react-i18next + i18next-http-backend   |
 | Tables          | TanStack Table                         |
 | Virtualization  | TanStack Virtual                       |
 | Charts          | Recharts                               |
-| Dates           | Day.js                                 |
+| Dates           | Day.js (`date.ts` + `format.ts`)       |
 | Icons           | lucide-react                           |
 | Toasts          | Sonner                                 |
 | Date picker     | Flatpickr                              |
 | Command palette | cmdk                                   |
 | Theme           | next-themes                            |
-| Mobile          | Capacitor 8                            |
-| Android         | Capacitor Android                      |
-| Offline storage | @capacitor-community/sqlite            |
+| Mobile          | Capacitor 8 (Android)                  |
+| Offline storage | `@capacitor-community/sqlite`          |
 | E2E             | Playwright                             |
 | Formatting      | Prettier + prettier-plugin-tailwindcss |
 
@@ -68,1412 +63,150 @@ Backend: **NestJS + Prisma + PostgreSQL**.
 
 ## Архитектура
 
-Проект разделён на несколько основных слоёв:
+Проект разделён на чёткие слои:
 
 ```text
 app/
-├── api/             # API-модули
-├── components/      # UI и переиспользуемые компоненты
-├── config/          # permissions, actions, navigation и конфиги
-├── hooks/           # React hooks
-├── lib/             # инфраструктурные utilities
-├── routes/          # страницы и routing
-├── store/           # Zustand factories
-├── types/           # TypeScript types
-├── validations/     # Zod schemas
-└── styles/          # глобальные стили
+├── api/             # API-модули и общие CRUD-хелперы (crud.ts)
+├── components/      # UI-примитивы, формы, карточки, модалки и общие лейауты
+├── config/          # permissions, actions, navigation и enum-конфиги
+├── hooks/           # useEntityList, useEntityMutation, offline/network и UI-хуки
+├── lib/             # HTTP-клиент, query-client, фильтрация, форматирование, офлайн-ядро
+├── routes/          # страницы и маршруты
+├── store/           # фабрики Zustand (useTableStore, createModalStore, useSyncStore)
+├── types/           # доменные TypeScript-типы
+├── validations/     # i18n-фабрики Zod-схем
+└── styles/          # глобальные стили и дизайн-токены
 ```
 
 ### Основной поток данных
 
 ```text
-Route
+Route (ListPageLayout / EntityFormPage / DetailLayout)
   ↓
-React Query
+useEntityList / useEntityMutation / useDetachedMutation
   ↓
-API module
+TanStack React Query + Offline Overlay
   ↓
-apiClient
+API module (crud.ts)
   ↓
-Axios interceptor
+apiClient (Axios + RBAC pre-flight + Auth / Error interceptors)
   ↓
-Backend API
+Backend API (/api)
 ```
 
 ---
 
-## Routing
+## Маршруты (`app/routes.ts`)
 
-Маршруты регистрируются вручную в:
-
-```text
-app/routes.ts
-```
-
-Файловый routing не используется.
-
-### Auth
-
-```text
-/login
-```
-
----
-
-### CRM
-
-```text
-/
-```
-
-Главный маршрут делает redirect:
-
-```text
-Admin / Owner → /dashboard
-Seller        → /transactions
-```
-
-### Dashboard
-
-```text
-/dashboard
-/dashboard/inventory
-/dashboard/products
-/dashboard/sellers
-```
-
-#### `/dashboard`
-
-Обзор:
-
-- общие метрики
-- продажи
-- доход
-- долги
-- состояние склада
-- последние транзакции
-
-#### `/dashboard/inventory`
-
-Аналитика склада:
-
-- товары, которые нужно заказать
-- состояние остатков
-- возвраты
-
-#### `/dashboard/products`
-
-Аналитика товаров:
-
-- лидеры по выручке
-- лидеры по количеству
-- категории
-
-#### `/dashboard/sellers`
-
-Отчёт по продавцам.
-
-Dashboard поддерживает фильтры периода и продавца.
+- **Auth:** `/login`
+- **Root redirect (`/`):** `Admin / Owner → /dashboard`, `Seller → /transactions`
+- **Dashboard (`Admin`, `Owner`):**
+  - `/dashboard` — обзор ключевых метрик, тренда выручки, пульса продаж, денежного потока, прибыли/скидок, тепловых карт по дням недели и часам
+  - `/dashboard/inventory` — здоровье склада, срочность закупок, возвраты
+  - `/dashboard/products` — ABC-лидеры по выручке и количеству
+  - `/dashboard/sellers` — рейтинг и детальный отчёт по продавцам
+- **Profile:** `/profile` (личные данные, аватар, смена пароля)
+- **Users (`Admin`):** `/users`, `/users/create`, `/users/:id`, `/users/:id/edit`
+- **Markets (`Admin`, `Owner`, `Seller` для своего маркета):** `/markets`, `/markets/create`, `/markets/:id`, `/markets/:id/edit`
+- **Sellers (`Admin`, `Owner`):** `/sellers`, `/sellers/create`, `/sellers/:id`, `/sellers/:id/edit`
+- **Products:** `/products`, `/products/create`, `/products/:id`, `/products/:id/edit` (+ модальное пополнение остатка `RestockProductModal`)
+- **Debtors:** `/debtors`, `/debtors/create`, `/debtors/:id`, `/debtors/:id/edit`
+- **Transactions:** `/transactions`, `/transactions/create`, `/transactions/:id` (+ модалки оплаты `PayTransactionModal` и возврата `RefundTransactionModal`)
+- **Sync:** `/sync` — управление офлайн-режимом, очередью операций, покрытием кэша и памятью устройства
+- **Service routes:** `/guide` (справочник), `/403` (доступ запрещён), `*` (404)
 
 ---
 
-### Profile
+## Унифицированные паттерны страниц
 
-```text
-/profile
-```
+### Списочные страницы (`useEntityList` + `ListPageLayout`)
 
-Профиль текущего пользователя:
+Все 6 списочных разделов (`users`, `markets`, `sellers`, `products`, `debtors`, `transactions`) используют:
+- **`useEntityList`** (`app/hooks/useEntityList.ts`) — связывает Zustand table store (`page`, `limit`, `search`, `filters`, `sorting`), `useDebounce`, `filtersToParams` и `useQuery`.
+- **`ListPageLayout`** (`app/components/shared/ListPageLayout.tsx`) — рендерит шапку со счётчиком и кнопкой создания, `summarySlot`, поиск, `FilterSheet`, плашки активных фильтров (`pillFilters`), чипы быстрых фильтров (`quickFilters`), десктопную таблицу (`DataTable`) и мобильные карточки (включая группировку по дням `getMobileGroups`), пагинацию и модальные окна.
+- **`FilterRule`** (`app/lib/filter-rules.ts`) — декларативно сбрасывает конфликтующие фильтры при переключении чипов и в шторке фильтров.
 
-- личные данные
-- изображение
-- изменение пароля
+### Страницы создания и редактирования (`EntityFormPage` + `*FormFields`)
 
----
+Все формы создания и редактирования (`users`, `markets`, `sellers`, `products`, `debtors`) используют:
+- **`EntityFormPage`** (`app/components/shared/EntityFormPage.tsx`) — единая обёртка со скелетоном загрузки, `EmptyState`, `BreadCrumbs`, карточкой формы и кнопками отправки/отмены.
+- **`*FormFields`** (`app/components/forms/`) — общие поля сущности (`UserFormFields`, `MarketFormFields`, `SellerFormFields`, `ProductFormFields`, `DebtorFormFields`), переиспользуемые между `/create` и `/:id/edit`.
+- **`useEntityMutation`** (`app/hooks/useEntityMutation.ts`) — стандартная мутация с авто-инвалидацией кэша и показом `toast.success`.
 
-### Users
+### Детальные страницы (`GET /:id/full`)
 
-```text
-/users
-/users/create
-/users/:id
-/users/:id/edit
-```
+Детальные страницы `users`, `markets`, `sellers` и `debtors` загружают карточку сущности вместе с аналитикой и превью связанных списков одним запросом (`nestedDetailRequest` → `GET /<entity>/:id/full`) и используют общие компоненты `DetailLayout`, `KpiGrid`, `MiniCharts`, `SignalBlock`.
 
 ---
 
-### Markets
+## Офлайн-режим и синхронизация (`Offline & Sync`)
 
-```text
-/markets
-/markets/create
-/markets/:id
-/markets/:id/edit
-```
-
-Для `Owner` и `Seller` пункт **My Market** ведёт непосредственно на рынок пользователя:
-
-```text
-/markets/:marketId
-```
+Приложение спроектировано для стабильной работы на рынках со слабой связью:
+1. **Источник истины о сети:** `useCapacitorNetworkStatus()` → `network-status.ts` → `onlineManager` TanStack Query (вместо ненадёжного `navigator.onLine`).
+2. **Персистентный кэш:** `query-persister.ts` построчно сохраняет запросы чтения и paused-мутации в SQLite (`@capacitor-community/sqlite` на Android) или IndexedDB (в браузере).
+3. **4 офлайн-мутации (`OFFLINE_MUTATION_KEYS`):** `createDebtor`, `createTransaction`, `payTransaction`, `refundTransaction`. Все 4 защищены заголовком `Idempotency-Key` на бэкенде.
+4. **Мгновенный оверлей (`offline-overlay.ts`, `useOfflineOverlay.ts`):** операции из очереди сразу видны в списках должников и транзакций с бейджем «В очереди» (`PendingBadge`), пересчитывают долг и вычитают остаток товара на складе.
+5. **Связка временных ID (`client-ids.ts`):** можно создать нового должника без сети (`local-<uuid>`) и тут же оформить на него продажу в долг — перед отправкой транзакции на сервер временный ID автоматически заменится реальным UUID.
+6. **Отправка без ожидания (`useDetachedMutation`):** формы закрываются сразу офлайн или через `1.5 с` при медленной сети, продолжая отправку в фоне.
 
 ---
 
-### Sellers
+## Встроенный справочник (`/guide`)
 
-```text
-/sellers
-/sellers/create
-/sellers/:id
-/sellers/:id/edit
-```
-
----
-
-### Products
-
-```text
-/products
-/products/create
-/products/:id
-/products/:id/edit
-```
+Маршрут `/guide` работает полностью офлайн:
+- Контент хранится в `public/locales/{ru,en,tg}/guide.json` и охватывает **9 разделов**:
+  1. Начало работы (`gettingStarted`)
+  2. Дашборд и аналитика (`dashboard`)
+  3. Товары и склад (`products`)
+  4. Транзакции, оплаты и возвраты (`transactions`)
+  5. Должники и кредитный риск (`debtors`)
+  6. Рынки (`markets`)
+  7. Продавцы (`sellers`)
+  8. Пользователи и роли (`users`)
+  9. Офлайн-режим и синхронизация (`sync`)
+- Интерфейс справочника декомпозирован в `app/components/guide/` (`GuideSidebar.tsx`, `GuideArticleView.tsx`, `GuideSearchModal.tsx`, `guide-highlight.tsx`).
 
 ---
 
-### Categories
-
-```text
-/categories
-/categories/create
-/categories/:id
-/categories/:id/edit
-```
-
----
-
-### Debtors
-
-```text
-/debtors
-/debtors/create
-/debtors/:id
-/debtors/:id/edit
-```
-
----
-
-### Transactions
-
-```text
-/transactions
-/transactions/create
-/transactions/:id
-```
-
-Дополнительные операции:
-
-```text
-PATCH /transactions/:id/pay
-POST  /transactions/:id/refund
-```
-
----
-
-### Sync
-
-```text
-/sync
-```
-
-Экран офлайн-режима: статус сети, кнопка «Синхронизировать всё», очередь неотправленных операций, покрытие кеша по сущностям и память устройства. Доступен всем авторизованным ролям — ссылка на него есть в шапке (индикатор сети) и в меню профиля.
-
----
-
-### Service routes
-
-```text
-/guide
-/403
-*
-```
-
-`/guide` доступен всем авторизованным ролям.
-
----
-
-# Authentication
-
-TradeCRM использует **Bearer authentication**.
-
-Backend после:
-
-```text
-POST /auth/login
-```
-
-возвращает:
-
-```json
-{
-  "accessToken": "...",
-  "user": {}
-}
-```
-
-Frontend сохраняет:
-
-```text
-localStorage
-├── accessToken
-└── user
-```
-
-Доступ к session API находится в:
-
-```text
-app/lib/auth-utils.ts
-```
-
-### Запросы
-
-Каждый API-запрос получает:
-
-```http
-Authorization: Bearer <accessToken>
-```
-
-через Axios interceptor.
-
-### Logout / 401
-
-При ответе:
-
-```text
-401 Unauthorized
-```
-
-frontend:
-
-1. очищает session;
-2. удаляет `accessToken`;
-3. удаляет `user`;
-4. переводит пользователя на `/login`.
-
----
-
-# RBAC
-
-В системе три роли:
-
-```text
-Admin
-Owner
-Seller
-```
-
-RBAC разделён на несколько уровней.
-
-```text
-Route
-  ↓
-ROUTE_PERMISSIONS
-  ↓
-Action
-  ↓
-ACTION_PERMISSIONS
-  ↓
-useCan()
-  ↓
-API_ROUTE_ACTIONS
-```
-
-### Route permissions
-
-Файл:
-
-```text
-app/config/permissions.ts
-```
-
-Определяет доступ ролей к страницам.
-
-### Action permissions
-
-Файл:
-
-```text
-app/config/actions.ts
-```
-
-Содержит действия:
-
-```text
-USERS_CREATE
-USERS_EDIT
-USERS_DELETE
-
-PRODUCTS_CREATE
-PRODUCTS_EDIT
-PRODUCTS_DELETE
-
-TRANSACTIONS_CREATE
-TRANSACTIONS_EDIT
-TRANSACTIONS_REFUND
-
-SELLERS_CREATE
-SELLERS_EDIT
-SELLERS_DELETE
-
-DEBTORS_CREATE
-DEBTORS_EDIT
-DEBTORS_DELETE
-```
-
-и другие.
-
-### UI gating
-
-Для проверки прав в React используется:
-
-```ts
-const { can } = useCan();
-
-if (can(Action.PRODUCTS_EDIT)) {
-  // ...
-}
-```
-
-Сравнивать роли напрямую в компонентах не следует.
-
----
-
-## API RBAC
-
-Axios interceptor дополнительно сопоставляет:
-
-```text
-HTTP method + API path
-        ↓
-Action
-        ↓
-ACTION_PERMISSIONS
-```
-
-Например:
-
-```text
-PATCH /products/:id
-        ↓
-PRODUCTS_EDIT
-```
-
-Если у пользователя нет соответствующего права, запрос блокируется ещё на клиенте.
-
-> Backend всё равно остаётся главным источником истины для безопасности. Client-side RBAC предназначен также для UX и предотвращения заведомо запрещённых запросов.
-
----
-
-# API layer
-
-Все HTTP-запросы выполняются через:
-
-```text
-app/lib/client.ts
-```
-
-Axios instance:
-
-```text
-VITE_API_URL + /api
-```
-
-с timeout:
-
-```text
-15000 ms
-```
-
-API-модули:
-
-```text
-app/api/
-├── auth.ts
-├── users.ts
-├── markets.ts
-├── products.ts
-├── categories.ts
-├── sellers.ts
-├── debtors.ts
-├── transactions.ts
-├── dashboard.ts
-├── profile.ts
-└── crud.ts
-```
-
-Общие CRUD-операции вынесены в:
-
-```text
-app/api/crud.ts
-```
-
-Это позволяет entity API-модулям не дублировать стандартную реализацию списка, detail, delete и write operations.
-
----
-
-# Data fetching
-
-Используется:
-
-```text
-@tanstack/react-query
-```
-
-Конфигурация находится в:
-
-```text
-app/lib/query-client.ts
-```
-
-Основные настройки:
-
-```text
-staleTime: 60 seconds
-placeholderData: keepPreviousData
-query retries: 2
-mutation retries: false
-```
-
-`keepPreviousData` используется для того, чтобы pagination и изменение фильтров не приводили к резкому исчезновению текущей таблицы во время загрузки.
-
----
-
-# Query keys
-
-Query keys централизованы в:
-
-```text
-app/lib/query-keys.ts
-```
-
-Новые query keys не следует создавать вручную в страницах.
-
-Принцип:
-
-```text
-entity
- ├── list
- ├── options
- ├── detail
- ├── full
- └── ...
-```
-
-Для invalidation следует использовать prefix:
-
-```ts
-queryClient.invalidateQueries({
-  queryKey: ['products'],
-});
-```
-
----
-
-# State management
-
-Для UI-state используется:
-
-```text
-Zustand
-```
-
-Factories:
-
-```text
-app/store/useTableStore.ts
-app/store/createModalStore.ts
-```
-
-### Table store
-
-Каждая entity list page имеет собственный scoped store:
-
-```text
-app/routes/(crm)/users/store.ts
-app/routes/(crm)/markets/store.ts
-app/routes/(crm)/sellers/store.ts
-...
-```
-
-Store содержит:
-
-```text
-page
-limit
-search
-filters
-```
-
-и операции:
-
-```text
-setPage
-setLimit
-setSearch
-setFilter
-removeFilter
-setFilters
-resetFilters
-```
-
-Изменение search/filter/page-size сбрасывает pagination на первую страницу.
-
----
-
-### Modal store
-
-Модальные окна используют typed Zustand stores:
-
-```text
-createModalStore()
-```
-
-Пример:
-
-```ts
-const deleteModal = useUsersModals((state) => state.delete);
-```
-
-Не следует подписываться на весь store:
-
-```ts
-// плохо
-const modals = useUsersModals();
-```
-
-Лучше подписываться только на нужный slice.
-
----
-
-# Offline & Sync
-
-Приложение рассчитано на работу без стабильной связи (точки продаж на рынке). Офлайн-слой — это не самописная шина, а комбинация встроенных механизмов TanStack Query поверх персистентного хранилища.
-
-```text
-app/lib/
-├── network-status.ts     # единый источник истины о сети, подключён к onlineManager React Query
-├── offline-storage.ts    # key-value хранилище: SQLite на Android, IndexedDB в браузере
-├── query-persister.ts    # персист кеша чтения — построчно, а не одним блобом
-├── offline-mutations.ts  # определения мутаций с offline-поддержкой (create/pay/refund)
-├── offline-queue.ts      # витрина очереди для UI (/sync)
-├── offline-errors.ts     # PlainError — безопасный для персиста формат ошибки
-├── offline-sync.ts       # логика «Синхронизировать всё»
-└── offline-session.ts    # владелец кеша/очереди при логине/логауте
-
-app/hooks/
-├── useNetworkStatus.ts            # useSyncExternalStore вокруг network-status.ts
-├── useCapacitorNetworkStatus.ts   # источник событий сети — Capacitor Network, не navigator.onLine
-├── useOfflineQueue.ts             # данные для QueueSection
-├── useCacheCoverage.ts            # данные для CoverageSection
-└── useStorageStats.ts             # данные для StorageSection
-
-app/store/useSyncStore.ts   # глобальное состояние запуска «Синхронизировать всё»
-```
-
-### Источник истины о сети
-
-`navigator.onLine` в Android WebView ненадёжен (часто остаётся `true` без реального подключения). Поэтому единственный источник — **Capacitor Network**, с полноценной веб-реализацией, так что в браузере работает тот же код. `useCapacitorNetworkStatus()` подписывается на него один раз (в `CapacitorBridge`) и пишет в `network-status.ts`, который, в свою очередь, подключён к `onlineManager` TanStack Query — поэтому React Query сам знает, онлайн приложение или нет.
-
-### Офлайн-мутации — встроенный механизм, не своя очередь
-
-Для `createTransaction`, `payTransaction`, `refundTransaction` (только эти три — остальной CRUD в офлайн не попадает, это сознательно неполное покрытие, а не офлайн для всего приложения):
-
-1. У мутаций `networkMode: 'online'`. Если устройства нет в сети — `mutationFn` вообще не вызывается, мутация сразу уходит в `isPaused`.
-2. `root.tsx` персистит именно paused-мутации в ту же SQLite-базу, что и кеш чтения, — очередь переживает перезапуск приложения.
-3. `queryClient.resumePausedMutations()` вызывается при каждом восстановлении сети (и дополнительно сразу после восстановления персиста при старте).
-4. Бэкенд дедуплицирует повторные отправки по `Idempotency-Key` — поэтому повторный `resumePausedMutations()` безопасен даже если сервер уже принял операцию.
-
-`mutationKey` здесь — не ключ чтения из `query-keys.ts`, а идентификатор _определения_ мутации: по нему `setMutationDefaults` подставляет `mutationFn` обратно при восстановлении из персиста (функции не сериализуются — в SQLite попадают только `mutationKey`/`variables`/`state`).
-
-### Персист кеша
-
-`query-persister.ts` пишет кеш React Query **построчно** (по одному запросу на запись), а не одним блобом, и версионируется через `CACHE_BUSTER` — несовместимое изменение формы кеша (например, рефакторинг query-keys) бампает `buster`, чтобы старые записи не ломали новую версию приложения.
-
-Хранилище (`offline-storage.ts`):
-
-```text
-Android (native) → SQLite через @capacitor-community/sqlite
-Браузер (dev)     → IndexedDB
-```
-
-На Android это файл в песочнице приложения, который система не чистит при нехватке памяти — в отличие от IndexedDB/localStorage в WebView.
-
-### Чей это кеш
-
-Кеш и очередь содержат бизнес-данные (транзакции, должники, суммы) — они принадлежат вошедшему пользователю (`offline-session.ts`):
-
-- явный выход из аккаунта стирает кеш и очередь;
-- вход под другим пользователем стирает их тоже;
-- истёкшая сессия (401) ничего не стирает — тот же человек войдёт снова, и очередь продолжит отправку.
-
-### Экран `/sync` и `useSyncStore`
-
-Запуск «Синхронизировать всё» — глобальное состояние в `useSyncStore` (Zustand), а не локальный state страницы: синхронизация продолжается, пока человек переходит по приложению, а индикатор в шапке и страница `/sync` показывают один и тот же прогресс. `offline-sync.ts` обходит доступные пользователю сущности (с учётом RBAC) и догружает их постранично, с уважением к серверным лимитам запросов (throttling).
-
-Сам экран `/sync` собран из `SyncHero`, `QueueSection`, `CoverageSection`, `StorageSection` (`app/components/sync/`) — подробное пользовательское описание в `/guide` → «Офлайн-режим и синхронизация».
-
----
-
-# Tables
-
-Используются:
-
-```text
-@tanstack/react-table
-@tanstack/react-virtual
-```
-
-Общие table-компоненты находятся в:
-
-```text
-app/components/shared/
-```
-
-Основной reusable компонент:
-
-```text
-DataTable
-```
-
-Колонки entity должны определяться через factory:
-
-```text
-configs/columns.tsx
-```
-
-Например:
-
-```ts
-getColumns({ t, onAction });
-```
-
-Это позволяет корректно работать с i18n и callback dependencies.
-
----
-
-# Filters
-
-Фильтры описываются через:
-
-```text
-FilterConfig
-```
-
-и находятся в:
-
-```text
-configs/filters.ts
-```
-
-Поддерживаются:
-
-```text
-select
-number-range
-date-range
-boolean
-```
-
-Для преобразования frontend filters в API query params используется:
-
-```text
-app/lib/filtersToParams.ts
-```
-
-Search перед запросом проходит через debounce.
-
----
-
-# Forms & Validation
-
-Формы используют:
-
-```text
-react-hook-form
-Zod
-@hookform/resolvers/zod
-```
-
-В проекте используется собственная i18n-aware обёртка:
-
-```text
-app/hooks/useForm.ts
-```
-
-Validation schemas находятся в:
-
-```text
-app/validations/
-```
-
-Фабрика schema имеет вид:
-
-```ts
-createProductSchema(t);
-```
-
-Это позволяет переводить validation messages при смене языка.
-
-Для multipart-запросов используется:
-
-```text
-app/lib/form-data.ts
-```
-
----
-
-# Date handling
-
-Для дат используется:
-
-```text
-dayjs
-```
-
-Все даты должны проходить через:
-
-```text
-toDayjs()
-toDate()
-```
-
-из:
-
-```text
-app/lib/date.ts
-```
-
-Для вывода дат используется:
-
-```text
-formatDate()
-```
-
-из:
-
-```text
-app/lib/format.ts
-```
-
----
-
-# Internationalization
-
-Поддерживаются:
-
-```text
-ru
-en
-tg
-```
-
-Основной язык:
-
-```text
-ru
-```
-
-Locale files:
-
-```text
-public/locales/
-├── ru/
-├── en/
-└── tg/
-```
-
-Используется:
-
-```text
-react-i18next
-i18next-http-backend
-```
-
-Все пользовательские строки должны находиться в locale-файлах, а не быть захардкожены в JSX.
-
----
-
-# Theme & UI
-
-Theme:
-
-```text
-next-themes
-```
-
-Поддерживаются:
-
-```text
-light
-dark
-system
-```
-
-Основные дизайн-токены находятся в:
-
-```text
-app/styles/global.css
-```
-
-Текущая визуальная система ориентирована на:
-
-- чистый mobile-first UI;
-- системную типографику;
-- крупные touch targets;
-- адаптацию под Android WebView;
-- semantic color tokens;
-- аккуратные карточки и панели;
-- отсутствие sticky hover на touch-устройствах.
-
-Primary:
-
-```text
-Light: #007aff
-Dark:  #0a84ff
-```
-
-Шрифт:
-
-```text
-Inter Variable
-```
-
----
-
-# Mobile / Android
-
-TradeCRM может собираться как Android APK через:
-
-```text
-Capacitor 8
-```
-
-Конфигурация:
-
-```text
-capacitor.config.ts
-```
-
-Основные параметры:
-
-```text
-appId: com.tradecrm.app
-appName: TradeCRM
-webDir: build/client
-```
-
-Используемые плагины:
-
-```text
-@capacitor/app
-@capacitor/network
-@capacitor/keyboard
-@capacitor/status-bar
-@capacitor-community/sqlite
-```
-
-UI адаптирован под Android WebView.
-
-Авторизация хранится в `localStorage`, чтобы session переживала перезапуск Android-приложения.
-
----
-
-# Android build
-
-### Локально
-
-```bash
-npm install
-npm run build
-
-npx cap add android
-npx cap sync android
-
-cd android
-./gradlew assembleDebug
-```
-
-APK:
-
-```text
-android/app/build/outputs/apk/debug/app-debug.apk
-```
-
----
-
-# GitHub Actions
-
-Workflow:
-
-```text
-.github/workflows/android.yml
-```
-
-Запускается:
-
-```text
-push → main
-workflow_dispatch
-```
-
-Pipeline:
-
-```text
-Checkout
-   ↓
-Node 22
-   ↓
-Java 21
-   ↓
-npm ci
-   ↓
-npm run typecheck
-   ↓
-npm run build
-   ↓
-cap add android
-   ↓
-generate Android assets
-   ↓
-cap sync
-   ↓
-gradlew assembleDebug
-   ↓
-upload artifact
-```
-
-Backend URL передаётся через GitHub Secret:
-
-```text
-API_URL
-```
-
----
-
-# Built-in Guide
-
-В приложение встроено руководство:
-
-```text
-/guide
-```
-
-Оно работает без сетевого запроса, потому что markdown-контент включается непосредственно в frontend bundle.
-
-Структура:
-
-```text
-app/routes/(crm)/guide/
-├── route.tsx
-├── sections.ts
-├── content-loader.ts
-└── content/
-    ├── ru/
-    ├── en/
-    └── tg/
-```
-
-Используется собственный markdown renderer:
-
-```text
-app/components/shared/Markdown.tsx
-```
-
-Поддерживаются:
-
-- заголовки;
-- списки;
-- таблицы;
-- code blocks;
-- links;
-- callouts;
-- поиск и подсветка совпадений.
-
----
-
-# Project structure
-
-```text
-app/
-├── api/
-│   ├── auth.ts
-│   ├── users.ts
-│   ├── markets.ts
-│   ├── products.ts
-│   ├── categories.ts
-│   ├── sellers.ts
-│   ├── debtors.ts
-│   ├── transactions.ts
-│   ├── dashboard.ts
-│   ├── profile.ts
-│   └── crud.ts
-│
-├── components/
-│   ├── ui/
-│   ├── ui/form/
-│   ├── shared/
-│   ├── modals/
-│   ├── dashboard/
-│   ├── layout/
-│   ├── products/
-│   ├── transactions/
-│   ├── debtors/
-│   └── markets/
-│
-├── config/
-│   ├── actions.ts
-│   ├── permissions.ts
-│   ├── navigation.ts
-│   ├── enumOptions.ts
-│   ├── period.ts
-│   └── transactionBadges.ts
-│
-├── hooks/
-│
-├── lib/
-│   ├── client.ts
-│   ├── auth-utils.ts
-│   ├── query-client.ts
-│   ├── query-keys.ts
-│   ├── date.ts
-│   ├── format.ts
-│   ├── navigation.ts
-│   ├── filtersToParams.ts
-│   ├── form-data.ts
-│   └── utils.ts
-│
-├── routes/
-│   ├── (auth)/
-│   └── (crm)/
-│       ├── dashboard/
-│       ├── users/
-│       ├── markets/
-│       ├── sellers/
-│       ├── products/
-│       ├── categories/
-│       ├── debtors/
-│       ├── transactions/
-│       ├── profile/
-│       ├── guide/
-│       ├── forbidden/
-│       └── notfound/
-│
-├── store/
-│
-├── types/
-│
-├── validations/
-│
-└── styles/
-    └── global.css
-
-public/
-└── locales/
-    ├── ru/
-    ├── en/
-    └── tg/
-
-capacitor.config.ts
-android/
-.github/
-├── workflows/
-│   └── android.yml
-Dockerfile
-package.json
-```
-
----
-
-# Commands
+## Команды
 
 | Command                  | Description                                     |
 | ------------------------ | ----------------------------------------------- |
-| `npm run dev`            | Запуск development server                       |
+| `npm run dev`            | Запуск development server (`:5173`)             |
 | `npm run dev:fresh`      | Очистка Vite cache и запуск                     |
 | `npm run build`          | Production build                                |
 | `npm run typecheck`      | React Router type generation + TypeScript check |
 | `npm run start`          | Production preview на порту `3000`              |
-| `npm run test:e2e`       | Playwright tests                                |
+| `npm run test:e2e`       | Playwright E2E tests                            |
 | `npx prettier --write .` | Форматирование и сортировка Tailwind classes    |
 
 ---
 
-# Development
+## Быстрый старт
 
 ```bash
-git clone <repository>
-cd trade-crm-frontend
-
-cp .env.example .env
-
+cp .env.example .env       # VITE_API_URL=http://localhost:4000
 npm install
-npm run dev
-```
-
-По умолчанию:
-
-```text
-http://localhost:5173
+npm run dev                # http://localhost:5173
 ```
 
 ---
 
-# Environment
-
-`.env`:
-
-```env
-VITE_API_URL=http://localhost:4000
-```
-
-API будет доступен как:
-
-```text
-http://localhost:4000/api
-```
-
-`VITE_API_URL` не должен заканчиваться `/`.
-
----
-
-# Docker
-
-Build:
+## Сборка Android APK (Capacitor 8)
 
 ```bash
-docker build -t trade-crm .
-```
-
-Run:
-
-```bash
-docker run -p 3000:3000 trade-crm
-```
-
-Production preview:
-
-```text
-http://localhost:3000
-```
-
----
-
-# Backend
-
-Frontend рассчитан на backend:
-
-```text
-NestJS
-Prisma
-PostgreSQL
-```
-
-API base:
-
-```text
-/api
-```
-
-Authentication:
-
-```text
-Bearer access token
-```
-
-Основные роли backend:
-
-```text
-ADMIN
-OWNER
-SELLER
-```
-
-Frontend должен рассматриваться как клиент backend API; бизнес-критичные проверки должны выполняться и на backend.
-
----
-
-# Development rules
-
-При добавлении новой feature обычно необходимо проверить:
-
-```text
-1. routes.ts
-2. ROUTE_PERMISSIONS
-3. Action / ACTION_PERMISSIONS
-4. API_ROUTE_ACTIONS
-5. navigation.ts
-6. API module
-7. types
-8. validation
-9. translations
-```
-
-Для новой entity следует придерживаться существующей структуры:
-
-```text
-app/routes/(crm)/<entity>/
-├── route.tsx
-├── store.ts
-├── configs/
-│   ├── columns.tsx
-│   └── filters.ts
-├── id/
-│   └── route.tsx
-├── create/
-│   └── route.tsx
-└── id/
-    └── edit/
-        └── route.tsx
-```
-
-Reusable components размещаются в:
-
-```text
-app/components/shared/
-```
-
-Modal components:
-
-```text
-app/components/modals/
-```
-
-Dashboard widgets:
-
-```text
-app/components/dashboard/
-```
-
----
-
-# Important conventions
-
-### Imports
-
-Используется alias:
-
-```text
-~/*
-```
-
-например:
-
-```ts
-import { cn } from '~/lib/utils';
-```
-
-Предпочтительно не использовать длинные relative imports вроде:
-
-```ts
-../../../../components
-```
-
----
-
-### UI
-
-Используйте существующие primitives из:
-
-```text
-app/components/ui/
-```
-
-и reusable components из:
-
-```text
-app/components/shared/
-```
-
-Для class merging:
-
-```ts
-cn(...)
-```
-
-из:
-
-```text
-~/lib/utils
-```
-
----
-
-### Permissions
-
-Не использовать:
-
-```ts
-user.role === 'Admin';
-```
-
-в UI-компонентах.
-
-Использовать:
-
-```ts
-can(Action.USERS_EDIT);
-```
-
-через:
-
-```text
-useCan()
-```
-
----
-
-### API
-
-Не использовать прямой:
-
-```ts
-axios.get(...)
-fetch(...)
-```
-
-Для запросов приложения использовать:
-
-```text
-apiClient
-```
-
-из:
-
-```text
-~/lib/client
-```
-
----
-
-# Quality gates
-
-Основные автоматические проверки:
-
-```bash
-npm run typecheck
+npm install
 npm run build
+npx cap add android
+npx cap sync android
+cd android && ./gradlew assembleDebug
 ```
 
-Для E2E:
-
-```bash
-npm run test:e2e
-```
-
-Lint-система в проекте не настроена.
+Готовый APK: `android/app/build/outputs/apk/debug/app-debug.apk`. Также сборка автоматизирована в `.github/workflows/android.yml`.
 
 ---
 
-## License
+## Документация для разработчиков
 
-Private project — использование и распространение регулируется владельцем проекта.
+Подробные архитектурные правила, конвенции кода и чеклисты для добавления новых фич описаны в [AGENTS.md](./AGENTS.md).

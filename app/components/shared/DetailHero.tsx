@@ -3,21 +3,13 @@ import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { Button } from '~/components/ui/button';
+import { METRIC_TONE_CLASS, type MetricTone } from '~/config/tones';
 import { cn } from '~/lib/utils';
-
-type Tone = 'default' | 'success' | 'warning' | 'danger';
-
-const TONE: Record<Tone, string> = {
-  default: '',
-  success: 'text-success',
-  warning: 'text-warning',
-  danger: 'text-destructive',
-};
 
 export interface HeroStat {
   label: string;
   value: ReactNode;
-  tone?: Tone;
+  tone?: MetricTone;
   /** Показатель — вход в список (число товаров → список товаров): ячейка становится ссылкой. */
   to?: string;
   state?: unknown;
@@ -38,7 +30,7 @@ interface DetailHeroProps {
   subtitle?: ReactNode;
   badges?: ReactNode;
   /** Главная цифра страницы: долг должника, сумма сделки. */
-  figure?: { label: string; value: ReactNode; tone?: Tone; caption?: ReactNode };
+  figure?: { label: string; value: ReactNode; tone?: MetricTone; caption?: ReactNode };
   /** 2–4 коротких показателя в ряд под шапкой. */
   stats?: HeroStat[];
   /** Главные действия — кнопки на всю ширину. */
@@ -85,7 +77,7 @@ export function DetailHero({ avatar, title, subtitle, badges, figure, stats, act
           <p
             className={cn(
               'mt-1 font-mono text-4xl leading-none font-bold tracking-tight tabular-nums',
-              TONE[figure.tone ?? 'default']
+              METRIC_TONE_CLASS[figure.tone ?? 'default']
             )}>
             {figure.value}
           </p>
@@ -108,7 +100,7 @@ export function DetailHero({ avatar, title, subtitle, badges, figure, stats, act
                 <dd
                   className={cn(
                     'mt-1 text-base leading-tight font-semibold break-words tabular-nums',
-                    TONE[stat.tone ?? 'default']
+                    METRIC_TONE_CLASS[stat.tone ?? 'default']
                   )}>
                   {stat.value}
                 </dd>

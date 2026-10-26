@@ -1,8 +1,9 @@
-import { Ban, CheckCircle2, ChevronRight, PackageMinus, PackageX, TrendingDown, TriangleAlert, Undo2 } from 'lucide-react';
+import { Ban, ChevronRight, PackageMinus, PackageX, TrendingDown, TriangleAlert, Undo2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { ROW_TONE, type RowTone } from '~/components/dashboard/rowTone';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
@@ -78,12 +79,10 @@ export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
       </div>
 
       {rows.length === 0 ? (
-        <div className="border-border flex items-center gap-3 border-t px-4 py-4">
-          <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
-            <CheckCircle2 className="size-5" />
-          </span>
-          <p className="text-base leading-snug font-semibold">{t('stockHealth.allHealthy')}</p>
-        </div>
+        <DashboardSuccessState
+          title={t('stockHealth.allHealthy')}
+          className="border-border border-t px-4 py-4"
+        />
       ) : (
         <div className="divide-border border-border divide-y border-t">
           {rows.map((row) => {

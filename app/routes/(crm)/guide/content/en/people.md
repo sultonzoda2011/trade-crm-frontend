@@ -1,98 +1,74 @@
 # Sellers and users
 
-These are two views of the accounts of the people who work in the system.
+Trade CRM provides two sections for managing staff and accounts:
 
-- **"Sellers"** — the staff of a market who record sales. They are managed by the administrator and the owner.
-- **"Users"** — all accounts with roles. This section is available only to the administrator.
-
-Underneath they are the same accounts, just shown from different angles.
+- **"Sellers"** (`/sellers`) — store employees who handle sales. Available to **Administrators** and **Market Owners**.
+- **"Users"** (`/users`) — the complete directory of all accounts across every role. Available only to **Administrators**.
 
 ## Sellers
 
-The seller list shows these columns:
+The **"Sellers"** table shows:
 
 | Column | What it shows |
 | --- | --- |
-| Name | The seller's name, avatar and email |
-| Email | The address they sign in with |
-| Market | Which market they work at |
+| **Name** | Seller's avatar, full name, and email |
+| **Email** | Sign-in address |
+| **Market** | The market the seller is assigned to |
 
-Next to each row are the actions: open the card, edit, delete.
+On a phone, swiping a seller row **to the left** reveals quick **"Edit"** and **"Delete"** buttons.
 
-### How to add a seller
+### How to add or edit a seller
 
-Press **"Create seller"** and fill in:
+Click **"Create seller"** (`/sellers/create`) and fill in:
 
-- **"Image"** — a photo of the staff member.
-- **"Full name"** `*` — the seller's name.
-- **"Email"** `*` — the address they will sign in with.
-- **"Password"** `*` — the first sign-in password.
+- **"Image"** — staff photo;
+- **"Full Name"** `*` — seller's name;
+- **"Email"** `*` — sign-in email address;
+- **"Password"** `*` — initial password (when editing an existing seller, the password field is optional: leave it blank to keep their current password, or type a new one to reset it).
 
-When editing a seller the password field is **optional**: leave it empty to keep the password, or enter a new one to reset it.
+### Markup balance and payout history
 
-### A seller's markups
+Whenever a seller adds a **"Markup"** (an extra amount above the base product price) on a transaction line, that markup accumulates in their personal balance. On the seller's detail page (`/sellers/:id`), the **"Markup Balance"** card tracks four figures:
 
-Open a seller's card — besides the basic details there is a **"Markup balance"** block. A markup is the amount a seller adds to the price on a sale (the "Markup" field in a deal). It accumulates as their earnings.
-
-| Figure | What it means |
+| Metric | What it means |
 | --- | --- |
-| Accrued | How much markup has been earned in total |
-| Reduced by refunds | How much was written off due to refunds |
-| Already paid out | How much has already been paid to the seller |
-| To pay out | How much is left to pay right now |
+| **Earned** | Total markup earned across all sales |
+| **Reversed by refunds** | Markup deducted when customers returned items (shown when refunds have occurred) |
+| **Already paid out** | Total amount paid out to the seller so far |
+| **Available** | Current unpaid balance ready to be paid out |
 
-### How to pay out a markup
+### How to pay out a seller's markup
 
-When there is something to pay (**"To pay out"** is above zero), a **"Pay out"** button appears on the card. It opens the **"Pay out a markup"** window:
+Whenever **"Available"** is greater than zero, a **"Pay out"** button appears in the seller's header:
 
-- **"Payment amount"** `*` — how much you are paying (no more than the amount to pay out).
-- **"Note"** — an optional remark.
+1. Click **"Pay out"** to open the **"Pay out markup"** modal (the app refreshes the seller's latest balance from the server automatically when the modal opens).
+2. Enter the **"Payment Amount"** `*` — you can pay out the entire available balance or just part of it (any remaining balance continues to accumulate).
+3. Optionally add a **"Note"** and confirm.
 
-After the payout the balance drops by the amount paid.
+Every payout is recorded in the **"Payout History"** list on the seller's page with its date, amount, and note.
 
-## Users
+> [!TIP]
+> To compare sellers by overall sales volume for today, the week, the month, or the year, open **"Dashboard" → "Sellers" tab**.
 
-The **"Users"** section is available only to the administrator. Here you can see all accounts and their roles.
+## Users (for administrators)
 
-| Column | What it shows |
-| --- | --- |
-| Name | The name and avatar |
-| Email | The address they sign in with |
-| Role | A colored role badge (see below) |
+The **"Users"** section (`/users`) gives administrators full control over accounts of every role:
 
-The **"Market"** column is hidden (turn it on with the "Columns" button). The lists can be filtered by role, market and owner.
-
-The role badges are colored differently so they're easy to tell apart:
-
-| Role | Color | What they can do |
+| Role | Badge color | Responsibility |
 | --- | --- | --- |
-| Administrator | Violet | Full access to everything |
-| Owner | Amber | Manages their own market |
-| Seller | Sky blue | Records sales at their market |
+| **Administrator** | Purple | System-wide management of markets, users, catalog, and analytics |
+| **Owner** | Amber | Full management of their own market, sellers, products, and sales |
+| **Seller** | Blue | Recording credit sales, managing debtors, and viewing their market's catalog |
 
-### How to add a user
-
-Press **"Create user"** and fill in:
-
-- **"Image"** — a photo.
-- **"Role"** `*` — Administrator, Owner or Seller.
-- **"Full name"** `*` — the person's name.
-- **"Email"** `*` — the sign-in address.
-- **"Password"** `*` — the first password. There is an eye icon next to it — tap it to show or hide the entered password.
-
-When editing a user the password is optional — leave the field empty to keep it unchanged.
-
-## About passwords and access
+You can filter the users list by role, market, or owner. To add an account, click **"Create user"** (`/users/create`), choose the **"Role"** `*`, and enter **"Full Name"** `*`, **"Email"** `*`, and **"Password"** `*` (use the eye icon in the password field to reveal or hide what you typed).
 
 > [!NOTE]
-> There is no separate "reset password" button and no "block/unblock" feature in the program. The password is set by the administrator (or by the owner, for a seller) at creation, and it can be changed by editing the account and entering a new password.
+> To prevent accidental lockouts, the **"Delete"** button is automatically hidden on your own account row in both the table and mobile swipe actions.
 
-## Who can do what
+## Access by role
 
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| View sellers | yes | yes | no |
-| Create and edit sellers | yes | yes | no |
-| Delete a seller | yes | yes | no |
-| Pay out a markup | yes | yes | no |
-| Work with the "Users" section | yes | no | no |
+| "Sellers" section (view, create, edit, delete) | Yes | Yes (own market) | No |
+| Pay out seller markup ("Pay out") & view payout history | Yes | Yes | No |
+| "Users" section (all roles) | Yes | No | No |

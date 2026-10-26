@@ -1,8 +1,9 @@
-import { CheckCircle2, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { ComparisonIndicator } from '~/components/dashboard/ComparisonIndicator';
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { Panel } from '~/components/layout/Panel';
 import { STOCK_ANALYSIS_DAYS } from '~/config/dashboard';
 import { fmtTJS } from '~/lib/format';
@@ -33,12 +34,7 @@ export function ReturnsPanel({ returns }: ReturnsPanelProps) {
     return (
       <Panel title={t('returnsCard.title')} bodyClassName="space-y-1">
         <p className="text-muted-foreground text-sm leading-snug">{t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
-        <div className="flex items-center gap-3 pt-2">
-          <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
-            <CheckCircle2 className="size-5" />
-          </span>
-          <p className="text-base leading-snug font-semibold">{t('returnsCard.none')}</p>
-        </div>
+        <DashboardSuccessState title={t('returnsCard.none')} className="pt-2" />
       </Panel>
     );
   }

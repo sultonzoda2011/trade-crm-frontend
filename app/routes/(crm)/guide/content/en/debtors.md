@@ -1,90 +1,95 @@
 # Debtors and payments
 
-A debtor is a person you gave goods to on credit. The **"Debtors"** section in the left-hand menu gathers all such people, their debts, and their payment history.
+A debtor is a customer who buys goods on credit. The **"Debtors"** section (`/debtors`) brings together every credit customer, their current balance, their repayment risk score, and their complete history of purchases and payments.
 
-> [!IMPORTANT]
-> A debt payment is **not recorded here** — it is recorded on the deal itself. To take money from a debtor, open their credit transaction and press **"Record payment"**. How to do that is explained below, in "How to take a payment".
+> [!TIP]
+> You can accept a payment or issue a new credit sale **directly from the debtor's profile** or **by swiping their row in the list** — there is no need to hunt through the transactions list manually.
 
-## What a debtor card is
+## Debtors list, filters, and mobile swipes
 
-When you sell goods on credit (see "Sales and transactions"), you specify who received them. That person is the debtor. Their card automatically gathers every debt and shows the **total amount**, how much has already been collected, whether anything is overdue, and how risky it is to keep extending them credit.
-
-All amounts are calculated by the program from the debtor's deals — there is no need to enter a debt by hand.
-
-## The debtor list
-
-The list shows these columns:
+The debtors table displays:
 
 | Column | What it shows |
 | --- | --- |
-| Name | The debtor's name, avatar and phone |
-| Total debt | How much the person owes in total |
-| Market | Which market the debtor belongs to |
+| **Name** | Debtor's name, avatar, and phone number |
+| **Total debt amount** | How much they owe right now (or "No debt") |
+| **Market** | Which market the debtor belongs to |
 
-Hidden columns (turned on with the **"Columns"** button): **"Transactions"** (how many deals they have), **"Created"** and **"Updated"**.
+Use the **"Columns"** button to toggle optional columns: **"Transactions"** (deal count), **"Created at"**, and **"Updated at"**.
 
-Above the list there is search by name and phone, filters, and sorting — for example, you can show those with the largest debt first.
+### Search, sorting, and filters
 
-### Actions in the list
+Above the list you can search by name or phone number, and open **"Filters"** to narrow down debtors by:
+- **"Has active debts"** toggle;
+- **"Has overdue debts"** toggle;
+- **"Repayment risk"** level (`High risk`, `Medium risk`, `Low risk`);
+- total debt amount range (min/max) and creation date range;
+- sorting by creation date or alphabetically by name.
 
-The **"Create debtor"** button adds a new person. Next to each row: **"View"** (open the card), **"Edit"** and **"Delete"**.
+### Swipe actions on mobile
+
+Swipe any debtor row **to the left** (or long-press for half a second) to reveal quick actions:
+- **"Repay debt"** (green button) — opens the payment modal for their active debt (available to Administrators and Owners when the debtor has an unpaid debt);
+- **"Edit"** (blue button) — update their name or phone number;
+- **"Delete"** (red button with confirmation — for Administrators and Owners).
 
 ## How to add a debtor
 
-Press **"Create debtor"**. The form is very simple — just two fields:
+You can create a debtor in two places:
+1. Click **"Create debtor"** in the **"Debtors"** section.
+2. Tap **"New debtor"** right inside the debtor selection sheet while recording a new credit transaction (`/transactions/create`).
 
-- **"Full name"** `*` — the person's name.
-- **"Phone"** `*` — a contact number.
-
-Both fields are required. Press save and the debtor appears in the list.
+The form has just two required fields (`*`):
+- **"Full name"** `*` — the customer's name;
+- **"Phone"** `*` — their contact phone number.
 
 > [!NOTE]
-> You don't enter a debt amount when creating a debtor. The debt appears and grows on its own when you record a credit sale to this person, and shrinks when they pay.
+> You don't enter a debt amount when creating a debtor: their balance is calculated automatically from credit transactions and payments. When offline, a newly created debtor appears immediately with a **"Queued"** badge and can be **selected in a new credit sale right away**.
 
-## The debtor card
+## Debtor profile page
 
-Open a debtor to see the full picture.
+Opening a debtor (`/debtors/:id`) gives you their complete credit profile:
 
-At the top are the name, phone and a large **"Current debt"** line. If the debt is above zero, it is highlighted in a warning color.
+- **Profile header:** name, phone number, headline **"Current debt"** (along with **"Overdue"** amount and **"Longest overdue"** in days), and action buttons:
+  - **"Accept payment"** — collect money toward an open debt right from the profile;
+  - **"Give on credit"** — jump straight to the new transaction form with this debtor and credit mode pre-filled;
+  - **"Edit"** and **"Delete"**.
+- **Repayment and activity metrics:**
 
-Below is a panel of figures the program calculates itself:
-
-| Figure | What it means |
+| Metric | What it means |
 | --- | --- |
-| Active debts | How many credit deals are still open |
-| Overdue | The amount that should already have been repaid |
-| Overdue debts | How many deals are past their due date |
-| Total issued | How much credit was given over all time |
-| Collected in payments | How much has been received back |
-| Repayment ratio | What share of debt is repaid on average |
-| Longest overdue | The longest payment delay (in days) |
-| Days without payment | Days since the last payment |
-| Last payment | The date of the last payment |
-| Next due date | The nearest date a payment is expected |
+| **Active debts** | Number of currently unpaid credit transactions |
+| **Next due date** | Nearest upcoming payment deadline |
+| **Last payment** | Date of the debtor's most recent payment |
+| **Last purchase** | Date of the most recent transaction with this customer |
+| **Total lent** | Total value of goods given on credit over all time |
+| **Total collected** | Total amount paid back so far |
+| **Repayment rate** | Percentage of total credit that has been paid back |
 
-Next to that is a **risk badge**: **High risk**, **Medium risk** or **Low risk**. It is a hint about how carefully you should keep extending this person credit. Below the badge is a **"Why this risk"** block — the program lists the reasons (for example, a large overdue amount or a low repayment ratio).
+### Repayment risk assessment
 
-The card also contains the debtor's deal history. Use it to jump to the deal you need in order to take a payment.
+Trade CRM automatically evaluates each debtor's payment discipline and assigns a badge — **"Low risk"** (green), **"Medium risk"** (amber), or **"High risk"** (red) — along with a numerical **"Risk score: X of 13"**.
 
-## How to take a payment
+Under **"Why this risk"**, the card lists the exact reasons behind the rating in plain language (such as long overdue days, multiple open debts, or low repayment rate).
 
-This is the most important part. A payment is always recorded **on a transaction**, not directly on the debtor card.
+## How to accept a payment from a debtor
 
-1. Open the debtor card and find the deal in their history (or open the **"Transactions"** section and find it there).
-2. Open that credit transaction.
-3. Press **"Record payment"**.
-4. Enter the amount (the whole balance is filled in by default), add a note if you like, and confirm.
+You can collect a debt payment straight from the debtor's profile (**"Accept payment"**), from the debtors list/swipe (**"Repay debt"**), or from an individual transaction page:
 
-After that the total debt and all the figures on the debtor card recalculate on their own.
+1. Tap **"Accept payment"** on the debtor's profile:
+   - if the debtor has **one active debt**, the payment modal opens immediately;
+   - if the debtor has **multiple active debts**, the **"Which debt to pay?"** bottom sheet opens, showing each unpaid transaction with its items, date, and remaining balance — tap the one you want to pay.
+2. In the payment modal, tap **"Full remaining"** or **"Half"**, or enter a custom amount and optional **"Note"**.
+3. Confirm with **"Make Payment · [Amount] TJS"**.
 
-> [!IMPORTANT]
-> Only the administrator and the owner can record a payment. A seller can see debtors and can create and edit them, but does not process payments.
+The debtor's total debt, transaction balance, and risk indicators update automatically (including when working offline).
 
-## Who can do what
+## Access by role
 
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
-| View debtors | yes | yes | yes |
-| Create and edit | yes | yes | yes |
-| Delete a debtor | yes | yes | no |
-| Take a payment (on a transaction) | yes | yes | no |
+| View debtors list and profiles | Yes | Yes | Yes |
+| Create and edit debtors | Yes | Yes | Yes |
+| "Give on credit" (record a new credit transaction) | Yes | Yes | Yes |
+| Accept payment ("Accept payment" / "Repay debt") | Yes | Yes | No |
+| Delete a debtor | Yes | Yes | No |

@@ -22,10 +22,6 @@ export function getSentAt(idempotencyKey: string): number | undefined {
   return sentAt.get(idempotencyKey);
 }
 
-export function forgetSent(idempotencyKey: string): void {
-  sentAt.delete(idempotencyKey);
-}
-
 export function clearSent(): void {
   sentAt.clear();
 }

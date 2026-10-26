@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
 import { getProductHealthOptions, getReorderPriorityOptions } from '~/config/analyticsBadges';
 import { PERIOD_OPTIONS } from '~/config/period';
+import { createDateRangeFilter, createSortByFilter, createSortOrderFilter } from '~/lib/filter-helpers';
 import type { FilterConfig } from '~/types/filters';
 
 export const getProductFilters = (
@@ -65,43 +66,23 @@ export const getProductFilters = (
       placeholderFrom: t('filters.min'),
       placeholderTo: t('filters.max'),
     },
-    {
-      type: 'date-range',
-      keyFrom: 'dateFrom',
-      keyTo: 'dateTo',
-      label: t('filters.dateRange'),
-    },
-    {
-      type: 'select',
-      key: 'sortBy',
-      label: t('filters.sortBy'),
-      placeholder: t('filters.sortBy'),
-      options: [
-        { value: 'createdAt', label: t('filters.createdAt') },
-        { value: 'name', label: t('filters.name') },
-        { value: 'price', label: t('filters.price') },
-        // Вычисляемые поля — разрешены бэкендом (ANALYTICS_SORT_FIELDS),
-        // по ним запрос уходит на аналитический путь с in-memory сортировкой.
-        { value: 'reorderPriority', label: t('filters.reorderPriority') },
-        { value: 'daysOfStockRemaining', label: t('metrics.daysOfStock') },
-        { value: 'avgDailySales', label: t('metrics.avgDailySales') },
-        { value: 'netUnitsSold', label: t('metrics.netUnitsSold') },
-        { value: 'unitsSold', label: t('metrics.unitsSold') },
-        { value: 'revenue', label: t('metrics.revenue') },
-        { value: 'returnRate', label: t('metrics.returnRate') },
-        { value: 'recommendedQuantity', label: t('metrics.recommendedQuantity') },
-      ],
-    },
-    {
-      type: 'select',
-      key: 'sortOrder',
-      label: t('filters.sortOrder'),
-      placeholder: t('filters.sortOrder'),
-      options: [
-        { value: 'asc', label: t('filters.asc') },
-        { value: 'desc', label: t('filters.desc') },
-      ],
-    }
+    createDateRangeFilter(t),
+    createSortByFilter(t, [
+      { value: 'createdAt', label: t('filters.createdAt') },
+      { value: 'name', label: t('filters.name') },
+      { value: 'price', label: t('filters.price') },
+      // Вычисляемые поля — разрешены бэкендом (ANALYTICS_SORT_FIELDS),
+      // по ним запрос уходит на аналитический путь с in-memory сортировкой.
+      { value: 'reorderPriority', label: t('filters.reorderPriority') },
+      { value: 'daysOfStockRemaining', label: t('metrics.daysOfStock') },
+      { value: 'avgDailySales', label: t('metrics.avgDailySales') },
+      { value: 'netUnitsSold', label: t('metrics.netUnitsSold') },
+      { value: 'unitsSold', label: t('metrics.unitsSold') },
+      { value: 'revenue', label: t('metrics.revenue') },
+      { value: 'returnRate', label: t('metrics.returnRate') },
+      { value: 'recommendedQuantity', label: t('metrics.recommendedQuantity') },
+    ]),
+    createSortOrderFilter(t)
   );
 
   return config;

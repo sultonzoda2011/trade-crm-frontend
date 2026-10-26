@@ -2,7 +2,6 @@ import {
   deleteRequest,
   detailRequest,
   idempotencyConfig,
-  jsonWrites,
   listRequest,
   nestedDetailRequest,
 } from '~/api/crud';
@@ -21,7 +20,11 @@ export const debtorsApi = {
   getById: detailRequest<DebtorDetailResponse>(BASE),
   getFull: nestedDetailRequest<DebtorFullResponse>(BASE),
   delete: deleteRequest(BASE),
-  ...jsonWrites<DebtorRequest>(BASE),
+
+  update: async ({ request, id }: { request: DebtorRequest; id: string }) => {
+    const { data } = await apiClient.patch(`${BASE}/${id}`, request);
+    return data;
+  },
 
   // create получает второй, необязательный `idempotencyKey`: должника можно завести без
   // связи (очередь, см. app/lib/offline-mutations.ts), и повторная отправка после обрыва

@@ -92,13 +92,6 @@ export interface CreateTransactionRequest {
   dueDate?: string;
   items: CreateTransactionItemRequest[];
 }
-export interface UpdateTransactionRequest {
-  debtorId?: string;
-  customerName?: string;
-  type?: TransactionType;
-  paymentType?: PaymentType;
-  dueDate?: string;
-}
 export interface CreatePaymentRequest {
   amount: number;
   note: string;

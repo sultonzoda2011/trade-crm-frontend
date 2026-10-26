@@ -1,44 +1,24 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
-import { useCan } from '~/hooks/useCan';
 import { formatDate } from '~/lib/format';
 import { useMarketsModals } from '~/routes/(crm)/markets/store';
 import type { Market } from '~/types/markets';
 
 function MarketActionsCell({ row, t }: { row: Market; t: TFunction }) {
   const deleteModal = useMarketsModals((s) => s.delete);
-  const location = useLocation();
-  const { can } = useCan();
-
   return (
-    <RowActionsCell>
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={<Link to={`/markets/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.MARKETS_EDIT) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={<Link to={`/markets/${row.id}/edit`} />}
-        />
-      )}
-      {can(Action.MARKETS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/markets"
+      t={t}
+      editAction={Action.MARKETS_EDIT}
+      deleteAction={Action.MARKETS_DELETE}
+      onDelete={deleteModal.open}
+    />
   );
 }
 

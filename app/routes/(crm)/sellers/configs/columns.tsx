@@ -1,52 +1,30 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Action } from '~/config/actions';
-import { useCan } from '~/hooks/useCan';
 import { getClientUser } from '~/lib/auth-utils';
-import type { Seller } from '~/types/sellers';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
+import type { Seller } from '~/types/sellers';
 
 function SellerActionsCell({ row, t }: { row: Seller; t: TFunction }) {
   const deleteModal = useSellersModals((s) => s.delete);
-  const location = useLocation();
-  const { can } = useCan();
   // Owner-продавец может встретить самого себя в списке продавцов (бэкенд
   // включает владельца в выдачу). Открывать чужую страницу /sellers/:id для
   // самого себя не нужно — ведём на собственный /profile.
   const isSelf = getClientUser()?.id === row.id;
 
   return (
-    <RowActionsCell>
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={
-          <Link
-            to={isSelf ? '/profile' : `/sellers/${row.id}`}
-            state={isSelf ? undefined : { fromPath: location.pathname, fromName: t('title') }}
-          />
-        }
-      />
-      {can(Action.SELLERS_EDIT) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={<Link to={`/sellers/${row.id}/edit`} />}
-        />
-      )}
-      {can(Action.SELLERS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/sellers"
+      t={t}
+      viewTo={isSelf ? '/profile' : undefined}
+      omitViewState={isSelf}
+      editAction={Action.SELLERS_EDIT}
+      deleteAction={Action.SELLERS_DELETE}
+      onDelete={deleteModal.open}
+    />
   );
 }
 

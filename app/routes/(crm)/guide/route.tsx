@@ -1,4 +1,4 @@
-import { PanelsTopLeft, Search, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PanelsTopLeft, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
@@ -72,7 +72,10 @@ export default function GuidePage() {
     const counts: Record<string, number> = {};
     if (!searching) return counts;
     for (const s of sections) {
-      counts[s.id] = countOccurrences(s.plain, query) + countOccurrences(s.title.toLowerCase(), query);
+      counts[s.id] =
+        countOccurrences(s.plain, query) +
+        countOccurrences(s.title.toLowerCase(), query) +
+        countOccurrences(s.summary.toLowerCase(), query);
     }
     return counts;
   }, [sections, query, searching]);
@@ -94,7 +97,11 @@ export default function GuidePage() {
     return matching[0] ?? fallback;
   }, [sections, searching, matchCounts, sectionParam]);
 
-  const active = sections.find((s) => s.id === activeId);
+  const activeIndex = sections.findIndex((s) => s.id === activeId);
+  const active = activeIndex >= 0 ? sections[activeIndex] : undefined;
+  const prevSection = activeIndex > 0 ? sections[activeIndex - 1] : undefined;
+  const nextSection =
+    activeIndex >= 0 && activeIndex < sections.length - 1 ? sections[activeIndex + 1] : undefined;
 
   const selectSection = (id: string) => {
     setParams(
@@ -106,6 +113,9 @@ export default function GuidePage() {
       { replace: true }
     );
     setMobileTocOpen(false);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const calloutLabels: Partial<Record<CalloutType, string>> = {
@@ -223,6 +233,44 @@ export default function GuidePage() {
           ) : active ? (
             <article className="max-w-3xl">
               <Markdown source={active.body} highlight={query} calloutLabels={calloutLabels} />
+
+              {(prevSection || nextSection) && (
+                <nav
+                  aria-label={t('tocTitle')}
+                  className="border-border/60 mt-10 grid gap-3 border-t pt-6 sm:grid-cols-2">
+                  {prevSection ? (
+                    <button
+                      type="button"
+                      onClick={() => selectSection(prevSection.id)}
+                      className="border-border/60 hover:bg-muted/60 flex items-start gap-3 rounded-xl border p-3.5 text-left transition-colors">
+                      <ChevronLeft className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-foreground text-sm font-medium">{prevSection.title}</p>
+                        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+                          {prevSection.summary}
+                        </p>
+                      </div>
+                    </button>
+                  ) : (
+                    <div className="hidden sm:block" />
+                  )}
+
+                  {nextSection && (
+                    <button
+                      type="button"
+                      onClick={() => selectSection(nextSection.id)}
+                      className="border-border/60 hover:bg-muted/60 flex items-start justify-between gap-3 rounded-xl border p-3.5 text-left transition-colors sm:text-right">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-foreground text-sm font-medium">{nextSection.title}</p>
+                        <p className="text-muted-foreground mt-0.5 line-clamp-2 text-xs">
+                          {nextSection.summary}
+                        </p>
+                      </div>
+                      <ChevronRight className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+                    </button>
+                  )}
+                </nav>
+              )}
             </article>
           ) : (
             <EmptyState message={t('emptyDescription')} className="py-20" />

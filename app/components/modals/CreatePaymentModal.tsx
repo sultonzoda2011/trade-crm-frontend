@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '~/components/shared/Modal';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { TransactionProducts, getTransactionTitle } from '~/components/transactions/TransactionProducts';
-import { Button } from '~/components/ui/button';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useDetachedMutation } from '~/hooks/useDetachedMutation';
@@ -75,14 +75,13 @@ export function CreatePaymentModal() {
       onClose={payModal.close}
       title={t('pay')}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={payModal.close}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button type="submit" form="create-payment-form" loading={isPending} disabled={amount <= 0}>
-            {t('pay')} · {fmtTJS(amount)}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="create-payment-form"
+          onCancel={payModal.close}
+          submitLabel={`${t('pay')} · ${fmtTJS(amount)}`}
+          isLoading={isPending}
+          disabled={amount <= 0}
+        />
       }>
       <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
         <div className="flex items-center gap-2.5">

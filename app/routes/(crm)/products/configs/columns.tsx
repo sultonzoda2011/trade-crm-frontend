@@ -1,47 +1,26 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { UserAvatar } from '~/components/shared/UserAvatar';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
 import { PRODUCT_HEALTH_BADGE, REORDER_PRIORITY_BADGE } from '~/config/analyticsBadges';
-import { useCan } from '~/hooks/useCan';
-import { formatDate, fmtTJS } from '~/lib/format';
-import type { Product } from '~/types/products';
+import { fmtTJS, formatDate } from '~/lib/format';
 import { useProductsModals } from '~/routes/(crm)/products/store';
+import type { Product } from '~/types/products';
 
 function ProductActionsCell({ row, t }: { row: Product; t: TFunction }) {
   const deleteModal = useProductsModals((s) => s.delete);
-  const location = useLocation();
-  const { can } = useCan();
-
   return (
-    <RowActionsCell>
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view')}
-        render={<Link to={`/products/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.PRODUCTS_EDIT) && (
-        <IconActionButton
-          icon={<Pencil className="size-4" />}
-          label={t('actions.edit')}
-          render={
-            <Link to={`/products/${row.id}/edit`} state={{ fromPath: location.pathname, fromName: t('title') }} />
-          }
-        />
-      )}
-      {can(Action.PRODUCTS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete')}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/products"
+      t={t}
+      editAction={Action.PRODUCTS_EDIT}
+      deleteAction={Action.PRODUCTS_DELETE}
+      passEditState
+      onDelete={deleteModal.open}
+    />
   );
 }
 
@@ -109,7 +88,7 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Product, any>[] =
         );
       },
     }),
-    
+
     columnHelper.accessor((row) => row.metrics?.daysOfStockRemaining, {
       id: 'metrics.daysOfStockRemaining',
       header: t('metrics.daysOfStock'),

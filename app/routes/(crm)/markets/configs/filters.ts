@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { createDateRangeFilter, createSortByFilter, createSortOrderFilter } from '~/lib/filter-helpers';
 import type { FilterConfig } from '~/types/filters';
 
 export const getMarketFilters = (t: TFunction, ownerOptions?: { value: unknown; label: string }[]): FilterConfig[] => {
@@ -25,32 +26,12 @@ export const getMarketFilters = (t: TFunction, ownerOptions?: { value: unknown; 
       key: 'hasProducts',
       label: t('hasProducts'),
     },
-    {
-      type: 'date-range',
-      keyFrom: 'dateFrom',
-      keyTo: 'dateTo',
-      label: t('filters.dateRange'),
-    },
-    {
-      type: 'select',
-      key: 'sortBy',
-      label: t('filters.sortBy'),
-      placeholder: t('filters.sortBy'),
-      options: [
-        { value: 'createdAt', label: t('filters.createdAt') },
-        { value: 'name', label: t('filters.name') },
-      ],
-    },
-    {
-      type: 'select',
-      key: 'sortOrder',
-      label: t('filters.sortOrder'),
-      placeholder: t('filters.sortOrder'),
-      options: [
-        { value: 'asc', label: t('filters.asc') },
-        { value: 'desc', label: t('filters.desc') },
-      ],
-    }
+    createDateRangeFilter(t),
+    createSortByFilter(t, [
+      { value: 'createdAt', label: t('filters.createdAt') },
+      { value: 'name', label: t('filters.name') },
+    ]),
+    createSortOrderFilter(t)
   );
 
   return config;

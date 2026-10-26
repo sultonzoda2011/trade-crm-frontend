@@ -5,6 +5,7 @@ import type { CustomSelectOption, CustomSelectProps } from '~/components/shared/
 import { PickerSheet } from '~/components/shared/PickerSheet';
 import { Label } from '~/components/ui/label';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
+import { useOptionLabelCache } from '~/hooks/useOptionLabelCache';
 import { cn } from '~/lib/utils';
 
 export interface PickerFieldProps extends CustomSelectProps {
@@ -51,12 +52,8 @@ export function PickerField(props: PickerFieldProps) {
   const [localQuery, setLocalQuery] = React.useState('');
   const isAsync = typeof onSearch === 'function';
 
-  // Подписи, которые уже видели: выбранное значение может выпасть из `options`, когда поиск сузил выдачу.
-  const labelCache = React.useRef<Map<string, CustomSelectOption>>(new Map());
-  for (const opt of options) labelCache.current.set(String(opt.value), opt);
-
   const hasValue = value !== null && value !== undefined && value !== '';
-  const selected = hasValue ? labelCache.current.get(String(value)) : undefined;
+  const selected = useOptionLabelCache(options, value);
   const searchable = isAsync || options.length >= SEARCH_FROM;
 
   const visible = React.useMemo(() => {

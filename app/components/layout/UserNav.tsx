@@ -1,5 +1,3 @@
-import Cookies from 'js-cookie';
-
 import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, CloudDownload, Languages, LogOut, Moon, Sun, User } from 'lucide-react';
 import { useState } from 'react';
@@ -23,47 +21,26 @@ import {
 
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCurrentUser } from '~/hooks/useCurrentUser';
+import { useLanguageCycle } from '~/hooks/useLanguageCycle';
 import { useOfflineQueue } from '~/hooks/useOfflineQueue';
 import { clearSession } from '~/lib/auth-utils';
 import { wipeOfflineData } from '~/lib/offline-session';
-
-const LANGUAGES = [
-  { value: 'ru', label: 'Русский', shortLabel: 'РУ' },
-  { value: 'en', label: 'English', shortLabel: 'EN' },
-  { value: 'tg', label: 'Тоҷикӣ', shortLabel: 'ТҶ' },
-];
 
 export function UserNav() {
   const navigate = useNavigate();
 
   const { t } = useTranslation('auth');
-  const { t: tc, i18n } = useTranslation('common');
+  const { t: tc } = useTranslation('common');
   const { t: ts } = useTranslation('sync');
   const queryClient = useQueryClient();
   const { total: queued } = useOfflineQueue();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const { theme, setTheme, systemTheme } = useTheme();
-
+  const { currentLanguage, cycleLanguage } = useLanguageCycle();
   const userInfo = useCurrentUser();
 
   const currentTheme = theme === 'system' ? systemTheme : theme;
-
-  const currentLng = i18n.language?.split('-')[0] ?? 'ru';
-
-  const currentLanguageIndex = LANGUAGES.findIndex((lng) => lng.value === currentLng);
-
-  const currentLanguage = LANGUAGES[currentLanguageIndex] ?? LANGUAGES[0];
-
-  const changeLanguage = () => {
-    const nextLanguage = LANGUAGES[(currentLanguageIndex + 1) % LANGUAGES.length];
-
-    Cookies.set('lng', nextLanguage.value, {
-      expires: 365,
-    });
-
-    void i18n.changeLanguage(nextLanguage.value);
-  };
 
   // Выход стирает офлайн-кеш и очередь (данные бизнеса не должны достаться следующему
   // человеку на этом телефоне). Неотправленные операции при этом пропали бы молча —
@@ -177,7 +154,7 @@ export function UserNav() {
             {/* Language */}
             <DropdownMenuItem
               closeOnClick={false}
-              onClick={changeLanguage}
+              onClick={cycleLanguage}
               className="focus:bg-primary/5 cursor-pointer rounded-xl px-3 py-2.5">
               <Languages className="text-muted-foreground mr-2 size-4" />
 

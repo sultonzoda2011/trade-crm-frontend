@@ -1,8 +1,9 @@
-import { AlertCircle, AlertTriangle, ChevronRight, CheckCircle2, Info } from 'lucide-react';
+import { AlertCircle, AlertTriangle, CheckCircle2, ChevronRight, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
 import { INSIGHT_SEVERITY_BADGE } from '~/config/analyticsBadges';
@@ -83,11 +84,8 @@ export function AttentionList({ insights, scope }: AttentionListProps) {
 
   if (insights.length === 0) {
     return (
-      <Panel title={t('attention.title')} bodyClassName="flex items-center gap-3 p-4">
-        <span className="bg-success/10 text-success flex size-8 shrink-0 items-center justify-center rounded-full">
-          <CheckCircle2 className="size-4" />
-        </span>
-        <p className="text-base leading-snug">{t('attention.allClear')}</p>
+      <Panel title={t('attention.title')} bodyClassName="p-4">
+        <DashboardSuccessState title={t('attention.allClear')} size="sm" />
       </Panel>
     );
   }

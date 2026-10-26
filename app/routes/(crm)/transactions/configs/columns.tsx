@@ -1,10 +1,11 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { CreditCard, Eye, Trash2 } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { CreditCard } from 'lucide-react';
+import { Link } from 'react-router';
+import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
 import { PendingRowActions } from '~/components/shared/PendingRowActions';
-import { IconActionButton, RowActionsCell } from '~/components/shared/RowActionsCell';
+import { IconActionButton } from '~/components/shared/RowActionsCell';
 import { TransactionProducts } from '~/components/transactions/TransactionProducts';
 import { Badge } from '~/components/ui/badge';
 import { Action } from '~/config/actions';
@@ -19,37 +20,30 @@ import type { TransactionStatus, TransactionType } from '~/types/transactions';
 function TransactionActionsCell({ row, t }: { row: TransactionRow; t: TFunction }) {
   const deleteModal = useTransactionsModals((s) => s.delete);
   const payModal = useTransactionsModals((s) => s.pay);
-  const location = useLocation();
   const { can } = useCan();
 
   // Продажи ещё нет на сервере: открыть, оплатить или удалить её нельзя — только повторить или убрать из очереди.
   if (row.pending) return <PendingRowActions pending={row.pending} />;
 
   return (
-    <RowActionsCell>
-      {can(Action.TRANSACTIONS_EDIT) && (
-        <IconActionButton
-          icon={<CreditCard className="size-3.5" />}
-          label={t('pay')}
-          outline
-          disabled={row.remainingAmount <= 0}
-          onClick={() => payModal.open(row)}
-        />
-      )}
-      <IconActionButton
-        icon={<Eye className="size-4" />}
-        label={t('actions.view', { ns: 'common' })}
-        render={<Link to={`/transactions/${row.id}`} state={{ fromPath: location.pathname, fromName: t('title') }} />}
-      />
-      {can(Action.TRANSACTIONS_DELETE) && (
-        <IconActionButton
-          icon={<Trash2 className="size-4" />}
-          label={t('actions.delete', { ns: 'common' })}
-          danger
-          onClick={() => deleteModal.open(row.id)}
-        />
-      )}
-    </RowActionsCell>
+    <EntityActionsCell
+      id={row.id}
+      basePath="/transactions"
+      t={t}
+      deleteAction={Action.TRANSACTIONS_DELETE}
+      onDelete={deleteModal.open}
+      leadingActions={
+        can(Action.TRANSACTIONS_EDIT) ? (
+          <IconActionButton
+            icon={<CreditCard className="size-3.5" />}
+            label={t('pay')}
+            outline
+            disabled={row.remainingAmount <= 0}
+            onClick={() => payModal.open(row)}
+          />
+        ) : null
+      }
+    />
   );
 }
 

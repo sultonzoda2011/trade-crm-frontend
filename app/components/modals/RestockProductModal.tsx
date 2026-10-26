@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { productsApi } from '~/api/products';
 import { Modal } from '~/components/shared/Modal';
-import { Button } from '~/components/ui/button';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
@@ -72,15 +72,13 @@ export function RestockProductModal() {
       onClose={restockModal.close}
       title={t('restock.title', { name: product.name })}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={restockModal.close}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button type="submit" form="restock-product-form" loading={isPending} disabled={added <= 0}>
-            {t('restock.submit')}
-            {added > 0 ? ` · +${fmtNum(added)} ${unit}` : ''}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="restock-product-form"
+          onCancel={restockModal.close}
+          submitLabel={`${t('restock.submit')}${added > 0 ? ` · +${fmtNum(added)} ${unit}` : ''}`}
+          isLoading={isPending}
+          disabled={added <= 0}
+        />
       }>
       <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
         <div className="flex justify-between">

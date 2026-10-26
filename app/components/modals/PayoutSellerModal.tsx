@@ -2,16 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { showSuccess } from '~/store/useSuccessStore';
 import { sellersApi } from '~/api/sellers';
 import { Modal } from '~/components/shared/Modal';
-import { Button } from '~/components/ui/button';
+import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtTJS } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
+import { showSuccess } from '~/store/useSuccessStore';
 import { createSellerCreditSchema, type CreateSellerCreditSchema } from '~/validations/seller';
 
 /**
@@ -60,10 +60,6 @@ export function PayoutSellerModal() {
     },
   });
 
-  function onSubmit(data: CreateSellerCreditSchema) {
-    mutate(data);
-  }
-
   if (!seller) return null;
 
   return (
@@ -72,14 +68,13 @@ export function PayoutSellerModal() {
       onClose={payoutModal.close}
       title={t('sellers:payoutModalTitle')}
       footer={
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" onClick={payoutModal.close}>
-            {t('actions.cancel', { ns: 'common' })}
-          </Button>
-          <Button type="submit" form="payout-seller-form" loading={isPending} disabled={balance <= 0}>
-            {t('sellers:payout')}
-          </Button>
-        </div>
+        <ModalFooterActions
+          formId="payout-seller-form"
+          onCancel={payoutModal.close}
+          submitLabel={t('sellers:payout')}
+          isLoading={isPending}
+          disabled={balance <= 0}
+        />
       }>
       <div className="bg-muted/50 mb-4 space-y-1 rounded-xl p-3 text-sm">
         <div className="flex justify-between">
@@ -91,7 +86,7 @@ export function PayoutSellerModal() {
         </div>
       </div>
 
-      <form id="payout-seller-form" onSubmit={handleSubmit(onSubmit)}>
+      <form id="payout-seller-form" onSubmit={handleSubmit((data) => mutate(data))}>
         <FormInput
           control={control}
           name="amount"

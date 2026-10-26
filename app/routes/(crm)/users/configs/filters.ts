@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { getRoleFilterOptions } from '~/config/enumOptions';
+import { createDateRangeFilter, createSortByFilter, createSortOrderFilter } from '~/lib/filter-helpers';
 import type { FilterConfig } from '~/types/filters';
 
 export const getUserFilters = (t: TFunction, marketOptions?: { value: unknown; label: string }[]): FilterConfig[] => {
@@ -29,34 +30,14 @@ export const getUserFilters = (t: TFunction, marketOptions?: { value: unknown; l
       key: 'isOwner',
       label: t('isOwner'),
     },
-    {
-      type: 'date-range',
-      keyFrom: 'dateFrom',
-      keyTo: 'dateTo',
-      label: t('filters.dateRange'),
-    },
-    {
-      type: 'select',
-      key: 'sortBy',
-      label: t('filters.sortBy'),
-      placeholder: t('filters.sortBy'),
-      options: [
-        { value: 'createdAt', label: t('filters.createdAt') },
-        { value: 'name', label: t('filters.name') },
-        { value: 'email', label: t('filters.email') },
-        { value: 'role', label: t('filters.role') },
-      ],
-    },
-    {
-      type: 'select',
-      key: 'sortOrder',
-      label: t('filters.sortOrder'),
-      placeholder: t('filters.sortOrder'),
-      options: [
-        { value: 'asc', label: t('filters.asc') },
-        { value: 'desc', label: t('filters.desc') },
-      ],
-    }
+    createDateRangeFilter(t),
+    createSortByFilter(t, [
+      { value: 'createdAt', label: t('filters.createdAt') },
+      { value: 'name', label: t('filters.name') },
+      { value: 'email', label: t('filters.email') },
+      { value: 'role', label: t('filters.role') },
+    ]),
+    createSortOrderFilter(t)
   );
 
   return config;

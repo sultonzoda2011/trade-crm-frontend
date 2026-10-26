@@ -1,8 +1,9 @@
-import { AlertCircle, CheckCircle2, ChevronRight, Clock, Hourglass } from 'lucide-react';
+import { AlertCircle, ChevronRight, Clock, Hourglass } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { ROW_TONE, type RowTone } from '~/components/dashboard/rowTone';
 import { Panel } from '~/components/layout/Panel';
 import { Button } from '~/components/ui/button';
@@ -75,14 +76,8 @@ export function DebtsCard({ debts, scope, dueSoonDays }: DebtsCardProps) {
 
   if (debts.totalOutstanding <= 0) {
     return (
-      <Panel title={t('debtsCard.title')} bodyClassName="flex items-center gap-3 p-4">
-        <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
-          <CheckCircle2 className="size-5" />
-        </span>
-        <div className="min-w-0">
-          <p className="text-base leading-snug font-semibold">{t('debtsCard.none')}</p>
-          <p className="text-muted-foreground text-sm leading-snug">{t('debtsCard.noneHint')}</p>
-        </div>
+      <Panel title={t('debtsCard.title')} bodyClassName="p-4">
+        <DashboardSuccessState title={t('debtsCard.none')} hint={t('debtsCard.noneHint')} />
       </Panel>
     );
   }
