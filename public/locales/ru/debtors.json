@@ -98,7 +98,6 @@
   },
   "contact": {
     "call": "Позвонить",
-    "whatsapp": "WhatsApp",
     "sms": "SMS",
     "lastReminded": "Напоминали {{date}}",
     "neverReminded": "Ещё не напоминали",

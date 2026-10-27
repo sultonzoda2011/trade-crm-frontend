@@ -98,7 +98,6 @@
   },
   "contact": {
     "call": "Занг задан",
-    "whatsapp": "WhatsApp",
     "sms": "SMS",
     "lastReminded": "Ёдрас карда шуд {{date}}",
     "neverReminded": "Ҳанӯз ёдрас накардаанд",

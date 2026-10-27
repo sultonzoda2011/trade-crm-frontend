@@ -49,7 +49,7 @@ export interface Debtor extends DebtorDebtProfile {
   creditLimit: number | null;
   /** Срок возврата по умолчанию для нового долга, дни. */
   defaultDueDays: number | null;
-  /** Когда последний раз напомнили о долге (звонок/WhatsApp/SMS). */
+  /** Когда последний раз напомнили о долге (звонок/SMS). */
   lastRemindedAt: string | null;
   /** Приходит при создании/правке: другой должник с тем же телефоном (только предупреждение). */
   phoneDuplicateOf?: { id: string; name: string } | null;

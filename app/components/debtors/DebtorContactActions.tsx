@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { MessageCircle, MessageSquareText, Phone } from 'lucide-react';
+import { MessageSquareText, Phone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { debtorsApi } from '~/api/debtors';
 import { Button } from '~/components/ui/button';
@@ -7,12 +7,12 @@ import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { fmtTJS, formatDate } from '~/lib/format';
-import { toDialNumber, toWhatsAppNumber } from '~/lib/phone';
+import { toDialNumber } from '~/lib/phone';
 import { queryKeys } from '~/lib/query-keys';
 import type { Debtor } from '~/types/debtors';
 
 /**
- * Позвонить / WhatsApp / SMS с готовым текстом напоминания. Каждое нажатие ставит на сервере
+ * Позвонить / SMS с готовым текстом напоминания. Каждое нажатие ставит на сервере
  * отметку «напомнили» — по ней человек уходит из блока «позвонить сегодня» на пару дней.
  * Отметка — вспомогательная: без сети её просто не ставим, сам звонок или сообщение от этого не зависят.
  */
@@ -38,27 +38,13 @@ export function DebtorContactActions({ debtor }: { debtor: Debtor }) {
 
   return (
     <div className="space-y-1.5">
-      <div className={hasDebt ? 'grid grid-cols-3 gap-2' : 'grid grid-cols-1'}>
+      <div className={hasDebt ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-1'}>
         <Button size="lg" variant="secondary" render={<a href={`tel:${dial}`} />} onClick={markReminded}>
           <Phone data-icon="inline-start" />
           {t('contact.call')}
         </Button>
         {hasDebt && (
           <>
-            <Button
-              size="lg"
-              variant="secondary"
-              render={
-                <a
-                  href={`https://wa.me/${toWhatsAppNumber(debtor.phone)}?text=${message}`}
-                  target="_blank"
-                  rel="noreferrer"
-                />
-              }
-              onClick={markReminded}>
-              <MessageCircle data-icon="inline-start" />
-              {t('contact.whatsapp')}
-            </Button>
             <Button
               size="lg"
               variant="secondary"
