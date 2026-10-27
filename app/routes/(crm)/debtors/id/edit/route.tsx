@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { DebtorFormFields } from '~/components/debtors/DebtorFormFields';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
@@ -10,7 +11,7 @@ import { EntityFormPage } from '~/components/shared/EntityFormPage';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { useForm } from '~/hooks/useForm';
 import { queryKeys } from '~/lib/query-keys';
-import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
+import { requestDebtorSchema, toDebtorRequest, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function EditDebtorPage() {
   const { t } = useTranslation(['debtors', 'common', 'validation']);
@@ -33,12 +34,20 @@ export default function EditDebtorPage() {
 
   useEffect(() => {
     if (!debtor) return;
-    reset({ name: debtor.name, phone: debtor.phone });
+    reset({
+      name: debtor.name,
+      phone: debtor.phone,
+      note: debtor.note ?? '',
+      creditLimit: debtor.creditLimit ?? '',
+      defaultDueDays: debtor.defaultDueDays ?? '',
+    });
   }, [debtor, reset]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (request: RequestDebtorSchema) => debtorsApi.update({ request, id: id! }),
-    onSuccess: () => {
+    mutationFn: (request: RequestDebtorSchema) => debtorsApi.update({ request: toDebtorRequest(request), id: id! }),
+    onSuccess: (response) => {
+      const duplicate = response?.data?.phoneDuplicateOf;
+      if (duplicate) toast.warning(t('phoneDuplicate', { name: duplicate.name }));
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
       void queryClient.invalidateQueries({ queryKey: queryKeys.detail('debtors', id) });
       navigate(`/debtors/${id}`);
@@ -71,7 +80,11 @@ export default function EditDebtorPage() {
       submitLabel={t('actions.save')}
       isPending={isPending}
       onFormSubmit={handleSubmit((request) => mutate(request))}>
-      <DebtorFormFields control={control} t={t} />
+      <DebtorFormFields
+        control={control}
+        t={t}
+        defaultExpanded={!!(debtor.note || debtor.creditLimit || debtor.defaultDueDays)}
+      />
     </EntityFormPage>
   );
 }

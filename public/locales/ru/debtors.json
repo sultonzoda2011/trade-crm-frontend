@@ -7,7 +7,14 @@
   "totalDebtAmount": "Общая сумма долга",
   "totalDebt": "Текущий долг",
   "fields": {
-    "transactions": "Транзакции"
+    "transactions": "Транзакции",
+    "note": "Заметка",
+    "notePlaceholder": "Ряд 5, лавка 12; звонить после обеда",
+    "creditLimit": "Лимит долга",
+    "creditLimitPlaceholder": "Без лимита",
+    "defaultDueDays": "Срок возврата по умолчанию, дней",
+    "defaultDueDaysPlaceholder": "Например, 14",
+    "moreOptions": "Дополнительно"
   },
   "navigation": {
     "debtors": "Должники"
@@ -47,7 +54,9 @@
     "nextDueDate": "Следующий срок",
     "never": "не было",
     "daysUnit": "{{count}} дн.",
-    "lastPurchaseAt": "Последняя покупка"
+    "lastPurchaseAt": "Последняя покупка",
+    "creditLimit": "Лимит долга",
+    "overLimit": "Выше лимита {{limit}}"
   },
   "actions": {
     "pay": "Погасить долг",
@@ -68,5 +77,46 @@
     "debtScope": "Долг",
     "withDebt": "Есть долг",
     "overdue": "Просрочен"
+  },
+  "phoneDuplicate": "Такой номер уже есть у должника «{{name}}»",
+  "summary": {
+    "owed": "Должны вам",
+    "overdue": "Просрочено",
+    "debtors": "Должников: {{count}}",
+    "overdueDebtors": "Просрочили: {{count}}",
+    "callToday": "Позвонить сегодня",
+    "callTodayHint": "Просрочка, ещё не напоминали"
+  },
+  "ledger": {
+    "title": "История долга",
+    "empty": "Операций пока нет",
+    "debt": "Выдан долг",
+    "payment": "Оплата",
+    "balance": "Остаток {{amount}}",
+    "due": "срок {{date}}",
+    "showMore": "Показать ещё"
+  },
+  "contact": {
+    "call": "Позвонить",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "lastReminded": "Напоминали {{date}}",
+    "neverReminded": "Ещё не напоминали",
+    "note": "Заметка",
+    "message": "Здравствуйте, {{name}}! Напоминаю о долге: {{amount}}. Когда сможете вернуть?"
+  },
+  "payDebtor": {
+    "title": "Принять оплату",
+    "totalDebt": "Весь долг",
+    "amount": "Сумма оплаты",
+    "full": "Весь долг",
+    "half": "Половина",
+    "note": "Примечание",
+    "oldestFirst": "Сумма пойдёт на самые старые долги",
+    "submit": "Принять",
+    "exceeds": "Сумма больше долга",
+    "success": "Оплата принята: {{amount}}",
+    "left": "Остаток долга: {{amount}}",
+    "allPaid": "Долг закрыт"
   }
 }

@@ -6,7 +6,7 @@ import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
 import { useCreateDebtor, type CreatedDebtor } from '~/hooks/useCreateDebtor';
 import { useForm } from '~/hooks/useForm';
 import { useDebtorsModals } from '~/routes/(crm)/debtors/store';
-import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
+import { requestDebtorSchema, toDebtorRequest, type RequestDebtorSchema } from '~/validations/debtor';
 
 interface CreateDebtorModalProps {
   /** Должник создан (или поставлен в очередь): вызывающая форма может сразу выбрать его. */
@@ -25,7 +25,7 @@ export function CreateDebtorModal({ onCreated }: CreateDebtorModalProps) {
   const { create, isSubmitting: isPending } = useCreateDebtor();
 
   function onSubmit(request: RequestDebtorSchema) {
-    create(request, (debtor) => {
+    create(toDebtorRequest(request), (debtor) => {
       createModal.close();
       reset();
       onCreated?.(debtor);

@@ -71,7 +71,12 @@ export default function CreateTransactionPage() {
   const { can } = useCan();
   // «Дать долг» со страницы должника приходит с уже выбранным человеком —
   // не заставляем искать его заново.
-  const prefill = location.state as { debtorId?: string; debtorName?: string; fromPath?: string } | null;
+  const prefill = location.state as {
+    debtorId?: string;
+    debtorName?: string;
+    defaultDueDays?: number;
+    fromPath?: string;
+  } | null;
   const debtorCreateModal = useDebtorsModals((s) => s.create);
   // Скидка/надбавка нужны редко — по умолчанию скрыты, чтобы карточка товара
   // занимала 2 строки на телефоне вместо 3. Разворачиваем по клику или если
@@ -148,7 +153,8 @@ export default function CreateTransactionPage() {
       customerName: '',
       type: initialIsDebt ? 'DEBT' : 'SALE',
       paymentType: initialIsDebt ? 'CREDIT' : initialLastMethod === 'CARD' ? 'CARD' : 'CASH',
-      dueDate: dayjs().format('YYYY-MM-DD'),
+      // Срок возврата по умолчанию у должника (если задан) — сразу в форме, а не «сегодня».
+      dueDate: dayjs().add(prefill?.defaultDueDays ?? 0, 'day').format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0, markup: 0 }],
     },
   });
