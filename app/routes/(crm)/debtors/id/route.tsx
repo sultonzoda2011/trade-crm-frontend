@@ -6,6 +6,9 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { toast } from 'sonner';
 import { debtorsApi } from '~/api/debtors';
 import { transactionsApi } from '~/api/transactions';
+import { DebtorContactActions } from '~/components/debtors/DebtorContactActions';
+import { DebtorLedger } from '~/components/debtors/DebtorLedger';
+import { PayDebtorModal } from '~/components/debtors/PayDebtorModal';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { AnimatedNumber } from '~/components/shared/AnimatedNumber';
@@ -28,6 +31,7 @@ import { Action } from '~/config/actions';
 import { DEBTOR_RISK_BADGE } from '~/config/analyticsBadges';
 import { useCan } from '~/hooks/useCan';
 import { useDeleteEntity } from '~/hooks/useDeleteEntity';
+import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { fmtNum, fmtTJS, formatDate, formatDateShort } from '~/lib/format';
 import { loadTransactionForPay } from '~/lib/load-transaction-for-pay';
@@ -54,6 +58,8 @@ export default function DebtorDetailPage() {
   const queryClient = useQueryClient();
   const payModal = useTransactionsModals((s) => s.pay);
   const [pickDebtOpen, setPickDebtOpen] = useState(false);
+  const [payDebtorOpen, setPayDebtorOpen] = useState(false);
+  const isOnline = useNetworkStatus();
 
   const {
     data: response,
@@ -132,6 +138,12 @@ export default function DebtorDetailPage() {
   const canAcceptPayment = can(Action.TRANSACTIONS_EDIT) && debtor.activeDebtCount > 0;
 
   const handleAcceptPayment = () => {
+    // Онлайн — оплата суммой: сервер сам раскладывает её по долгам. Офлайн суммой нельзя (раскладка
+    // на сервере), поэтому остаётся прежний путь по одной транзакции, который работает через очередь.
+    if (isOnline) {
+      setPayDebtorOpen(true);
+      return;
+    }
     // Один открытый долг — сразу окно оплаты; несколько — сначала выбор.
     if (debtor.activeDebtCount === 1 && debtor.activeDebtTransactionId) {
       openPay(debtor.activeDebtTransactionId);
@@ -183,8 +195,15 @@ export default function DebtorDetailPage() {
                 </>
               ),
               caption:
-                debtor.overdueAmount > 0 || debtor.pendingOps ? (
+                debtor.overdueAmount > 0 || debtor.pendingOps || (debtor.creditLimit ?? 0) > 0 ? (
                   <span className="flex flex-col gap-0.5">
+                    {debtor.creditLimit != null &&
+                      debtor.creditLimit > 0 &&
+                      debtor.totalDebtAmount > debtor.creditLimit && (
+                        <span className="text-warning font-medium">
+                          {t('profile.overLimit', { limit: fmtTJS(debtor.creditLimit) })}
+                        </span>
+                      )}
                     {debtor.overdueAmount > 0 && (
                       <span className="text-destructive font-medium">
                         {t('profile.overdueAmount')} {fmtTJS(debtor.overdueAmount)}
@@ -204,7 +223,12 @@ export default function DebtorDetailPage() {
                       render={
                         <Link
                           to="/transactions/create"
-                          state={{ debtorId: debtor.id, debtorName: debtor.name, fromPath: location.pathname }}
+                          state={{
+                            debtorId: debtor.id,
+                            debtorName: debtor.name,
+                            defaultDueDays: debtor.defaultDueDays ?? undefined,
+                            fromPath: location.pathname,
+                          }}
                         />
                       }>
                       <HandCoins data-icon="inline-start" />
@@ -237,8 +261,16 @@ export default function DebtorDetailPage() {
             </ListGroup>
           ) : undefined
         }>
+        <DebtorContactActions debtor={debtor} />
+
         <DetailFacts
           facts={[
+            { label: t('contact.note'), value: debtor.note, long: true, show: !!debtor.note },
+            {
+              label: t('profile.creditLimit'),
+              value: fmtTJS(debtor.creditLimit ?? 0),
+              show: (debtor.creditLimit ?? 0) > 0,
+            },
             { label: t('profile.activeDebtCount'), value: debtor.activeDebtCount },
             {
               label: t('profile.nextDueDate'),
@@ -262,6 +294,8 @@ export default function DebtorDetailPage() {
             ))}
           </ListGroup>
         )}
+
+        {!debtor.pending && <DebtorLedger debtorId={debtor.id} />}
 
         <ListGroup
           title={t('transactionsHistory')}
@@ -329,6 +363,7 @@ export default function DebtorDetailPage() {
         </SheetContent>
       </Sheet>
 
+      <PayDebtorModal debtor={debtor} open={payDebtorOpen} onClose={() => setPayDebtorOpen(false)} />
       <CreatePaymentModal />
       <ConfirmDialog {...deleteDialog} />
     </>

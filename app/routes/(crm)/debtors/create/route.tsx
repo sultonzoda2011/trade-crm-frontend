@@ -5,7 +5,7 @@ import { DebtorFormFields } from '~/components/debtors/DebtorFormFields';
 import { EntityFormPage } from '~/components/shared/EntityFormPage';
 import { useCreateDebtor } from '~/hooks/useCreateDebtor';
 import { useForm } from '~/hooks/useForm';
-import { requestDebtorSchema, type RequestDebtorSchema } from '~/validations/debtor';
+import { requestDebtorSchema, toDebtorRequest, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function CreateDebtorPage() {
   const { t } = useTranslation(['debtors', 'common', 'validation']);
@@ -21,7 +21,7 @@ export default function CreateDebtorPage() {
   // Форма не ждёт сервера: на слабой связи или без сети человек сразу попадает в список,
   // где новый должник уже виден с меткой «в очереди».
   function onSubmit(request: RequestDebtorSchema) {
-    create(request, () => navigate('/debtors'));
+    create(toDebtorRequest(request), () => navigate('/debtors'));
   }
 
   return (

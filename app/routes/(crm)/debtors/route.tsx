@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { debtorsApi } from '~/api/debtors';
 import { DebtorMobileCard } from '~/components/debtors/DebtorMobileCard';
 import { DebtorQuickFilters, filtersNotShownByDebtorChips } from '~/components/debtors/DebtorQuickFilters';
+import { DebtorSummary } from '~/components/debtors/DebtorSummary';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { Button } from '~/components/ui/button';
@@ -55,7 +56,12 @@ export default function DebtorsPage() {
       table={table}
       filterConfig={filterConfig}
       filterRules={DEBTOR_FILTER_RULES}
-      quickFilters={<DebtorQuickFilters filters={list.filters} onChange={list.setFilters} />}
+      quickFilters={
+        <div className="space-y-4">
+          <DebtorSummary fromPath={location.pathname} />
+          <DebtorQuickFilters filters={list.filters} onChange={list.setFilters} />
+        </div>
+      }
       pillFilters={filtersNotShownByDebtorChips(list.filters)}
       showFilterPills
       syncUrl

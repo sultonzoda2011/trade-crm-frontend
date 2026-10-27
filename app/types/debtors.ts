@@ -43,6 +43,16 @@ export interface Debtor extends DebtorDebtProfile {
   marketId: string;
   createdAt: string;
   updatedAt: string;
+  /** Заметка продавца: «ряд 5, лавка 12». */
+  note: string | null;
+  /** Мягкий лимит долга: превышение только предупреждает. 0/null — лимита нет. */
+  creditLimit: number | null;
+  /** Срок возврата по умолчанию для нового долга, дни. */
+  defaultDueDays: number | null;
+  /** Когда последний раз напомнили о долге (звонок/WhatsApp/SMS). */
+  lastRemindedAt: string | null;
+  /** Приходит при создании/правке: другой должник с тем же телефоном (только предупреждение). */
+  phoneDuplicateOf?: { id: string; name: string } | null;
   market: MarketInfo | null;
   _count: DebtorCount;
 }
@@ -57,6 +67,64 @@ export interface DebtorCount {
 export interface DebtorRequest {
   name: string;
   phone: string;
+  note?: string;
+  creditLimit?: number;
+  defaultDueDays?: number;
+}
+
+/** Событие ленты должника: выдача долга или оплата, с остатком после него. */
+export interface DebtorLedgerEvent {
+  type: 'DEBT' | 'PAYMENT';
+  id: string;
+  transactionId: string;
+  /** Всегда положительное; знак задаёт `type`. */
+  amount: number;
+  /** Сколько человек должен сразу после этого события. */
+  balanceAfter: number;
+  at: string;
+  dueDate: string | null;
+  note: string | null;
+  itemNames: string[];
+  createdByName: string | null;
+}
+
+export interface DebtorCallItem {
+  id: string;
+  name: string;
+  phone: string;
+  overdueAmount: number;
+  maxDaysOverdue: number;
+  risk: DebtorRisk;
+}
+
+/** Сводка над списком должников — по всем должникам маркета, не по странице. */
+export interface DebtorsSummary {
+  totalDebt: number;
+  overdueAmount: number;
+  debtorsWithDebt: number;
+  overdueDebtors: number;
+  highRiskDebtors: number;
+  /** С кем разбираться сегодня: просрочка, ещё не напоминали. */
+  callToday: DebtorCallItem[];
+}
+
+export interface DebtorPaymentAllocation {
+  transactionId: string;
+  amount: number;
+  remainingAfter: number;
+  settled: boolean;
+}
+
+export interface DebtorPaymentResult {
+  totalApplied: number;
+  /** Сколько человек должен после платежа. */
+  remainingDebt: number;
+  allocations: DebtorPaymentAllocation[];
+}
+
+export interface DebtorPaymentRequest {
+  amount: number;
+  note?: string;
 }
 export type DebtorsResponse = ApiResponse<PaginatedData<Debtor>>;
 export type DebtorDetailResponse = ApiResponse<Debtor>;
@@ -65,3 +133,6 @@ export interface DebtorFullData {
   transactions: PaginatedData<Transaction>;
 }
 export type DebtorFullResponse = ApiResponse<DebtorFullData>;
+export type DebtorLedgerResponse = ApiResponse<PaginatedData<DebtorLedgerEvent>>;
+export type DebtorsSummaryResponse = ApiResponse<DebtorsSummary>;
+export type DebtorPaymentResponse = ApiResponse<DebtorPaymentResult>;

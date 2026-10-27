@@ -6,7 +6,14 @@
   "overdue": "Қарзи мӯҳлаташ гузашта дорад",
   "totalDebtAmount": "Маблағи умумии қарз",
   "fields": {
-    "transactions": "Муомилотҳо"
+    "transactions": "Муомилотҳо",
+    "note": "Ёддошт",
+    "notePlaceholder": "Қатори 5, дӯкони 12; баъд аз хӯрок занг занед",
+    "creditLimit": "Лимити қарз",
+    "creditLimitPlaceholder": "Бе лимит",
+    "defaultDueDays": "Мӯҳлати бозгашт (одатӣ), рӯз",
+    "defaultDueDaysPlaceholder": "Масалан, 14",
+    "moreOptions": "Иловагӣ"
   },
   "navigation": {
     "debtors": "Қарздорҳо"
@@ -47,7 +54,9 @@
     "nextDueDate": "Мӯҳлати навбатӣ",
     "never": "набуд",
     "daysUnit": "{{count}} рӯз",
-    "lastPurchaseAt": "Харидории охирин"
+    "lastPurchaseAt": "Харидории охирин",
+    "creditLimit": "Лимити қарз",
+    "overLimit": "Аз лимит зиёд аст {{limit}}"
   },
   "actions": {
     "pay": "Пардохти қарз",
@@ -68,5 +77,46 @@
     "debtScope": "Қарз",
     "withDebt": "Қарздор",
     "overdue": "Мӯҳлаташ гузашта"
+  },
+  "phoneDuplicate": "Ин рақам аллакай назди қарздори «{{name}}» ҳаст",
+  "summary": {
+    "owed": "Ба шумо қарздоранд",
+    "overdue": "Мӯҳлат гузашта",
+    "debtors": "Қарздорҳо: {{count}}",
+    "overdueDebtors": "Мӯҳлат гузаштаанд: {{count}}",
+    "callToday": "Имрӯз занг занед",
+    "callTodayHint": "Мӯҳлат гузашта, ҳанӯз ёдрас накардаанд"
+  },
+  "ledger": {
+    "title": "Таърихи қарз",
+    "empty": "Ҳанӯз амалиёт нест",
+    "debt": "Қарз дода шуд",
+    "payment": "Пардохт",
+    "balance": "Бақия {{amount}}",
+    "due": "мӯҳлат {{date}}",
+    "showMore": "Бештар нишон диҳед"
+  },
+  "contact": {
+    "call": "Занг задан",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "lastReminded": "Ёдрас карда шуд {{date}}",
+    "neverReminded": "Ҳанӯз ёдрас накардаанд",
+    "note": "Ёддошт",
+    "message": "Салом, {{name}}! Дар бораи қарз ёдрас мекунам: {{amount}}. Кай баргардонда метавонед?"
+  },
+  "payDebtor": {
+    "title": "Қабули пардохт",
+    "totalDebt": "Тамоми қарз",
+    "amount": "Маблағи пардохт",
+    "full": "Тамоми қарз",
+    "half": "Нисф",
+    "note": "Эзоҳ",
+    "oldestFirst": "Маблағ ба қарзҳои аз ҳама куҳна меравад",
+    "submit": "Қабул кардан",
+    "exceeds": "Маблағ аз қарз зиёд аст",
+    "success": "Пардохт қабул шуд: {{amount}}",
+    "left": "Бақияи қарз: {{amount}}",
+    "allPaid": "Қарз пӯшида шуд"
   }
 }

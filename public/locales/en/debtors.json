@@ -3,7 +3,14 @@
   "create": "Create debtor",
   "notFound": "Debtor not found",
   "fields": {
-    "transactions": "Transactions"
+    "transactions": "Transactions",
+    "note": "Note",
+    "notePlaceholder": "Row 5, stall 12; call after lunch",
+    "creditLimit": "Debt limit",
+    "creditLimitPlaceholder": "No limit",
+    "defaultDueDays": "Default repayment term, days",
+    "defaultDueDaysPlaceholder": "e.g. 14",
+    "moreOptions": "More options"
   },
   "navigation": {
     "debtors": "Debtors"
@@ -47,7 +54,9 @@
     "nextDueDate": "Next due date",
     "never": "never",
     "daysUnit": "{{count}} days",
-    "lastPurchaseAt": "Last purchase"
+    "lastPurchaseAt": "Last purchase",
+    "creditLimit": "Debt limit",
+    "overLimit": "Above the limit of {{limit}}"
   },
   "actions": {
     "pay": "Repay debt",
@@ -68,5 +77,46 @@
     "debtScope": "Debt",
     "withDebt": "Has debt",
     "overdue": "Overdue"
+  },
+  "phoneDuplicate": "This number already belongs to debtor “{{name}}”",
+  "summary": {
+    "owed": "Owed to you",
+    "overdue": "Overdue",
+    "debtors": "Debtors: {{count}}",
+    "overdueDebtors": "Overdue: {{count}}",
+    "callToday": "Call today",
+    "callTodayHint": "Overdue, not reminded yet"
+  },
+  "ledger": {
+    "title": "Debt history",
+    "empty": "No operations yet",
+    "debt": "Debt given",
+    "payment": "Payment",
+    "balance": "Balance {{amount}}",
+    "due": "due {{date}}",
+    "showMore": "Show more"
+  },
+  "contact": {
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "sms": "SMS",
+    "lastReminded": "Reminded {{date}}",
+    "neverReminded": "Not reminded yet",
+    "note": "Note",
+    "message": "Hello, {{name}}! A reminder about your debt: {{amount}}. When can you pay it back?"
+  },
+  "payDebtor": {
+    "title": "Accept payment",
+    "totalDebt": "Total debt",
+    "amount": "Payment amount",
+    "full": "Full debt",
+    "half": "Half",
+    "note": "Note",
+    "oldestFirst": "The amount goes to the oldest debts first",
+    "submit": "Accept",
+    "exceeds": "Amount is greater than the debt",
+    "success": "Payment accepted: {{amount}}",
+    "left": "Debt left: {{amount}}",
+    "allPaid": "Debt closed"
   }
 }

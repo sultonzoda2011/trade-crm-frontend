@@ -179,6 +179,9 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
       markSent(vars.idempotencyKey);
       invalidateAfterDebtorWrite(queryClient);
       toast.success(i18next.t('createSuccess', { ns: 'debtors' }));
+      // Дубль номера не блокирует создание (на рынке один телефон бывает у двоих) — только предупреждаем.
+      const duplicate = response?.data?.phoneDuplicateOf;
+      if (duplicate) toast.warning(i18next.t('phoneDuplicate', { ns: 'debtors', name: duplicate.name }));
     },
     onError: fail('createError', 'debtors'),
   });
