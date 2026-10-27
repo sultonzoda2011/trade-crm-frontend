@@ -98,7 +98,6 @@
   },
   "contact": {
     "call": "Call",
-    "whatsapp": "WhatsApp",
     "sms": "SMS",
     "lastReminded": "Reminded {{date}}",
     "neverReminded": "Not reminded yet",
