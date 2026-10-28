@@ -151,6 +151,8 @@ export default function CreateTransactionPage() {
     defaultValues: {
       debtorId: prefill?.debtorId ?? '',
       customerName: '',
+      note: '',
+      paidAmount: '',
       type: initialIsDebt ? 'DEBT' : 'SALE',
       paymentType: initialIsDebt ? 'CREDIT' : initialLastMethod === 'CARD' ? 'CARD' : 'CASH',
       // Срок возврата по умолчанию у должника (если задан) — сразу в форме, а не «сегодня».
@@ -247,6 +249,8 @@ export default function CreateTransactionPage() {
       type: (data.type ?? 'DEBT') as CreateTransactionRequest['type'],
       paymentType: (data.paymentType ?? 'CASH') as CreateTransactionRequest['paymentType'],
       dueDate: data.type === 'DEBT' && data.dueDate ? data.dueDate : undefined,
+      note: data.note?.trim() || undefined,
+      paidAmount: data.type === 'DEBT' && Number(data.paidAmount) > 0 ? Number(data.paidAmount) : undefined,
       items: data.items.map((item) => ({
         productId: item.productId ?? '',
         quantity: Number(item.quantity),
@@ -283,7 +287,17 @@ export default function CreateTransactionPage() {
   }
 
   const canSubmit = formState.isValid;
-  const submitLabel = type === 'DEBT' ? t('submitDebt') : t('submitSale');
+  // Сумма прямо в кнопке: продавец видит, сколько принимает, и не листает вверх за итогом.
+  const advance = type === 'DEBT' ? Math.max(Number(watch('paidAmount')) || 0, 0) : 0;
+  const payNow = type === 'DEBT' ? advance : calculatedTotal;
+  const submitLabel =
+    calculatedTotal > 0
+      ? type === 'DEBT'
+        ? t('submitDebtAmount', { amount: fmtTJS(Math.max(calculatedTotal - advance, 0)) })
+        : t('submitSaleAmount', { amount: fmtTJS(payNow) })
+      : type === 'DEBT'
+        ? t('submitDebt')
+        : t('submitSale');
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-44 md:max-w-none md:pb-8">
@@ -333,6 +347,7 @@ export default function CreateTransactionPage() {
             } catch {
               // приватный режим / квота — не критично, просто не запомнится
             }
+            if (next !== 'DEBT') setValue('paidAmount', '');
             if (next === 'DEBT') {
               setValue('type', 'DEBT', { shouldValidate: true });
               setValue('paymentType', 'CREDIT', { shouldValidate: true });
@@ -386,8 +401,9 @@ export default function CreateTransactionPage() {
             {t('fields.addItem')}
           </Button>
 
-          {(totalDiscount > 0 || totalMarkup > 0) && (
+          {(totalDiscount > 0 || totalMarkup > 0 || advance > 0) && (
             <ListGroup>
+              {advance > 0 && <ListRow title={t('fields.advance')} value={fmtTJS(advance)} />}
               {totalDiscount > 0 && <ListRow title={t('fields.discount')} value={`− ${fmtTJS(totalDiscount)}`} />}
               {totalMarkup > 0 && <ListRow title={t('fields.markup')} value={`+ ${fmtTJS(totalMarkup)}`} />}
             </ListGroup>

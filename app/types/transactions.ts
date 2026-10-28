@@ -56,6 +56,8 @@ export interface Transaction {
   remainingAmount: number;
   status: TransactionStatus;
   dueDate: string | null;
+  /** Свободная заметка к продаже; у возврата здесь лежит причина возврата. */
+  note: string | null;
   createdAt: string;
   updatedAt: string;
   items: TransactionItem[];
@@ -90,6 +92,10 @@ export interface CreateTransactionRequest {
   customerName?: string;
   paymentType: PaymentType;
   dueDate?: string;
+  /** Заметка к продаже, до 500 символов. */
+  note?: string;
+  /** Аванс при продаже в долг: платёж создаётся вместе с продажей. Строго меньше итога. */
+  paidAmount?: number;
   items: CreateTransactionItemRequest[];
 }
 export interface CreatePaymentRequest {
@@ -118,6 +124,8 @@ export interface RelatedTransaction {
   type: TransactionType;
   status: TransactionStatus;
   totalAmount: number;
+  /** Причина возврата (для REFUND) или заметка. */
+  note?: string | null;
   createdAt: string;
   createdBy: { id: string; name: string } | null;
   items?: Array<{
@@ -161,6 +169,17 @@ export interface TransactionDetail extends Omit<Transaction, 'items'> {
   timeline: TransactionTimelineEvent[];
 }
 
+/** `GET /transactions/summary` — итоги по тем же фильтрам, что и список (всё, не только страница). */
+export interface TransactionsSummary {
+  count: number;
+  sales: { count: number; amount: number };
+  debts: { count: number; amount: number; remaining: number };
+  refunds: { count: number; amount: number };
+  /** Продажи + долги − возвраты. */
+  netAmount: number;
+}
+
+export type TransactionsSummaryResponse = ApiResponse<TransactionsSummary>;
 export type TransactionsResponse = ApiResponse<PaginatedData<TransactionListItem>>;
 export type TransactionResponse = ApiResponse<Transaction>;
 export type TransactionDetailResponse = ApiResponse<TransactionDetail>;

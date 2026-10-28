@@ -7,6 +7,7 @@ import { ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import { FormDateInput } from '~/components/ui/form/FormDateInput';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import type { Debtor } from '~/types/debtors';
 import type { CreateTransactionInput } from '~/validations/transactions';
 
@@ -108,6 +109,18 @@ export function TransactionPaymentSection({
               ))}
             </div>
           </div>
+
+          <div className="bg-card rounded-2xl p-4">
+            <FormInput
+              control={control}
+              name="paidAmount"
+              type="number"
+              inputMode="decimal"
+              label={t('fields.advance')}
+              placeholder="0"
+            />
+            <p className="text-muted-foreground mt-1.5 px-1 text-xs">{t('advanceHint')}</p>
+          </div>
         </>
       )}
 
@@ -121,6 +134,17 @@ export function TransactionPaymentSection({
           />
         </div>
       )}
+
+      <div className="bg-card rounded-2xl p-4">
+        <FormTextarea
+          control={control}
+          name="note"
+          rows={2}
+          maxLength={500}
+          label={t('fields.note')}
+          placeholder={t('fields.notePlaceholder')}
+        />
+      </div>
     </div>
   );
 }

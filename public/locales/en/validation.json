@@ -22,5 +22,7 @@
   "stockExceeded": "Exceeds stock ({{count}} available)",
   "stockUnavailable": "Product stock is unavailable",
   "paymentTypeMismatch": "Payment type is not allowed for this transaction type",
-  "priceMin": "Price must be greater than 0"
+  "priceMin": "Price must be greater than 0",
+  "advanceInvalid": "Enter an amount greater than zero",
+  "advanceTooLarge": "The advance must be less than the total — record a fully paid purchase as a sale"
 }

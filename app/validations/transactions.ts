@@ -111,12 +111,35 @@ export const createTransactionSchema = (t: TFunction, stockMap?: StockMap, price
         .refine((val) => val == null || val === '' || /^\d{4}-\d{2}-\d{2}$/.test(val), {
           message: t('invalidDate', { ns: 'validation' }),
         }),
+      note: z
+        .string()
+        .max(500, t('stringMax', { count: 500, ns: 'validation' }))
+        .optional(),
+      // Аванс при продаже в долг; пусто = без аванса.
+      paidAmount: z.union([z.string(), z.number(), z.null()]).optional(),
       items: z
         .array(createTransactionItemSchema(t, stockMap, priceMap))
         .min(1, t('itemsRequired', { ns: 'validation' })),
     })
     .superRefine((data, ctx) => {
       if (data.type === 'DEBT') {
+        const advance = data.paidAmount;
+        if (advance !== '' && advance != null) {
+          const value = Number(advance);
+          if (!Number.isFinite(value) || value <= 0) {
+            ctx.addIssue({ code: 'custom', message: t('advanceInvalid', { ns: 'validation' }), path: ['paidAmount'] });
+          } else if (priceMap) {
+            // Тот же подсчёт, что и на экране: цена × количество − скидка + надбавка по каждой позиции.
+            const total = data.items.reduce((sum, item) => {
+              const price = item.productId ? (priceMap[item.productId] ?? 0) : 0;
+              const line = Number(item.quantity) * price - (Number(item.discount) || 0) + (Number(item.markup) || 0);
+              return sum + Math.max(line, 0);
+            }, 0);
+            if (total > 0 && value >= total) {
+              ctx.addIssue({ code: 'custom', message: t('advanceTooLarge', { ns: 'validation' }), path: ['paidAmount'] });
+            }
+          }
+        }
         if (!data.dueDate) {
           ctx.addIssue({
             code: 'custom',
