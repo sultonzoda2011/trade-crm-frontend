@@ -53,7 +53,10 @@
     "dueDate": "Срок оплаты",
     "pickProduct": "Выбрать товар",
     "pickDebtor": "Выбрать должника",
-    "newDebtor": "Новый должник"
+    "newDebtor": "Новый должник",
+    "advance": "Аванс",
+    "notePlaceholder": "Например: заберёт завтра",
+    "refundReason": "Причина возврата"
   },
   "filters": {
     "debtor": "Должник",
@@ -169,5 +172,12 @@
       "REFUND": "Розничный возврат"
     },
     "moreItems": "+ ещё {{count}}"
-  }
+  },
+  "advanceHint": "Сколько заплатили сейчас. В долг уйдёт остаток.",
+  "receipt": "Чек",
+  "share": "Поделиться чеком",
+  "submitSaleAmount": "Принять {{amount}}",
+  "submitDebtAmount": "Записать {{amount}} в долг",
+  "receiptCopied": "Чек скопирован",
+  "receiptFailed": "Не удалось поделиться чеком"
 }

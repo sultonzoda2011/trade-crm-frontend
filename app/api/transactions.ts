@@ -4,8 +4,11 @@ import {
   idempotencyConfig as idempotencyHeaders,
   listRequest,
   nestedDetailRequest,
+  withInclusiveDates,
 } from '~/api/crud';
 import { apiClient } from '~/lib/client';
+import { filtersToParams } from '~/lib/filtersToParams';
+import type { ActiveFilter } from '~/types/filters';
 import type {
   CreatePaymentRequest,
   CreateTransactionRequest,
@@ -13,6 +16,7 @@ import type {
   TransactionDetailResponse,
   TransactionResponse,
   TransactionsResponse,
+  TransactionsSummaryResponse,
 } from '~/types/transactions';
 
 const BASE = '/transactions';
@@ -23,6 +27,17 @@ export const transactionsApi = {
   // The enriched payload is called `detail` here, not `full` — the only endpoint that deviates.
   getDetail: nestedDetailRequest<TransactionDetailResponse>(BASE, 'detail'),
   delete: deleteRequest(BASE),
+
+  /** Итоги по тем же фильтрам и поиску, что у списка. Без page/limit — считает сервер по всему набору. */
+  getSummary: async (
+    options: { search?: string; dateFrom?: string; dateTo?: string } = {},
+    filters: ActiveFilter[] = []
+  ): Promise<TransactionsSummaryResponse> => {
+    const { data } = await apiClient.get(`${BASE}/summary`, {
+      params: withInclusiveDates({ ...options, ...filtersToParams(filters) }),
+    });
+    return data;
+  },
 
   // create/pay/refund get a second, optional `idempotencyKey` param — the only three
   // endpoints the backend's IdempotencyInterceptor is wired to (see trade-crm-backend).

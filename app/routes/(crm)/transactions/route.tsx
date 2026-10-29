@@ -14,11 +14,7 @@ import type { MobileRowGroup } from '~/components/shared/DataTable';
 import { ListPageLayout } from '~/components/shared/ListPageLayout';
 import { TransactionDayHeader } from '~/components/transactions/TransactionDayHeader';
 import { TransactionMobileCard } from '~/components/transactions/TransactionMobileCard';
-import {
-  TransactionQuickFilters,
-  filtersNotShownByChips,
-  getActivePeriod,
-} from '~/components/transactions/TransactionQuickFilters';
+import { TransactionQuickFilters, filtersNotShownByChips } from '~/components/transactions/TransactionQuickFilters';
 import { TransactionsSummary } from '~/components/transactions/TransactionsSummary';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
@@ -144,15 +140,6 @@ export default function TransactionsPage() {
     [groupedByDay, list.page, list.totalPages]
   );
 
-  // Сводка за период — только когда в списке нет ничего, кроме периода: цифры считает дашборд по
-  // всему периоду, а не по фильтру, и рядом с «Продажи · Наличные» они бы не совпадали с рядами.
-  const activePeriod = getActivePeriod(list.filters);
-  const hasOtherFilters =
-    list.debouncedSearch.length > 0 ||
-    list.filters.some((f) => !['dateFrom', 'dateTo', 'sortBy', 'sortOrder'].includes(f.key));
-  const summaryPeriod =
-    activePeriod && activePeriod !== 'all' && !hasOtherFilters && can(Action.DASHBOARDS_VIEW) ? activePeriod : null;
-
   return (
     <ListPageLayout
       title={t('title')}
@@ -164,7 +151,7 @@ export default function TransactionsPage() {
       quickFilters={
         <>
           <TransactionQuickFilters filters={list.filters} onChange={list.setFilters} />
-          {summaryPeriod && <TransactionsSummary period={summaryPeriod} />}
+          <TransactionsSummary filters={list.filters} search={list.debouncedSearch} />
         </>
       }
       pillFilters={filtersNotShownByChips(list.filters)}

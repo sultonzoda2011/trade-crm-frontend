@@ -53,7 +53,10 @@
     "dueDate": "Мӯҳлати пардохт",
     "pickProduct": "Интихоби мол",
     "pickDebtor": "Интихоби қарздор",
-    "newDebtor": "Қарздори нав"
+    "newDebtor": "Қарздори нав",
+    "advance": "Пешпардохт",
+    "notePlaceholder": "Масалан: пагоҳ мебарад",
+    "refundReason": "Сабаби бозгашт"
   },
   "filters": {
     "debtor": "Қарздор",
@@ -169,5 +172,12 @@
       "REFUND": "Бозгардонии чакана"
     },
     "moreItems": "+ боз {{count}}"
-  }
+  },
+  "advanceHint": "Ҳозир чӣ қадар пардохт шуд. Боқимонда қарз мешавад.",
+  "receipt": "Чек",
+  "share": "Фиристодани чек",
+  "submitSaleAmount": "Қабул {{amount}}",
+  "submitDebtAmount": "{{amount}} ҳамчун қарз сабт кунед",
+  "receiptCopied": "Чек нусха шуд",
+  "receiptFailed": "Чекро фиристодан нашуд"
 }

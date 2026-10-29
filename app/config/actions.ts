@@ -23,6 +23,8 @@ export enum Action {
   TRANSACTIONS_CREATE_SALE = 'TRANSACTIONS_CREATE_SALE',
   TRANSACTIONS_EDIT = 'TRANSACTIONS_EDIT',
   TRANSACTIONS_DELETE = 'TRANSACTIONS_DELETE',
+  /** Отмена продажи: владелец/админ — любой, продавец — только свою свежую запись в долг (правила на бэкенде). */
+  TRANSACTIONS_CANCEL = 'TRANSACTIONS_CANCEL',
   TRANSACTIONS_REFUND = 'TRANSACTIONS_REFUND',
   SELLERS_VIEW = 'SELLERS_VIEW',
   SELLERS_CREATE = 'SELLERS_CREATE',
@@ -57,6 +59,7 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.TRANSACTIONS_CREATE_SALE]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_EDIT]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.TRANSACTIONS_CANCEL]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.TRANSACTIONS_REFUND]: [Role.Admin, Role.Owner],
   [Action.SELLERS_VIEW]: [Role.Admin, Role.Owner],
   [Action.SELLERS_CREATE]: [Role.Admin, Role.Owner],

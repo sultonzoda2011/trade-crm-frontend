@@ -54,6 +54,11 @@ export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
                 {formatDate(refund.createdAt, true)}
                 {refund.createdBy ? ` · ${t('detail.actor', { name: refund.createdBy.name })}` : ''}
               </span>
+              {refund.note && (
+                <span className="text-muted-foreground block text-sm leading-snug break-words italic">
+                  {t('fields.refundReason')}: {refund.note}
+                </span>
+              )}
               {refund.items && refund.items.length > 0 && (
                 <span className="text-muted-foreground block text-sm leading-snug break-words">
                   {refund.items.map((item) => `${item.productName} × ${item.quantity}`).join(', ')}

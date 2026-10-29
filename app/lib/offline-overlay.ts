@@ -185,7 +185,10 @@ function debtEffects(ops: OverlayOp[]): Map<string, DebtEffect> {
     if (!countsTowardTotals(op)) continue;
     if (op.kind === 'create') {
       const vars = op.vars as QueuedCreateTransactionVars;
-      if (vars.payload.type === 'DEBT') bump(vars.payload.debtorId, 'debt', vars.preview?.total ?? 0);
+      if (vars.payload.type === 'DEBT') {
+        // Аванс сразу гасит часть долга — в долг уходит только разница.
+        bump(vars.payload.debtorId, 'debt', Math.max(0, (vars.preview?.total ?? 0) - (vars.payload.paidAmount ?? 0)));
+      }
     } else if (op.kind === 'pay') {
       const vars = op.vars as QueuedPayTransactionVars;
       bump(vars.preview?.debtorId, 'pay', Number(vars.request.amount) || 0);
@@ -253,6 +256,7 @@ function buildTransactionRow(op: OverlayOp, user: UserInfo | null): TransactionR
   const id = `local-${op.key}`;
   const total = preview?.total ?? 0;
   const isDebt = payload.type === 'DEBT';
+  const advance = isDebt ? Math.min(payload.paidAmount ?? 0, total) : 0;
 
   const items: TransactionItem[] = payload.items.map((item, index) => {
     const snapshot = preview?.items.find((p) => p.productId === item.productId);
@@ -286,9 +290,10 @@ function buildTransactionRow(op: OverlayOp, user: UserInfo | null): TransactionR
     totalAmount: total,
     discountAmount: 0,
     markupAmount: 0,
-    remainingAmount: isDebt ? total : 0,
-    status: isDebt ? 'ACTIVE' : 'PAID',
+    remainingAmount: isDebt ? Math.max(0, total - advance) : 0,
+    status: isDebt ? (advance > 0 ? 'PARTIAL' : 'ACTIVE') : 'PAID',
     dueDate: payload.dueDate ?? null,
+    note: payload.note ?? null,
     createdAt: at,
     updatedAt: at,
     items,

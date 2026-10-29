@@ -53,7 +53,10 @@
     "dueDate": "Due date",
     "pickProduct": "Choose product",
     "pickDebtor": "Choose debtor",
-    "newDebtor": "New debtor"
+    "newDebtor": "New debtor",
+    "advance": "Advance",
+    "notePlaceholder": "E.g. will pick up tomorrow",
+    "refundReason": "Refund reason"
   },
   "filters": {
     "debtor": "Debtor",
@@ -169,5 +172,12 @@
       "REFUND": "Retail refund"
     },
     "moreItems": "+ {{count}} more"
-  }
+  },
+  "advanceHint": "What was paid now. The rest goes on debt.",
+  "receipt": "Receipt",
+  "share": "Share receipt",
+  "submitSaleAmount": "Accept {{amount}}",
+  "submitDebtAmount": "Record {{amount}} as debt",
+  "receiptCopied": "Receipt copied",
+  "receiptFailed": "Couldn't share the receipt"
 }
