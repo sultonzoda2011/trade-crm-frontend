@@ -55,7 +55,8 @@
     "pickDebtor": "Choose debtor",
     "newDebtor": "New debtor",
     "advance": "Advance",
-    "notePlaceholder": "E.g. will pick up tomorrow"
+    "notePlaceholder": "E.g. will pick up tomorrow",
+    "refundReason": "Refund reason"
   },
   "filters": {
     "debtor": "Debtor",
@@ -175,9 +176,8 @@
   "advanceHint": "What was paid now. The rest goes on debt.",
   "receipt": "Receipt",
   "share": "Share receipt",
-  "cancelSale": "Cancel sale",
-  "cancelConfirm": "Cancel this record? The goods return to stock.",
-  "cancelOwnHint": "You can cancel your own debt record within 10 minutes while it has no payments.",
   "submitSaleAmount": "Accept {{amount}}",
-  "submitDebtAmount": "Record {{amount}} as debt"
+  "submitDebtAmount": "Record {{amount}} as debt",
+  "receiptCopied": "Receipt copied",
+  "receiptFailed": "Couldn't share the receipt"
 }

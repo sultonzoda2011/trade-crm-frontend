@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { CreditCard, Store, Undo2 } from 'lucide-react';
+import { CreditCard, Share2, StickyNote, Store, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { transactionsApi } from '~/api/transactions';
 import { CreatePaymentModal } from '~/components/modals/CreatePaymentModal';
 import { RefundTransactionModal } from '~/components/modals/RefundTransactionModal';
@@ -31,6 +32,7 @@ import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { useOverlayOps } from '~/hooks/useOfflineOverlay';
 import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
 import { withPendingPayments } from '~/lib/offline-overlay';
+import { buildReceiptText, shareText } from '~/lib/receipt';
 import { queryKeys } from '~/lib/query-keys';
 import { useTransactionsModals } from '~/routes/(crm)/transactions/store';
 
@@ -39,7 +41,7 @@ export default function TransactionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { can } = useCan();
+  const { can, user } = useCan();
   const { requestDelete, deleteDialog } = useDeleteEntity({
     entity: 'transactions',
     api: transactionsApi,
@@ -110,6 +112,23 @@ export default function TransactionDetailPage() {
   const showPayments = hasPayments || isCredit;
 
   const canPay = can(Action.TRANSACTIONS_EDIT) && transaction.remainingAmount > 0;
+
+  // Админ/владелец удаляют любую запись; продавец — только свою свежую запись в долг без платежей
+  // (тот же набор условий проверяет бэкенд: 10 минут, свой, DEBT, без оплат).
+  const SELLER_CANCEL_MS = 10 * 60 * 1000;
+  const sellerCanCancel =
+    can(Action.TRANSACTIONS_CANCEL) &&
+    transaction.type === 'DEBT' &&
+    transaction.createdById === user?.id &&
+    !hasPayments &&
+    Date.now() - new Date(transaction.createdAt).getTime() < SELLER_CANCEL_MS;
+  const canDelete = can(Action.TRANSACTIONS_DELETE) || sellerCanCancel;
+
+  const onShare = async () => {
+    const result = await shareText(buildReceiptText(transaction, t));
+    if (result === 'copied') toast.success(t('receiptCopied'));
+    if (result === 'failed') toast.error(t('receiptFailed'));
+  };
   const owed = transaction.remainingAmount > 0;
 
   const fromState = { fromPath: location.pathname, fromName: t('title') };
@@ -157,28 +176,30 @@ export default function TransactionDetailPage() {
               ),
             }}
             actions={
-              canPay || canRefund ? (
-                <>
-                  {canPay && (
-                    <Button size="lg" onClick={() => payModal.open(transaction)}>
-                      <CreditCard data-icon="inline-start" />
-                      {t('pay')}
-                    </Button>
-                  )}
-                  {canRefund && (
-                    <Button
-                      size="lg"
-                      variant={canPay ? 'destructive' : 'secondary'}
-                      onClick={() => refundModal.open(transaction)}>
-                      <Undo2 data-icon="inline-start" />
-                      {t('refund')}
-                    </Button>
-                  )}
-                </>
-              ) : undefined
+              <>
+                {canPay && (
+                  <Button size="lg" onClick={() => payModal.open(transaction)}>
+                    <CreditCard data-icon="inline-start" />
+                    {t('pay')}
+                  </Button>
+                )}
+                {canRefund && (
+                  <Button
+                    size="lg"
+                    variant={canPay ? 'destructive' : 'secondary'}
+                    onClick={() => refundModal.open(transaction)}>
+                    <Undo2 data-icon="inline-start" />
+                    {t('refund')}
+                  </Button>
+                )}
+                <Button size="lg" variant="secondary" onClick={onShare}>
+                  <Share2 data-icon="inline-start" />
+                  {t('share')}
+                </Button>
+              </>
             }
             manage={{
-              onDelete: can(Action.TRANSACTIONS_DELETE) ? requestDelete : undefined,
+              onDelete: canDelete ? requestDelete : undefined,
             }}
           />
         }
@@ -218,6 +239,17 @@ export default function TransactionDetailPage() {
                 </>
               )}
             </ListGroup>
+
+            {transaction.note && (
+              <ListGroup title={transaction.type === 'REFUND' ? t('fields.refundReason') : t('fields.note')}>
+                <ListRow
+                  leading={<StickyNote className="text-muted-foreground size-5" />}
+                  title={
+                    <span className="text-base font-normal break-words whitespace-pre-wrap">{transaction.note}</span>
+                  }
+                />
+              </ListGroup>
+            )}
 
             <ListGroup>
               <ListRow title={t('fields.paymentType')} value={t(`paymentType.${transaction.paymentType}`)} />

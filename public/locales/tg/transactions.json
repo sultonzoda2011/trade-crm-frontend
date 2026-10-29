@@ -55,7 +55,8 @@
     "pickDebtor": "Интихоби қарздор",
     "newDebtor": "Қарздори нав",
     "advance": "Пешпардохт",
-    "notePlaceholder": "Масалан: пагоҳ мебарад"
+    "notePlaceholder": "Масалан: пагоҳ мебарад",
+    "refundReason": "Сабаби бозгашт"
   },
   "filters": {
     "debtor": "Қарздор",
@@ -175,9 +176,8 @@
   "advanceHint": "Ҳозир чӣ қадар пардохт шуд. Боқимонда қарз мешавад.",
   "receipt": "Чек",
   "share": "Фиристодани чек",
-  "cancelSale": "Бекор кардани фурӯш",
-  "cancelConfirm": "Сабтро бекор мекунед? Мол ба анбор бармегардад.",
-  "cancelOwnHint": "Қарзи худро дар давоми 10 дақиқа, то пардохт нашудан, бекор кардан мумкин аст.",
   "submitSaleAmount": "Қабул {{amount}}",
-  "submitDebtAmount": "{{amount}} ҳамчун қарз сабт кунед"
+  "submitDebtAmount": "{{amount}} ҳамчун қарз сабт кунед",
+  "receiptCopied": "Чек нусха шуд",
+  "receiptFailed": "Чекро фиристодан нашуд"
 }

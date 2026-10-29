@@ -55,7 +55,8 @@
     "pickDebtor": "Выбрать должника",
     "newDebtor": "Новый должник",
     "advance": "Аванс",
-    "notePlaceholder": "Например: заберёт завтра"
+    "notePlaceholder": "Например: заберёт завтра",
+    "refundReason": "Причина возврата"
   },
   "filters": {
     "debtor": "Должник",
@@ -175,9 +176,8 @@
   "advanceHint": "Сколько заплатили сейчас. В долг уйдёт остаток.",
   "receipt": "Чек",
   "share": "Поделиться чеком",
-  "cancelSale": "Отменить продажу",
-  "cancelConfirm": "Отменить запись? Товар вернётся на склад.",
-  "cancelOwnHint": "Свою запись в долг можно отменить в течение 10 минут, пока по ней нет платежей.",
   "submitSaleAmount": "Принять {{amount}}",
-  "submitDebtAmount": "Записать {{amount}} в долг"
+  "submitDebtAmount": "Записать {{amount}} в долг",
+  "receiptCopied": "Чек скопирован",
+  "receiptFailed": "Не удалось поделиться чеком"
 }
