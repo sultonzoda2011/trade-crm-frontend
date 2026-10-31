@@ -66,10 +66,11 @@ export function ProductRow({ row, t }: ProductRowProps) {
   const [imageFailed, setImageFailed] = useState(false);
   const status = getProductStatus(product);
   const showImage = !!product.image && !imageFailed;
+  const archived = product.isActive === false;
   const qty = `${product.quantity} ${t(`unit.${product.unit}`)}`;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className={cn('flex items-center gap-3 px-4 py-3', archived && 'opacity-60')}>
       <span className="bg-muted flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-[10px]">
         {showImage ? (
           <img
@@ -94,7 +95,11 @@ export function ProductRow({ row, t }: ProductRowProps) {
 
       <div className="flex shrink-0 flex-col items-end gap-1">
         <span className="text-base leading-snug font-semibold tabular-nums">{fmtNum(product.price)}</span>
-        <StatusLine status={status} t={t} />
+        {archived ? (
+          <span className="text-muted-foreground text-xs">{t('archive.badge')}</span>
+        ) : (
+          <StatusLine status={status} t={t} />
+        )}
       </div>
     </div>
   );

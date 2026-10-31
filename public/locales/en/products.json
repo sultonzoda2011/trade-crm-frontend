@@ -15,13 +15,21 @@
     "after": "Will be",
     "submit": "Add",
     "success": "Stock updated: +{{quantity}} {{unit}}",
-    "hint": "The number is added to the current stock. To correct the stock, use “Edit”."
+    "hint": "The number is added to the current stock. Got the stock wrong? Use “Recount”.",
+    "note": "Note",
+    "notePlaceholder": "E.g. delivery from Rustam"
   },
   "fields": {
     "transactionItems": "Transactions",
     "unit": "Unit",
     "category": "Category",
-    "lowStockThreshold": "Low stock threshold"
+    "lowStockThreshold": "Low stock threshold",
+    "costPrice": "Cost price",
+    "costPriceHint": "Only you can see it. Used to calculate profit.",
+    "initialStock": "Opening stock",
+    "stockLocked": "Stock is changed on the product page: Restock, Write off, Recount — that way the history shows where it went.",
+    "stockLockedTitle": "Stock",
+    "stockNow": "{{count}} {{unit}}"
   },
   "actions": {
     "areYouSure": "Are you sure you want to delete this product?",
@@ -35,7 +43,10 @@
     "health": "Health",
     "reorderPriority": "Reorder urgency",
     "needsReorder": "Needs reordering",
-    "period": "Metrics period"
+    "period": "Metrics period",
+    "archived": "Archive",
+    "show": "Show",
+    "activeOnly": "Active"
   },
   "unit": {
     "PCS": "pcs",
@@ -88,6 +99,104 @@
   },
   "swipe": {
     "edit": "Edit",
-    "delete": "Delete"
+    "delete": "Delete",
+    "restock": "Restock",
+    "archive": "Archive",
+    "restore": "Restore"
+  },
+  "writeOff": {
+    "button": "Write off",
+    "title": "Write off: {{name}}",
+    "quantity": "How many to write off",
+    "reason": "Reason",
+    "note": "Note",
+    "notePlaceholder": "Optional",
+    "current": "In stock now",
+    "after": "Will be",
+    "submit": "Write off",
+    "success": "Written off: −{{quantity}} {{unit}}",
+    "tooMany": "Only {{count}} {{unit}} in stock",
+    "hint": "A write-off lowers the stock and is kept in the history. Sales aren't recorded this way — use a receipt."
+  },
+  "writeOffReason": {
+    "DAMAGED": "Damaged, defective",
+    "EXPIRED": "Expired",
+    "LOST": "Lost, stolen",
+    "OWN_USE": "Own use",
+    "OTHER": "Other"
+  },
+  "adjust": {
+    "button": "Recount",
+    "title": "Recount: {{name}}",
+    "counted": "How many are actually there",
+    "current": "On record",
+    "difference": "Difference",
+    "same": "Matches the record",
+    "note": "Note",
+    "notePlaceholder": "E.g. stocktake",
+    "submit": "Save",
+    "success": "Stock corrected: {{diff}} {{unit}}",
+    "unchanged": "Stock is already that number — nothing to change",
+    "changed": "Stock changed while you were counting: now {{count}} {{unit}}. Check the number and save again.",
+    "hint": "Enter the real total. The difference is recorded in the history as “Recount”."
+  },
+  "archive": {
+    "button": "Archive",
+    "restore": "Restore from archive",
+    "badge": "Archived",
+    "banner": "This product is archived: it's hidden from the list and can't be sold. History is kept.",
+    "confirmTitle": "Archive this product?",
+    "confirmText": "It disappears from the list and from sales, but history and receipts stay. You can restore it any time.",
+    "success": "Product archived",
+    "restored": "Product restored",
+    "deleteBlocked": "This product has been sold, so it can't be deleted — archive it instead."
+  },
+  "history": {
+    "title": "Stock history",
+    "empty": "No movements yet",
+    "loadMore": "Show more",
+    "balance": "Stock: {{count}}",
+    "openReceipt": "Open receipt"
+  },
+  "movement": {
+    "OPENING": "Opening stock",
+    "SALE": "Sale",
+    "REFUND": "Refund",
+    "VOID": "Sale cancelled",
+    "RESTOCK": "Restock",
+    "WRITE_OFF": "Write-off",
+    "ADJUSTMENT": "Recount"
+  },
+  "summary": {
+    "products": "Products",
+    "stockValue": "Stock",
+    "profit": "Profit",
+    "outOfStock": "Out: {{count}}",
+    "lowStock": "Low: {{count}}",
+    "noCost": "No cost price: {{count}}",
+    "archived": "Archived: {{count}}",
+    "profitHint": "Counted for products that have a cost price"
+  },
+  "bulkPrice": {
+    "button": "Prices",
+    "title": "Change prices",
+    "percent": "By how many %",
+    "percentPlaceholder": "E.g. 5 or −10",
+    "category": "Category",
+    "allCategories": "All products",
+    "roundTo": "Round to",
+    "roundNone": "No rounding",
+    "preview": "What will change",
+    "previewCount_one": "{{count}} product will change",
+    "previewCount_other": "{{count}} products will change",
+    "previewMore": "and {{count}} more",
+    "none": "Nothing will change",
+    "apply": "Apply to {{count}}",
+    "check": "Check",
+    "success": "Prices updated: {{count}}",
+    "hint": "Cost prices and past receipts don't change. Archived products are skipped."
+  },
+  "stockActions": {
+    "title": "Stock management"
   }
 }

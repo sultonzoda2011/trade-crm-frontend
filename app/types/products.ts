@@ -21,7 +21,12 @@ export interface Product {
   quantity: number;
   unit: ProductUnit;
   lowStockThreshold: number;
+  /** Закупочная цена. Бэкенд отдаёт её только ADMIN/OWNER; у продавца поля нет. */
+  costPrice?: number | null;
   image: string | null;
+  /** Архивный товар скрыт из списка по умолчанию и не продаётся. Нет поля (старый кэш) = активный. */
+  isActive?: boolean;
+  archivedAt?: string | null;
   marketId: string;
   categoryId: string | null;
   createdAt: string;
@@ -57,6 +62,58 @@ export interface RestockTarget {
   quantity: number;
   unit: ProductUnit;
 }
+/** Цель для окон «Списать» и «Пересчитать» — те же поля, что у «Пополнить». */
+export type StockTarget = RestockTarget;
+
+export type StockMovementType = 'OPENING' | 'SALE' | 'REFUND' | 'VOID' | 'RESTOCK' | 'WRITE_OFF' | 'ADJUSTMENT';
+
+export const WRITE_OFF_REASONS = ['DAMAGED', 'EXPIRED', 'LOST', 'OWN_USE', 'OTHER'] as const;
+export type WriteOffReason = (typeof WRITE_OFF_REASONS)[number];
+
+/** Одна строка журнала остатка. `delta` со знаком, `balanceAfter` — остаток сразу после. */
+export interface StockMovement {
+  id: string;
+  productId: string;
+  type: StockMovementType;
+  delta: number;
+  balanceAfter: number;
+  /** Причина списания (только WRITE_OFF). */
+  reason: WriteOffReason | null;
+  note: string | null;
+  transactionId: string | null;
+  createdAt: string;
+  createdBy: { id: string; name: string } | null;
+  transaction: { id: string; type: string } | null;
+}
+export type StockMovementsResponse = ApiResponse<PaginatedData<StockMovement>>;
+
+/** Сводка склада для шапки раздела (только ADMIN/OWNER). Считается по активным товарам. */
+export interface ProductsSummary {
+  activeProducts: number;
+  archivedProducts: number;
+  outOfStock: number;
+  lowStock: number;
+  stockRetailValue: number;
+  stockCostValue: number;
+  potentialProfit: number;
+  /** Сколько активных товаров без закупочной цены — их нет в stockCostValue/potentialProfit. */
+  productsWithoutCost: number;
+}
+export type ProductsSummaryResponse = ApiResponse<ProductsSummary>;
+
+export interface BulkPricePayload {
+  percent: number;
+  categoryId?: string;
+  roundTo?: number;
+  dryRun?: boolean;
+}
+export interface BulkPriceResult {
+  dryRun: boolean;
+  count: number;
+  /** Только в dryRun, первые 20. */
+  items: { id: string; name: string; oldPrice: number; newPrice: number }[];
+}
+export type BulkPriceResponse = ApiResponse<BulkPriceResult>;
 
 export interface ProductInfo {
   id: string;

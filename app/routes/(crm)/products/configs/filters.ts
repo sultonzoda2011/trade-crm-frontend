@@ -52,6 +52,13 @@ export const getProductFilters = (
       placeholder: t('filters.all', { ns: 'common' }),
       options: PERIOD_OPTIONS.map((o) => ({ value: o.value, label: t(o.labelKey) })),
     },
+    // Архивные товары скрыты по умолчанию; фильтр показывает только их (см. быстрый чип «Архив»).
+    {
+      type: 'boolean',
+      key: 'archived',
+      label: t('filters.archived'),
+      trueLabel: t('filters.archived'),
+    },
     {
       type: 'boolean',
       key: 'lowStock',
@@ -71,6 +78,7 @@ export const getProductFilters = (
       { value: 'createdAt', label: t('filters.createdAt') },
       { value: 'name', label: t('filters.name') },
       { value: 'price', label: t('filters.price') },
+      { value: 'quantity', label: t('fields.quantity') },
       // Вычисляемые поля — разрешены бэкендом (ANALYTICS_SORT_FIELDS),
       // по ним запрос уходит на аналитический путь с in-memory сортировкой.
       { value: 'reorderPriority', label: t('filters.reorderPriority') },
