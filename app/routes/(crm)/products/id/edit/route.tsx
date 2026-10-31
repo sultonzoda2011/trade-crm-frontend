@@ -35,7 +35,7 @@ export default function EditProductPage() {
       name: loaded.name,
       description: loaded.description,
       price: loaded.price,
-      quantity: loaded.quantity,
+      costPrice: loaded.costPrice ?? '',
       unit: loaded.unit,
       lowStockThreshold: loaded.lowStockThreshold,
       categoryId: loaded.categoryId ?? '',
@@ -45,7 +45,7 @@ export default function EditProductPage() {
       name: data.name,
       description: data.description,
       price: data.price,
-      quantity: data.quantity,
+      costPrice: data.costPrice,
       unit: data.unit,
       lowStockThreshold: data.lowStockThreshold,
       categoryId: data.categoryId || undefined,
@@ -91,7 +91,12 @@ export default function EditProductPage() {
           aspectRatio="square"
         />
       }>
-      <ProductFormFields control={control} t={t} currentCategory={product.category ?? null} />
+      <ProductFormFields
+        control={control}
+        t={t}
+        currentCategory={product.category ?? null}
+        stock={{ quantity: product.quantity, unit: t(`unit.${product.unit}`) }}
+      />
     </EntityFormPage>
   );
 }

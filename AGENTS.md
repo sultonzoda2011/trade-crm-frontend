@@ -436,8 +436,8 @@ MARKETS_DELETE
 PRODUCTS_VIEW
 PRODUCTS_CREATE
 PRODUCTS_EDIT
-PRODUCTS_RESTOCK
 PRODUCTS_DELETE
+PRODUCTS_STOCK
 
 TRANSACTIONS_VIEW
 TRANSACTIONS_CREATE
@@ -1058,7 +1058,8 @@ components/layout/      # Header, Sidebar, NavMain, BottomNav, UserNav, ModeTogg
 
 Modal components находятся в `app/components/modals/`. Visibility контролируется через `createModalStore()`.
 - Для подтверждения удаления использовать `ConfirmDialog`.
-- Для пополнения остатка товара (`POST /products/:id/restock`) использовать `RestockProductModal`.
+- Остаток товара меняется ТОЛЬКО окнами `RestockProductModal` (`POST /products/:id/restock`), `WriteOffProductModal` (`/write-off`), `AdjustStockModal` (`/adjust`, остаток задаётся итогом; 409 `PRODUCT_STOCK_CHANGED` → показываем свежий остаток) и продажей/возвратом. Форма правки товара `quantity` не шлёт — бэкенд ответит 400. Все три — не офлайн-мутации (`networkMode: 'always'`).
+- Массовая смена цен — `BulkPriceModal` (`/products/bulk-price`): сначала `dryRun`, применить можно только то, что уже показали. «В архив» — `ArchiveProductDialog` + `useArchiveProduct` (проданный товар удалить нельзя: 409 `PRODUCT_HAS_TRANSACTIONS`, UI прячет «Удалить» при `_count.transactionItems > 0`).
 - Для оплаты долга и возврата продажи — `PayTransactionModal` и `RefundTransactionModal`.
 
 ---
@@ -1097,7 +1098,7 @@ products
 debtors
 ```
 
-Products дополнительно поддерживают модальное пополнение склада (`RestockProductModal` → `POST /products/:id/restock`).
+Products дополнительно поддерживают модальные операции со складом (`RestockProductModal`, `WriteOffProductModal`, `AdjustStockModal`, `BulkPriceModal`, `ArchiveProductDialog`), журнал остатка (`StockHistory` ← `GET /products/:id/movements`, только ADMIN/OWNER) и сводку склада (`ProductsSummary` ← `GET /products/summary`). Права: `Action.PRODUCTS_STOCK` (списание, пересчёт, журнал, сводка, массовая цена) — ADMIN/OWNER; архив — `PRODUCTS_EDIT`. Архивные товары скрыты по умолчанию (фильтр `archived=true` — чип «Архив»).
 
 Transactions:
 

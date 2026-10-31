@@ -29,7 +29,7 @@ On a phone, each product is presented as a clean row showing its photo, name, ca
 - **"Slow"** (gray) — slow-moving item;
 - **green dot with days of stock** (or `>1y`) — stock is healthy.
 
-Swipe any product row **to the left** (or long-press for half a second) to reveal quick **"Edit"** and **"Delete"** buttons (for Administrators and Owners).
+Swipe any product row **to the left** (or long-press for half a second) to reveal quick **"Restock"**, **"Edit"**, **"Archive"** and **"Delete"** buttons (for Administrators and Owners; "Delete" only for products with no sales).
 
 ### Filters and the "Analysis Period"
 
@@ -53,7 +53,7 @@ Pay special attention to the **"Analysis Period"** filter: it sets the time wind
 Tap any product to open its detail page (`/products/:id`). The header provides three management buttons:
 
 - **"Restock"** — the primary action when a new shipment arrives;
-- **"Edit"** — change the product's name, price, description, photo, or overwrite its stock count;
+- **"Edit"** — change the product's name, price, cost price, description and photo (stock is not edited here — see below);
 - **"Delete"** — remove the product (with confirmation).
 
 ### How to restock a product
@@ -66,7 +66,24 @@ When new inventory arrives, you don't need to do mental math on the edit screen:
 4. Click **"Add"** — the new units are added to your current stock automatically.
 
 > [!TIP]
-> **"Restock"** always **adds** to the current stock count. If you are doing a stocktake and need to correct an inaccurate number directly, use **"Edit"** instead.
+> **"Restock"** always **adds** to the current stock count. If you did a stocktake and the number is wrong, use **"Recount"** (see below).
+
+## Stock under control: write-off, recount, history
+
+A product's stock changes in only four ways, and each one leaves a line in the **"Stock history"** on the product page (who, when, by how much, and the balance afterwards): **sale/refund**, **"Restock"**, **"Write off"**, **"Recount"**. The edit form can't change stock, so the history always shows where goods went. The **"Stock management"** block and the history are available to Administrators and Owners.
+
+- **"Write off"** — damaged, expired, lost or stolen, own use, other. Enter the quantity and a reason (a note is optional). You can't write off more than is in stock.
+- **"Recount"** — you counted the shelf and enter how many are **actually there** (the new total, not an increase). The app shows the difference from the record and logs it in the history. If a sale went through while you were counting, the stock refreshes and you'll be asked to enter the number again.
+
+### Archive instead of delete
+
+A product that has been sold **can't be deleted** — receipts refer to it. Tap **"Archive"** instead (on the product page or by swiping the row). An archived product disappears from the list and from sales and is left out of the stock summary, but its history and old receipts stay. To see the archive pick **"Show → Archive"** above the list; bring a product back with **"Restore from archive"**. A product that was never sold can still be deleted.
+
+### Stock summary and bulk price change
+
+Above the list (Administrators and Owners) you'll see three numbers for all active products: **"Products"**, **"Stock"** (value of the stock at retail prices) and **"Profit"** (what you can earn on the stock). Profit counts only products that have a cost price, so the count of those without one is shown next to it. Tap **"Out: N"** or **"Low: N"** to open that list.
+
+The **"Prices"** button changes prices of many products at once: enter a percentage (e.g. `+5` or `−10`), optionally pick a category and a rounding step, tap **"Check"** to preview what will change, then **"Apply"**. Cost prices and past receipts are untouched; archived products are skipped.
 
 ## How to create a product
 
@@ -75,11 +92,12 @@ Click **"Create product"** (`/products/create`) and fill in the form:
 - **"Image"** — upload a product photo from your phone or computer.
 - **"Name"** `*` — product title.
 - **"Category"** — pick a category from the selection sheet (optional).
-- **"Price"** `*` — selling price per unit (at least 1).
-- **"Quantity"** `*` — starting stock on hand (0 or more).
+- **"Price"** `*` — selling price per unit.
+- **"Cost price"** — what you pay for the product; used to calculate profit and visible only to Administrators and Owners.
+- **"Opening stock"** `*` — how many are on hand now (0 or more); afterwards stock changes through "Restock", "Write off" and "Recount".
 - **"Unit"** — **pcs** (pieces), **kg** (kilograms), **l** (liters), **m** (meters), or **box** (boxes).
 - **"Low Stock Threshold"** — minimum stock level at which the quantity turns red and triggers a low-stock alert.
-- **"Description"** `*` — short description of the product.
+- **"Description"** — short description of the product (optional).
 
 ## Product categories
 
@@ -95,5 +113,7 @@ The **"Categories"** section (`/categories`) manages all product groups:
 | View product catalog and detail pages (`/products`) | Yes | Yes | Yes |
 | Pick products when recording a transaction | Yes | Yes | Yes |
 | Quick stock addition ("Restock") | Yes | Yes | No |
+| Write-off, recount, stock history, stock summary, bulk price change | Yes | Yes | No |
+| Archive and restore from archive | Yes | Yes | No |
 | Create, edit, and delete products | Yes | Yes | No |
 | View and manage "Categories" | Yes | Yes | No |

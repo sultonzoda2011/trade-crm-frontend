@@ -16,6 +16,8 @@ export enum Action {
   PRODUCTS_CREATE = 'PRODUCTS_CREATE',
   PRODUCTS_EDIT = 'PRODUCTS_EDIT',
   PRODUCTS_DELETE = 'PRODUCTS_DELETE',
+  /** Списание, пересчёт, сводка склада, массовая цена — только ADMIN/OWNER. */
+  PRODUCTS_STOCK = 'PRODUCTS_STOCK',
   CATEGORIES_VIEW = 'CATEGORIES_VIEW',
   CATEGORIES_MANAGE = 'CATEGORIES_MANAGE',
   TRANSACTIONS_VIEW = 'TRANSACTIONS_VIEW',
@@ -52,6 +54,7 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.PRODUCTS_CREATE]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_EDIT]: [Role.Admin, Role.Owner],
   [Action.PRODUCTS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.PRODUCTS_STOCK]: [Role.Admin, Role.Owner],
   [Action.CATEGORIES_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.CATEGORIES_MANAGE]: [Role.Admin, Role.Owner],
   [Action.TRANSACTIONS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],

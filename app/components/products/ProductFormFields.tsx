@@ -16,12 +16,18 @@ interface ProductFormFieldsProps {
   t: TFunction;
   /** Current category from a loaded product (seeds the async select on edit). */
   currentCategory?: { id: string; name: string } | null;
+  /**
+   * Правка: остаток в форму НЕ входит (его меняют «Пополнить» / «Списать» / «Пересчитать» на странице
+   * товара — иначе в истории не видно, куда он делся), поэтому вместо поля показываем, чем он сейчас
+   * и где его менять. Без `stock` — создание: поле «Начальный остаток».
+   */
+  stock?: { quantity: number; unit: string };
 }
 
 /**
  * Общие поля формы товара (создание и редактирование).
  */
-export function ProductFormFields({ control, t, currentCategory }: ProductFormFieldsProps) {
+export function ProductFormFields({ control, t, currentCategory, stock }: ProductFormFieldsProps) {
   const categorySeed = useMemo(
     () => (currentCategory ? [{ id: currentCategory.id, name: currentCategory.name }] : undefined),
     [currentCategory]
@@ -75,14 +81,31 @@ export function ProductFormFields({ control, t, currentCategory }: ProductFormFi
         />
         <FormInput
           control={typedControl}
+          name="costPrice"
+          type="number"
+          inputMode="decimal"
+          label={t('fields.costPrice')}
+          placeholder={t('fields.costPrice')}
+        />
+      </FormGrid>
+      {stock ? (
+        <div className="bg-muted space-y-1 rounded-xl px-3 py-2.5 text-sm">
+          <p className="font-medium">
+            {t('fields.stockLockedTitle')}: {t('fields.stockNow', { count: stock.quantity, unit: stock.unit })}
+          </p>
+          <p className="text-muted-foreground">{t('fields.stockLocked')}</p>
+        </div>
+      ) : (
+        <FormInput
+          control={typedControl}
           name="quantity"
           type="number"
           inputMode="decimal"
-          label={t('fields.quantity')}
-          placeholder={t('fields.quantity')}
+          label={t('fields.initialStock')}
+          placeholder="0"
           required
         />
-      </FormGrid>
+      )}
       <FormGrid>
         <FormCustomSelect control={typedControl} name="unit" label={t('fields.unit')} options={unitOptions} />
         <FormInput
@@ -99,7 +122,6 @@ export function ProductFormFields({ control, t, currentCategory }: ProductFormFi
         name="description"
         label={t('fields.description')}
         placeholder={t('fields.description')}
-        required
       />
     </>
   );

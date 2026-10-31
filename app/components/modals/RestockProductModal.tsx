@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 import { productsApi } from '~/api/products';
 import { Modal } from '~/components/shared/Modal';
 import { ModalFooterActions } from '~/components/shared/ModalFooterActions';
+import { StockSummary } from '~/components/products/StockSummary';
 import { FormInput } from '~/components/ui/form/FormInput';
+import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
@@ -49,7 +51,8 @@ export function RestockProductModal() {
 
   const { mutate, isPending } = useMutation({
     networkMode: 'always',
-    mutationFn: (data: RestockSchema) => productsApi.restock({ id: product!.id, quantity: data.quantity }),
+    mutationFn: (data: RestockSchema) =>
+      productsApi.restock({ id: product!.id, quantity: data.quantity, note: data.note?.trim() || undefined }),
     onSuccess: (_result, data) => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
       toast.success(t('restock.success', { quantity: fmtNum(data.quantity), unit }));
@@ -80,20 +83,14 @@ export function RestockProductModal() {
           disabled={added <= 0}
         />
       }>
-      <div className="bg-muted mb-4 space-y-2 rounded-xl p-3 text-base">
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t('restock.current')}:</span>
-          <span className="font-mono font-medium">
-            {fmtNum(product.quantity)} {unit}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-muted-foreground">{t('restock.after')}:</span>
-          <span className={cn('font-mono font-bold', added > 0 && 'text-success')}>
-            {fmtNum(product.quantity + added)} {unit}
-          </span>
-        </div>
-      </div>
+      <StockSummary
+        currentLabel={t('restock.current')}
+        afterLabel={t('restock.after')}
+        current={product.quantity}
+        after={added > 0 ? product.quantity + added : null}
+        unit={unit}
+        tone="success"
+      />
 
       <form id="restock-product-form" onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-1.5">
@@ -122,6 +119,14 @@ export function RestockProductModal() {
             ))}
           </div>
         </div>
+        <FormTextarea
+          control={control}
+          name="note"
+          label={t('restock.note')}
+          placeholder={t('restock.notePlaceholder')}
+          rows={2}
+          maxLength={200}
+        />
         <p className="text-muted-foreground px-1 text-sm">{t('restock.hint')}</p>
       </form>
     </Modal>

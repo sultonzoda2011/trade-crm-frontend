@@ -24,5 +24,8 @@
   "paymentTypeMismatch": "Payment type is not allowed for this transaction type",
   "priceMin": "Price must be greater than 0",
   "advanceInvalid": "Enter an amount greater than zero",
-  "advanceTooLarge": "The advance must be less than the total — record a fully paid purchase as a sale"
+  "advanceTooLarge": "The advance must be less than the total — record a fully paid purchase as a sale",
+  "quantityNonNegative": "Not less than 0",
+  "percentRange": "From −90 to +500",
+  "percentZero": "Enter a percentage other than 0"
 }

@@ -4,7 +4,7 @@ import { getProductHealthOptions, getReorderPriorityOptions } from '~/config/ana
 import { applyFilter } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
-const FILTER_KEYS = ['health', 'reorderPriority'] as const;
+const FILTER_KEYS = ['health', 'reorderPriority', 'archived'] as const;
 
 interface ProductQuickFiltersProps {
   filters: ActiveFilter[];
@@ -12,7 +12,7 @@ interface ProductQuickFiltersProps {
 }
 
 /**
- * Быстрые фильтры товаров: состояние склада и срочность закупки. Пишут в те же
+ * Быстрые фильтры товаров: активные/архив, состояние склада и срочность закупки. Пишут в те же
  * ключи, что и шторка (`health`, `reorderPriority`), поэтому совпадают с ней и с URL
  * (в том числе с переходами с дашборда). Внутри группы выбран один пункт.
  */
@@ -20,12 +20,21 @@ export function ProductQuickFilters({ filters, onChange }: ProductQuickFiltersPr
   const { t } = useTranslation(['products', 'common']);
   const health = getFilterValue(filters, 'health');
   const reorder = getFilterValue(filters, 'reorderPriority');
+  const archived = getFilterValue(filters, 'archived') === 'true';
 
   const select = (key: (typeof FILTER_KEYS)[number], next: string | undefined) =>
     onChange(applyFilter(filters, key, next ?? ''));
 
   return (
     <div className="space-y-3">
+      <ChipGroup label={t('filters.show')}>
+        <Chip active={!archived} onClick={() => select('archived', undefined)}>
+          {t('filters.activeOnly')}
+        </Chip>
+        <Chip active={archived} onClick={() => select('archived', 'true')}>
+          {t('filters.archived')}
+        </Chip>
+      </ChipGroup>
       <ChipGroup label={t('filters.health')}>
         <Chip active={!health} onClick={() => select('health', undefined)}>
           {t('filters.all', { ns: 'common' })}
