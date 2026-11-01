@@ -12,6 +12,8 @@ export default [
       route('sellers', 'routes/(crm)/dashboard/sellers-report.tsx'),
     ]),
     route('/profile', 'routes/(crm)/profile/route.tsx'),
+    route('/profile/edit', 'routes/(crm)/profile/edit/route.tsx'),
+    route('/profile/password', 'routes/(crm)/profile/password/route.tsx'),
     route('/users', 'routes/(crm)/users/route.tsx'),
     route('/users/create', 'routes/(crm)/users/create/route.tsx'),
     route('/users/:id', 'routes/(crm)/users/id/route.tsx'),

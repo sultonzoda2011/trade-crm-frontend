@@ -133,6 +133,8 @@ File-system routing не используется.
 │   └── /sellers
 │
 ├── /profile
+│   ├── /edit
+│   └── /password
 │
 ├── /users
 │   ├── /create
@@ -604,6 +606,36 @@ dashboard.ts
 profile.ts
 crud.ts
 ```
+
+---
+
+## Profile (`/profile`, `/profile/edit`, `/profile/password`)
+
+Экран «Настройки» как в iOS: человек сверху, ниже группы (`ListGroup`/`ListRow`):
+заработок (только SELLER, `Action.PROFILE_EARNINGS`), аккаунт, рынок, приложение
+(тема, язык, синхронизация, справка), безопасность, выход. Рабочих списков
+(продажи/товары/должники) здесь нет — они в навигации.
+
+- Данные: `GET /profile/full` → `{ profile, market, earnings }` (`queryKeys.profile()`);
+  шапка и форма правки читают `GET /profile` (`queryKeys.me()`). После любой правки —
+  `invalidateQueries(queryKeys.profileAll())`.
+- Формы профиля шлют `silent: true` (см. `app/api/profile.ts`) и сами показывают ошибки
+  по `code` из ответа через `parseApiError` (`app/lib/api-error.ts`):
+  `EMAIL_IN_USE`, `CURRENT_PASSWORD_INCORRECT`, `CURRENT_PASSWORD_REQUIRED`,
+  `PASSWORD_SAME_AS_CURRENT`, `PASSWORD_MISMATCH`. Неверный текущий пароль — 400, а не 401,
+  поэтому клиент не разлогинивает.
+- Смена почты требует текущий пароль (восстановления доступа нет).
+- Фото: `AvatarField` → `AvatarCropModal` (свой кроппер на pointer events и canvas, без
+  зависимостей; результат — JPEG 512×512) → файл уходит вместе с формой по «Сохранить».
+  Удаление фото — отдельный `DELETE /profile/image` после PATCH.
+- Пароль: правила в `app/lib/password-rules.ts` (те же, что на бэке), живой
+  `PasswordChecklist`. Смена пароля не выбрасывает из сессии.
+- Выход — хук `useLogout` (меню в шапке и экран профиля); стирает офлайн-кеш и спрашивает,
+  если в очереди есть неотправленное.
+- На телефоне аватар в шапке (`UserNav`) ведёт прямо на `/profile`; выпадающее меню — на
+  десктопе. `/profile/password` входит в `FORM_ROUTE` в `BottomNav` (нижняя панель скрыта).
+- Токен живёт долго (`JWT_ACCESS_EXPIRES_IN`, по умолчанию 365d); refresh нет, любой 401
+  по-прежнему разлогинивает.
 
 ---
 

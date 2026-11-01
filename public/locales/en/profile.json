@@ -1,36 +1,88 @@
 {
   "title": "Profile",
-  "editTitle": "Edit profile",
-  "avatar": "Avatar",
+  "editTitle": "My details",
+  "editProfile": "Edit",
+  "loadError": "Couldn't load the profile",
   "sections": {
-    "profile": "General information",
-    "password": "Change password",
+    "account": "Account",
     "market": "My market",
-    "statistics": "Statistics"
+    "app": "App",
+    "security": "Security",
+    "password": "Password"
   },
   "fields": {
     "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "createdAt": "Member since",
     "currentPassword": "Current password",
     "newPassword": "New password",
-    "confirmPassword": "Confirm password",
-    "marketId": "Market ID",
-    "createdAt": "Registered at",
-    "products": "Products",
-    "debtors": "Debtors",
-    "transactions": "Transactions"
+    "confirmPassword": "Repeat new password",
+    "theme": "Theme",
+    "language": "Language"
   },
-  "noMarket": "No market assigned",
-  "viewProducts": "All products",
-  "viewDebtors": "All debtors",
-  "viewTransactions": "All transactions",
-  "goToMarket": "Go to market",
-  "editProfile": "Edit profile",
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "notSet": "Not set",
+  "sync": "Sync",
+  "guide": "Guide",
+  "passwordNever": "Never changed",
+  "passwordHintChanged": "Password last changed on {{date}}.",
+  "passwordHintNever": "The password has never been changed. Better replace the one given when the account was created.",
+  "emailChangeHint": "Email can only be changed with your password. You can sign in with the new email right after saving.",
+  "avatarAdd": "Choose photo",
+  "avatarChange": "Choose another photo",
+  "avatarRemove": "Remove photo",
+  "avatarNotImage": "This isn't an image",
+  "avatarTooLarge": "The file is too large (over 25 MB)",
+  "avatarUnreadable": "Couldn't open the photo. Try another one (JPG or PNG)",
+  "crop": {
+    "title": "Profile photo",
+    "cancel": "Cancel",
+    "done": "Done",
+    "hint": "Drag the photo with your finger, zoom with the slider",
+    "zoom": "Zoom",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out"
+  },
+  "passwordRules": {
+    "title": "Password requirements",
+    "length": "At least 8 characters",
+    "lower": "A lowercase letter",
+    "upper": "An uppercase letter",
+    "digit": "A digit",
+    "match": "Passwords match"
+  },
+  "errors": {
+    "emailInUse": "This email is already taken",
+    "currentPasswordIncorrect": "Current password is incorrect"
+  },
+  "earnings": {
+    "title": "Earnings",
+    "balance": "My balance",
+    "balanceHint": "What you are owed: sales markup minus refunds and payouts.",
+    "thisMonth": "This month",
+    "salesCount_one": "{{count}} sale",
+    "salesCount_other": "{{count}} sales",
+    "earned": "Earned",
+    "refunded": "Refunds",
+    "paidOut": "Paid out",
+    "payouts": "Recent payouts",
+    "payout": "Payout",
+    "noPayouts": "No payouts yet"
+  },
   "actions": {
     "savePassword": "Change password"
   },
   "updateSuccess": "Profile updated",
-  "updateError": "Failed to update profile",
+  "updateError": "Couldn't update the profile",
   "passwordSuccess": "Password changed",
-  "passwordError": "Failed to change password",
-  "loadError": "Failed to load profile"
+  "passwordSuccessHint": "Use it the next time you sign in",
+  "passwordError": "Couldn't change the password",
+  "showPassword": "Show passwords",
+  "hidePassword": "Hide passwords",
+  "needInternet": "Internet is required: the profile can only be changed online"
 }

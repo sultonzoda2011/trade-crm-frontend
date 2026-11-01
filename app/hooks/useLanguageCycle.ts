@@ -21,12 +21,18 @@ export function useLanguageCycle() {
   const currentIndex = LANGUAGE_ITEMS.findIndex((item) => item.value === currentCode);
   const currentLanguage = LANGUAGE_ITEMS[currentIndex] ?? LANGUAGE_ITEMS[0];
 
+  const setLanguage = useCallback(
+    (value: SupportedLng) => {
+      Cookies.set('lng', value, { expires: 365 });
+      void i18n.changeLanguage(value);
+    },
+    [i18n]
+  );
+
   const cycleLanguage = useCallback(() => {
     const idx = currentIndex >= 0 ? currentIndex : 0;
-    const nextLanguage = LANGUAGE_ITEMS[(idx + 1) % LANGUAGE_ITEMS.length];
-    Cookies.set('lng', nextLanguage.value, { expires: 365 });
-    void i18n.changeLanguage(nextLanguage.value);
-  }, [currentIndex, i18n]);
+    setLanguage(LANGUAGE_ITEMS[(idx + 1) % LANGUAGE_ITEMS.length].value);
+  }, [currentIndex, setLanguage]);
 
-  return { currentLanguage, cycleLanguage };
+  return { currentLanguage, cycleLanguage, setLanguage };
 }

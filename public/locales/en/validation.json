@@ -27,5 +27,11 @@
   "advanceTooLarge": "The advance must be less than the total — record a fully paid purchase as a sale",
   "quantityNonNegative": "Not less than 0",
   "percentRange": "From −90 to +500",
-  "percentZero": "Enter a percentage other than 0"
+  "percentZero": "Enter a percentage other than 0",
+  "nameMin": "At least 2 characters",
+  "phoneInvalid": "Enter a phone number: digits, optionally with “+”",
+  "currentPasswordForEmail": "Enter your current password to change the email",
+  "passwordWeak": "Needs a lowercase letter, an uppercase letter and a digit",
+  "confirmRequired": "Repeat the new password",
+  "passwordSame": "The new password must differ from the current one"
 }

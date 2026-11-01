@@ -29,7 +29,7 @@ const PRIMARY_ORDER: NavKey[] = [
 const PRIMARY_SLOTS = 3;
 
 /** Страницы-формы имеют свою sticky-панель действий — плавающая навигация там не нужна. */
-const FORM_ROUTE = /\/(create|edit)$/;
+const FORM_ROUTE = /\/(create|edit|profile\/password)$/;
 
 /** Высота стеклянной капсулы (px). Под неё рассчитан отступ в (crm)/layout.tsx. */
 const CAPSULE_HEIGHT = 64;

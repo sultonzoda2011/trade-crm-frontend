@@ -504,7 +504,7 @@ export async function runSync({
   // Для синхронизации одной сущности профиль/дашборд/справочники не трогаем —
   // они не связаны с конкретной страницей списка и грузятся только «Всё».
   if (full) {
-    // Профиль: шапка читает compact `me`, страница профиля — `full`.
+    // Профиль: шапка читает compact `me`, страница профиля — `full` (профиль, рынок, заработок продавца).
     addMeta('profile', async () => store(queryKeys.me(), await call((c) => profileApi.getProfile(c))));
     addMeta('profile', async () => store(queryKeys.profile(), await call((c) => profileApi.getFullProfile(c))));
 
@@ -537,14 +537,6 @@ export async function runSync({
         store(queryKeys.options('debtors', { scope: 'filters', limit: 100 }), response); // транзакции: фильтр
         store([...queryKeys.options('debtors', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []); // новая транзакция
       });
-      if (marketId) {
-        addMeta('reference', async () =>
-          store(
-            queryKeys.options('debtors', { scope: 'profile', marketId, limit: 5 }),
-            await call((c) => debtorsApi.getAll(1, 5, {}, [], c))
-          )
-        );
-      }
     }
     if (can(Action.PRODUCTS_VIEW)) {
       addMeta('reference', async () => {
@@ -552,14 +544,6 @@ export async function runSync({
         store(queryKeys.options('products', { scope: 'filters', limit: 100 }), response);
         store([...queryKeys.options('products', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []);
       });
-      if (marketId) {
-        addMeta('reference', async () =>
-          store(
-            queryKeys.options('products', { scope: 'profile', marketId, limit: 5 }),
-            await call((c) => productsApi.getAll(1, 5, {}, [], c))
-          )
-        );
-      }
     }
     if (can(Action.CATEGORIES_VIEW)) {
       addMeta('reference', async () =>

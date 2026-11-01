@@ -151,6 +151,7 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/transactions/:id', methods: ['delete'], action: Action.TRANSACTIONS_CANCEL },
   { pattern: '/transactions/:id/pay', methods: ['patch'], action: Action.TRANSACTIONS_EDIT },
   { pattern: '/transactions/:id/refund', methods: ['post'], action: Action.TRANSACTIONS_REFUND },
+  { pattern: '/profile/earnings', methods: ['get'], action: Action.PROFILE_EARNINGS },
   { pattern: '/categories', methods: ['get'], action: Action.CATEGORIES_VIEW },
   { pattern: '/categories', methods: ['post'], action: Action.CATEGORIES_MANAGE },
   { pattern: '/categories/:id', methods: ['get'], action: Action.CATEGORIES_VIEW },

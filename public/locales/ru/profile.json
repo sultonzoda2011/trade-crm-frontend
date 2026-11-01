@@ -1,36 +1,90 @@
 {
   "title": "Профиль",
-  "editTitle": "Редактировать профиль",
-  "avatar": "Аватар",
+  "editTitle": "Мои данные",
+  "editProfile": "Изменить",
+  "loadError": "Не удалось загрузить профиль",
   "sections": {
-    "profile": "Общая информация",
-    "password": "Смена пароля",
+    "account": "Аккаунт",
     "market": "Мой рынок",
-    "statistics": "Статистика"
+    "app": "Приложение",
+    "security": "Безопасность",
+    "password": "Пароль"
   },
   "fields": {
     "name": "Имя",
+    "email": "Почта",
+    "phone": "Телефон",
+    "createdAt": "В системе с",
     "currentPassword": "Текущий пароль",
     "newPassword": "Новый пароль",
-    "confirmPassword": "Подтверждение пароля",
-    "marketId": "ID рынка",
-    "createdAt": "Дата регистрации",
-    "products": "Товары",
-    "debtors": "Должники",
-    "transactions": "Транзакции"
+    "confirmPassword": "Повторите новый пароль",
+    "theme": "Тема",
+    "language": "Язык"
   },
-  "noMarket": "Рынок не назначен",
-  "viewProducts": "Все товары",
-  "viewDebtors": "Все должники",
-  "viewTransactions": "Все транзакции",
-  "goToMarket": "Перейти к рынку",
-  "editProfile": "Редактировать профиль",
+  "theme": {
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Как в системе"
+  },
+  "notSet": "Не указан",
+  "sync": "Синхронизация",
+  "guide": "Справка",
+  "passwordNever": "Не менялся",
+  "passwordHintChanged": "Пароль менялся {{date}}.",
+  "passwordHintNever": "Пароль ещё ни разу не менялся. Лучше сменить тот, что выдали при создании аккаунта.",
+  "emailChangeHint": "Почту можно сменить только по паролю. Войти с новой почтой можно сразу после сохранения.",
+  "avatarAdd": "Выбрать фото",
+  "avatarChange": "Выбрать другое фото",
+  "avatarRemove": "Удалить фото",
+  "avatarNotImage": "Это не картинка",
+  "avatarTooLarge": "Файл слишком большой (больше 25 МБ)",
+  "avatarUnreadable": "Не удалось открыть фото. Попробуйте другое (JPG или PNG)",
+  "crop": {
+    "title": "Фото профиля",
+    "cancel": "Отмена",
+    "done": "Готово",
+    "hint": "Двигайте фото пальцем, масштаб — ползунком",
+    "zoom": "Масштаб",
+    "zoomIn": "Приблизить",
+    "zoomOut": "Отдалить"
+  },
+  "passwordRules": {
+    "title": "Требования к паролю",
+    "length": "Не меньше 8 символов",
+    "lower": "Строчная буква",
+    "upper": "Заглавная буква",
+    "digit": "Цифра",
+    "match": "Пароли совпадают"
+  },
+  "errors": {
+    "emailInUse": "Эта почта уже занята",
+    "currentPasswordIncorrect": "Неверный текущий пароль"
+  },
+  "earnings": {
+    "title": "Заработок",
+    "balance": "Мой баланс",
+    "balanceHint": "Столько вам должны выплатить: надбавки за продажи минус возвраты и выплаты.",
+    "thisMonth": "В этом месяце",
+    "salesCount_one": "{{count}} продажа",
+    "salesCount_few": "{{count}} продажи",
+    "salesCount_many": "{{count}} продаж",
+    "salesCount_other": "{{count}} продаж",
+    "earned": "Заработано",
+    "refunded": "Возвраты",
+    "paidOut": "Выплачено",
+    "payouts": "Последние выплаты",
+    "payout": "Выплата",
+    "noPayouts": "Выплат пока не было"
+  },
   "actions": {
     "savePassword": "Сменить пароль"
   },
   "updateSuccess": "Профиль обновлён",
   "updateError": "Не удалось обновить профиль",
   "passwordSuccess": "Пароль изменён",
-  "passwordError": "Не удалось изменить пароль",
-  "loadError": "Не удалось загрузить профиль"
+  "passwordSuccessHint": "Используйте его при следующем входе",
+  "passwordError": "Не удалось сменить пароль",
+  "showPassword": "Показать пароли",
+  "hidePassword": "Скрыть пароли",
+  "needInternet": "Нужен интернет: профиль меняется только онлайн"
 }

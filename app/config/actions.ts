@@ -36,6 +36,8 @@ export enum Action {
   DEBTORS_CREATE = 'DEBTORS_CREATE',
   DEBTORS_EDIT = 'DEBTORS_EDIT',
   DEBTORS_DELETE = 'DEBTORS_DELETE',
+  /** Заработок и баланс по надбавкам в профиле — только у продавца. */
+  PROFILE_EARNINGS = 'PROFILE_EARNINGS',
 }
 
 export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
@@ -72,4 +74,5 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.DEBTORS_CREATE]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_EDIT]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.PROFILE_EARNINGS]: [Role.Seller],
 };

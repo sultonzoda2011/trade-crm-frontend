@@ -1,36 +1,88 @@
 {
   "title": "Профил",
-  "editTitle": "Таҳрири профил",
-  "avatar": "Аватар",
+  "editTitle": "Маълумоти ман",
+  "editProfile": "Таҳрир",
+  "loadError": "Профил боргирӣ нашуд",
   "sections": {
-    "profile": "Маълумоти умумӣ",
-    "password": "Иваз кардани рамз",
+    "account": "Ҳисоб",
     "market": "Бозори ман",
-    "statistics": "Омор"
+    "app": "Барнома",
+    "security": "Амният",
+    "password": "Парол"
   },
   "fields": {
     "name": "Ном",
-    "currentPassword": "Рамзи феълӣ",
-    "newPassword": "Рамзи нав",
-    "confirmPassword": "Тасдиқи рамз",
-    "marketId": "ID бозор",
-    "createdAt": "Санаи бақайдгирӣ",
-    "products": "Молҳо",
-    "debtors": "Қарздорон",
-    "transactions": "Муомилотҳо"
+    "email": "Почта",
+    "phone": "Телефон",
+    "createdAt": "Дар система аз",
+    "currentPassword": "Пароли ҷорӣ",
+    "newPassword": "Пароли нав",
+    "confirmPassword": "Пароли навро такрор кунед",
+    "theme": "Мавзӯъ",
+    "language": "Забон"
   },
-  "noMarket": "Бозор таъин нашудааст",
-  "viewProducts": "Ҳамаи молҳо",
-  "viewDebtors": "Ҳамаи қарздорон",
-  "viewTransactions": "Ҳамаи муомилотҳо",
-  "goToMarket": "Гузаштан ба бозор",
-  "editProfile": "Таҳрири профил",
+  "theme": {
+    "light": "Равшан",
+    "dark": "Торик",
+    "system": "Мувофиқи система"
+  },
+  "notSet": "Нишон дода нашудааст",
+  "sync": "Ҳамоҳангсозӣ",
+  "guide": "Роҳнамо",
+  "passwordNever": "Тағир наёфтааст",
+  "passwordHintChanged": "Парол {{date}} иваз шуд.",
+  "passwordHintNever": "Парол ҳанӯз ягон бор иваз нашудааст. Беҳтар аст пароли ҳангоми сохтани ҳисоб додашударо иваз кунед.",
+  "emailChangeHint": "Почтаро танҳо бо парол иваз кардан мумкин аст. Баъди нигоҳ доштан метавонед бо почтаи нав ворид шавед.",
+  "avatarAdd": "Интихоби акс",
+  "avatarChange": "Акси дигарро интихоб кунед",
+  "avatarRemove": "Нест кардани акс",
+  "avatarNotImage": "Ин акс нест",
+  "avatarTooLarge": "Файл хеле калон аст (зиёда аз 25 МБ)",
+  "avatarUnreadable": "Акс кушода нашуд. Дигареро санҷед (JPG ё PNG)",
+  "crop": {
+    "title": "Акси профил",
+    "cancel": "Бекор кардан",
+    "done": "Тайёр",
+    "hint": "Аксро бо ангушт ҳаракат диҳед, андоза — бо тугмача",
+    "zoom": "Андоза",
+    "zoomIn": "Калон кардан",
+    "zoomOut": "Хурд кардан"
+  },
+  "passwordRules": {
+    "title": "Талаботи парол",
+    "length": "На камтар аз 8 аломат",
+    "lower": "Ҳарфи хурд",
+    "upper": "Ҳарфи калон",
+    "digit": "Рақам",
+    "match": "Паролҳо мувофиқанд"
+  },
+  "errors": {
+    "emailInUse": "Ин почта аллакай банд аст",
+    "currentPasswordIncorrect": "Пароли ҷорӣ нодуруст аст"
+  },
+  "earnings": {
+    "title": "Даромад",
+    "balance": "Баланси ман",
+    "balanceHint": "Ин маблағро ба шумо бояд супоранд: иловаи фурӯш бе баргардонидан ва пардохтҳо.",
+    "thisMonth": "Ин моҳ",
+    "salesCount_one": "{{count}} фурӯш",
+    "salesCount_other": "{{count}} фурӯш",
+    "earned": "Ба даст омад",
+    "refunded": "Баргардонидан",
+    "paidOut": "Пардохт шуд",
+    "payouts": "Пардохтҳои охирин",
+    "payout": "Пардохт",
+    "noPayouts": "Ҳанӯз пардохт нашудааст"
+  },
   "actions": {
-    "savePassword": "Иваз кардани рамз"
+    "savePassword": "Иваз кардани парол"
   },
   "updateSuccess": "Профил навсозӣ шуд",
-  "updateError": "Профилро навсозӣ кардан муяссар нашуд",
-  "passwordSuccess": "Рамз иваз карда шуд",
-  "passwordError": "Рамзро иваз кардан муяссар нашуд",
-  "loadError": "Профил бор карда нашуд"
+  "updateError": "Профил навсозӣ нашуд",
+  "passwordSuccess": "Парол иваз шуд",
+  "passwordSuccessHint": "Дафъаи оянда бо он ворид шавед",
+  "passwordError": "Парол иваз нашуд",
+  "showPassword": "Нишон додани паролҳо",
+  "hidePassword": "Пинҳон кардани паролҳо",
+  "needInternet": "Интернет лозим аст: профилро танҳо онлайн иваз кардан мумкин аст"
 }
