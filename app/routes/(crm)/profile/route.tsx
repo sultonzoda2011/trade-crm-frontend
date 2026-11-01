@@ -1,42 +1,49 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, Lock, Package, Pencil, ReceiptText, Users } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import {
+  BookOpen,
+  CloudDownload,
+  KeyRound,
+  LogOut,
+  Monitor,
+  Moon,
+  Pencil,
+  Store,
+  Sun,
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
-import { Link, useLocation } from 'react-router';
-import { debtorsApi } from '~/api/debtors';
-import { productsApi } from '~/api/products';
+import { Link } from 'react-router';
 import { profileApi } from '~/api/profile';
-import { Panel } from '~/components/layout/Panel';
-import { ChangePasswordModal } from '~/components/modals/ChangePasswordModal';
-import { EditProfileModal } from '~/components/modals/EditProfileModal';
+import { EarningsSection } from '~/components/profile/EarningsSection';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { DetailHeader } from '~/components/shared/DetailHeader';
-import { InfoItem } from '~/components/shared/InfoItem';
-import { InfoLink } from '~/components/shared/InfoLink';
-import { ListLink } from '~/components/shared/ListLink';
-import { MarketEntityTabs, type EntityTab } from '~/components/shared/MarketEntityTabs';
-import { QuickActions } from '~/components/shared/QuickActions';
-import { StatCard } from '~/components/shared/StatCard';
-import { StatRow } from '~/components/shared/StatRow';
-import { TransactionRow } from '~/components/shared/TransactionRow';
-import { UserAvatar } from '~/components/shared/UserAvatar';
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { EntityAvatar } from '~/components/shared/EntityAvatar';
+import { ListGroup, ListRow } from '~/components/shared/ListGroup';
+import { SegmentedControl } from '~/components/shared/SegmentedControl';
 import { Badge } from '~/components/ui/badge';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
 import { Action } from '~/config/actions';
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCan } from '~/hooks/useCan';
-import { getClientUser } from '~/lib/auth-utils';
-import { fmtTJS, formatDate } from '~/lib/format';
+import { useLanguageCycle, LANGUAGE_ITEMS } from '~/hooks/useLanguageCycle';
+import { useLogout } from '~/hooks/useLogout';
+import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
-import { useProfileModals } from '~/routes/(crm)/profile/store';
 
+type ThemeValue = 'light' | 'dark' | 'system';
+
+/**
+ * Профиль — экран «Настройки» как в iOS: сверху человек (фото, имя, роль), ниже
+ * группы: заработок (только продавцу), аккаунт, рынок, приложение, безопасность
+ * и выход. Рабочие списки (продажи, товары, должники) отсюда убраны — они есть
+ * в навигации; здесь только то, что относится к самому человеку.
+ */
 export default function ProfilePage() {
   const { t } = useTranslation(['profile', 'common']);
-  const location = useLocation();
-  const editModal = useProfileModals((s) => s.edit);
-  const passwordModal = useProfileModals((s) => s.password);
+  const { can } = useCan();
+  const { theme, setTheme } = useTheme();
+  const { currentLanguage, setLanguage } = useLanguageCycle();
+  const { requestLogout, logoutDialog } = useLogout();
 
   const { data: response, isLoading } = useQuery({
     queryKey: queryKeys.profile(),
@@ -45,110 +52,8 @@ export default function ProfilePage() {
   });
 
   const profile = response?.data?.profile;
-  const market = response?.data?.market ?? undefined;
-  const user = getClientUser();
-  const fromState = { fromPath: location.pathname, fromName: t('title') };
-
-  const { can } = useCan();
-
-  const canViewProducts = can(Action.PRODUCTS_VIEW);
-  const canViewDebtors = can(Action.DEBTORS_VIEW);
-  const canViewTransactions = can(Action.TRANSACTIONS_VIEW);
-  const [activeTab, setActiveTab] = useState('transactions');
-
-  const { data: productsResponse, isLoading: isProductsLoading } = useQuery({
-    queryKey: queryKeys.options('products', { scope: 'profile', marketId: user?.marketId, limit: 5 }),
-    queryFn: () => productsApi.getAll(1, 5, {}, []),
-    enabled: !!user?.marketId && canViewProducts && activeTab === 'products',
-    staleTime: 30_000,
-  });
-
-  const { data: debtorsResponse, isLoading: isDebtorsLoading } = useQuery({
-    queryKey: queryKeys.options('debtors', { scope: 'profile', marketId: user?.marketId, limit: 5 }),
-    queryFn: () => debtorsApi.getAll(1, 5, {}, []),
-    enabled: !!user?.marketId && canViewDebtors && activeTab === 'debtors',
-    staleTime: 30_000,
-  });
-
-  const products = useMemo(() => productsResponse?.data?.data ?? [], [productsResponse]);
-  const debtors = useMemo(() => debtorsResponse?.data?.data ?? [], [debtorsResponse]);
-  const transactions = useMemo(() => response?.data?.transactions?.data ?? [], [response]);
-  const totalTx = response?.data?.transactions?.meta?.total ?? market?.count.transactions ?? 0;
-  const isTxLoading = isLoading;
-
-  const tabs: EntityTab[] = [];
-  if (market && canViewTransactions) {
-    tabs.push({
-      value: 'transactions',
-      label: t('fields.transactions'),
-      count: totalTx,
-      isLoading: isTxLoading,
-      isEmpty: transactions.length === 0,
-      emptyMessage: t('noTransactions'),
-      rows: transactions.map((tx) => (
-        <TransactionRow key={tx.id} tx={tx} t={t} to={`/transactions/${tx.id}`} state={fromState} flush />
-      )),
-      viewAll: {
-        to: '/transactions',
-        state: fromState,
-        label: t('viewTransactions'),
-        count: totalTx,
-      },
-    });
-  }
-  if (market && canViewProducts) {
-    tabs.push({
-      value: 'products',
-      label: t('fields.products'),
-      count: productsResponse?.data?.meta?.total ?? market.count.products,
-      isLoading: isProductsLoading,
-      isEmpty: products.length === 0,
-      emptyMessage: t('noProducts'),
-      rows: products.map((product) => (
-        <ListLink key={product.id} to={`/products/${product.id}`} state={fromState}>
-          <div className="flex min-w-0 items-center gap-2.5">
-            <Avatar size="lg" className="shrink-0">
-              {product.image ? <AvatarImage src={product.image} alt={product.name} /> : null}
-              <AvatarFallback>{product.name.charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="break-words text-sm font-medium">{product.name}</p>
-              {product.category && <p className="text-muted-foreground break-words text-xs">{product.category.name}</p>}
-            </div>
-          </div>
-          <span className="font-mono text-sm font-semibold">{fmtTJS(product.price)}</span>
-        </ListLink>
-      )),
-      viewAll: {
-        to: '/products',
-        state: fromState,
-        label: t('viewProducts'),
-        count: productsResponse?.data?.meta?.total ?? market.count.products,
-      },
-    });
-  }
-  if (market && canViewDebtors) {
-    tabs.push({
-      value: 'debtors',
-      label: t('fields.debtors'),
-      count: debtorsResponse?.data?.meta?.total ?? market.count.debtors,
-      isLoading: isDebtorsLoading,
-      isEmpty: debtors.length === 0,
-      emptyMessage: t('noDebtors'),
-      rows: debtors.map((debtor) => (
-        <ListLink key={debtor.id} to={`/debtors/${debtor.id}`} state={fromState}>
-          <span className="break-words text-sm font-medium">{debtor.name}</span>
-          <span className="text-muted-foreground text-xs">{debtor.phone}</span>
-        </ListLink>
-      )),
-      viewAll: {
-        to: '/debtors',
-        state: fromState,
-        label: t('viewDebtors'),
-        count: debtorsResponse?.data?.meta?.total ?? market.count.debtors,
-      },
-    });
-  }
+  const market = response?.data?.market ?? null;
+  const earnings = response?.data?.earnings ?? null;
 
   if (isLoading) return <ByIdSkeleton />;
 
@@ -163,135 +68,119 @@ export default function ProfilePage() {
     );
   }
 
-  const roleBadge = (
-    <Badge variant="outline" className={ROLE_CONFIG[profile.role]?.className}>
-      {ROLE_CONFIG[profile.role] ? ROLE_CONFIG[profile.role].label(t) : profile.role}
-    </Badge>
-  );
+  const roleConfig = ROLE_CONFIG[profile.role];
+  const fromState = { fromPath: '/profile', fromName: t('title') };
 
   return (
-    <div className="flex flex-1 flex-col space-y-4 pb-6">
-      <BreadCrumbs
-        items={[{ label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' }, { label: t('title') }]}
-      />
+    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-6 md:max-w-xl">
+      <BreadCrumbs items={[{ label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' }, { label: t('title') }]} />
 
-      <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="min-w-0 space-y-4 lg:col-span-2">
-          <Panel bodyClassName="p-4">
-            <DetailHeader name={profile.name} subtitle={profile.email} image={profile.image} badges={roleBadge} />
-          </Panel>
-
-          <Panel title={t('sections.profile')}>
-            <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-3">
-              <InfoItem label={t('fields.role')} value={roleBadge} />
-              <InfoItem label={t('fields.email')} value={profile.email} />
-              <InfoItem label={t('fields.createdAt')} value={formatDate(profile.createdAt, true)} />
-            </div>
-          </Panel>
-
-          {market && (
-            <Panel title={t('sections.market')}>
-              <div className="grid grid-cols-1 gap-x-4 gap-y-0 sm:gap-y-3 sm:grid-cols-2">
-                <InfoItem
-                  label={t('fields.market')}
-                  value={
-                    <span className="flex items-center gap-2">
-                      <Avatar size="sm" className="shrink-0">
-                        {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
-                        <AvatarFallback>{market.name.charAt(0).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <InfoLink to={`/markets/${market.id}`} state={fromState}>
-                        {market.name}
-                      </InfoLink>
-                    </span>
-                  }
-                />
-                <InfoItem label={t('fields.address')} value={market.address} />
-                <InfoItem label={t('fields.createdAt')} value={formatDate(market.createdAt, true)} />
-                <InfoItem label={t('fields.updatedAt')} value={formatDate(market.updatedAt, true)} />
-              </div>
-            </Panel>
-          )}
-          {market && tabs.length > 0 && (
-            <Panel>
-              <MarketEntityTabs value={activeTab} onValueChange={setActiveTab} tabs={tabs} />
-            </Panel>
-          )}
+      {/* Человек: фото, имя, роль. Тап по карточке — к редактированию. */}
+      <section className="bg-card relative overflow-hidden rounded-2xl p-5 text-center">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(90% 120% at 50% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%)',
+          }}
+        />
+        <div className="relative flex flex-col items-center gap-3">
+          <EntityAvatar name={profile.name} image={profile.image} size="xl" className="size-24 text-4xl" />
+          <div className="min-w-0 space-y-1.5">
+            <h1 className="text-2xl leading-tight font-bold tracking-tight break-words">{profile.name}</h1>
+            <p className="text-muted-foreground text-sm break-words">{profile.email}</p>
+            <Badge variant="outline" className={roleConfig?.className}>
+              {roleConfig ? roleConfig.label(t) : profile.role}
+            </Badge>
+          </div>
+          <Button variant="secondary" size="sm" render={<Link to="/profile/edit" />}>
+            <Pencil />
+            {t('editProfile')}
+          </Button>
         </div>
+      </section>
 
-        <div className="min-w-0 space-y-4">
-          {market && (
-            <Panel title={t('sections.market')}>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Avatar className="size-10 shrink-0 rounded-full">
-                    {market.image ? <AvatarImage src={market.image} alt={market.name} /> : null}
-                    <AvatarFallback className="bg-muted rounded-full">
-                      {market.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0">
-                    <p className="break-words text-sm font-semibold">{market.name}</p>
-                    <p className="text-muted-foreground break-words text-xs">{market.address}</p>
-                  </div>
-                </div>
-                <UserAvatar
-                  fullName={market.owner.name}
-                  subInfo={market.owner.email}
-                  imagePath={market.owner.image ?? undefined}
-                />
-                <StatRow>
-                  <StatCard
-                    size="sm"
-                    icon={Package}
-                    label={t('fields.products')}
-                    value={market.count.products}
-                    to="/products"
-                    state={fromState}
-                  />
-                  <StatCard
-                    size="sm"
-                    icon={Users}
-                    label={t('fields.debtors')}
-                    value={market.count.debtors}
-                    to="/debtors"
-                    state={fromState}
-                  />
-                  <StatCard
-                    size="sm"
-                    icon={ReceiptText}
-                    label={t('fields.transactions')}
-                    value={market.count.transactions}
-                    to="/transactions"
-                    state={fromState}
-                  />
-                </StatRow>
-                <Button
-                  variant="outline"
-                  className="h-9 w-full justify-between gap-2"
-                  size="sm"
-                  render={<Link to={`/markets/${market.id}`} state={fromState} />}>
-                  <span className="truncate">{t('goToMarket')}</span>
-                  <ArrowUpRight className="size-3.5 shrink-0" />
-                </Button>
-              </div>
-            </Panel>
-          )}
+      {can(Action.PROFILE_EARNINGS) && earnings && <EarningsSection earnings={earnings} />}
 
-          <QuickActions
-            title={t('quickActions')}
-            actions={[
-              { icon: Pencil, label: t('editProfile'), variant: 'outline', onClick: () => editModal.open(profile) },
-              { icon: Lock, label: t('sections.password'), onClick: () => passwordModal.open() },
-            ]}
+      <ListGroup title={t('sections.account')}>
+        <ListRow title={t('fields.name')} value={profile.name} to="/profile/edit" />
+        <ListRow title={t('fields.email')} value={profile.email} to="/profile/edit" />
+        <ListRow
+          title={t('fields.phone')}
+          value={profile.phone || t('notSet')}
+          valueClassName={profile.phone ? undefined : 'text-muted-foreground/70'}
+          to="/profile/edit"
+        />
+        <ListRow title={t('fields.createdAt')} value={formatDate(profile.createdAt)} />
+      </ListGroup>
+
+      {market && (
+        <ListGroup title={t('sections.market')}>
+          <ListRow
+            leading={<EntityAvatar name={market.name} image={market.image} size="sm" shape="square" icon={Store} />}
+            title={market.name}
+            subtitle={market.address}
+            to={can(Action.MARKETS_VIEW_BY_ID) ? `/markets/${market.id}` : undefined}
+            state={fromState}
           />
-        </div>
-      </div>
+        </ListGroup>
+      )}
 
-      <EditProfileModal />
-      <ChangePasswordModal />
+      <ListGroup title={t('sections.app')}>
+        <ListRow
+          title={t('fields.theme')}
+          trailing={
+            <SegmentedControl<ThemeValue>
+              className="w-44 shrink-0"
+              value={(theme as ThemeValue | undefined) ?? 'system'}
+              onChange={setTheme}
+              options={[
+                { value: 'light', label: '', icon: Sun, ariaLabel: t('theme.light') },
+                { value: 'dark', label: '', icon: Moon, ariaLabel: t('theme.dark') },
+                { value: 'system', label: '', icon: Monitor, ariaLabel: t('theme.system') },
+              ]}
+            />
+          }
+        />
+        <ListRow
+          title={t('fields.language')}
+          trailing={
+            <SegmentedControl
+              className="w-44 shrink-0"
+              value={currentLanguage.value}
+              onChange={setLanguage}
+              options={LANGUAGE_ITEMS.map((item) => ({ value: item.value, label: item.shortLabel }))}
+            />
+          }
+        />
+        <ListRow leading={<CloudDownload className="text-primary size-5" />} title={t('sync')} to="/sync" />
+        <ListRow leading={<BookOpen className="text-primary size-5" />} title={t('guide')} to="/guide" />
+      </ListGroup>
+
+      <ListGroup
+        title={t('sections.security')}
+        footer={t(profile.passwordChangedAt ? 'passwordHintChanged' : 'passwordHintNever', {
+          date: profile.passwordChangedAt ? formatDate(profile.passwordChangedAt) : '',
+        })}>
+        <ListRow
+          leading={<KeyRound className="text-primary size-5" />}
+          title={t('sections.password')}
+          value={profile.passwordChangedAt ? formatDate(profile.passwordChangedAt) : t('passwordNever')}
+          to="/profile/password"
+        />
+      </ListGroup>
+
+      <ListGroup>
+        <ListRow
+          leading={<LogOut className="size-5" />}
+          title={t('logout', { ns: 'auth' })}
+          destructive
+          onClick={requestLogout}
+        />
+      </ListGroup>
+
+      {logoutDialog}
     </div>
   );
 }

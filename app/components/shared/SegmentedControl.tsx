@@ -5,6 +5,8 @@ export interface SegmentedControlOption<T extends string> {
   value: T;
   label: string;
   icon?: ComponentType<{ className?: string }>;
+  /** Подпись для скринридера, когда `label` пустой (вариант показан только значком). */
+  ariaLabel?: string;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -34,6 +36,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             type="button"
             role="radio"
             aria-checked={selected}
+            aria-label={opt.ariaLabel}
             onClick={() => onChange(opt.value)}
             className={cn(
               'flex h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors md:h-9',

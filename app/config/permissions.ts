@@ -15,6 +15,8 @@ export const ROUTE_PERMISSIONS: Record<string, Role[]> = {
   '/dashboard/products': ACTION_PERMISSIONS[Action.DASHBOARDS_VIEW],
   '/dashboard/sellers': ACTION_PERMISSIONS[Action.DASHBOARDS_VIEW],
   '/profile': ALL_ROLES,
+  '/profile/edit': ALL_ROLES,
+  '/profile/password': ALL_ROLES,
   '/users': ACTION_PERMISSIONS[Action.USERS_VIEW],
   '/users/create': ACTION_PERMISSIONS[Action.USERS_CREATE],
   '/users/:id': ACTION_PERMISSIONS[Action.USERS_VIEW],

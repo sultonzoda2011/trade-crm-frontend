@@ -1,12 +1,9 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { ChevronDown, CloudDownload, Languages, LogOut, Moon, Sun, User } from 'lucide-react';
-import { useState } from 'react';
 
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 
 import {
@@ -22,9 +19,8 @@ import {
 import { ROLE_CONFIG } from '~/config/enumOptions';
 import { useCurrentUser } from '~/hooks/useCurrentUser';
 import { useLanguageCycle } from '~/hooks/useLanguageCycle';
-import { useOfflineQueue } from '~/hooks/useOfflineQueue';
-import { clearSession } from '~/lib/auth-utils';
-import { wipeOfflineData } from '~/lib/offline-session';
+import { useIsMobile } from '~/hooks/use-mobile';
+import { useLogout } from '~/hooks/useLogout';
 
 export function UserNav() {
   const navigate = useNavigate();
@@ -32,30 +28,14 @@ export function UserNav() {
   const { t } = useTranslation('auth');
   const { t: tc } = useTranslation('common');
   const { t: ts } = useTranslation('sync');
-  const queryClient = useQueryClient();
-  const { total: queued } = useOfflineQueue();
-  const [confirmLogout, setConfirmLogout] = useState(false);
+  const { requestLogout, logoutDialog } = useLogout();
+  const isMobile = useIsMobile();
 
   const { theme, setTheme, systemTheme } = useTheme();
   const { currentLanguage, cycleLanguage } = useLanguageCycle();
   const userInfo = useCurrentUser();
 
   const currentTheme = theme === 'system' ? systemTheme : theme;
-
-  // Выход стирает офлайн-кеш и очередь (данные бизнеса не должны достаться следующему
-  // человеку на этом телефоне). Неотправленные операции при этом пропали бы молча —
-  // поэтому, если они есть, сначала спрашиваем.
-  const logout = async () => {
-    setConfirmLogout(false);
-    clearSession();
-    await wipeOfflineData(queryClient);
-    navigate('/login');
-  };
-
-  const handleLogout = () => {
-    if (queued > 0) setConfirmLogout(true);
-    else void logout();
-  };
 
   const initials = userInfo?.name
     ? userInfo.name
@@ -66,6 +46,22 @@ export function UserNav() {
     : 'U';
 
   const roleLabel = userInfo?.role ? ROLE_CONFIG[userInfo.role]?.label(t) : '';
+
+  // На телефоне всё, что было в меню (тема, язык, синхронизация, выход), живёт на экране
+  // профиля, поэтому аватар ведёт прямо туда — одним тапом, без промежуточного меню.
+  if (isMobile) {
+    return (
+      <Link
+        to="/profile"
+        aria-label={tc('header.profile')}
+        className="glass-control flex size-11 items-center justify-center rounded-full transition-transform outline-none active:scale-95">
+        <Avatar className="size-9">
+          {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
+          <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
+        </Avatar>
+      </Link>
+    );
+  }
 
   return (
     <>
@@ -168,7 +164,7 @@ export function UserNav() {
 
           <DropdownMenuGroup className="p-1.5">
             <DropdownMenuItem
-              onClick={handleLogout}
+              onClick={requestLogout}
               className="text-destructive focus:text-destructive focus:bg-destructive/5 cursor-pointer rounded-xl px-3 py-2.5">
               <LogOut className="mr-2 size-4" />
 
@@ -178,15 +174,7 @@ export function UserNav() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <ConfirmDialog
-        open={confirmLogout}
-        onOpenChange={setConfirmLogout}
-        onConfirm={() => void logout()}
-        type="danger"
-        title={ts('logout.title')}
-        description={ts('logout.description', { count: queued })}
-        confirmText={ts('logout.confirm')}
-      />
+      {logoutDialog}
     </>
   );
 }
