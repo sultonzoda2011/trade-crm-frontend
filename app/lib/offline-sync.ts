@@ -115,7 +115,7 @@ export const ENTITY_SPECS: EntitySpec[] = [
     listAction: Action.MARKETS_VIEW,
     list: marketsApi.getAll as unknown as ListFn,
     detailKind: 'full',
-    detail: marketsApi.getFull as DetailFn,
+    detail: marketsApi.getOverview as DetailFn,
     detailCap: 300,
   },
   {

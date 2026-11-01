@@ -2,6 +2,7 @@
   "emailInvalid": "Invalid email",
   "required": "Required field",
   "stringMax": "Maximum {{count}} characters",
+  "stringMin": "At least {{count}} characters",
   "emailRequired": "Email is required",
   "nameRequired": "Name is required",
   "passwordMismatch": "Passwords do not match",

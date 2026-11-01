@@ -7,7 +7,7 @@ In Trade CRM, a market represents an individual store or trading location. Each 
 Depending on your role, the navigation menu shows one of two items:
 
 - **"Markets"** (`/markets`) — visible to **Administrators**. Opens the master list of all markets in the system with search and filters.
-- **"My market"** (`/markets/:id`) — visible to **Owners** and **Sellers**. Opens the detail page of their assigned market directly.
+- **"My market"** (`/markets/:id`) — visible to **Owners** and **Sellers**. Opens the main screen of their assigned market directly.
 
 ## Markets list (for administrators)
 
@@ -31,32 +31,46 @@ Only an **Administrator** can create a new market via **"Create market"** (`/mar
 - **"Image"** — photo or logo of the location;
 - **"Name"** `*` — market or store name;
 - **"Address"** `*` — physical address;
+- **"Phone"** — the market's contact number (optional);
+- **"Working hours"** — free text, e.g. "Mon–Sat 8:00–18:00" (optional);
 - **"Owner"** `*` — pick the market owner from the searchable selection sheet.
 
 When editing a market (`/markets/:id/edit`):
 - **Administrators** can update any field — including reassigning the **"Owner"** — or delete the market.
-- **Owners** can update their own market's photo, name, and address (changing the owner and deleting the market are restricted to administrators).
+- **Owners** can update their own market's photo, name, address, phone and working hours (changing the owner and deleting the market are restricted to administrators).
+- To remove the phone or working hours, clear the field and save.
 
-## Market detail page and tabs
+## The market main screen
 
-At the top of the market page sit the market photo, name, address, owner badge, and three **clickable counters** — **"Products"**, **"Debtors"**, and **"Transactions"**. Clicking any of these counters takes you straight to that section pre-filtered to this market.
+The screen works like iPhone "Settings": the market sits at the top (photo, name, address, **"Call"** and **"Edit"** buttons), followed by grouped rows.
 
-Below the header are the market's tabs:
+- **"Summary"** — how many products, debtors, sellers and transactions the market has. Tapping a row opens that list already filtered to this market.
+- **"Money"** (administrators and owners only) — **total debt** and how much of it is **overdue**, **stock value** at retail price and at cost, and how much stock is **running out**. The numbers match the Debtors and Products sections. If some products have no cost price, a hint under the group says the cost-based value is incomplete.
+- **"About"** — phone, working hours, owner and creation date.
+- **"Team"** — the owner and sellers with phone numbers. Sellers do not see colleagues' emails.
+- **"Settings"** (administrators and owners only) — the **"Sellers can sell"** switch.
+- **"Market rules"** (sellers) — the same rule in words, read-only.
 
-1. **"Employees"** — the owner and sellers assigned to this location.
-2. **"Products"** — the market's product catalog, showing prices, **"Sold X"** counts, and mini-avatars of the sellers who sold each item.
-3. **"Debtors"** — the market's debtors.
-4. **"Transactions"** — the market's transaction history.
+## Can sellers make sales?
 
-> [!NOTE]
-> When an **Owner** or **Seller** opens **"My market"**, **all four tabs** are available. When an **Administrator** opens another market from the `/markets` list, only the **"Employees"** tab is displayed.
+By default a seller records **debts only** at the market, so stock cannot leave the warehouse with no debt and no trace.
+
+If you trust your sellers, turn on **"Sellers can sell"**. Sellers can then also record regular **cash** and **card** sales. The app asks you to confirm before turning it on.
+
+- The switch applies immediately; nothing needs reloading.
+- **Refunds, edits and deletes** stay with the owner and administrator even when sales are allowed.
+- If you switch it off while a seller still has an offline sale waiting, that sale is rejected when it syncs. **"Sync"** then shows a clear explanation: record it as a debt instead, or remove it from the queue.
+- Each market has its own setting.
 
 ## Access by role
 
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
 | Master "Markets" list (`/markets`) | Yes | No | No |
-| "My market" menu item (`/markets/:id`) | No (uses "Markets") | Yes (all 4 tabs) | Yes (all 4 tabs) |
+| Market main screen (`/markets/:id`) | Any market | Own | Own, read-only |
+| Market money (debt, stock) | Yes | Yes | No |
+| Colleagues' emails | Yes | Yes | No |
 | Create and delete markets | Yes | No | No |
-| Edit market name, address, and image | Yes (any market) | Yes (own market) | No |
+| Name, address, phone, hours, image | Yes (any market) | Yes (own market) | No |
+| "Sellers can sell" switch | Yes | Yes (own market) | No |
 | Assign or change the market owner | Yes | No | No |

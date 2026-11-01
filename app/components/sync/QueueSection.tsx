@@ -7,6 +7,7 @@ import { ListEmpty, ListGroup } from '~/components/shared/ListGroup';
 import { Button } from '~/components/ui/button';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { useOfflineQueue } from '~/hooks/useOfflineQueue';
+import { apiErrorText } from '~/lib/api-error';
 import { fmtTJS } from '~/lib/format';
 import {
   canRemove,
@@ -98,7 +99,9 @@ export function QueueSection() {
                     {statusText(item)} · {t('queue.queuedAt', { time: time(item.queuedAt) })}
                   </p>
                   {item.status === 'failed' && item.error && (
-                    <p className="text-destructive mt-0.5 text-sm leading-snug break-words">{item.error.message}</p>
+                    <p className="text-destructive mt-0.5 text-sm leading-snug break-words">
+                      {apiErrorText(item.error.code) ?? item.error.message}
+                    </p>
                   )}
                 </div>
                 {canRetry(item) && (

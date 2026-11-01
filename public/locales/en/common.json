@@ -268,5 +268,12 @@
   "swipe": {
     "edit": "Edit",
     "delete": "Delete"
+  },
+  "apiErrors": {
+    "SELLER_SALES_DISABLED": "The market owner has not allowed sellers to make sales — record a debt instead. If this is a mistake, ask the owner to turn on “Sellers can sell” in My market.",
+    "MARKET_OWNER_TAKEN": "This owner already runs another market. Pick a different owner.",
+    "MARKET_OWNER_INVALID": "The selected user was not found or is not an owner.",
+    "MARKET_OWNER_REQUIRED": "Select the market owner.",
+    "MARKET_OWNER_ADMIN_ONLY": "Only an administrator can change the market owner."
   }
 }

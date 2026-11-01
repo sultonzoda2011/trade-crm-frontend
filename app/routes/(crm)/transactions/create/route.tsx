@@ -16,9 +16,8 @@ import { TransactionItemCard } from '~/components/transactions/TransactionItemCa
 import { TransactionPaymentSection } from '~/components/transactions/TransactionPaymentSection';
 import BreadCrumbs from '~/components/ui/bread-crumb';
 import { Button } from '~/components/ui/button';
-import { Action } from '~/config/actions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
-import { useCan } from '~/hooks/useCan';
+import { useCanCreateSale } from '~/hooks/useCanCreateSale';
 import type { CreatedDebtor } from '~/hooks/useCreateDebtor';
 import { useDetachedMutation } from '~/hooks/useDetachedMutation';
 import { useForm } from '~/hooks/useForm';
@@ -68,7 +67,6 @@ export default function CreateTransactionPage() {
   const { t } = useTranslation(['transactions', 'common', 'validation']);
   const navigate = useNavigate();
   const location = useLocation();
-  const { can } = useCan();
   // «Дать долг» со страницы должника приходит с уже выбранным человеком —
   // не заставляем искать его заново.
   const prefill = location.state as {
@@ -90,7 +88,7 @@ export default function CreateTransactionPage() {
   // Только что заведённый должник: пока сервер его не создал, у него временный id и его нет ни в одном списке сервера.
   const [createdDebtor, setCreatedDebtor] = useState<CreatedDebtor | null>(null);
 
-  const canCreateSale = can(Action.TRANSACTIONS_CREATE_SALE);
+  const canCreateSale = useCanCreateSale();
 
   // Server-side search: the debtor/product lists can exceed any fixed page, so instead of
   // loading a capped first page and filtering locally we query the API as the user types.

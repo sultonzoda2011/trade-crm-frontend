@@ -30,13 +30,20 @@ export default function CreateMarketPage() {
 
   const { control, handleSubmit } = useForm<CreateMarketSchema>({
     resolver: zodResolver(createMarketSchema(t)),
-    defaultValues: { name: '', address: '', ownerId: '', image: null },
+    defaultValues: { name: '', address: '', phone: '', workHours: '', ownerId: '', image: null },
   });
 
   const { submit, isPending } = useEntityForm<CreateMarketSchema, unknown>({
     entity: 'markets',
     api: marketsApi,
-    toPayload: (data) => ({ name: data.name, address: data.address, ownerId: data.ownerId, image: data.image }),
+    toPayload: (data) => ({
+      name: data.name,
+      address: data.address,
+      phone: data.phone,
+      workHours: data.workHours,
+      ownerId: data.ownerId,
+      image: data.image,
+    }),
     redirectTo: () => '/markets',
   });
 
@@ -81,6 +88,22 @@ export default function CreateMarketPage() {
           loading={owners.loading}
           placeholder={t('fields.ownerId')}
           required
+        />
+      </FormGrid>
+      <FormGrid>
+        <FormInput
+          control={control}
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          label={t('fields.phone')}
+          placeholder="+992 900 12-34-56"
+        />
+        <FormInput
+          control={control}
+          name="workHours"
+          label={t('fields.workHours')}
+          placeholder={t('fields.workHoursPlaceholder')}
         />
       </FormGrid>
     </EntityFormPage>

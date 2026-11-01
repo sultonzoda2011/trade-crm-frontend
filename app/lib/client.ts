@@ -2,6 +2,7 @@
 import axios from 'axios';
 import i18next from 'i18next';
 import { toast } from 'sonner';
+import { apiErrorText } from '~/lib/api-error';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
 import { clearSession, getAccessToken, getClientUser } from '~/lib/auth-utils';
 import { redirectToLogin } from '~/lib/navigation';
@@ -116,6 +117,8 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/markets/:id', methods: ['get'], action: Action.MARKETS_VIEW_BY_ID },
   { pattern: '/markets/:id', methods: ['patch'], action: Action.MARKETS_EDIT },
   { pattern: '/markets/:id', methods: ['delete'], action: Action.MARKETS_DELETE },
+  { pattern: '/markets/:id/overview', methods: ['get'], action: Action.MARKETS_VIEW_BY_ID },
+  { pattern: '/markets/:id/settings', methods: ['patch'], action: Action.MARKETS_SETTINGS },
   { pattern: '/products', methods: ['get'], action: Action.PRODUCTS_VIEW },
   { pattern: '/products', methods: ['post'], action: Action.PRODUCTS_CREATE },
   { pattern: '/products/:id', methods: ['get'], action: Action.PRODUCTS_VIEW },
@@ -261,7 +264,12 @@ apiClient.interceptors.response.use(
     const translationKey = ERROR_MESSAGES[status!];
     const translatedMessage = translationKey ? i18next.t(translationKey, { ns: 'common' }) : undefined;
 
-    const message = serverMessage || translatedMessage || i18next.t('errors.unknown', { ns: 'common', status });
+    // Код бэкенда с готовым переводом важнее английского текста сервера.
+    const message =
+      apiErrorText(error.response.data?.code) ||
+      serverMessage ||
+      translatedMessage ||
+      i18next.t('errors.unknown', { ns: 'common', status });
 
     toast.error(message);
 

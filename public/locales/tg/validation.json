@@ -2,6 +2,7 @@
   "emailInvalid": "Email-и нодуруст",
   "required": "Майдони ҳатмӣ",
   "stringMax": "Ҳадди аксар {{count}} аломат",
+  "stringMin": "Ҳадди ақал {{count}} аломат",
   "emailRequired": "Email-ро ворид кунед",
   "nameRequired": "Номро ворид кунед",
   "passwordMismatch": "Рамзҳо мувофиқ нестанд",

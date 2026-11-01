@@ -21,7 +21,9 @@ import type { ActiveFilter } from '~/types/filters';
  * so the axios interceptors stay quiet (`silent`) instead of toasting on every attempt.
  */
 export function idempotencyConfig(idempotencyKey?: string): AxiosRequestConfig | undefined {
-  return idempotencyKey ? ({ headers: { 'Idempotency-Key': idempotencyKey }, silent: true } as AxiosRequestConfig) : undefined;
+  return idempotencyKey
+    ? ({ headers: { 'Idempotency-Key': idempotencyKey }, silent: true } as AxiosRequestConfig)
+    : undefined;
 }
 
 /** Query options understood by every list endpoint. */
@@ -87,7 +89,7 @@ export function detailRequest<TDetailRes>(base: string) {
  * `GET <base>/:id/<segment>` — the enriched payload a detail page loads.
  * `segment` is a parameter because the transactions endpoint calls it `detail`.
  */
-export function nestedDetailRequest<TFullRes>(base: string, segment: 'full' | 'detail' = 'full') {
+export function nestedDetailRequest<TFullRes>(base: string, segment: 'full' | 'detail' | 'overview' = 'full') {
   return async (id: string, config?: AxiosRequestConfig): Promise<TFullRes> => {
     const { data } = await apiClient.get(`${base}/${id}/${segment}`, config);
     return data;

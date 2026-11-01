@@ -26,6 +26,7 @@ export default function EditMarketPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { can } = useCan();
+  // Владельца меняет только админ (бэкенд: MARKET_OWNER_ADMIN_ONLY): у владельца поля нет вовсе.
   const canManageUsers = can(Action.USERS_VIEW);
 
   const { control, handleSubmit, reset } = useForm<UpdateMarketSchema>({
@@ -45,10 +46,22 @@ export default function EditMarketPage() {
     toForm: (loaded) => ({
       name: loaded.name,
       address: loaded.address,
+      phone: loaded.phone ?? '',
+      workHours: loaded.workHours ?? '',
       ownerId: loaded.owner.id,
       image: loaded.image,
     }),
-    toPayload: (data) => ({ name: data.name, address: data.address, ownerId: data.ownerId, image: data.image }),
+    toPayload: (data) => ({
+      name: data.name,
+      address: data.address,
+      phone: data.phone,
+      workHours: data.workHours,
+      // Не-админ владельца не меняет: поле не отправляем вовсе.
+      ownerId: canManageUsers ? data.ownerId : undefined,
+      image: data.image,
+    }),
+    // Пустой телефон / часы работы = «очистить», а не «не менять».
+    keepEmpty: ['phone', 'workHours'],
     reset,
     redirectTo: (marketId) => `/markets/${marketId}`,
   });
@@ -79,7 +92,7 @@ export default function EditMarketPage() {
     return (
       <NotFoundBlock
         label={t('notFound')}
-        onBack={() => navigate('/markets')}
+        onBack={() => navigate(can(Action.MARKETS_VIEW) ? '/markets' : '/')}
         backLabel={t('actions.back', { ns: 'common' })}
       />
     );
@@ -90,8 +103,9 @@ export default function EditMarketPage() {
       formId="edit-market-page-form"
       title={t('actions.edit', { ns: 'common' })}
       breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/markets' },
+        { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
+        // Список рынков открыт только админу; владельцу «Рынки» вели бы на «Нет доступа».
+        ...(can(Action.MARKETS_VIEW) ? [{ label: t('title'), link: '/markets' }] : []),
         { label: market.name, link: `/markets/${id}` },
         { label: t('actions.edit', { ns: 'common' }) },
       ]}
@@ -130,6 +144,22 @@ export default function EditMarketPage() {
             required
           />
         )}
+      </FormGrid>
+      <FormGrid>
+        <FormInput
+          control={control}
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          label={t('fields.phone')}
+          placeholder="+992 900 12-34-56"
+        />
+        <FormInput
+          control={control}
+          name="workHours"
+          label={t('fields.workHours')}
+          placeholder={t('fields.workHoursPlaceholder')}
+        />
       </FormGrid>
     </EntityFormPage>
   );

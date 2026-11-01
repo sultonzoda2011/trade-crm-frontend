@@ -434,6 +434,7 @@ MY_MARKET
 MARKETS_CREATE
 MARKETS_EDIT
 MARKETS_DELETE
+MARKETS_SETTINGS
 
 PRODUCTS_VIEW
 PRODUCTS_CREATE
@@ -658,7 +659,7 @@ jsonWrites()
 multipartWrites()
 ```
 
-- Для детальных страниц `users`, `markets`, `sellers`, `debtors` используется `nestedDetailRequest` (`GET /<entity>/:id/full`), который загружает карточку сущности вместе с превью связанных списков и аналитикой одним запросом.
+- Для детальных страниц `users`, `sellers`, `debtors` используется `nestedDetailRequest` (`GET /<entity>/:id/full`); у `markets` тот же хелпер с сегментом `overview` (`GET /markets/:id/overview`, см. раздел «Мой рынок»), который загружает карточку сущности вместе с превью связанных списков и аналитикой одним запросом.
 - Новые entity modules должны переиспользовать эти abstractions, когда endpoint соответствует стандартному CRUD behavior.
 - Не копировать одинаковый pagination/filter logic в каждом API module.
 
@@ -1063,7 +1064,23 @@ public/locales/
 - Все user-facing строки проходят через `t(...)`.
 - Entity pages используют explicit namespaces: `useTranslation(['products', 'common'])`.
 - Заголовок и breadcrumb на `/<entity>/create` используют entity-scoped ключ `t('create')` с явным названием сущности (например, `"Создать должника"`), а не generic `t('actions.create')`.
+- Тексты ошибок бэкенда по коду: `public/locales/*/common.json` → `apiErrors.<CODE>`; интерцептор (`client.ts`) и очередь офлайна (`QueueSection`) берут перевод через `apiErrorText(code)` (`lib/api-error.ts`), английский `message` сервера — запасной вариант.
 - Справочник `/guide` (`public/locales/{ru,en,tg}/guide.json`) разбит на 9 разделов (`gettingStarted`, `dashboard`, `products`, `transactions`, `debtors`, `markets`, `sellers`, `users`, `sync`) и синхронизирован на всех 3 языках.
+
+---
+
+# 22a. «Мой рынок» (`/markets/:id`)
+
+Главный экран рынка в стиле iOS «Настройки» (`components/markets/MarketOverviewView.tsx`), один вид для всех ролей: админ открывает любой рынок из списка `/markets`, владелец и продавец — свой (пункт меню «Мой рынок»).
+
+- Данные: `GET /markets/:id/overview` → `{ market, summary }` (`marketsApi.getOverview`, ключ `queryKeys.full('markets', id)`; офлайн-синхронизация сохраняет его же). Старый `/markets/:id/full` не используется (на бэкенде deprecated); сохранённая копия со старой формой без `summary` считается отсутствующей.
+- Группы: «Сводка» (товары/должники/продавцы/транзакции, ссылки несут `filterState` — предвыбранный рынок), «Деньги» (`summary.management`, только админ/владелец; у продавца `null`), «О рынке», «Команда», «Настройки» (владелец/админ) или «Правила рынка» (продавец, только чтение). Ссылки строк даются только на то, что роль может открыть (`can(Action.X)`).
+- Поля рынка: `phone`, `workHours` (свободный текст), `allowSellerSales`. В формах создания/правки пустой телефон/часы работы при правке отправляются как `''` (`useEntityForm({ keepEmpty })`, бэкенд сохраняет `NULL`). Владельца в форме правки выбирает только админ; не-админу `ownerId` не отправляется.
+- **Переключатель «Продавцы могут продавать»** (`Action.MARKETS_SETTINGS`: Admin+Owner): `PATCH /markets/:id/settings` (`networkMode: 'always'` — не офлайн-операция), включение — через `ConfirmDialog`, после успеха инвалидируются `markets` и `profileAll` (продавец читает флаг из профиля). `Switch size="ios"` — 51×31.
+- **Продажа продавцом:** `useCanCreateSale()` (`hooks/useCanCreateSale.ts`): админ/владелец — всегда; продавец — только при `market.allowSellerSales === true` из кеша `GET /profile/full` (`queryKeys.profile()`). Пока флаг неизвестен — только «В долг». Сервер проверяет правило сам: `403 SELLER_SALES_DISABLED`. Возвраты/правки/удаление у продавца недоступны независимо от флага.
+- Известный риск: продажа продавца, записанная офлайн, может получить `SELLER_SALES_DISABLED`, если владелец выключил флаг до синхронизации. Очередь показывает понятный текст (`apiErrors.SELLER_SALES_DISABLED`) — оформить как долг или убрать из очереди.
+- Коды ошибок рынков: `MARKET_OWNER_REQUIRED`, `MARKET_OWNER_INVALID`, `MARKET_OWNER_TAKEN`, `MARKET_OWNER_ADMIN_ONLY` — переводы в `apiErrors`.
+- Почту коллег продавцу бэкенд не отдаёт: тип `MarketMember.email` опционален.
 
 ---
 
@@ -1158,7 +1175,7 @@ InfoItem
 Panel
 ```
 
-Для `users`, `markets`, `sellers`, `debtors` данные загружаются одним запросом через `GET /<entity>/:id/full` (`nestedDetailRequest`).
+Для `users`, `sellers`, `debtors` данные загружаются одним запросом через `GET /<entity>/:id/full` (`nestedDetailRequest`); для `markets` — через `GET /markets/:id/overview`.
 
 ---
 

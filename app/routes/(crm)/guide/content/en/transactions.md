@@ -61,7 +61,7 @@ On a phone, swipe any transaction row **to the left** (or long-press for half a 
 Click **"Create Transaction"** (or tap the center **"+"** button on your phone):
 
 1. **Pick the payment mode at the top.** A segmented switch offers **"Cash"**, **"Card"**, or **"Debt"**. The app remembers your last choice for the next sale.
-   - For **Sellers**, the mode is locked to **"Debt"**.
+   - For **Sellers**, the mode is locked to **"Debt"** by default. If the owner turned on **"Sellers can sell"** in My market, sellers can also use **"Cash"** and **"Card"**.
    - If you arrived via **"Give on credit"** from a debtor's profile, **"Debt"** mode and that debtor are pre-selected automatically.
 2. **If recording a "Debt", choose the debtor and due date:**
    - Tap **"Debtor"** `*` to open the searchable debtor sheet. If the person isn't in your database yet, tap **"New debtor"** right inside the sheet to create them on the spot without losing your transaction draft.
@@ -113,7 +113,7 @@ Returned items are added back to inventory automatically, transaction totals and
 | --- | --- | --- | --- |
 | View transactions list and details | Yes | Yes | Yes |
 | Record a credit transaction ("Debt") | Yes | Yes | Yes |
-| Record a direct sale (Cash / Card) | Yes | Yes | No |
+| Record a direct sale (Cash / Card) | Yes | Yes | Only if the owner allows it (My market → "Sellers can sell") |
 | Record a debt payment | Yes | Yes | No |
 | Issue a refund | Yes | Yes | No |
 | Delete a transaction & filter by "Created By" | Yes | Yes | No |
