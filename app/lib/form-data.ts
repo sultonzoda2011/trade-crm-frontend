@@ -32,15 +32,22 @@ export function appendToFormData(data: Record<string, unknown>): FormData {
  * backend only accepts an upload there), and empty fields are omitted rather
  * than sent as `''` — which each page used to spell as `value || undefined`.
  *
+ * `keepEmpty` lists fields where `''` is meaningful — "clear this value" (a phone number, working
+ * hours). They are sent as an empty string instead of being dropped, which the backend stores as NULL.
+ *
  * Values are otherwise passed through `appendToFormData` unchanged, so the wire
  * format is identical to what those pages built by hand.
  */
-export function buildMultipart(data: Record<string, unknown>, fileKey = 'image'): FormData {
+export function buildMultipart(data: Record<string, unknown>, fileKey = 'image', keepEmpty: string[] = []): FormData {
   const entries: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {
     if (key === fileKey) {
       if (value instanceof File) entries[key] = value;
+      continue;
+    }
+    if (value === '' && keepEmpty.includes(key)) {
+      entries[key] = value;
       continue;
     }
     if (value === '' || value === null || value === undefined) continue;

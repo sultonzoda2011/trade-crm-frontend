@@ -1,4 +1,5 @@
 import { isAxiosError } from 'axios';
+import i18next from 'i18next';
 
 export interface ApiErrorInfo {
   status?: number;
@@ -22,9 +23,7 @@ export function parseApiError(error: unknown): ApiErrorInfo {
     return { isOffline: true, isNetwork: true };
   }
   if (isAxiosError(error)) {
-    const data = error.response?.data as
-      | { code?: unknown; details?: unknown; message?: string | string[] }
-      | undefined;
+    const data = error.response?.data as { code?: unknown; details?: unknown; message?: string | string[] } | undefined;
     const message = Array.isArray(data?.message) ? data?.message.join(', ') : data?.message;
     return {
       status: error.response?.status,
@@ -36,4 +35,15 @@ export function parseApiError(error: unknown): ApiErrorInfo {
     };
   }
   return { isOffline: false, isNetwork: false };
+}
+
+/**
+ * Понятный текст по машинному коду бэкенда (`SELLER_SALES_DISABLED`, `MARKET_OWNER_TAKEN`…):
+ * переводы лежат в `common.json` → `apiErrors.<CODE>`. Кода или перевода нет — `undefined`,
+ * и вызывающий показывает то, что было (текст сервера / стандартную подпись статуса).
+ */
+export function apiErrorText(code?: string): string | undefined {
+  if (!code) return undefined;
+  const key = `apiErrors.${code}`;
+  return i18next.exists(key, { ns: 'common' }) ? i18next.t(key, { ns: 'common' }) : undefined;
 }

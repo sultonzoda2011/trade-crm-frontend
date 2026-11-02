@@ -27,6 +27,8 @@ interface UseEntityFormArgs<TValues, TDetail> {
   redirectTo: (id?: string) => string;
   /** Extra reason to keep submit disabled — e.g. an otherwise-empty form. */
   fileKey?: string;
+  /** Поля, где пустая строка значит «очистить», а не «не менять» (телефон, часы работы). */
+  keepEmpty?: string[];
 }
 
 /**
@@ -55,6 +57,7 @@ export function useEntityForm<TValues, TDetail>({
   reset,
   redirectTo,
   fileKey,
+  keepEmpty,
 }: UseEntityFormArgs<TValues, TDetail>) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -83,7 +86,7 @@ export function useEntityForm<TValues, TDetail>({
 
   const { mutate, isPending } = useMutation({
     mutationFn: (values: TValues) => {
-      const formData = buildMultipart(toPayload(values), fileKey);
+      const formData = buildMultipart(toPayload(values), fileKey, keepEmpty);
       return id ? api.update({ formData, id }) : api.create(formData);
     },
     onSuccess: () => {

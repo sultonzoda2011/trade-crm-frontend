@@ -4,12 +4,11 @@ import { useNavigate, useParams } from 'react-router';
 
 import { marketsApi } from '~/api/markets';
 
-import { MarketDetailView } from '~/components/markets/MarketDetailView';
+import { MarketOverviewView } from '~/components/markets/MarketOverviewView';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { OfflineBlock } from '~/components/shared/OfflineBlock';
 
-import { useCan } from '~/hooks/useCan';
 import { queryKeys } from '~/lib/query-keys';
 
 export default function MarketDetailPage() {
@@ -17,27 +16,28 @@ export default function MarketDetailPage() {
   const { id } = useParams<{ id: string }>();
 
   const navigate = useNavigate();
-  const { user } = useCan();
 
   const {
     data: response,
     isLoading,
+    isFetching,
     fetchStatus,
   } = useQuery({
     queryKey: queryKeys.full('markets', id),
-    queryFn: () => marketsApi.getFull(id!),
+    queryFn: () => marketsApi.getOverview(id!),
     enabled: Boolean(id),
     staleTime: 30_000,
   });
 
-  const market = response?.data?.market;
-
-  const isOwnMarket = Boolean(user?.marketId) && user?.marketId === id;
+  // До редизайна здесь лежал другой ответ (`/full`, без `summary`): сохранённая копия со старой формой
+  // не годится, считаем её отсутствующей и ждём свежий ответ, а не рисуем экран из пустых полей.
+  const overview = response?.data?.summary ? response.data : undefined;
+  const market = overview?.market;
   // Карточка ни разу не грузилась и сейчас на паузе из-за офлайна — отличаем
   // от "не найдено" (см. app/lib/network-status.ts).
   const isOfflineEmpty = fetchStatus === 'paused' && !market;
 
-  if (isLoading) {
+  if (isLoading || (!overview && isFetching)) {
     return <ByIdSkeleton />;
   }
 
@@ -61,15 +61,5 @@ export default function MarketDetailPage() {
     );
   }
 
-  return (
-    <MarketDetailView
-      market={market}
-      isOwnMarket={isOwnMarket}
-      previews={{
-        products: response?.data?.products?.data ?? [],
-        debtors: response?.data?.debtors?.data ?? [],
-        transactions: response?.data?.transactions?.data ?? [],
-      }}
-    />
-  );
+  return <MarketOverviewView overview={overview!} />;
 }

@@ -12,7 +12,13 @@
     "products": "Products",
     "debtors": "Debtors",
     "transactions": "Transactions",
-    "employees": "Employees"
+    "employees": "Employees",
+    "phone": "Phone",
+    "workHours": "Working hours",
+    "sellers": "Sellers",
+    "owner": "Owner",
+    "createdAt": "Created",
+    "workHoursPlaceholder": "Mon–Sat 8:00–18:00, Sun closed"
   },
   "hasUsers": "Has users",
   "viewProducts": "Market Products",
@@ -28,5 +34,42 @@
   "filters": {
     "search": "Search markets"
   },
-  "noEmployees": "No employees yet"
+  "noEmployees": "No employees yet",
+  "sections": {
+    "summary": "Summary",
+    "money": "Money",
+    "about": "About",
+    "team": "Team",
+    "settings": "Settings",
+    "rules": "Market rules"
+  },
+  "money": {
+    "totalDebt": "Total debt",
+    "debtorsWithDebt": "Debtors: {{count}}",
+    "overdue": "Overdue",
+    "stockValue": "Stock value",
+    "stockCost": "Cost: {{value}}",
+    "runningOut": "Running out of stock",
+    "runningOutDetail": "Out of stock: {{out}} · low: {{low}}",
+    "noCostHint": "Stock value at cost leaves out products with no cost price ({{count}})."
+  },
+  "settings": {
+    "sellerSales": "Sellers can sell",
+    "sellerSalesOn": "Sellers record both sales and debts",
+    "sellerSalesOff": "Sellers record debts only",
+    "sellerSalesHint": "Refunds, edits and deleting records stay with the owner and admin. The switch applies immediately.",
+    "enableConfirmTitle": "Let sellers make sales?",
+    "enableConfirmDescription": "Sellers will be able to record regular cash and card sales, not only debts. Stock is deducted right away, and only you can fix or refund a sale. You can switch this off at any time.",
+    "enableConfirm": "Allow",
+    "enabledToast": "Sellers can now make sales",
+    "disabledToast": "Sellers record debts only"
+  },
+  "rules": {
+    "canRecord": "You can record",
+    "debtsOnly": "Debts only",
+    "debtsAndSales": "Debts and sales",
+    "footer": "The market owner decides this. Refunds, edits and deleting records are for the owner only."
+  },
+  "call": "Call",
+  "notSet": "Not set"
 }
