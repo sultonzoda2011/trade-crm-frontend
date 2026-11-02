@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { Eye, EyeOff } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { redirect, useNavigate, useSearchParams } from 'react-router';
 import { toast } from 'sonner';
@@ -40,6 +40,61 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Ненавязчивый фоновый слой с мягкими кривыми и лёгким голубым свечением.
+ * Не перетягивает внимание с карточки входа и адаптируется к светлой и тёмной теме.
+ */
+function AuthBackgroundDecoration() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden select-none">
+      {/* Мягкое радиальное свечение за брендом и карточкой */}
+      <div className="bg-primary/[0.06] dark:bg-primary/[0.14] absolute -top-24 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full blur-[110px]" />
+
+      {/* Верхняя плавная кривая справа (как на референсе) */}
+      <svg
+        className="text-primary/[0.045] dark:text-primary/[0.07] absolute top-0 right-0 h-[62%] w-[78%] max-w-[560px]"
+        viewBox="0 0 400 500"
+        fill="none"
+        preserveAspectRatio="none">
+        <path d="M90 0C40 150 110 310 400 410V0H90Z" fill="currentColor" />
+        <path
+          d="M210 0C165 120 225 260 400 330V0H210Z"
+          fill="currentColor"
+          className="text-primary/[0.035] dark:text-primary/[0.05]"
+        />
+      </svg>
+
+      {/* Нижние мягкие волны */}
+      <svg
+        className="absolute inset-x-0 bottom-0 h-36 w-full sm:h-44"
+        viewBox="0 0 800 180"
+        fill="none"
+        preserveAspectRatio="none">
+        <path
+          d="M0 135C190 100 390 120 620 165C700 180 760 175 800 165V180H0V135Z"
+          className="fill-primary/[0.05] dark:fill-primary/[0.07]"
+        />
+        <path d="M430 180C565 125 690 88 800 68V180H430Z" className="fill-primary/[0.09] dark:fill-primary/[0.11]" />
+      </svg>
+    </div>
+  );
+}
+
+const AUTH_INPUT_CLASS = cn(
+  'space-y-2 px-0',
+  '[&_[data-slot=label]]:text-foreground [&_[data-slot=label]]:text-[15px] [&_[data-slot=label]]:font-semibold',
+  '[&_[data-slot=input-group]]:h-[52px] md:[&_[data-slot=input-group]]:h-12',
+  '[&_[data-slot=input-group]]:rounded-[14px]',
+  'dark:[&_[data-slot=input-group]]:bg-input [&_[data-slot=input-group]]:bg-[#EFF2F7]',
+  '[&_[data-slot=input-group]]:border [&_[data-slot=input-group]]:border-transparent',
+  '[&_[data-slot=input-group]]:transition-all',
+  '[&_[data-slot=input-group]:focus-within]:bg-card dark:[&_[data-slot=input-group]:focus-within]:bg-input/80',
+  '[&_[data-slot=input-group]:focus-within]:border-primary/35',
+  '[&_[data-align=inline-start]]:pr-1.5 [&_[data-align=inline-start]]:pl-4',
+  '[&_[data-align=inline-end]]:pr-3',
+  '[&_[data-slot=input-group-control]]:placeholder:text-muted-foreground/75 [&_[data-slot=input-group-control]]:text-[15px]'
+);
+
 export async function clientLoader() {
   const user = getClientUser();
   if (user) {
@@ -54,7 +109,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const schema = createLoginSchema(tVal);
+  const schema = useMemo(() => createLoginSchema(tVal), [tVal]);
 
   const {
     control,
@@ -64,12 +119,14 @@ export default function LoginPage() {
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   });
+
   const getRedirectPath = (role: Role, redirectTo: string): string => {
     if (role === Role.Seller) {
       return '/';
     }
     return canAccess(role, redirectTo) ? redirectTo : '/';
   };
+
   const { mutate, isPending } = useMutation({
     mutationFn: authApi.login,
     onSuccess: (response) => {
@@ -89,7 +146,7 @@ export default function LoginPage() {
       const redirectTo = searchParams.get('redirectTo') || '/';
       navigate(getRedirectPath(user.role, redirectTo));
     },
-    onError: (error: any) => {
+    onError: () => {
       toast.error(t('loginError'));
     },
   });
@@ -103,69 +160,95 @@ export default function LoginPage() {
   return (
     <>
       {/* ── Brand hero — desktop only ───────────────────────────────── */}
-      <div className="bg-foreground text-background relative hidden flex-col justify-between overflow-hidden p-12 lg:flex">
-        {/* Ambient brand depth so the panel isn't a flat black slab */}
+      <div className="border-border/60 relative hidden flex-col justify-between overflow-hidden border-r bg-gradient-to-br from-[#EAF2FF] via-[#F3F7FC] to-[#E3EEFF] p-12 lg:flex xl:p-16 dark:from-[#0B1220] dark:via-[#0F172A] dark:to-[#090D16]">
         <div
-          aria-hidden
-          className="bg-primary/10 dark:bg-primary/20 pointer-events-none absolute -top-32 right-0 size-96 rounded-full blur-[130px]"
+          aria-hidden="true"
+          className="bg-primary/12 dark:bg-primary/20 pointer-events-none absolute -top-28 -right-16 size-96 rounded-full blur-[120px]"
         />
         <div
-          aria-hidden
-          className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full blur-[130px]"
+          aria-hidden="true"
+          className="bg-primary/8 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full blur-[120px]"
         />
+        <svg
+          aria-hidden="true"
+          className="text-primary/[0.06] dark:text-primary/[0.08] pointer-events-none absolute inset-y-0 right-0 h-full w-3/4"
+          viewBox="0 0 400 800"
+          fill="none"
+          preserveAspectRatio="none">
+          <path d="M140 0C40 240 120 520 400 680V0H140Z" fill="currentColor" />
+        </svg>
 
         <div className="relative flex items-center">
-          <img className="h-12 w-auto object-contain dark:hidden" src={darkLogo} alt="Trade CRM" />
-          <img className="hidden h-12 w-auto object-contain dark:block" src={lightLogo} alt="Trade CRM" />
+          <img className="h-12 w-auto object-contain select-none dark:hidden" src={lightLogo} alt="TradeCRM" />
+          <img className="hidden h-12 w-auto object-contain select-none dark:block" src={darkLogo} alt="TradeCRM" />
         </div>
 
         <div className="relative max-w-md space-y-5">
-          <h1 className="text-4xl leading-[1.12] font-bold tracking-tight text-balance">{t('heroTitle')}</h1>
-          <p className="text-background/70 text-lg leading-relaxed">{t('heroDescription')}</p>
+          <h1 className="text-foreground text-4xl leading-[1.14] font-bold tracking-tight text-balance xl:text-[2.5rem]">
+            {t('heroTitle')}
+          </h1>
+          <p className="text-muted-foreground text-lg leading-relaxed">{t('heroDescription')}</p>
         </div>
 
         <div className="relative flex items-center gap-2">
           {(['w-4', 'w-8', 'w-12', 'w-16'] as const).map((w, i) => (
-            <div key={i} className={cn('bg-background/20 h-1 rounded-full', w)} />
+            <div key={i} className={cn('bg-primary/20 dark:bg-primary/25 h-1.5 rounded-full', w)} />
           ))}
-          <div className="bg-primary h-1 w-24 rounded-full" />
+          <div className="bg-primary h-1.5 w-24 rounded-full" />
         </div>
       </div>
 
-      {/* ── Auth form ───────────────────────────────────────────────── */}
-      <div className="bg-muted/30 scrollbar-thin relative flex min-h-0 flex-col overflow-y-auto">
-        {/* Ambient brand glow — тонко в светлой теме, насыщеннее в тёмной; за непрозрачной карточкой */}
-        <div
-          aria-hidden
-          className="bg-primary/10 dark:bg-primary/20 pointer-events-none absolute -top-32 right-0 size-96 rounded-full blur-[130px]"
-        />
-        <div
-          aria-hidden
-          className="bg-primary/5 dark:bg-primary/15 pointer-events-none absolute -bottom-24 -left-16 size-80 rounded-full blur-[130px]"
-        />
+      {/* ── Auth form column ────────────────────────────────────────── */}
+      <div className="scrollbar-thin dark:bg-background relative flex min-h-dvh flex-col justify-between overflow-x-hidden overflow-y-auto bg-[#F4F7FC] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:min-h-0">
+        <AuthBackgroundDecoration />
 
-        <div className="relative flex flex-1 items-center justify-center px-4 py-6 sm:px-8">
-          <div className="w-full max-w-sm space-y-6">
-            {/* Logo — mobile only; the hero carries it on desktop */}
-            <div className="flex justify-center lg:hidden">
-              <img className="h-10 w-auto object-contain dark:hidden" src={lightLogo} alt="Trade CRM" />
-              <img className="hidden h-10 w-auto object-contain dark:block" src={darkLogo} alt="Trade CRM" />
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+          <div className="w-full max-w-[400px] space-y-6 sm:space-y-7">
+            {/* Brand section — mobile & tablet only; desktop shows left hero panel */}
+            <div className="flex flex-col items-center text-center lg:hidden">
+              <img
+                className="h-12 w-auto object-contain select-none sm:h-13 dark:hidden"
+                src={lightLogo}
+                alt="TradeCRM"
+              />
+              <img
+                className="hidden h-12 w-auto object-contain select-none sm:h-13 dark:block"
+                src={darkLogo}
+                alt="TradeCRM"
+              />
+              <p className="text-muted-foreground mt-2.5 max-w-[235px] text-[15px] leading-[1.35] font-normal">
+                {t('brandTagline')}
+              </p>
             </div>
 
-            <div className="bg-card rounded-3xl p-6 shadow-xl sm:p-8">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5">
-                  <h2 className="text-2xl font-bold tracking-tight">{t('signIn')}</h2>
-
-                  <p className="text-muted-foreground text-sm">{t('welcome')}</p>
+            {/* White authentication card */}
+            <div className="bg-card relative rounded-[24px] p-6 shadow-[0_12px_36px_-8px_rgba(15,23,42,0.07),0_2px_10px_-2px_rgba(15,23,42,0.04)] ring-1 ring-black/[0.04] sm:p-8 dark:shadow-2xl dark:ring-white/[0.08]">
+              {/* Card Header */}
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 space-y-1.5">
+                  <h2 className="text-foreground text-[28px] leading-[1.15] font-bold tracking-tight sm:text-[30px]">
+                    {t('signIn')}
+                  </h2>
+                  <p className="text-muted-foreground max-w-[215px] text-[15px] leading-[1.35] sm:max-w-none">
+                    {t('welcome')}
+                  </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-1">
-                  <LanguageSwitcher />
-                  <ModeToggle />
+                {/* Compact Language & Theme pill */}
+                <div className="bg-card dark:bg-elevated/90 flex shrink-0 items-center rounded-full p-1 shadow-[0_2px_10px_rgba(15,23,42,0.06)] ring-1 ring-black/[0.06] dark:ring-white/[0.1]">
+                  <LanguageSwitcher
+                    variant="ghost"
+                    className="size-9 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                  />
+                  <span aria-hidden="true" className="bg-border/80 mx-0.5 h-5 w-px" />
+                  <ModeToggle
+                    variant="ghost"
+                    className="size-9 rounded-full hover:bg-black/[0.04] dark:hover:bg-white/[0.08]"
+                  />
                 </div>
               </div>
 
+              {/* Login Form */}
               <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
                 <FormInput
                   control={control}
@@ -173,48 +256,84 @@ export default function LoginPage() {
                   label={t('email')}
                   placeholder={t('emailPlaceholder')}
                   type="email"
+                  autoComplete="email"
+                  className={AUTH_INPUT_CLASS}
+                  startIcon={<Mail className="text-muted-foreground/80 size-[19px]" strokeWidth={1.75} />}
                 />
+
                 <FormInput
                   control={control}
                   name="password"
                   label={t('password')}
                   placeholder={t('passwordPlaceholder')}
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  className={AUTH_INPUT_CLASS}
+                  startIcon={<Lock className="text-muted-foreground/80 size-[19px]" strokeWidth={1.75} />}
                   endIcon={
-                    showPassword ? (
-                      <EyeOff className="size-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
-                    ) : (
-                      <Eye className="size-4 cursor-pointer" onClick={() => setShowPassword(!showPassword)} />
-                    )
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? t('hidePassword') : t('showPassword')}
+                      aria-pressed={showPassword}
+                      className="text-muted-foreground/80 hover:text-foreground focus-visible:ring-ring/40 -mr-1 inline-flex size-9 cursor-pointer items-center justify-center rounded-lg transition-colors outline-none focus-visible:ring-2 active:opacity-60">
+                      {showPassword ? (
+                        <Eye className="size-[19px]" strokeWidth={1.75} />
+                      ) : (
+                        <EyeOff className="size-[19px]" strokeWidth={1.75} />
+                      )}
+                    </button>
                   }
                 />
-                <div className="flex">
-                  <Button variant={'link'}>{t('forgotPassword')}</Button>
+
+                <div className="flex pt-0.5">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="text-primary h-auto px-0 py-0.5 text-[15px] font-semibold hover:underline">
+                    {t('forgotPassword')}
+                  </Button>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full text-sm font-semibold" loading={isSubmitting}>
-                  {t('signIn')}
+                <Button
+                  type="submit"
+                  size="lg"
+                  loading={isSubmitting}
+                  className="hover:bg-primary/92 mt-1 h-[54px] w-full gap-2 rounded-[16px] text-base font-semibold shadow-[0_8px_20px_-4px_rgba(0,122,255,0.36)] md:h-12 md:text-[15px]">
+                  <span>{t('signIn')}</span>
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="size-[18px] transition-transform duration-150 group-hover/button:translate-x-0.5 group-data-[loading]/button:hidden"
+                    strokeWidth={2.25}
+                  />
                 </Button>
               </form>
 
               {/* Разделитель + вход через Google — визуальная заглушка (OAuth на бэкенде пока нет) */}
-              <div className="my-5 flex items-center gap-3">
-                <span className="bg-border h-px flex-1" />
-                <span className="text-muted-foreground text-xs">{t('or')}</span>
-                <span className="bg-border h-px flex-1" />
+              <div className="my-5 flex items-center gap-4">
+                <span className="bg-border/80 h-px flex-1" />
+                <span className="text-muted-foreground text-xs font-medium">{t('or')}</span>
+                <span className="bg-border/80 h-px flex-1" />
               </div>
 
-              <Button type="button" variant="outline" size="lg" className="w-full gap-2 text-sm font-medium">
-                <GoogleIcon className="size-4" />
-                {t('continueWithGoogle')}
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="bg-card hover:bg-muted/50 dark:bg-elevated/60 dark:hover:bg-elevated border-border/80 text-foreground h-[52px] w-full gap-2.5 rounded-[16px] border text-[15px] font-semibold shadow-2xs md:h-12">
+                <GoogleIcon className="size-5" />
+                <span>{t('continueWithGoogle')}</span>
               </Button>
             </div>
           </div>
         </div>
 
-        <p className="text-muted-foreground px-4 pb-6 text-center text-xs">
-          © {new Date().getFullYear()} TradeCRM. {t('allRightsReserved')}
-        </p>
+        {/* Footer */}
+        <footer className="relative z-10 px-4 pt-2 pb-2 text-center">
+          <p className="text-muted-foreground/85 text-xs leading-relaxed">
+            © {new Date().getFullYear()} TradeCRM. {t('allRightsReserved')}
+          </p>
+        </footer>
       </div>
     </>
   );

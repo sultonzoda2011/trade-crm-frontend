@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import EN from '/locales/icons/en.png';
@@ -15,7 +16,12 @@ const LANGUAGE_ICONS: Record<SupportedLng, string> = {
   tg: TJ,
 };
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  className?: string;
+  variant?: ComponentProps<typeof Button>['variant'];
+}
+
+export function LanguageSwitcher({ className, variant = 'glass' }: LanguageSwitcherProps) {
   const { t } = useTranslation();
   const { currentLanguage, cycleLanguage } = useLanguageCycle();
   const icon = LANGUAGE_ICONS[currentLanguage.value] ?? RU;
@@ -24,8 +30,18 @@ export function LanguageSwitcher() {
     <Tooltip>
       <TooltipTrigger
         render={
-          <Button type="button" variant="glass" size="icon" onClick={cycleLanguage} aria-label="Change language">
-            <img src={icon} alt={currentLanguage.value} className="size-6 rounded-sm object-cover" />
+          <Button
+            type="button"
+            variant={variant}
+            size="icon"
+            className={className}
+            onClick={cycleLanguage}
+            aria-label={t('actions.changeLanguage')}>
+            <img
+              src={icon}
+              alt={currentLanguage.value}
+              className="size-6 rounded-full object-cover ring-1 ring-black/10 dark:ring-white/15"
+            />
           </Button>
         }
       />
