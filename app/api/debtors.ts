@@ -19,8 +19,8 @@ export const debtorsApi = {
   getFull: nestedDetailRequest<DebtorFullResponse>(BASE),
   delete: deleteRequest(BASE),
 
-  getSummary: async (): Promise<DebtorsSummaryResponse> => {
-    const { data } = await apiClient.get(`${BASE}/summary`);
+  getSummary: async (config?: import('axios').AxiosRequestConfig): Promise<DebtorsSummaryResponse> => {
+    const { data } = await apiClient.get(`${BASE}/summary`, config);
     return data;
   },
 

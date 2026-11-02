@@ -1,3 +1,5 @@
+import type { QueryClient } from '@tanstack/react-query';
+import { DEFAULT_PAGE_LIMIT } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
 
 /**
@@ -75,3 +77,66 @@ export const queryKeys = {
   /** Prefix for everything profile-related; use it after an edit so both reads refresh. */
   profileAll: () => ['profile'] as const,
 } as const;
+
+/**
+ * Точечная инвалидация после создания, правки, оплаты или удаления записи:
+ * обновляет первую страницу списка, активные таблицы, справочники (`options`),
+ * сводки (`summary`) и ТОЛЬКО затронутые карточки (`ids`), не сбрасывая сотни
+ * остальных карточек в офлайн-кеше.
+ */
+export function invalidateEntityCache(
+  queryClient: QueryClient,
+  entity: Entity,
+  ids?: string | null | Array<string | null | undefined>
+): void {
+  const idList = (Array.isArray(ids) ? ids : [ids]).filter((x): x is string => Boolean(x));
+  const idSet = new Set(idList);
+  const firstPageKey = queryKeys.list(entity, {
+    page: 1,
+    limit: DEFAULT_PAGE_LIMIT,
+    search: '',
+    filters: [],
+  });
+
+  // 1. Активные списки на экране + справочники/сводки. Неактивные страницы 2..N
+  //    офлайн-кеша не помечаем устаревшими зря.
+  void queryClient.invalidateQueries({
+    predicate: (query) => {
+      const key = query.queryKey;
+      if (key[0] !== entity) return false;
+      const kind = key[1];
+      if (kind === 'options' || kind === 'summary' || kind === 'debtor-open-debts') {
+        return true;
+      }
+      if (kind === 'list') {
+        return query.getObserversCount() > 0;
+      }
+      return false;
+    },
+  });
+
+  // 2. Первая страница дефолтного списка и затронутые карточки (detail/full/ledger/balance):
+  //    если они уже лежат в кеше, обновляем их и в фоне (`refetchType: 'all'`), чтобы
+  //    единичная правка не требовала ручной полной синхронизации.
+  void queryClient.invalidateQueries({
+    refetchType: 'all',
+    predicate: (query) => {
+      const key = query.queryKey;
+      if (key[0] !== entity) return false;
+      const kind = key[1];
+      if (kind === 'list') {
+        const q = key[2] as ListQuery | undefined;
+        return (
+          q?.page === firstPageKey[2].page &&
+          q?.limit === firstPageKey[2].limit &&
+          (q?.search ?? '') === '' &&
+          (q?.filters?.length ?? 0) === 0
+        );
+      }
+      if (idSet.size > 0 && typeof key[2] === 'string' && idSet.has(key[2])) {
+        return true;
+      }
+      return false;
+    },
+  });
+}

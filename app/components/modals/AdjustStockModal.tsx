@@ -12,7 +12,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useProductsModals } from '~/routes/(crm)/products/store';
 import { createAdjustSchema, type AdjustSchema } from '~/validations/product';
@@ -59,7 +59,8 @@ export function AdjustStockModal() {
     mutationFn: (data: AdjustSchema) =>
       productsApi.adjust({ id: product!.id, quantity: data.quantity, note: data.note?.trim() || undefined }),
     onSuccess: (_result, data) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      invalidateEntityCache(queryClient, 'products', product?.id);
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'stock'] });
       const d = data.quantity - current;
       toast.success(
         d === 0

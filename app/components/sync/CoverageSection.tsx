@@ -17,7 +17,6 @@ import { ListGroup, ListRow } from '~/components/shared/ListGroup';
 import { useCacheCoverage } from '~/hooks/useCacheCoverage';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { fmtNum } from '~/lib/format';
-import { FRESH_WINDOW_MS } from '~/lib/offline-sync';
 import type { Entity } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useSyncStore } from '~/store/useSyncStore';
@@ -49,12 +48,8 @@ export function CoverageSection() {
     <ListGroup title={t('data.title')} footer={t('data.footer')}>
       {coverage.map((item) => {
         const Icon = ICONS[item.entity];
-        const complete = item.target !== null && item.details >= item.target && item.target > 0;
-        const fresh =
-          item.target !== null &&
-          item.details >= item.target &&
-          item.updatedAt !== null &&
-          Date.now() - item.updatedAt < FRESH_WINDOW_MS;
+        const upToDate = item.upToDate;
+        const complete = upToDate || (item.target !== null && item.details >= item.target && item.target > 0);
         const isRunningThis = running && runningScope === item.entity;
 
         // Рынок у владельца/продавца — одна своя запись без списка: «total» нет, есть только карточка.
@@ -82,11 +77,11 @@ export function CoverageSection() {
               <button
                 type="button"
                 aria-label={t('data.refresh', { entity: t(`data.entities.${item.entity}`) })}
-                disabled={!isOnline || running || fresh}
+                disabled={!isOnline || running || upToDate}
                 onClick={() => void start(queryClient, item.entity)}
                 className={cn(
                   'text-muted-foreground -mr-1 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
-                  !isOnline || running || fresh ? 'opacity-40' : 'active:bg-muted/70'
+                  !isOnline || running || upToDate ? 'opacity-40' : 'active:bg-muted/70'
                 )}>
                 {isRunningThis ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden />

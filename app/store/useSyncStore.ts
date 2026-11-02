@@ -69,7 +69,7 @@ export const useSyncStore = create<SyncState>((set, get) => ({
     }
 
     controller = null;
-    const lastSync = scope === 'all' ? ((await readLastSync()) ?? get().lastSync) : get().lastSync;
+    const lastSync = (await readLastSync()) ?? get().lastSync;
     set({ running: false, scope: null, outcome, lastSync });
 
     if (outcome === 'complete') toast.success(t('toast.complete'));

@@ -55,7 +55,8 @@ export const productsApi = {
     params: { page?: number; limit?: number; type?: StockMovementType } = {}
   ): Promise<StockMovementsResponse> => (await apiClient.get(`${BASE}/${id}/movements`, { params })).data,
 
-  getSummary: async (): Promise<ProductsSummaryResponse> => (await apiClient.get(`${BASE}/summary`)).data,
+  getSummary: async (config?: import('axios').AxiosRequestConfig): Promise<ProductsSummaryResponse> =>
+    (await apiClient.get(`${BASE}/summary`, config)).data,
 
   /** `dryRun: true` ничего не пишет и возвращает первые 20 изменений. */
   bulkPrice: async (payload: BulkPricePayload): Promise<BulkPriceResponse> =>

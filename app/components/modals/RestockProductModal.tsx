@@ -11,7 +11,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useProductsModals } from '~/routes/(crm)/products/store';
 import { createRestockSchema, type RestockSchema } from '~/validations/product';
@@ -54,7 +54,8 @@ export function RestockProductModal() {
     mutationFn: (data: RestockSchema) =>
       productsApi.restock({ id: product!.id, quantity: data.quantity, note: data.note?.trim() || undefined }),
     onSuccess: (_result, data) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      invalidateEntityCache(queryClient, 'products', product?.id);
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'stock'] });
       toast.success(t('restock.success', { quantity: fmtNum(data.quantity), unit }));
       restockModal.close();
       reset({});

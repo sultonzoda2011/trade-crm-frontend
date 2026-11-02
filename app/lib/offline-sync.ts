@@ -11,6 +11,7 @@ import { sellersApi } from '~/api/sellers';
 import { transactionsApi } from '~/api/transactions';
 import { usersApi } from '~/api/users';
 import { Action, ACTION_PERMISSIONS } from '~/config/actions';
+import { STOCK_ANALYSIS_DAYS } from '~/config/dashboard';
 import { canAccess } from '~/config/permissions';
 import { getClientUser } from '~/lib/auth-utils';
 import { getErrorStatus, getRetryAfterSeconds, isTransientError } from '~/lib/offline-errors';
@@ -132,6 +133,12 @@ const roleCan = (role: Role, action: Action) => ACTION_PERMISSIONS[action]?.incl
 
 /** Сущность попадает в синхронизацию, если роль может и вызвать API списка, и открыть страницу списка. */
 export function canSyncEntity(spec: EntitySpec, role: Role): boolean {
+  if (spec.entity === 'markets') {
+    const user = getClientUser();
+    const canSyncOwnMarket =
+      Boolean(user?.marketId) && roleCan(role, Action.MARKETS_VIEW_BY_ID) && canAccess(role, '/markets/0');
+    if (canSyncOwnMarket) return true;
+  }
   return roleCan(role, spec.listAction) && canAccess(role, `/${spec.entity}`);
 }
 
@@ -246,39 +253,214 @@ export interface EntityCoverage {
   target: number | null;
   /** Когда обновлялся список. */
   updatedAt: number | null;
+  /** Все ли страницы списка и карточки актуальны и не инвалидированы. */
+  upToDate: boolean;
+}
+
+/**
+ * Достаёт основную запись из ответа карточки (`detail` или `full`).
+ * Для `markets` карточка хранит `{ market, summary }` (ответ `/markets/:id/overview`) —
+ * старый кеш от `/markets/:id/full` без `summary` считаем неполным.
+ */
+function unwrapDetailRecord(entity: Entity, data: unknown): Record<string, unknown> | null {
+  const payload = (data as ApiResponse<Record<string, unknown>> | undefined)?.data;
+  if (!payload || typeof payload !== 'object') return null;
+  if (entity === 'debtors') return (payload.debtor as Record<string, unknown>) ?? null;
+  if (entity === 'categories') return (payload.category as Record<string, unknown>) ?? null;
+  if (entity === 'sellers') return (payload.seller as Record<string, unknown>) ?? null;
+  if (entity === 'markets') {
+    if (!payload.summary) return null;
+    return (payload.market as Record<string, unknown>) ?? null;
+  }
+  if (entity === 'users') return (payload.user as Record<string, unknown>) ?? null;
+  return payload;
+}
+
+/**
+ * Проверяет, совпадает ли закешированная карточка с актуальной строкой списка:
+ * если запись изменилась на сервере (по `updatedAt` или ключевым полям/счётчикам),
+ * возвращаем `false`, чтобы догрузить ТОЛЬКО изменившуюся карточку, а не все 500.
+ */
+function detailFieldsMatch(
+  entity: Entity,
+  record: Record<string, unknown>,
+  listRow: Record<string, unknown>
+): boolean {
+  if (record.updatedAt && listRow.updatedAt && record.updatedAt !== listRow.updatedAt) {
+    return false;
+  }
+  const recCount = (record._count as Record<string, unknown> | undefined)?.products;
+  const rowCount = (listRow._count as Record<string, unknown> | undefined)?.products;
+
+  switch (entity) {
+    case 'transactions':
+      return (
+        record.status === listRow.status &&
+        record.paidAmount === listRow.paidAmount &&
+        record.totalAmount === listRow.totalAmount
+      );
+    case 'debtors':
+      return (
+        record.totalDebt === listRow.totalDebt &&
+        record.paidAmount === listRow.paidAmount &&
+        record.remainingAmount === listRow.remainingAmount &&
+        record.name === listRow.name &&
+        record.phone === listRow.phone
+      );
+    case 'products':
+      return (
+        record.quantity === listRow.quantity &&
+        record.price === listRow.price &&
+        record.costPrice === listRow.costPrice &&
+        record.isActive === listRow.isActive &&
+        recCount === rowCount
+      );
+    case 'categories':
+      return record.name === listRow.name && recCount === rowCount;
+    case 'sellers':
+      return record.commissionPct === listRow.commissionPct;
+    case 'markets':
+      return (
+        record.name === listRow.name &&
+        record.address === listRow.address &&
+        record.phone === listRow.phone &&
+        record.workHours === listRow.workHours &&
+        record.allowSellerSales === listRow.allowSellerSales
+      );
+    case 'users':
+      return (
+        record.firstName === listRow.firstName &&
+        record.lastName === listRow.lastName &&
+        record.phone === listRow.phone &&
+        record.role === listRow.role &&
+        record.marketId === listRow.marketId
+      );
+  }
+}
+
+export function isDetailUpToDate(
+  queryClient: QueryClient,
+  spec: EntitySpec,
+  id: string,
+  listRow?: Record<string, unknown>
+): boolean {
+  const key = queryKeys[spec.detailKind](spec.entity, id);
+  const state = queryClient.getQueryState(key);
+  if (!state || state.data === undefined || state.isInvalidated) return false;
+  const record = unwrapDetailRecord(spec.entity, state.data);
+  if (!record) return false;
+  if (!listRow) return true;
+  return detailFieldsMatch(spec.entity, record, listRow);
+}
+
+/** Собирает строки из последовательных закешированных страниц списка (page 1..N). */
+function getCachedListRows(
+  queryClient: QueryClient,
+  entity: Entity
+): {
+  rows: Array<Record<string, unknown> & { id: string }>;
+  total: number | null;
+  updatedAt: number | null;
+  allPagesValid: boolean;
+} {
+  const firstPage = queryClient.getQueryState<ApiResponse<PaginatedData<Record<string, unknown> & { id: string }>>>(
+    queryKeys.list(entity, { page: 1, limit: DEFAULT_PAGE_LIMIT, search: '', filters: [] })
+  );
+  const total = firstPage?.data?.data?.meta?.total ?? null;
+  const updatedAt = firstPage?.dataUpdatedAt ?? null;
+  if (total === null) {
+    return { rows: [], total: null, updatedAt: null, allPagesValid: false };
+  }
+
+  const cappedTotal = Math.min(total, MAX_LIST_ROWS);
+  const expectedPages = Math.max(1, Math.ceil(cappedTotal / DEFAULT_PAGE_LIMIT));
+  const rows: Array<Record<string, unknown> & { id: string }> = [];
+  let allPagesValid = !firstPage?.isInvalidated;
+
+  for (let page = 1; page <= expectedPages; page++) {
+    const pageState = queryClient.getQueryState<ApiResponse<PaginatedData<Record<string, unknown> & { id: string }>>>(
+      queryKeys.list(entity, { page, limit: DEFAULT_PAGE_LIMIT, search: '', filters: [] })
+    );
+    const pageRows = pageState?.data?.data?.data;
+    if (!pageState || !pageRows) {
+      allPagesValid = false;
+      break;
+    }
+    if (pageState.isInvalidated) allPagesValid = false;
+    rows.push(...pageRows);
+  }
+
+  if (rows.length < cappedTotal) allPagesValid = false;
+  return { rows, total, updatedAt, allPagesValid };
 }
 
 export function getEntityCoverage(queryClient: QueryClient, spec: EntitySpec): EntityCoverage {
-  const firstPage = queryClient.getQueryState<ApiResponse<PaginatedData<unknown>>>(
-    queryKeys.list(spec.entity, { page: 1, limit: DEFAULT_PAGE_LIMIT, search: '', filters: [] })
-  );
-  const total = firstPage?.data?.data?.meta?.total ?? null;
-  const details = queryClient
-    .getQueryCache()
-    .findAll({ queryKey: [spec.entity, spec.detailKind] })
-    .filter((query) => query.state.data !== undefined).length;
+  const user = getClientUser();
+  const role = user?.role;
+
+  // Особый случай: для владельца/продавца список рынков недоступен, синхронизируется только свой рынок (`marketId`).
+  if (
+    spec.entity === 'markets' &&
+    role &&
+    !roleCan(role, spec.listAction) &&
+    user?.marketId &&
+    roleCan(role, Action.MARKETS_VIEW_BY_ID)
+  ) {
+    const marketKey = queryKeys.full('markets', user.marketId);
+    const marketState = queryClient.getQueryState(marketKey);
+    const loaded = Boolean((marketState?.data as ApiResponse<{ summary?: unknown }> | undefined)?.data?.summary);
+    const upToDate = Boolean(loaded && marketState && !marketState.isInvalidated);
+    return {
+      entity: 'markets',
+      total: loaded ? 1 : null,
+      details: loaded ? 1 : 0,
+      target: 1,
+      updatedAt: marketState?.dataUpdatedAt ?? null,
+      upToDate,
+    };
+  }
+
+  const { rows, total, updatedAt, allPagesValid } = getCachedListRows(queryClient, spec.entity);
+  const target = total === null ? null : Math.min(total, spec.detailCap);
+  const needsDetails = role ? canSyncDetails(spec, role) : true;
+
+  let validDetails = 0;
+  if (target !== null && rows.length > 0) {
+    const slice = rows.slice(0, target);
+    for (const row of slice) {
+      if (isDetailUpToDate(queryClient, spec, row.id, row)) {
+        validDetails += 1;
+      }
+    }
+  } else {
+    validDetails = queryClient
+      .getQueryCache()
+      .findAll({ queryKey: [spec.entity, spec.detailKind] })
+      .filter((query) => query.state.data !== undefined && !query.state.isInvalidated).length;
+  }
+
+  const detailsComplete = !needsDetails || (target !== null && validDetails >= target);
+  const upToDate = total !== null && allPagesValid && detailsComplete;
 
   return {
     entity: spec.entity,
     total,
-    details,
-    target: total === null ? null : Math.min(total, spec.detailCap),
-    updatedAt: firstPage?.dataUpdatedAt ?? null,
+    details: target !== null ? Math.min(validDetails, target) : validDetails,
+    target,
+    updatedAt,
+    upToDate,
   };
 }
 
 /**
- * Актуальна ли сущность прямо сейчас: список грузили недавно (в пределах
- * `FRESH_WINDOW_MS`) и карточек в кеше столько же, сколько мы для неё хотим
- * иметь. Используется, чтобы отключать кнопку «Обновить»/«Синхронизировать
- * всё», когда качать уже нечего.
+ * Актуальна ли сущность прямо сейчас: все страницы списка и карточки лежат в
+ * кеше и ни одна запись не помечена как устаревшая (`isInvalidated`).
+ * Используется, чтобы отключать кнопку «Обновить»/«Синхронизировать всё», когда
+ * последняя версия уже загружена.
  */
 export function isEntityUpToDate(queryClient: QueryClient, spec: EntitySpec, role: Role): boolean {
   if (!canSyncEntity(spec, role)) return true; // роль её не синхронизирует — не блокируем кнопку этим
-  const coverage = getEntityCoverage(queryClient, spec);
-  if (coverage.target === null || coverage.updatedAt === null) return false;
-  if (Date.now() - coverage.updatedAt >= FRESH_WINDOW_MS) return false;
-  return coverage.details >= coverage.target;
+  return getEntityCoverage(queryClient, spec).upToDate;
 }
 
 /** Актуальны ли сразу все сущности, доступные роли (для главной кнопки «Синхронизировать всё»). */
@@ -452,10 +634,22 @@ export async function runSync({
   };
 
   const store = (key: QueryKey, data: unknown) => queryClient.setQueryData(key, data);
-  const isFresh = (key: QueryKey) => {
-    const updatedAt = queryClient.getQueryState(key)?.dataUpdatedAt ?? 0;
-    return Date.now() - updatedAt < FRESH_WINDOW_MS;
+
+  /** Проверка, что ключ уже есть в кеше и не помечен как устаревший (`isInvalidated`). */
+  const isKeyValid = (key: QueryKey) => {
+    const state = queryClient.getQueryState(key);
+    return Boolean(state && state.data !== undefined && !state.isInvalidated);
   };
+
+  // Все сущности, доступные роли (или одна сущность при точечном запуске).
+  const candidateEntities = ENTITY_SPECS.filter(
+    (spec) => (full || spec.entity === scope) && canSyncEntity(spec, role)
+  );
+  // Качаем ТОЛЬКО те сущности, в которых что-то устарело или отсутствует —
+  // благодаря этому изменение одного товара или должника не перезапускает синхронизацию всех остальных разделов.
+  const staleEntities = candidateEntities.filter((spec) => !isEntityUpToDate(queryClient, spec, role));
+  const onlyDelta = staleEntities.length > 0 && staleEntities.length < candidateEntities.length;
+  const entitiesToSync = staleEntities.length > 0 ? staleEntities : candidateEntities;
 
   // ---- общий пул воркеров ----
   // `as`: иначе TS сузит тип до `null` — он не видит присваиваний из замыканий воркеров.
@@ -490,7 +684,15 @@ export async function runSync({
 
   // ---- задачи ----
   const tasks1: Task[] = [];
-  const addMeta = (id: 'profile' | 'dashboard' | 'reference', run: () => Promise<unknown>) => {
+  const addMeta = (
+    id: 'profile' | 'dashboard' | 'reference',
+    keysToCheck: QueryKey[],
+    run: () => Promise<unknown>
+  ) => {
+    // Если мы догружаем дельту и все целевые ключи уже валидны в кеше — пропускаем лишний сетевой запрос.
+    if (onlyDelta && keysToCheck.length > 0 && keysToCheck.every(isKeyValid)) {
+      return;
+    }
     plan(id, 1);
     tasks1.push({
       group: id,
@@ -505,26 +707,59 @@ export async function runSync({
   // они не связаны с конкретной страницей списка и грузятся только «Всё».
   if (full) {
     // Профиль: шапка читает compact `me`, страница профиля — `full` (профиль, рынок, заработок продавца).
-    addMeta('profile', async () => store(queryKeys.me(), await call((c) => profileApi.getProfile(c))));
-    addMeta('profile', async () => store(queryKeys.profile(), await call((c) => profileApi.getFullProfile(c))));
+    addMeta('profile', [queryKeys.me()], async () =>
+      store(queryKeys.me(), await call((c) => profileApi.getProfile(c)))
+    );
+    addMeta('profile', [queryKeys.profile()], async () =>
+      store(queryKeys.profile(), await call((c) => profileApi.getFullProfile(c)))
+    );
 
     // Дашборд — для периода по умолчанию (то, что видно при первом заходе).
     if (can(Action.DASHBOARDS_VIEW)) {
       const params = { period: 'month' };
-      addMeta('dashboard', async () =>
+      addMeta('dashboard', [queryKeys.dashboard('overview', params)], async () =>
         store(queryKeys.dashboard('overview', params), await call((c) => dashboardApi.getOverview(params, c)))
       );
-      addMeta('dashboard', async () =>
+      addMeta('dashboard', [queryKeys.dashboard('recent-transactions', { sellerId: undefined })], async () =>
         store(
           queryKeys.dashboard('recent-transactions', { sellerId: undefined }),
           await call((c) => transactionsApi.getAll(1, 5, { sortBy: 'createdAt', sortOrder: 'desc' }, [], c))
         )
       );
-      addMeta('dashboard', async () =>
+      addMeta('dashboard', [queryKeys.dashboard('sellers-report', params)], async () =>
         store(
           queryKeys.dashboard('sellers-report', params),
           await call((c) => dashboardApi.getSellersReport(params, c))
         )
+      );
+      addMeta('dashboard', [queryKeys.dashboard('stock', { days: STOCK_ANALYSIS_DAYS })], async () =>
+        store(
+          queryKeys.dashboard('stock', { days: STOCK_ANALYSIS_DAYS }),
+          await call((c) => dashboardApi.getStockOverview(c))
+        )
+      );
+    }
+
+    // Сводки для шапок таблиц транзакций, должников и товаров (чтобы работали офлайн).
+    if (can(Action.TRANSACTIONS_VIEW)) {
+      const txSummaryKey = queryKeys.sub('transactions', 'summary', null, {
+        filters: [],
+        search: undefined,
+      });
+      addMeta('reference', [txSummaryKey], async () =>
+        store(txSummaryKey, await call((c) => transactionsApi.getSummary({ search: undefined }, [], c)))
+      );
+    }
+    if (can(Action.DEBTORS_VIEW)) {
+      const debtorsSummaryKey = queryKeys.sub('debtors', 'summary');
+      addMeta('reference', [debtorsSummaryKey], async () =>
+        store(debtorsSummaryKey, await call((c) => debtorsApi.getSummary(c)))
+      );
+    }
+    if (can(Action.PRODUCTS_STOCK)) {
+      const productsSummaryKey = queryKeys.sub('products', 'summary');
+      addMeta('reference', [productsSummaryKey], async () =>
+        store(productsSummaryKey, await call((c) => productsApi.getSummary(c)))
       );
     }
 
@@ -532,84 +767,85 @@ export async function runSync({
     // выпадающие списки через useAsyncSelectOptions хранят МАССИВ строк под ключом с хвостом '' (пустой поиск),
     // фильтры и превью читают ПОЛНЫЙ ответ API.
     if (can(Action.DEBTORS_VIEW)) {
-      addMeta('reference', async () => {
+      const k1 = queryKeys.options('debtors', { scope: 'filters', limit: 100 });
+      const k2 = [...queryKeys.options('debtors', { scope: 'form', limit: 100 }), ''];
+      addMeta('reference', [k1, k2], async () => {
         const response = await call((c) => debtorsApi.getAll(1, 100, {}, [], c));
-        store(queryKeys.options('debtors', { scope: 'filters', limit: 100 }), response); // транзакции: фильтр
-        store([...queryKeys.options('debtors', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []); // новая транзакция
+        store(k1, response); // транзакции: фильтр
+        store(k2, response?.data?.data ?? []); // новая транзакция
       });
     }
     if (can(Action.PRODUCTS_VIEW)) {
-      addMeta('reference', async () => {
+      const k1 = queryKeys.options('products', { scope: 'filters', limit: 100 });
+      const k2 = [...queryKeys.options('products', { scope: 'form', limit: 100 }), ''];
+      addMeta('reference', [k1, k2], async () => {
         const response = await call((c) => productsApi.getAll(1, 100, {}, [], c));
-        store(queryKeys.options('products', { scope: 'filters', limit: 100 }), response);
-        store([...queryKeys.options('products', { scope: 'form', limit: 100 }), ''], response?.data?.data ?? []);
+        store(k1, response);
+        store(k2, response?.data?.data ?? []);
       });
     }
     if (can(Action.CATEGORIES_VIEW)) {
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('categories', { scope: 'filters', limit: 100 }),
-          await call((c) => categoriesApi.getAll(1, 100, {}, [], c))
-        )
+      const kFilters = queryKeys.options('categories', { scope: 'filters', limit: 100 });
+      addMeta('reference', [kFilters], async () =>
+        store(kFilters, await call((c) => categoriesApi.getAll(1, 100, {}, [], c)))
       );
       if (canAccess(role, '/products/create')) {
-        addMeta('reference', async () =>
-          store(
-            [...queryKeys.options('categories', { scope: 'form', limit: 20 }), ''],
-            (await call((c) => categoriesApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
-          )
+        const kForm = [...queryKeys.options('categories', { scope: 'form', limit: 20 }), ''];
+        addMeta('reference', [kForm], async () =>
+          store(kForm, (await call((c) => categoriesApi.getAll(1, 20, {}, [], c)))?.data?.data ?? [])
         );
       }
     }
     if (can(Action.SELLERS_VIEW)) {
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('sellers', { scope: 'filters', limit: 100 }),
-          await call((c) => sellersApi.getAll(1, 100, {}, [], c))
-        )
+      const kFilters = queryKeys.options('sellers', { scope: 'filters', limit: 100 });
+      addMeta('reference', [kFilters], async () =>
+        store(kFilters, await call((c) => sellersApi.getAll(1, 100, {}, [], c)))
       );
       if (can(Action.DASHBOARDS_VIEW)) {
-        addMeta('reference', async () =>
-          store(
-            [...queryKeys.options('sellers', { scope: 'filter-bar', limit: 20 }), ''],
-            (await call((c) => sellersApi.getAll(1, 20, {}, [], c)))?.data?.data ?? []
-          )
+        const kBar = [...queryKeys.options('sellers', { scope: 'filter-bar', limit: 20 }), ''];
+        addMeta('reference', [kBar], async () =>
+          store(kBar, (await call((c) => sellersApi.getAll(1, 20, {}, [], c)))?.data?.data ?? [])
         );
       }
     }
     if (can(Action.MARKETS_VIEW) && can(Action.USERS_VIEW)) {
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('markets', { scope: 'user-form', limit: 100 }),
-          await call((c) => marketsApi.getAll(1, 100, {}, [], c))
-        )
+      const kMarketForm = queryKeys.options('markets', { scope: 'user-form', limit: 100 });
+      addMeta('reference', [kMarketForm], async () =>
+        store(kMarketForm, await call((c) => marketsApi.getAll(1, 100, {}, [], c)))
       );
     }
     if (can(Action.USERS_VIEW)) {
       const owners: ActiveFilter[] = [{ key: 'role', value: Role.Owner }];
-      addMeta('reference', async () =>
-        store(
-          queryKeys.options('users', { scope: 'owners', limit: 100 }),
-          await call((c) => usersApi.getAll(1, 100, {}, owners, c))
-        )
+      const kOwners100 = queryKeys.options('users', { scope: 'owners', limit: 100 });
+      const kOwners20 = [...queryKeys.options('users', { scope: 'owners', limit: 20 }), ''];
+      addMeta('reference', [kOwners100], async () =>
+        store(kOwners100, await call((c) => usersApi.getAll(1, 100, {}, owners, c)))
       );
-      addMeta('reference', async () =>
-        store(
-          [...queryKeys.options('users', { scope: 'owners', limit: 20 }), ''],
-          (await call((c) => usersApi.getAll(1, 20, {}, owners, c)))?.data?.data ?? []
-        )
+      addMeta('reference', [kOwners20], async () =>
+        store(kOwners20, (await call((c) => usersApi.getAll(1, 20, {}, owners, c)))?.data?.data ?? [])
       );
     }
   } // full
 
-  // Списки: первая пачка каждой сущности. Из неё сразу видно, сколько всего записей.
-  // Если scope — конкретная сущность, синхронизируем только её.
-  const entities = ENTITY_SPECS.filter((spec) => (full || spec.entity === scope) && canSyncEntity(spec, role));
-  const rowIds = new Map<Entity, string[]>();
+  // Списки: первая пачка каждой сущности, которая реально требует обновления.
+  // Для ownMarketOnly список рынков недоступен (403), поэтому исключаем его из списочных задач.
+  const entities = entitiesToSync.filter(
+    (spec) => roleCan(role, spec.listAction) && canAccess(role, `/${spec.entity}`)
+  );
+  const listRowsByEntity = new Map<Entity, Array<Record<string, unknown> & { id: string }>>();
   const serverTotals = new Map<Entity, number>();
+  // Сохраняем старые закешированные строки до перезаписи пачкой №1, чтобы понять, сдвинулись ли страницы 2..N.
+  const cachedRowsBeforeSync = new Map<Entity, Array<Record<string, unknown> & { id: string }>>();
+  for (const spec of entities) {
+    cachedRowsBeforeSync.set(spec.entity, getCachedListRows(queryClient, spec.entity).rows);
+  }
 
   /** Нарезает пачку из 100 строк на страницы по 10 — ключи кеша точно такие же, как у таблиц. */
-  const seedListPages = (entity: Entity, chunkPage: number, response: ApiResponse<PaginatedData<{ id: string }>>) => {
+  const seedListPages = (
+    entity: Entity,
+    chunkPage: number,
+    response: ApiResponse<PaginatedData<Record<string, unknown> & { id: string }>>
+  ) => {
     const rows = response?.data?.data ?? [];
     const total = response?.data?.meta?.total ?? rows.length;
     const per = DEFAULT_PAGE_LIMIT;
@@ -626,16 +862,16 @@ export async function runSync({
       });
     }
 
-    const ids = rowIds.get(entity) ?? [];
-    for (const row of rows) ids.push(row.id);
-    rowIds.set(entity, ids);
+    const existing = listRowsByEntity.get(entity) ?? [];
+    for (const row of rows) existing.push(row);
+    listRowsByEntity.set(entity, existing);
     serverTotals.set(entity, total);
   };
 
   const listChunk = (spec: EntitySpec, chunkPage: number) => async (): Promise<'done'> => {
-    const response = await call((c) =>
+    const response = (await call((c) =>
       spec.list(chunkPage, CHUNK_SIZE, { sortBy: 'createdAt', sortOrder: 'desc' }, [], c)
-    );
+    )) as ApiResponse<PaginatedData<Record<string, unknown> & { id: string }>>;
     seedListPages(spec.entity, chunkPage, response);
     return 'done';
   };
@@ -649,18 +885,27 @@ export async function runSync({
   const marketSpec = ENTITY_SPECS.find((spec) => spec.entity === 'markets')!;
   const ownMarketOnly =
     (full || scope === 'markets') &&
-    !entities.includes(marketSpec) &&
+    !roleCan(role, marketSpec.listAction) &&
     Boolean(marketId) &&
     can(Action.MARKETS_VIEW_BY_ID);
   if (ownMarketOnly) {
-    plan('markets', 1);
-    tasks1.push({
-      group: 'markets',
-      run: async () => {
-        store(queryKeys.full('markets', marketId), await call((c) => marketSpec.detail(marketId, c)));
-        return 'done';
-      },
-    });
+    const ownMarketKey = queryKeys.full('markets', marketId);
+    const ownMarketState = queryClient.getQueryState(ownMarketKey);
+    const hasValidOverview = Boolean(
+      ownMarketState &&
+        !ownMarketState.isInvalidated &&
+        (ownMarketState.data as ApiResponse<{ summary?: unknown }> | undefined)?.data?.summary
+    );
+    if (!hasValidOverview) {
+      plan('markets', 1);
+      tasks1.push({
+        group: 'markets',
+        run: async () => {
+          store(ownMarketKey, await call((c) => marketSpec.detail(marketId, c)));
+          return 'done';
+        },
+      });
+    }
   }
 
   // ---- запуск ----
@@ -670,50 +915,74 @@ export async function runSync({
     await runPool(tasks1);
     if (fatal) throw fatal;
 
-    // Этап 2: оставшиеся пачки списков.
+    // Этап 2: оставшиеся пачки списков (2..chunks).
+    // Если первая пачка (100 строк) закончилась на том же id, что был на 100-й позиции в кеше,
+    // и страницы 11..N уже валидны в кеше — не перезагружаем старые страницы заново.
     const tasks2: Task[] = [];
     for (const spec of entities) {
       const total = serverTotals.get(spec.entity) ?? 0;
-      const chunks = Math.ceil(Math.min(total, MAX_LIST_ROWS) / CHUNK_SIZE);
+      const cappedTotal = Math.min(total, MAX_LIST_ROWS);
+      const chunks = Math.ceil(cappedTotal / CHUNK_SIZE);
+      if (chunks <= 1) continue;
+
+      const prevRows = cachedRowsBeforeSync.get(spec.entity) ?? [];
+      const newFirstChunk = listRowsByEntity.get(spec.entity) ?? [];
+      const tailUnchanged =
+        prevRows.length >= cappedTotal &&
+        newFirstChunk.length === CHUNK_SIZE &&
+        prevRows[CHUNK_SIZE - 1]?.id === newFirstChunk[CHUNK_SIZE - 1]?.id;
+
+      if (tailUnchanged) {
+        // Сохраняем уже закешированные строки 101..N для проверки карточек на этапе 3.
+        listRowsByEntity.set(spec.entity, [...newFirstChunk, ...prevRows.slice(CHUNK_SIZE, cappedTotal)]);
+        continue;
+      }
+
       for (let chunkPage = 2; chunkPage <= chunks; chunkPage++) {
         plan(spec.entity, 1);
         tasks2.push({ group: spec.entity, run: listChunk(spec, chunkPage) });
       }
     }
 
-    // Этап 3: карточки. Идём «по кругу» по сущностям, чтобы при обрыве у каждой было хоть что-то.
+    await runPool(tasks2);
+    if (fatal) throw fatal;
+
+    // Этап 3: карточки. Планируем и качаем ТОЛЬКО те карточки, которых ещё нет в кеше,
+    // которые помечены как `isInvalidated`, или у которых данные в списке отличаются от карточки.
     const detailTasks: Task[] = [];
-    const queues = entities
+    const pendingByEntity = entities
       .filter((spec) => canSyncDetails(spec, role))
-      .map((spec) => ({ spec, count: Math.min(serverTotals.get(spec.entity) ?? 0, spec.detailCap) }));
-    for (const { spec, count } of queues) plan(spec.entity, count);
+      .map((spec) => {
+        const count = Math.min(serverTotals.get(spec.entity) ?? 0, spec.detailCap);
+        const rows = (listRowsByEntity.get(spec.entity) ?? []).slice(0, count);
+        const missingRows = rows.filter((row) => !isDetailUpToDate(queryClient, spec, row.id, row));
+        return { spec, missingRows };
+      });
+
+    for (const { spec, missingRows } of pendingByEntity) {
+      plan(spec.entity, missingRows.length);
+    }
 
     snapshot.phase = 'running';
     emit(true);
 
-    await runPool(tasks2);
-    if (fatal) throw fatal;
-
-    for (let i = 0; queues.some(({ count }) => i < count); i++) {
-      for (const { spec, count } of queues) {
-        if (i >= count) continue;
-        const id = rowIds.get(spec.entity)?.[i];
-        if (!id) {
-          // Список оказался короче, чем сообщил total (записи удалили на лету) — не держим прогресс незавершённым.
-          detailTasks.push({ group: spec.entity, run: async () => 'skipped' });
-          continue;
-        }
-        const key = queryKeys[spec.detailKind](spec.entity, id);
+    // Идём «по кругу» по сущностям, чтобы при обрыве у каждой было хоть что-то.
+    for (let i = 0; pendingByEntity.some(({ missingRows }) => i < missingRows.length); i++) {
+      for (const { spec, missingRows } of pendingByEntity) {
+        if (i >= missingRows.length) continue;
+        const row = missingRows[i];
+        const key = queryKeys[spec.detailKind](spec.entity, row.id);
         detailTasks.push({
           group: spec.entity,
           run: async () => {
-            if (isFresh(key)) return 'skipped';
-            store(key, await call((c) => spec.detail(id, c)));
+            if (isDetailUpToDate(queryClient, spec, row.id, row)) return 'skipped';
+            store(key, await call((c) => spec.detail(row.id, c)));
             return 'done';
           },
         });
       }
     }
+
     await runPool(detailTasks);
     if (fatal) throw fatal;
   } catch (error) {

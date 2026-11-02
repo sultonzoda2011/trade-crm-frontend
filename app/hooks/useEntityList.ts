@@ -6,7 +6,7 @@ import type { StoreApi, UseBoundStore } from 'zustand';
 import type { ListOptions } from '~/api/crud';
 import { useDebounce } from '~/hooks/useDebounce';
 import { splitListOptions } from '~/lib/filtersToParams';
-import { queryKeys, type Entity } from '~/lib/query-keys';
+import { invalidateEntityCache, queryKeys, type Entity } from '~/lib/query-keys';
 import type { ModalSlice } from '~/store/createModalStore';
 import type { TableStoreState } from '~/store/useTableStore';
 import type { ActiveFilter } from '~/types/filters';
@@ -92,8 +92,11 @@ export function useEntityList<TRow, TDisplayRow = TRow>({
 
   const { mutate: deleteOne, isPending: isDeletePending } = useMutation({
     mutationFn: (id: string) => api.delete(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity(entity) });
+    onSuccess: (_result, deletedId) => {
+      queryClient.removeQueries({
+        predicate: (query) => query.queryKey[0] === entity && query.queryKey[2] === deletedId,
+      });
+      invalidateEntityCache(queryClient, entity);
       toast.success(t('actions.deleteSuccess'));
       deleteModal.close();
     },

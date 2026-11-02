@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { buildMultipart } from '~/lib/form-data';
-import { queryKeys, type Entity } from '~/lib/query-keys';
+import { invalidateEntityCache, queryKeys, type Entity } from '~/lib/query-keys';
 
 export interface EntityFormApi {
   create: (formData: FormData) => Promise<unknown>;
@@ -89,8 +89,9 @@ export function useEntityForm<TValues, TDetail>({
       const formData = buildMultipart(toPayload(values), fileKey, keepEmpty);
       return id ? api.update({ formData, id }) : api.create(formData);
     },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity(entity) });
+    onSuccess: (result) => {
+      const savedId = id ?? (result as { data?: { id?: string } } | undefined)?.data?.id;
+      invalidateEntityCache(queryClient, entity, savedId);
       navigate(redirectTo(id));
     },
   });

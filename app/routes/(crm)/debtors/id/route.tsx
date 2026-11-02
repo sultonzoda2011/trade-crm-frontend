@@ -92,7 +92,7 @@ export default function DebtorDetailPage() {
     queryFn: () => transactionsApi.getAll(1, 50, {}, [{ key: 'debtorId', value: id }]),
     enabled: pickDebtOpen && !!id,
   });
-  const openDebts = (debtsResponse?.data?.data ?? [])
+  const openDebts = (debtsResponse?.data?.data ?? transactions)
     .map((tx) => withPendingPayments(tx, queueOps))
     .filter(
       (tx) => tx.type === 'DEBT' && tx.remainingAmount > 0 && (tx.status === 'ACTIVE' || tx.status === 'PARTIAL')

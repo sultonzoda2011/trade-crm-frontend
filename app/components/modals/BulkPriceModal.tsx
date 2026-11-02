@@ -12,7 +12,7 @@ import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache, queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { useProductsModals } from '~/routes/(crm)/products/store';
 import type { BulkPriceResult } from '~/types/products';
@@ -83,7 +83,15 @@ export function BulkPriceModal() {
         setPreview({ key: requestKey, result });
         return;
       }
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      if (fresh && result.count <= fresh.items.length) {
+        invalidateEntityCache(
+          queryClient,
+          'products',
+          fresh.items.map((item) => item.id)
+        );
+      } else {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      }
       toast.success(t('bulkPrice.success', { count: result.count }));
       modal.close();
     },

@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '~/components/ui/tooltip';
+import { useCacheCoverage } from '~/hooks/useCacheCoverage';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { useOfflineQueue } from '~/hooks/useOfflineQueue';
 import { cn } from '~/lib/utils';
@@ -23,6 +24,8 @@ export function SyncStatus() {
   const queryClient = useQueryClient();
   const isOnline = useNetworkStatus();
   const { pending, failed, total } = useOfflineQueue();
+  const coverage = useCacheCoverage();
+  const allUpToDate = coverage.length > 0 && coverage.every((item) => item.upToDate);
 
   const running = useSyncStore((s) => s.running);
   const snapshot = useSyncStore((s) => s.snapshot);
@@ -90,7 +93,8 @@ export function SyncStatus() {
               variant="glass"
               size="icon"
               className="text-primary md:text-foreground"
-              aria-label={running ? t('header.open') : t('header.syncAll')}
+              disabled={!running && (!isOnline || allUpToDate)}
+              aria-label={running ? t('header.open') : allUpToDate ? t('button.upToDate') : t('header.syncAll')}
               // Во время загрузки повторный запуск не нужен — открываем страницу с прогрессом.
               onClick={() => (running ? navigate('/sync') : void start(queryClient))}>
               <RefreshCw
@@ -100,7 +104,9 @@ export function SyncStatus() {
             </Button>
           }
         />
-        <TooltipContent side="bottom">{running ? t('header.open') : t('header.syncAll')}</TooltipContent>
+        <TooltipContent side="bottom">
+          {running ? t('header.open') : allUpToDate ? t('button.upToDate') : t('header.syncAll')}
+        </TooltipContent>
       </Tooltip>
     </>
   );

@@ -31,7 +31,7 @@ import { useCan } from '~/hooks/useCan';
 import { useDeleteEntity } from '~/hooks/useDeleteEntity';
 import { getClientUser } from '~/lib/auth-utils';
 import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache, queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { Role } from '~/types/common';
 import type { MarketOverview } from '~/types/markets';
@@ -73,7 +73,7 @@ export function MarketOverviewView({ overview }: MarketOverviewViewProps) {
     // Не из очереди офлайн-операций: переключатель должен честно сказать «нет связи», а не ждать.
     networkMode: 'always',
     onSuccess: (_data, allowSellerSales) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('markets') });
+      invalidateEntityCache(queryClient, 'markets', market.id);
       // Продавец узнаёт правило из профиля — освежаем и его кеш.
       void queryClient.invalidateQueries({ queryKey: queryKeys.profileAll() });
       toast.success(t(allowSellerSales ? 'settings.enabledToast' : 'settings.disabledToast'));

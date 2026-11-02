@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
-import { queryKeys, type Entity } from '~/lib/query-keys';
+import { invalidateEntityCache, type Entity } from '~/lib/query-keys';
 
 interface UseDeleteEntityArgs {
   /** Registry entity — decides which cached reads are dropped and invalidated. */
@@ -44,7 +44,7 @@ export function useDeleteEntity({ entity, api, id, t, redirectTo, alsoInvalidate
         predicate: (query) => query.queryKey[0] === entity && query.queryKey[2] === id,
       });
       for (const key of [entity, ...alsoInvalidate]) {
-        void queryClient.invalidateQueries({ queryKey: queryKeys.entity(key) });
+        invalidateEntityCache(queryClient, key);
       }
       toast.success(t('actions.deleteSuccess'));
       setOpen(false);
