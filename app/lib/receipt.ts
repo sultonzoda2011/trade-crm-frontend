@@ -26,18 +26,38 @@ export function buildReceiptText(tx: TransactionDetail, t: TFunction): string {
   return lines.filter((l, i, a) => !(l === '' && (i === 0 || a[i - 1] === ''))).join('\n');
 }
 
-/** Системное окно «Поделиться»; если его нет — копирует текст в буфер. Возвращает, что получилось. */
+/**
+ * Системное окно «Поделиться» через нативный Capacitor Share (Android/iOS)
+ * или Web Share API; если его нет — копирует текст в буфер.
+ */
 export async function shareText(text: string): Promise<'shared' | 'copied' | 'failed'> {
   try {
-    if (typeof navigator.share === 'function') {
+    const { Share } = await import('@capacitor/share');
+    const { value: canShare } = await Share.canShare();
+    if (canShare) {
+      await Share.share({ text });
+      return 'shared';
+    }
+  } catch (error) {
+    // Пользователь закрыл системное окно «Поделиться» (Web / Android / iOS) — это не ошибка.
+    if (isShareCancelled(error)) return 'shared';
+  }
+
+  try {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       await navigator.share({ text });
       return 'shared';
     }
     await navigator.clipboard.writeText(text);
     return 'copied';
   } catch (error) {
-    // Пользователь закрыл окно «Поделиться» — это не ошибка.
-    if (error instanceof DOMException && error.name === 'AbortError') return 'shared';
+    if (isShareCancelled(error)) return 'shared';
     return 'failed';
   }
+}
+
+function isShareCancelled(error: unknown): boolean {
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
+  const message = (error as { message?: string })?.message?.toLowerCase() ?? '';
+  return message.includes('cancel') || message.includes('abort') || message.includes('dismiss');
 }

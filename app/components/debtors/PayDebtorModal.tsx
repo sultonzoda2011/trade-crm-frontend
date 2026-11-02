@@ -10,7 +10,7 @@ import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum, fmtTJS } from '~/lib/format';
 import { createIdempotencyKey } from '~/lib/offline-mutations';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
 import { showSuccess } from '~/store/useSuccessStore';
 import type { Debtor } from '~/types/debtors';
@@ -55,8 +55,9 @@ export function PayDebtorModal({ debtor, open, onClose }: PayDebtorModalProps) {
         createIdempotencyKey()
       ),
     onSuccess: (response, data) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
+      const txIds = response?.data?.allocations?.map((a) => a.transactionId) ?? [];
+      invalidateEntityCache(queryClient, 'debtors', debtor.id);
+      invalidateEntityCache(queryClient, 'transactions', txIds);
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       const left = response?.data?.remainingDebt ?? Math.max(total - data.amount, 0);
       showSuccess({

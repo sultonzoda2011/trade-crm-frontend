@@ -8,7 +8,7 @@ import { useCan } from '~/hooks/useCan';
 import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { fmtTJS, formatDate } from '~/lib/format';
 import { toDialNumber } from '~/lib/phone';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import type { Debtor } from '~/types/debtors';
 
 /**
@@ -25,7 +25,7 @@ export function DebtorContactActions({ debtor }: { debtor: Debtor }) {
 
   const { mutate: remind } = useMutation({
     mutationFn: () => debtorsApi.remind(debtor.id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') }),
+    onSuccess: () => invalidateEntityCache(queryClient, 'debtors', debtor.id),
   });
   const markReminded = () => {
     if (isOnline && hasDebt && can(Action.DEBTORS_EDIT)) remind();

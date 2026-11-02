@@ -5,7 +5,7 @@ import { transactionsApi } from '~/api/transactions';
 import { createUuid, isClientId, rememberRealId, resolveRealId } from '~/lib/client-ids';
 import { getServerMessage, isTransientError } from '~/lib/offline-errors';
 import { markSent } from '~/lib/offline-sent';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import { showSuccess } from '~/store/useSuccessStore';
 import { toast } from 'sonner';
 import type { DebtorRequest } from '~/types/debtors';
@@ -133,19 +133,42 @@ function withRealDebtor(payload: CreateTransactionRequest): CreateTransactionReq
   return debtorId === payload.debtorId ? payload : { ...payload, debtorId };
 }
 
-function invalidateAfterDebtorWrite(queryClient: QueryClient) {
-  void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
+function invalidateAfterDebtorWrite(queryClient: QueryClient, debtorId?: string | null) {
+  invalidateEntityCache(queryClient, 'debtors', debtorId);
 }
 
-function invalidateAfterTransactionWrite(queryClient: QueryClient, transactionId?: string) {
-  void queryClient.invalidateQueries({ queryKey: queryKeys.entity('transactions') });
-  // Продажа списывает остатки, долг/оплата/возврат меняют сумму у должника —
-  // без этого списки до конца staleTime показывали бы старые цифры.
-  void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
-  void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-  if (transactionId) {
-    void queryClient.invalidateQueries({ queryKey: queryKeys.full('transactions', transactionId) });
-  }
+function invalidateAfterTransactionCreate(
+  queryClient: QueryClient,
+  transactionId?: string | null,
+  debtorId?: string | null,
+  productIds?: string[]
+) {
+  invalidateEntityCache(queryClient, 'transactions', transactionId);
+  invalidateEntityCache(queryClient, 'products', productIds);
+  if (debtorId) invalidateEntityCache(queryClient, 'debtors', debtorId);
+  void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+}
+
+function invalidateAfterTransactionPay(
+  queryClient: QueryClient,
+  transactionId: string,
+  debtorId?: string | null
+) {
+  invalidateEntityCache(queryClient, 'transactions', transactionId);
+  invalidateEntityCache(queryClient, 'debtors', debtorId);
+  void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+}
+
+function invalidateAfterTransactionRefund(
+  queryClient: QueryClient,
+  transactionIds: Array<string | null | undefined>,
+  debtorId?: string | null,
+  productIds?: string[]
+) {
+  invalidateEntityCache(queryClient, 'transactions', transactionIds);
+  invalidateEntityCache(queryClient, 'products', productIds);
+  if (debtorId) invalidateEntityCache(queryClient, 'debtors', debtorId);
+  void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 }
 
 /**
@@ -177,7 +200,7 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
       const realId = response?.data?.id;
       if (realId) rememberRealId(vars.clientId, realId);
       markSent(vars.idempotencyKey);
-      invalidateAfterDebtorWrite(queryClient);
+      invalidateAfterDebtorWrite(queryClient, realId);
       toast.success(i18next.t('createSuccess', { ns: 'debtors' }));
       // Дубль номера не блокирует создание (на рынке один телефон бывает у двоих) — только предупреждаем.
       const duplicate = response?.data?.phoneDuplicateOf;
@@ -192,7 +215,9 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
       transactionsApi.create(withRealDebtor(vars.payload), vars.idempotencyKey),
     onSuccess: (response, vars) => {
       markSent(vars.idempotencyKey);
-      invalidateAfterTransactionWrite(queryClient);
+      const debtorId = vars.payload.debtorId ? resolveRealId(vars.payload.debtorId) : response?.data?.debtorId;
+      const productIds = vars.payload.items.map((item) => item.productId);
+      invalidateAfterTransactionCreate(queryClient, response?.data?.id, debtorId, productIds);
       // `?.`: при гонке дубликатов бэкенд может вернуть пустой сохранённый ответ.
       showSuccess({ title: i18next.t('createSuccess', { ns: 'transactions' }), amount: response?.data?.totalAmount });
     },
@@ -203,9 +228,10 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
     ...QUEUE_OPTIONS,
     mutationFn: (vars: QueuedPayTransactionVars) =>
       transactionsApi.pay({ request: vars.request, id: vars.id }, vars.idempotencyKey),
-    onSuccess: (_response, vars) => {
+    onSuccess: (response, vars) => {
       markSent(vars.idempotencyKey);
-      invalidateAfterTransactionWrite(queryClient, vars.id);
+      const debtorId = response?.data?.debtorId ?? vars.preview?.debtorId;
+      invalidateAfterTransactionPay(queryClient, vars.id, debtorId);
       showSuccess({ title: i18next.t('paySuccess', { ns: 'transactions' }), amount: vars.request.amount });
     },
     onError: fail('payError'),
@@ -217,7 +243,9 @@ export function registerOfflineMutationDefaults(queryClient: QueryClient) {
       transactionsApi.refund({ id: vars.id, request: vars.request }, vars.idempotencyKey),
     onSuccess: (response, vars) => {
       markSent(vars.idempotencyKey);
-      invalidateAfterTransactionWrite(queryClient, vars.id);
+      const debtorId = response?.data?.debtorId ?? response?.data?.debtor?.id;
+      const productIds = response?.data?.items?.map((item) => item.productId) ?? [];
+      invalidateAfterTransactionRefund(queryClient, [vars.id, response?.data?.id], debtorId, productIds);
       showSuccess({
         title: i18next.t('refundSuccess', { ns: 'transactions' }),
         amount: response?.data?.summary?.refundedAmount,

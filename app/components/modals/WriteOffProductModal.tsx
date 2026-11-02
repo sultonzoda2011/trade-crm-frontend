@@ -12,7 +12,7 @@ import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { useForm } from '~/hooks/useForm';
 import { fmtNum } from '~/lib/format';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache } from '~/lib/query-keys';
 import { useProductsModals } from '~/routes/(crm)/products/store';
 import { WRITE_OFF_REASONS } from '~/types/products';
 import { createWriteOffSchema, type WriteOffSchema } from '~/validations/product';
@@ -52,7 +52,8 @@ export function WriteOffProductModal() {
         note: data.note?.trim() || undefined,
       }),
     onSuccess: (_result, data) => {
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('products') });
+      invalidateEntityCache(queryClient, 'products', product?.id);
+      void queryClient.invalidateQueries({ queryKey: ['dashboard', 'stock'] });
       toast.success(t('writeOff.success', { quantity: fmtNum(data.quantity), unit }));
       modal.close();
       reset({});

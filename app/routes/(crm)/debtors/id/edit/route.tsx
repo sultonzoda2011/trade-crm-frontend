@@ -10,7 +10,7 @@ import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { EntityFormPage } from '~/components/shared/EntityFormPage';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
 import { useForm } from '~/hooks/useForm';
-import { queryKeys } from '~/lib/query-keys';
+import { invalidateEntityCache, queryKeys } from '~/lib/query-keys';
 import { requestDebtorSchema, toDebtorRequest, type RequestDebtorSchema } from '~/validations/debtor';
 
 export default function EditDebtorPage() {
@@ -48,8 +48,7 @@ export default function EditDebtorPage() {
     onSuccess: (response) => {
       const duplicate = response?.data?.phoneDuplicateOf;
       if (duplicate) toast.warning(t('phoneDuplicate', { name: duplicate.name }));
-      void queryClient.invalidateQueries({ queryKey: queryKeys.entity('debtors') });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.detail('debtors', id) });
+      invalidateEntityCache(queryClient, 'debtors', id);
       navigate(`/debtors/${id}`);
     },
   });

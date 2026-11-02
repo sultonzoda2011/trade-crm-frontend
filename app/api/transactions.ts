@@ -31,9 +31,11 @@ export const transactionsApi = {
   /** Итоги по тем же фильтрам и поиску, что у списка. Без page/limit — считает сервер по всему набору. */
   getSummary: async (
     options: { search?: string; dateFrom?: string; dateTo?: string } = {},
-    filters: ActiveFilter[] = []
+    filters: ActiveFilter[] = [],
+    config?: import('axios').AxiosRequestConfig
   ): Promise<TransactionsSummaryResponse> => {
     const { data } = await apiClient.get(`${BASE}/summary`, {
+      ...config,
       params: withInclusiveDates({ ...options, ...filtersToParams(filters) }),
     });
     return data;
