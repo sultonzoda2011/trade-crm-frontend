@@ -1,9 +1,12 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
 import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
+import { SellerStatusBadge } from '~/components/sellers/SellerStatusBadge';
 import { UserAvatar } from '~/components/shared/UserAvatar';
 import { Action } from '~/config/actions';
 import { getClientUser } from '~/lib/auth-utils';
+import { fmtNum, formatDateShort } from '~/lib/format';
+import { cn } from '~/lib/utils';
 import { useSellersModals } from '~/routes/(crm)/sellers/store';
 import type { Seller } from '~/types/sellers';
 
@@ -36,16 +39,55 @@ export const getColumns = ({ t }: { t: TFunction }): ColumnDef<Seller, any>[] =>
       header: t('fields.name'),
       enableHiding: false,
       cell: (info) => (
-        <UserAvatar
-          fullName={info.row.original.name}
-          imagePath={info.row.original.image ?? undefined}
-          subInfo={info.row.original.email}
-        />
+        <div className="flex items-center gap-2">
+          <UserAvatar
+            fullName={info.row.original.name}
+            imagePath={info.row.original.image ?? undefined}
+            subInfo={info.row.original.phone || info.row.original.email}
+          />
+          <SellerStatusBadge isActive={info.row.original.isActive} />
+        </div>
       ),
     }),
-    columnHelper.accessor('email', {
-      header: t('fields.email'),
-      cell: (info) => <span className="text-sm">{info.getValue()}</span>,
+    columnHelper.display({
+      id: 'sold',
+      header: () => <div className="text-right">{t('columns.sold')}</div>,
+      cell: (info) => {
+        const stats = info.row.original.stats;
+        return <div className="text-right font-mono text-sm">{stats ? fmtNum(stats.sold) : '—'}</div>;
+      },
+    }),
+    columnHelper.display({
+      id: 'earned',
+      header: () => <div className="text-right">{t('columns.earned')}</div>,
+      cell: (info) => {
+        const stats = info.row.original.stats;
+        return <div className="text-right font-mono text-sm">{stats ? fmtNum(stats.earned) : '—'}</div>;
+      },
+    }),
+    columnHelper.display({
+      id: 'balance',
+      header: () => <div className="text-right">{t('columns.balance')}</div>,
+      cell: (info) => {
+        const balance = info.row.original.stats?.balance;
+        if (balance === undefined) return <div className="text-right">—</div>;
+        return (
+          <div
+            className={cn(
+              'text-right font-mono text-sm font-semibold',
+              balance > 0 ? 'text-success' : balance < 0 ? 'text-warning' : 'text-muted-foreground'
+            )}>
+            {fmtNum(balance)}
+          </div>
+        );
+      },
+    }),
+    columnHelper.display({
+      id: 'lastSaleAt',
+      header: t('columns.lastSale'),
+      cell: (info) => (
+        <span className="text-muted-foreground text-sm">{formatDateShort(info.row.original.stats?.lastSaleAt)}</span>
+      ),
     }),
     columnHelper.accessor('market.name', {
       id: 'market.name',

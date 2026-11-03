@@ -110,10 +110,12 @@ export const ENTITY_SPECS: EntitySpec[] = [
   {
     entity: 'sellers',
     listAction: Action.SELLERS_VIEW,
-    list: sellersApi.getAll as unknown as ListFn,
+    // Со статистикой и «к выплате» — тот же запрос, что делает экран, иначе офлайн-копия не совпадёт с ключом списка.
+    list: sellersApi.getList as unknown as ListFn,
     detailKind: 'full',
     detail: sellersApi.getFull as DetailFn,
     detailCap: 300,
+    defaultSort: { sortBy: 'balance', sortOrder: 'desc' },
   },
   {
     entity: 'markets',
@@ -285,11 +287,7 @@ function unwrapDetailRecord(entity: Entity, data: unknown): Record<string, unkno
  * если запись изменилась на сервере (по `updatedAt` или ключевым полям/счётчикам),
  * возвращаем `false`, чтобы догрузить ТОЛЬКО изменившуюся карточку, а не все 500.
  */
-function detailFieldsMatch(
-  entity: Entity,
-  record: Record<string, unknown>,
-  listRow: Record<string, unknown>
-): boolean {
+function detailFieldsMatch(entity: Entity, record: Record<string, unknown>, listRow: Record<string, unknown>): boolean {
   if (record.updatedAt && listRow.updatedAt && record.updatedAt !== listRow.updatedAt) {
     return false;
   }
@@ -646,9 +644,7 @@ export async function runSync({
   };
 
   // Все сущности, доступные роли (или одна сущность при точечном запуске).
-  const candidateEntities = ENTITY_SPECS.filter(
-    (spec) => (full || spec.entity === scope) && canSyncEntity(spec, role)
-  );
+  const candidateEntities = ENTITY_SPECS.filter((spec) => (full || spec.entity === scope) && canSyncEntity(spec, role));
   // Качаем ТОЛЬКО те сущности, в которых что-то устарело или отсутствует —
   // благодаря этому изменение одного товара или должника не перезапускает синхронизацию всех остальных разделов.
   const staleEntities = candidateEntities.filter((spec) => !isEntityUpToDate(queryClient, spec, role));
@@ -688,11 +684,7 @@ export async function runSync({
 
   // ---- задачи ----
   const tasks1: Task[] = [];
-  const addMeta = (
-    id: 'profile' | 'dashboard' | 'reference',
-    keysToCheck: QueryKey[],
-    run: () => Promise<unknown>
-  ) => {
+  const addMeta = (id: 'profile' | 'dashboard' | 'reference', keysToCheck: QueryKey[], run: () => Promise<unknown>) => {
     // Если мы догружаем дельту и все целевые ключи уже валидны в кеше — пропускаем лишний сетевой запрос.
     if (onlyDelta && keysToCheck.length > 0 && keysToCheck.every(isKeyValid)) {
       return;
@@ -897,8 +889,8 @@ export async function runSync({
     const ownMarketState = queryClient.getQueryState(ownMarketKey);
     const hasValidOverview = Boolean(
       ownMarketState &&
-        !ownMarketState.isInvalidated &&
-        (ownMarketState.data as ApiResponse<{ summary?: unknown }> | undefined)?.data?.summary
+      !ownMarketState.isInvalidated &&
+      (ownMarketState.data as ApiResponse<{ summary?: unknown }> | undefined)?.data?.summary
     );
     if (!hasValidOverview) {
       plan('markets', 1);

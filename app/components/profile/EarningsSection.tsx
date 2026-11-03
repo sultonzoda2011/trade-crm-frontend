@@ -32,7 +32,8 @@ export function EarningsSection({ earnings }: { earnings: ProfileEarnings }) {
           data-testid="earnings-balance"
           className={cn(
             'relative mt-1 font-mono text-4xl leading-none font-bold tracking-tight tabular-nums',
-            balance.balance > 0 && 'text-success'
+            balance.balance > 0 && 'text-success',
+            balance.balance < 0 && 'text-warning'
           )}>
           {fmtTJS(balance.balance)}
         </p>
@@ -54,14 +55,36 @@ export function EarningsSection({ earnings }: { earnings: ProfileEarnings }) {
         {credits.length === 0 ? (
           <ListEmpty>{t('earnings.noPayouts')}</ListEmpty>
         ) : (
-          credits.map((credit) => (
-            <ListRow
-              key={credit.id}
-              title={credit.note || t('earnings.payout')}
-              subtitle={formatDate(credit.createdAt, true)}
-              value={<span className="text-foreground font-mono font-semibold">{fmtTJS(credit.amount)}</span>}
-            />
-          ))
+          credits.map((credit) => {
+            // Отмена выплаты — встречная запись с минусом; саму отменённую выплату зачёркиваем.
+            const isReversal = !!credit.reversalOfId;
+            const cancelled = !!credit.isReversed;
+            return (
+              <ListRow
+                key={credit.id}
+                title={
+                  <span className={cn(cancelled && 'text-muted-foreground line-through')}>
+                    {isReversal ? t('earnings.payoutReversal') : credit.note || t('earnings.payout')}
+                    {cancelled && (
+                      <span className="text-muted-foreground ml-2 text-xs no-underline">
+                        {t('earnings.payoutCancelled')}
+                      </span>
+                    )}
+                  </span>
+                }
+                subtitle={formatDate(credit.createdAt, true)}
+                value={
+                  <span
+                    className={cn(
+                      'font-mono font-semibold',
+                      cancelled ? 'text-muted-foreground line-through' : 'text-foreground'
+                    )}>
+                    {isReversal ? `+${fmtTJS(Math.abs(credit.amount))}` : fmtTJS(credit.amount)}
+                  </span>
+                }
+              />
+            );
+          })
         )}
       </ListGroup>
     </>

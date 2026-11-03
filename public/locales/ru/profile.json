@@ -74,7 +74,9 @@
     "paidOut": "Выплачено",
     "payouts": "Последние выплаты",
     "payout": "Выплата",
-    "noPayouts": "Выплат пока не было"
+    "noPayouts": "Выплат пока не было",
+    "payoutReversal": "Отмена выплаты",
+    "payoutCancelled": "отменена"
   },
   "actions": {
     "savePassword": "Сменить пароль"

@@ -72,7 +72,9 @@
     "paidOut": "Пардохт шуд",
     "payouts": "Пардохтҳои охирин",
     "payout": "Пардохт",
-    "noPayouts": "Ҳанӯз пардохт нашудааст"
+    "noPayouts": "Ҳанӯз пардохт нашудааст",
+    "payoutReversal": "Бекор кардани пардохт",
+    "payoutCancelled": "бекор шуд"
   },
   "actions": {
     "savePassword": "Иваз кардани парол"
