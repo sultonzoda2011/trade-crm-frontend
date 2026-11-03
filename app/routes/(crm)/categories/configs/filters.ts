@@ -10,6 +10,7 @@ export const getCategoryFilters = (t: TFunction): FilterConfig[] => [
   },
   createDateRangeFilter(t),
   createSortByFilter(t, [
+    { value: 'sortOrder', label: t('filters.sortCustom') },
     { value: 'createdAt', label: t('filters.createdAt') },
     { value: 'name', label: t('filters.name') },
   ]),

@@ -1026,3 +1026,11 @@ span.flatpickr-weekday {
     }
   }
 }
+
+/* Цвет категории: `categoryColorStyle()` кладёт --cat-light/--cat-dark, тема выбирает нужный. */
+.cat-color {
+  --cat: var(--cat-light, var(--muted-foreground));
+}
+.dark .cat-color {
+  --cat: var(--cat-dark, var(--muted-foreground));
+}

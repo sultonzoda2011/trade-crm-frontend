@@ -67,6 +67,8 @@ export interface EntitySpec {
   detail: DetailFn;
   /** Сколько самых новых карточек берём: на тысячах записей полная выгрузка заняла бы часы. */
   detailCap: number;
+  /** Порядок списка по умолчанию (как у таблицы на экране); нет — «новые сверху». */
+  defaultSort?: { sortBy: string; sortOrder: 'asc' | 'desc' };
 }
 
 /** Порядок = порядок показа на странице и приоритет загрузки: сначала то, без чего не продать. */
@@ -102,6 +104,8 @@ export const ENTITY_SPECS: EntitySpec[] = [
     detailKind: 'full',
     detail: categoriesApi.getFull as DetailFn,
     detailCap: 300,
+    // Владелец сам задаёт порядок категорий — копия для офлайна должна быть в том же порядке.
+    defaultSort: { sortBy: 'sortOrder', sortOrder: 'asc' },
   },
   {
     entity: 'sellers',
@@ -870,7 +874,7 @@ export async function runSync({
 
   const listChunk = (spec: EntitySpec, chunkPage: number) => async (): Promise<'done'> => {
     const response = (await call((c) =>
-      spec.list(chunkPage, CHUNK_SIZE, { sortBy: 'createdAt', sortOrder: 'desc' }, [], c)
+      spec.list(chunkPage, CHUNK_SIZE, spec.defaultSort ?? { sortBy: 'createdAt', sortOrder: 'desc' }, [], c)
     )) as ApiResponse<PaginatedData<Record<string, unknown> & { id: string }>>;
     seedListPages(spec.entity, chunkPage, response);
     return 'done';

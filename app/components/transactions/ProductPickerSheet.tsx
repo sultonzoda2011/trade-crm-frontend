@@ -1,5 +1,6 @@
 import { Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { CategoryChips, type CategoryChip } from '~/components/categories/CategoryChips';
 import { PickerSheet } from '~/components/shared/PickerSheet';
 import { cldThumb } from '~/lib/cloudinary';
 import { fmtNum } from '~/lib/format';
@@ -14,10 +15,24 @@ interface ProductPickerSheetProps {
   loading: boolean;
   onSearch: (query: string) => void;
   onSelect: (productId: string) => void;
+  /** Категории в порядке владельца; пусто — чипсов нет. */
+  categories?: CategoryChip[];
+  categoryId?: string | null;
+  onCategoryChange?: (id: string | null) => void;
 }
 
 /** Выбор товара: фото, название, остаток и цена — видно, тот ли товар берёшь. */
-export function ProductPickerSheet({ open, onOpenChange, items, loading, onSearch, onSelect }: ProductPickerSheetProps) {
+export function ProductPickerSheet({
+  open,
+  onOpenChange,
+  items,
+  loading,
+  onSearch,
+  onSelect,
+  categories = [],
+  categoryId = null,
+  onCategoryChange,
+}: ProductPickerSheetProps) {
   const { t } = useTranslation('transactions');
 
   return (
@@ -28,6 +43,11 @@ export function ProductPickerSheet({ open, onOpenChange, items, loading, onSearc
       items={items}
       loading={loading}
       onSearch={onSearch}
+      filters={
+        onCategoryChange && categories.length > 0 ? (
+          <CategoryChips categories={categories} value={categoryId} onChange={onCategoryChange} />
+        ) : undefined
+      }
       getKey={(p) => p.id}
       onSelect={(p) => onSelect(p.id)}
       renderItem={(product) => {

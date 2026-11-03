@@ -45,6 +45,8 @@ export default function ProductsPage() {
     if (hasProcessedState.current) return;
     const state = location.state as Record<string, unknown> | null;
     if (state?.fromCategoryId) list.setFilter('categoryId', state.fromCategoryId);
+    // «Без категории» с экрана категорий.
+    if (state?.fromUncategorized) list.setFilter('uncategorized', 'true');
     hasProcessedState.current = true;
     window.history.replaceState({}, document.title);
     // eslint-disable-next-line react-hooks/exhaustive-deps

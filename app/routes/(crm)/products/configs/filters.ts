@@ -21,6 +21,12 @@ export const getProductFilters = (
   }
 
   config.push(
+    {
+      type: 'boolean',
+      key: 'uncategorized',
+      label: t('filters.uncategorized'),
+      trueLabel: t('filters.uncategorized'),
+    },
     // Вычисляемое состояние товара. Значения — энумы бэкенда как есть,
     // поэтому ссылки с дашборда (?health=…, ?reorderPriority=…) сюда попадают.
     {

@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { categoriesApi } from '~/api/categories';
+import { FormColorSwatches } from '~/components/categories/FormColorSwatches';
 import { EntityFormPage } from '~/components/shared/EntityFormPage';
 import { FormFileInput } from '~/components/ui/form/FormFileInput';
 import { FormInput } from '~/components/ui/form/FormInput';
@@ -14,7 +15,7 @@ export default function CreateCategoryPage() {
 
   const { control, handleSubmit } = useForm<CreateCategorySchema>({
     resolver: zodResolver(createCategorySchema(t)),
-    defaultValues: { name: '', description: '', image: null },
+    defaultValues: { name: '', description: '', color: '', image: null },
   });
 
   const { submit, isPending } = useEntityForm<CreateCategorySchema, unknown>({
@@ -22,7 +23,7 @@ export default function CreateCategoryPage() {
     api: categoriesApi,
     // An empty description is dropped rather than sent as `''` — `buildMultipart`
     // does what this page used to spell `data.description || undefined`.
-    toPayload: (data) => ({ name: data.name, description: data.description, image: data.image }),
+    toPayload: (data) => ({ name: data.name, description: data.description, color: data.color, image: data.image }),
     redirectTo: () => '/categories',
   });
 
@@ -56,6 +57,7 @@ export default function CreateCategoryPage() {
         label={t('fields.description')}
         placeholder={t('fields.description')}
       />
+      <FormColorSwatches control={control} name="color" label={t('fields.color')} />
     </EntityFormPage>
   );
 }

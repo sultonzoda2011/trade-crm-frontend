@@ -157,7 +157,10 @@ const API_ROUTE_ACTIONS: ApiRouteAction[] = [
   { pattern: '/profile/earnings', methods: ['get'], action: Action.PROFILE_EARNINGS },
   { pattern: '/categories', methods: ['get'], action: Action.CATEGORIES_VIEW },
   { pattern: '/categories', methods: ['post'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/summary', methods: ['get'], action: Action.CATEGORIES_MANAGE },
+  { pattern: '/categories/order', methods: ['put'], action: Action.CATEGORIES_MANAGE },
   { pattern: '/categories/:id', methods: ['get'], action: Action.CATEGORIES_VIEW },
+  { pattern: '/categories/:id/full', methods: ['get'], action: Action.CATEGORIES_VIEW },
   { pattern: '/categories/:id', methods: ['patch'], action: Action.CATEGORIES_MANAGE },
   { pattern: '/categories/:id', methods: ['delete'], action: Action.CATEGORIES_MANAGE },
 ];

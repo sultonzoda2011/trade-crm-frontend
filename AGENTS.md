@@ -603,6 +603,7 @@ products.ts
 sellers.ts
 debtors.ts
 transactions.ts
+categories.ts
 dashboard.ts
 profile.ts
 crud.ts
@@ -1081,6 +1082,22 @@ public/locales/
 - Известный риск: продажа продавца, записанная офлайн, может получить `SELLER_SALES_DISABLED`, если владелец выключил флаг до синхронизации. Очередь показывает понятный текст (`apiErrors.SELLER_SALES_DISABLED`) — оформить как долг или убрать из очереди.
 - Коды ошибок рынков: `MARKET_OWNER_REQUIRED`, `MARKET_OWNER_INVALID`, `MARKET_OWNER_TAKEN`, `MARKET_OWNER_ADMIN_ONLY` — переводы в `apiErrors`.
 - Почту коллег продавцу бэкенд не отдаёт: тип `MarketMember.email` опционален.
+
+---
+
+# 22b. «Категории» (`/categories`)
+
+Редизайн в стиле iOS вместе с бэкендом (`prisma/sql/20261102_categories.sql`: `Category.color`, `Category.sortOrder`).
+
+- **Список** (`routes/(crm)/categories/route.tsx`): `CategoriesSummary` (`GET /categories/summary`, ключ `queryKeys.sub('categories','summary')`, только Admin/Owner) + строка «Без категории» → `/products` со `state.fromUncategorized` (там это `uncategorized=true`) + `CategoryRow` («N товаров · сумма», чипы «Нет/Мало»). Сумма `stockValue` в ответе у продавца отсутствует (поле опциональное) — не показывать нули. `_count.products` — только АКТИВНЫЕ; архивные в `archivedCount`.
+- **Сортировка по умолчанию — «мой порядок»** (`sortOrder asc`), а не «новые сверху»: `useEntityList({ defaultSort })` → `splitListOptions(…, defaultSort)`; офлайн-синхронизация берёт тот же порядок из `EntitySpec.defaultSort`, иначе копия для офлайна шла бы в другом порядке. Новая сущность с «своим» порядком делает так же.
+- **Порядок:** режим «Порядок» (`components/categories/CategoryReorder.tsx`) — стрелки ↑↓ (drag-and-drop не берём: спорит со скроллом на телефоне), один `PUT /categories/order {ids}` по «Готово» (`networkMode: 'always'`, не офлайн-операция). Список для режима и для чипсов в продаже — один и тот же запрос `queryKeys.options('categories', { scope: 'filters', limit: 100 })` (его уже сохраняет офлайн-синхронизация).
+- **Цвет:** только ключ палитры (`config/categoryColors.ts`, 10 ключей — зеркало `CATEGORY_COLORS` на бэкенде). Оттенки — CSS-переменные: `categoryColorStyle(key)` + класс `cat-color` (global.css) выбирают светлый/тёмный; в разметке `bg-(--cat)`. `CategoryTile` — плитка (фото или значок на цвете), `ColorSwatches` / `FormColorSwatches` — выбор. При правке «без цвета» уходит как `''` (`keepEmpty: ['description','color']`).
+- **Удаление** — `DeleteCategoryDialog` + слайс `useCategoriesModals.remove` (`{ id, name, productsCount, redirectTo? }`; `productsCount` = активные + архивные). Пустая — обычное подтверждение; с товарами — шторка «Перенести в…» (`DELETE /categories/:id?moveTo=`) или «Оставить без категории» (`?detach=true`). Слайс `delete` остаётся только для встроенного диалога `useEntityList` и не открывается. Коды: `CATEGORY_HAS_PRODUCTS` (409), `CATEGORY_MOVE_TARGET_INVALID` (400), `CATEGORY_NAME_TAKEN` (409) — переводы в `apiErrors`.
+- **Создание из формы товара:** `PickerField.createRow` («+ Новая категория») → `NewCategorySheet` (название + цвет). Только онлайн и только `CATEGORIES_MANAGE`; в офлайн-очередь категории НЕ входят (товар ссылается на настоящий id с сервера). Шторка стоит внутри формы товара по React-дереву — `onSubmit` останавливает `stopPropagation`, иначе отправится и форма товара.
+- **Чипсы в продаже:** `PickerSheet.filters` → `CategoryChips` в `ProductPickerSheet`. Выбранная категория уходит в запрос товаров (`categoryId`), без сети — фильтр `accept` по сохранённым на устройстве.
+- **Права:** GET списка/карточки — все роли (продавцу нужно для выбора товара), `summary`, `order`, create/update/delete — Admin/Owner (`API_ROUTE_ACTIONS`). Страницы `/categories*` продавцу закрыты `ROUTE_PERMISSIONS`.
+- Не делали (осознанно): подкатегории, наценка/минимальный остаток на категорию, офлайн-очередь категорий, аналитику категорий на дашборде.
 
 ---
 

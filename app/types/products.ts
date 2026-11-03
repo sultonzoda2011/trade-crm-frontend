@@ -124,27 +124,45 @@ export interface ProductInfo {
 export type ProductsResponse = ApiResponse<PaginatedData<Product>>;
 export type ProductDetailResponse = ApiResponse<ProductDetail>;
 
+export type CategoryColor = import('~/config/categoryColors').CategoryColorKey;
+
 export interface Category {
   id: string;
   name: string;
   description: string | null;
   marketId: string;
   image: string | null;
+  /** Ключ из палитры (`~/config/categoryColors`); нет цвета — null. */
+  color: CategoryColor | null;
+  /** Место в порядке, который задал владелец (0 — самая первая). */
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  /** Только активные товары: архивные в счёт не идут. */
   _count: { products: number };
+  archivedCount: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  /** Остаток по розничной цене. Бэкенд не отдаёт это поле продавцу. */
+  stockValue?: number;
 }
 export interface CategoryDetail {
   id: string;
   name: string;
   description: string | null;
   image: string | null;
+  color: CategoryColor | null;
+  sortOrder: number;
   marketId: string;
   createdAt: string;
   updatedAt: string;
   _count: {
     products: number;
   };
+  archivedCount?: number;
+  lowStockCount?: number;
+  outOfStockCount?: number;
+  stockValue?: number;
 }
 export type CategoriesResponse = ApiResponse<PaginatedData<Category>>;
 export type CategoryDetailResponse = ApiResponse<CategoryDetail>;
@@ -157,6 +175,25 @@ export type CategoryFullResponse = ApiResponse<CategoryFullData>;
 export interface CreateCategoryRequest {
   name: string;
   description?: string;
+  /** Пустая строка при правке — «снять цвет». */
+  color?: CategoryColor | '';
   image?: string;
 }
 export type UpdateCategoryRequest = Partial<CreateCategoryRequest>;
+
+/** Шапка экрана «Категории». Сумма — по розничным ценам; только ADMIN/OWNER. */
+export interface CategoriesSummary {
+  categories: number;
+  products: number;
+  stockValue: number;
+  uncategorizedProducts: number;
+  uncategorizedValue: number;
+}
+export type CategoriesSummaryResponse = ApiResponse<CategoriesSummary>;
+
+/** Что сделали с товарами удалённой категории. */
+export interface DeleteCategoryResult {
+  movedProducts: number;
+  detachedProducts: number;
+}
+export type DeleteCategoryChoice = { moveTo: string } | { detach: true };

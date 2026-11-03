@@ -1,14 +1,18 @@
 import type { TFunction } from 'i18next';
-import { useMemo } from 'react';
-import type { Control } from 'react-hook-form';
+import { useMemo, useState } from 'react';
+import { type Control, useController } from 'react-hook-form';
 import { categoriesApi } from '~/api/categories';
+import { NewCategorySheet, type CreatedCategory } from '~/components/categories/NewCategorySheet';
 import { FormGrid } from '~/components/shared/FormGrid';
 import { FormCustomSelect } from '~/components/ui/form/FormCustomSelect';
 import { FormInput } from '~/components/ui/form/FormInput';
 import { FormTextarea } from '~/components/ui/form/FormTextarea';
 import { getUnitOptions } from '~/config/enumOptions';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
+import { useCan } from '~/hooks/useCan';
+import { useNetworkStatus } from '~/hooks/useNetworkStatus';
 import { queryKeys } from '~/lib/query-keys';
+import { Action } from '~/config/actions';
 import type { CreateProductSchema, UpdateProductSchema } from '~/validations/product';
 
 interface ProductFormFieldsProps {
@@ -28,10 +32,20 @@ interface ProductFormFieldsProps {
  * Общие поля формы товара (создание и редактирование).
  */
 export function ProductFormFields({ control, t, currentCategory, stock }: ProductFormFieldsProps) {
-  const categorySeed = useMemo(
-    () => (currentCategory ? [{ id: currentCategory.id, name: currentCategory.name }] : undefined),
-    [currentCategory]
-  );
+  const { can } = useCan();
+  const isOnline = useNetworkStatus();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  // Только что созданная здесь категория: в списке сервера она появится позже, а выбранному
+  // значению нужна подпись сразу.
+  const [justCreated, setJustCreated] = useState<CreatedCategory[]>([]);
+  const typedControl = control as Control<CreateProductSchema>;
+  const { field: categoryField } = useController({ control: typedControl, name: 'categoryId' });
+
+  const categorySeed = useMemo(() => {
+    const seed = [...justCreated];
+    if (currentCategory) seed.unshift({ id: currentCategory.id, name: currentCategory.name });
+    return seed.length > 0 ? seed : undefined;
+  }, [currentCategory, justCreated]);
 
   const categories = useAsyncSelectOptions({
     queryKey: queryKeys.options('categories', { scope: 'form', limit: 20 }),
@@ -46,7 +60,6 @@ export function ProductFormFields({ control, t, currentCategory, stock }: Produc
   });
 
   const unitOptions = useMemo(() => getUnitOptions(t), [t]);
-  const typedControl = control as Control<CreateProductSchema>;
 
   return (
     <>
@@ -67,6 +80,12 @@ export function ProductFormFields({ control, t, currentCategory, stock }: Produc
           onSearch={categories.onSearch}
           loading={categories.loading}
           isClearable
+          // Новая категория — только онлайн и только владельцу/админу: ей нужен настоящий id с сервера.
+          createRow={
+            isOnline && can(Action.CATEGORIES_MANAGE)
+              ? { label: t('fields.newCategory'), onClick: () => setSheetOpen(true) }
+              : undefined
+          }
         />
       </FormGrid>
       <FormGrid>
@@ -122,6 +141,14 @@ export function ProductFormFields({ control, t, currentCategory, stock }: Produc
         name="description"
         label={t('fields.description')}
         placeholder={t('fields.description')}
+      />
+      <NewCategorySheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onCreated={(category) => {
+          setJustCreated((prev) => [...prev, category]);
+          categoryField.onChange(category.id);
+        }}
       />
     </>
   );
