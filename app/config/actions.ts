@@ -33,6 +33,8 @@ export enum Action {
   SELLERS_CREATE = 'SELLERS_CREATE',
   SELLERS_EDIT = 'SELLERS_EDIT',
   SELLERS_DELETE = 'SELLERS_DELETE',
+  /** Выплата продавцу из накопленной надбавки и отмена ошибочной выплаты. */
+  SELLERS_PAYOUT = 'SELLERS_PAYOUT',
   DEBTORS_VIEW = 'DEBTORS_VIEW',
   DEBTORS_CREATE = 'DEBTORS_CREATE',
   DEBTORS_EDIT = 'DEBTORS_EDIT',
@@ -72,6 +74,7 @@ export const ACTION_PERMISSIONS: Record<Action, Role[]> = {
   [Action.SELLERS_CREATE]: [Role.Admin, Role.Owner],
   [Action.SELLERS_EDIT]: [Role.Admin, Role.Owner],
   [Action.SELLERS_DELETE]: [Role.Admin, Role.Owner],
+  [Action.SELLERS_PAYOUT]: [Role.Admin, Role.Owner],
   [Action.DEBTORS_VIEW]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_CREATE]: [Role.Admin, Role.Owner, Role.Seller],
   [Action.DEBTORS_EDIT]: [Role.Admin, Role.Owner, Role.Seller],

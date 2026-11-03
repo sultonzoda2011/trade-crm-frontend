@@ -35,15 +35,19 @@ export default function EditSellerPage() {
     toForm: (loaded) => ({
       name: loaded.name,
       email: loaded.email,
+      phone: loaded.phone ?? '',
       password: '',
       image: loaded.image,
     }),
     toPayload: (data) => ({
       name: data.name,
       email: data.email,
+      phone: data.phone,
       password: data.password,
       image: data.image,
     }),
+    // Пустой телефон — «очистить», а не «не менять».
+    keepEmpty: ['phone'],
     reset,
     redirectTo: (sellerId) => `/sellers/${sellerId}`,
   });
@@ -102,12 +106,22 @@ export default function EditSellerPage() {
         />
         <FormInput
           control={control}
-          name="password"
-          type="password"
-          label={t('fields.password')}
-          placeholder={t('fields.password')}
+          name="phone"
+          type="tel"
+          inputMode="tel"
+          label={t('fields.phone', { ns: 'common' })}
+          placeholder="+992 900 12-34-56"
         />
       </FormGrid>
+      <FormInput
+        control={control}
+        name="password"
+        type="password"
+        autoComplete="new-password"
+        label={t('fields.newPassword')}
+        placeholder={t('fields.passwordKeep')}
+      />
+      <p className="text-muted-foreground -mt-1 px-1 text-xs">{t('form.editPasswordHint')}</p>
     </EntityFormPage>
   );
 }

@@ -34,5 +34,6 @@
   "currentPasswordForEmail": "Enter your current password to change the email",
   "passwordWeak": "Needs a lowercase letter, an uppercase letter and a digit",
   "confirmRequired": "Repeat the new password",
-  "passwordSame": "The new password must differ from the current one"
+  "passwordSame": "The new password must differ from the current one",
+  "amountDecimals": "No more than two decimal places"
 }

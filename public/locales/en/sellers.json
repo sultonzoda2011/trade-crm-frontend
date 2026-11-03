@@ -2,23 +2,144 @@
   "title": "Sellers",
   "create": "Create seller",
   "notFound": "Seller not found",
-  "viewMarkets": "Seller's Market",
-  "markupBalance": "Markup Balance",
-  "earned": "Earned",
-  "refunded": "Reversed by refunds",
-  "paidOut": "Already paid out",
-  "balance": "Available",
-  "payout": "Pay out",
-  "payoutModalTitle": "Pay out markup",
-  "payoutHint": "You can pay out the full amount or part of it — the remainder keeps accumulating.",
-  "payoutSuccess": "Payout recorded",
-  "payoutError": "Failed to record the payout",
-  "creditsHistory": "Payout History",
-  "noCredits": "No payouts yet",
-  "noBalance": "No markup yet",
+  "quick": {
+    "show": "Show",
+    "period": "Period"
+  },
+  "status": {
+    "active": "Active",
+    "disabled": "Disabled",
+    "all": "All",
+    "disabledBadge": "Disabled"
+  },
+  "period": {
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "todayShort": "today",
+    "weekShort": "this week",
+    "monthShort": "this month",
+    "yearShort": "this year"
+  },
+  "summary": {
+    "toPay": "To pay out",
+    "toPayCount_one": "to {{count}} seller",
+    "toPayCount_other": "to {{count}} sellers",
+    "sold": "Sold {{period}}",
+    "earned": "Earned: {{amount}}",
+    "overpaid": "Overpaid to sellers: {{amount}} — it will be deducted from future markups"
+  },
+  "row": {
+    "noSales": "No sales in this period",
+    "toPay": "to pay out",
+    "overpaid": "overpaid",
+    "nothingToPay": "nothing owed",
+    "earned": "earned {{amount}}",
+    "sold": "Sold {{amount}}"
+  },
+  "columns": {
+    "sold": "Sold",
+    "earned": "Earned",
+    "balance": "To pay out",
+    "lastSale": "Last sale"
+  },
+  "filters": {
+    "balance": "To pay out",
+    "sold": "Sold",
+    "earned": "Earned",
+    "lastSaleAt": "Last sale"
+  },
+  "fields": {
+    "newPassword": "New password",
+    "passwordKeep": "Leave empty to keep the current one"
+  },
+  "form": {
+    "generatePassword": "Generate password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "passwordHint": "At least 8 characters: lowercase, uppercase and a digit. Tap the dice to generate one.",
+    "editPasswordHint": "Better not change it here: “Reset password” on the seller page creates a new one and shows it."
+  },
+  "balance": {
+    "title": "Balance",
+    "toPay": "To pay out",
+    "overpaid": "Overpaid",
+    "earned": "Earned",
+    "refunded": "Minus refunds",
+    "paidOut": "Paid out",
+    "empty": "No markups yet",
+    "footer": "Earned − refunds − payouts. Every line is in the feed below, so the total always adds up.",
+    "overpaidHint": "Paid out more than earned (for example, after a refund). It will be deducted from the next markups.",
+    "pendingCaption": "{{amount}} of it is in debts that are not paid yet",
+    "pendingInDebts": "Of which in debts",
+    "pendingInDebtsHint": "The markup is recorded, but the customer has not paid yet"
+  },
+  "month": {
+    "sold": "Sold this month",
+    "earned": "Earned this month",
+    "sales": "Sales"
+  },
+  "feed": {
+    "title": "Balance feed",
+    "earned": "Markup from a sale",
+    "refunded": "Refund",
+    "payout": "Payout",
+    "reversal": "Payout cancelled",
+    "reversed": "cancelled",
+    "inDebt": "still in debt",
+    "reverseHint": "Paid out by mistake? Tap the payout to cancel it.",
+    "empty": "No operations yet",
+    "showMore": "Show more"
+  },
+  "payout": {
+    "swipe": "Pay out",
+    "title": "Pay the seller",
+    "submit": "Pay out",
+    "success": "Payout recorded",
+    "amount": "Amount",
+    "remaining": "Remaining: {{amount}}",
+    "note": "Note",
+    "notePlaceholder": "E.g. cash, for October",
+    "hint": "You can pay all or part — the rest keeps accumulating. A mistake can be cancelled in the feed."
+  },
+  "reverse": {
+    "title": "Cancel payout",
+    "text": "The payout of {{amount}} to {{name}} will be cancelled and the amount returns to “To pay out”. The record stays in the feed.",
+    "reason": "Reason",
+    "reasonPlaceholder": "E.g. paid to the wrong person",
+    "confirm": "Cancel payout",
+    "success": "Payout cancelled"
+  },
+  "resetPassword": {
+    "title": "Reset password",
+    "text": "Create a new password for {{name}}? The old one will stop working.",
+    "hint": "The password is shown once — pass it to the seller right away. If they are in the app right now, it may keep working for up to 15 minutes.",
+    "confirm": "Reset",
+    "newFor": "New password for {{name}}",
+    "once": "The password is visible only now. Once you close this window you cannot see it again — you would have to reset it once more.",
+    "copy": "Copy",
+    "copyFailed": "Could not copy — write the password down manually",
+    "done": "Done"
+  },
+  "access": {
+    "title": "Access",
+    "deactivate": "Disable seller",
+    "deactivateShort": "Disable",
+    "activate": "Enable seller",
+    "activateShort": "Enable",
+    "deactivateTitle": "Disable {{name}}?",
+    "deactivateText": "They will no longer be able to sign in. Sales, debts and balance stay — you can still pay them out. You can enable them back at any time.",
+    "deactivated": "Seller disabled",
+    "activated": "Seller is active again",
+    "passwordChanged": "Password changed {{date}}",
+    "footer": "A seller can be deleted only while they have no sales and payouts.",
+    "footerWithHistory": "Cannot delete — there are sales or payouts. Disable instead: history and balance are kept.",
+    "footerDisabled": "Disabled {{date}}. Cannot sign in, history is kept."
+  },
   "actions": {
     "areYouSure": "Are you sure you want to delete this seller?",
     "deleteSuccess": "Seller deleted",
-    "deleteError": "Error deleting seller"
+    "deleteError": "Failed to delete seller"
   }
 }

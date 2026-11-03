@@ -277,6 +277,15 @@
     "MARKET_OWNER_ADMIN_ONLY": "Only an administrator can change the market owner.",
     "CATEGORY_NAME_TAKEN": "A category with this name already exists. Choose a different name.",
     "CATEGORY_HAS_PRODUCTS": "This category has products — choose where to move them or leave them uncategorized.",
-    "CATEGORY_MOVE_TARGET_INVALID": "Products can't be moved to this category. Choose another one."
+    "CATEGORY_MOVE_TARGET_INVALID": "Products can't be moved to this category. Choose another one.",
+    "ACCOUNT_DISABLED": "Account is disabled. Contact the owner.",
+    "SELLER_HAS_HISTORY": "Cannot delete: the seller has sales or payouts. Disable them instead — history is kept.",
+    "SELLER_NOTHING_TO_PAY": "Nothing to pay out: the seller's balance is zero.",
+    "SELLER_PAYOUT_EXCEEDS_BALANCE": "The amount is more than the seller is owed now. The balance was refreshed.",
+    "SELLER_CREDIT_ALREADY_REVERSED": "This payout is already cancelled.",
+    "SELLER_CREDIT_NOT_REVERSIBLE": "This record cannot be cancelled.",
+    "SELLER_MARKET_REQUIRED": "Choose a market for the seller.",
+    "EMAIL_IN_USE": "This email is already taken.",
+    "SELLER_CANNOT_DISABLE_SELF": "You cannot disable your own account."
   }
 }

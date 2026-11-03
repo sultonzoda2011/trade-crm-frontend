@@ -7,48 +7,49 @@ Trade CRM provides two sections for managing staff and accounts:
 
 ## Sellers
 
-The **"Sellers"** table shows:
+At the top of **"Sellers"** there are two figures: **"To pay out"** (what you owe all sellers right now, disabled ones included) and **"Sold"** for the chosen period with the amount the sellers earned. Below are the **"Show"** chips (Active / Disabled / All) and **"Period"** chips (Today / Week / Month / Year). The period only changes "sold" and "earned"; **"To pay out"** is always all-time.
 
-| Column | What it shows |
-| --- | --- |
-| **Name** | Seller's avatar, full name, and email |
-| **Email** | Sign-in address |
-| **Market** | The market the seller is assigned to |
+A seller row: name and sales for the period on the left, **what you owe them** and what they earned in the period on the right. Those owed the most come first. A yellow amount labelled **"overpaid"** means the seller was paid more than they earned (for example, after a refund) — the difference is deducted from the next markups.
 
-On a phone, swiping a seller row **to the left** reveals quick **"Edit"** and **"Delete"** buttons.
+On a phone, swipe a row **to the left** for **"Pay out"**, **"Disable"** (or **"Enable"**) and **"Edit"**.
 
 ### How to add or edit a seller
 
-Click **"Create seller"** (`/sellers/create`) and fill in:
+Tap **"Create seller"** (`/sellers/create`) and fill in:
 
-- **"Image"** — staff photo;
-- **"Full Name"** `*` — seller's name;
-- **"Email"** `*` — sign-in email address;
-- **"Password"** `*` — initial password (when editing an existing seller, the password field is optional: leave it blank to keep their current password, or type a new one to reset it).
+- **"Image"** — the employee's photo;
+- **"Full name"** `*`, **"Email"** `*` (the sign-in login), **"Phone"**;
+- **"Market"** `*` — administrators only; for an owner the seller always joins their own market;
+- **"Password"** `*` — at least 8 characters with a lowercase letter, an uppercase letter and a digit. The dice button generates one and shows it — pass it to the seller.
 
-### Markup balance and payout history
+### The seller page
 
-Whenever a seller adds a **"Markup"** (an extra amount above the base product price) on a transaction line, that markup accumulates in their personal balance. On the seller's detail page (`/sellers/:id`), the **"Markup Balance"** card tracks four figures:
+At the top: **"To pay out"** as the big figure and this month's numbers. Below:
 
-| Metric | What it means |
-| --- | --- |
-| **Earned** | Total markup earned across all sales |
-| **Reversed by refunds** | Markup deducted when customers returned items (shown when refunds have occurred) |
-| **Already paid out** | Total amount paid out to the seller so far |
-| **Available** | Current unpaid balance ready to be paid out |
+- **"Balance"** — earned, minus refunds, paid out and the total. If part of the amount is still in debts customers have not paid, it is shown as its own line;
+- **"Balance feed"** — every markup, refund, payout and cancelled payout in a row, newest first. The feed lines always add up to the balance;
+- **"Transactions history"** — this seller's sales;
+- **"Access"** — password reset and disabling.
 
-### How to pay out a seller's markup
+### How to pay out
 
-Whenever **"Available"** is greater than zero, a **"Pay out"** button appears in the seller's header:
+1. Tap **"Pay out"** (shown while the balance is above zero, disabled sellers included).
+2. The amount is prefilled with the whole balance; you can leave part of it — the **"Remaining"** line shows how much stays.
+3. Add a **"Note"** (for example "cash, for October") and confirm.
 
-1. Click **"Pay out"** to open the **"Pay out markup"** modal (the app refreshes the seller's latest balance from the server automatically when the modal opens).
-2. Enter the **"Payment Amount"** `*` — you can pay out the entire available balance or just part of it (any remaining balance continues to accumulate).
-3. Optionally add a **"Note"** and confirm.
+**Paid out by mistake?** Tap the payout in the feed and choose **"Cancel payout"**. Nothing is erased: both the payout and its cancellation stay in the feed, and the amount returns to "To pay out".
 
-Every payout is recorded in the **"Payout History"** list on the seller's page with its date, amount, and note.
+### Disable, reset password, delete
+
+- **"Disable seller"** — they can no longer sign in, while sales, debts and balance stay. You can enable them back at any time. You cannot disable your own account.
+- **"Reset password"** — the system creates a new password and shows it **once**. Copy it and pass it to the seller. If they are in the app at that moment, the old sign-in can keep working for up to 15 minutes.
+- **"Delete"** (in the page header) — only while the seller has no sales and no payouts. With history there is no such button — disable the seller instead.
+
+> [!NOTE]
+> Payouts and cancellations need an internet connection, so the balance is always exact.
 
 > [!TIP]
-> To compare sellers by overall sales volume for today, the week, the month, or the year, open **"Dashboard" → "Sellers" tab**.
+> To compare sellers' total revenue for a day, week, month or year, open **"Dashboard" → "Sellers"** tab.
 
 ## Users (for administrators)
 
@@ -70,5 +71,5 @@ You can filter the users list by role, market, or owner. To add an account, clic
 | Action | Administrator | Owner | Seller |
 | --- | --- | --- | --- |
 | "Sellers" section (view, create, edit, delete) | Yes | Yes (own market) | No |
-| Pay out seller markup ("Pay out") & view payout history | Yes | Yes | No |
+| Paying a seller, cancelling a payout, disabling and password reset | Yes | Yes | No |
 | "Users" section (all roles) | Yes | No | No |

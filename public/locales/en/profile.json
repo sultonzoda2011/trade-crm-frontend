@@ -72,7 +72,9 @@
     "paidOut": "Paid out",
     "payouts": "Recent payouts",
     "payout": "Payout",
-    "noPayouts": "No payouts yet"
+    "noPayouts": "No payouts yet",
+    "payoutReversal": "Payout cancelled",
+    "payoutCancelled": "cancelled"
   },
   "actions": {
     "savePassword": "Change password"
