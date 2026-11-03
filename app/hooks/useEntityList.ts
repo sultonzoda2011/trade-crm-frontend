@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import type { StoreApi, UseBoundStore } from 'zustand';
 import type { ListOptions } from '~/api/crud';
 import { useDebounce } from '~/hooks/useDebounce';
-import { splitListOptions } from '~/lib/filtersToParams';
+import { splitListOptions, type DefaultSort } from '~/lib/filtersToParams';
 import { invalidateEntityCache, queryKeys, type Entity } from '~/lib/query-keys';
 import type { ModalSlice } from '~/store/createModalStore';
 import type { TableStoreState } from '~/store/useTableStore';
@@ -36,6 +36,8 @@ export interface UseEntityListArgs<TRow, TDisplayRow = TRow> {
    * Optional row transformer (e.g. merging offline overlay rows on debtors/transactions).
    * Receives the raw server rows and the query's `dataUpdatedAt` timestamp.
    */
+  /** Сортировка по умолчанию, если в фильтрах своей нет (категории — «мой порядок»; остальным — новые сверху). */
+  defaultSort?: DefaultSort;
   transformRows?: (serverRows: TRow[], meta: { dataUpdatedAt: number; debouncedSearch: string }) => TDisplayRow[];
 }
 
@@ -56,6 +58,7 @@ export function useEntityList<TRow, TDisplayRow = TRow>({
   api,
   t,
   deleteModal,
+  defaultSort,
   transformRows,
 }: UseEntityListArgs<TRow, TDisplayRow>) {
   const page = store((s) => s.page);
@@ -84,7 +87,7 @@ export function useEntityList<TRow, TDisplayRow = TRow>({
   } = useQuery({
     queryKey: queryKeys.list(entity, { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
-      const { options, activeFilters } = splitListOptions(filters, debouncedSearch);
+      const { options, activeFilters } = splitListOptions(filters, debouncedSearch, defaultSort);
       return api.getAll(page, limit, options, activeFilters);
     },
     staleTime: 30_000,

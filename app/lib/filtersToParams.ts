@@ -8,17 +8,26 @@ import type { ActiveFilter } from '~/types/filters';
  */
 export const LIST_OPTION_KEYS = ['dateFrom', 'dateTo', 'sortBy', 'sortOrder'] as const;
 
+/** Сортировка, когда пользователь не выбрал свою. Для большинства списков — «новые сверху». */
+export interface DefaultSort {
+  sortBy: string;
+  sortOrder: 'asc' | 'desc';
+}
+
+export const DEFAULT_LIST_SORT: DefaultSort = { sortBy: 'createdAt', sortOrder: 'desc' };
+
 export function splitListOptions(
   filters: ActiveFilter[],
-  debouncedSearch: string
+  debouncedSearch: string,
+  defaultSort: DefaultSort = DEFAULT_LIST_SORT
 ): { options: ListOptions; activeFilters: ActiveFilter[] } {
   const read = (key: (typeof LIST_OPTION_KEYS)[number]) => filters.find((f) => f.key === key)?.value;
   const options: ListOptions = {
     search: debouncedSearch || undefined,
     dateFrom: read('dateFrom') as string | undefined,
     dateTo: read('dateTo') as string | undefined,
-    sortBy: (read('sortBy') as string) || 'createdAt',
-    sortOrder: (read('sortOrder') as 'asc' | 'desc') || 'desc',
+    sortBy: (read('sortBy') as string) || defaultSort.sortBy,
+    sortOrder: (read('sortOrder') as 'asc' | 'desc') || defaultSort.sortOrder,
   };
   const activeFilters = filters.filter((f) => !LIST_OPTION_KEYS.includes(f.key as (typeof LIST_OPTION_KEYS)[number]));
   return { options, activeFilters };

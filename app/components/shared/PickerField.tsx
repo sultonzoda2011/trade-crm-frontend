@@ -1,4 +1,4 @@
-import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { Check, ChevronsUpDown, Plus, X } from 'lucide-react';
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CustomSelectOption, CustomSelectProps } from '~/components/shared/CustomSelect';
@@ -13,6 +13,11 @@ export interface PickerFieldProps extends CustomSelectProps {
   note?: React.ReactNode;
   /** Заголовок шторки, если он должен отличаться от подписи поля. */
   title?: string;
+  /**
+   * Строка «+ Новая …» над списком. Тап закрывает шторку и вызывает `onClick` — вызывающий
+   * открывает свою форму создания. Не передавайте, когда создавать нельзя (нет сети, нет права).
+   */
+  createRow?: { label: string; onClick: () => void };
 }
 
 /** Короткий список целиком помещается на экране — поиск в нём только мешает. */
@@ -46,6 +51,7 @@ export function PickerField(props: PickerFieldProps) {
     loading,
     note,
     title,
+    createRow,
   } = props;
 
   const [open, setOpen] = React.useState(false);
@@ -127,13 +133,29 @@ export function PickerField(props: PickerFieldProps) {
         note={note ?? (!isOnline && visible.length > 0 ? tSync('pickers.savedData') : undefined)}
         onSelect={pick}
         header={
-          isClearable && hasValue ? (
-            <button
-              type="button"
-              onClick={() => pick(null)}
-              className="text-muted-foreground active:bg-muted/70 flex min-h-12 w-full items-center px-4 text-left text-base transition-colors">
-              {placeholder ?? t('customSelect.placeholder')}
-            </button>
+          createRow || (isClearable && hasValue) ? (
+            <div className="divide-border divide-y">
+              {createRow && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    createRow.onClick();
+                  }}
+                  className="text-primary active:bg-muted/70 flex min-h-12 w-full items-center gap-2 px-4 text-left text-base font-medium transition-colors">
+                  <Plus className="size-5" aria-hidden />
+                  {createRow.label}
+                </button>
+              )}
+              {isClearable && hasValue && (
+                <button
+                  type="button"
+                  onClick={() => pick(null)}
+                  className="text-muted-foreground active:bg-muted/70 flex min-h-12 w-full items-center px-4 text-left text-base transition-colors">
+                  {placeholder ?? t('customSelect.placeholder')}
+                </button>
+              )}
+            </div>
           ) : undefined
         }
         renderItem={(opt) => {

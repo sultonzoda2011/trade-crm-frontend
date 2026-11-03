@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
-import { Package, Store, Tag } from 'lucide-react';
+import { Package, Store } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
+import { CategoryTile } from '~/components/categories/CategoryTile';
+import { DeleteCategoryDialog } from '~/components/categories/DeleteCategoryDialog';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
-import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DetailFacts } from '~/components/shared/DetailFacts';
 import { DetailHero } from '~/components/shared/DetailHero';
 import { DetailPage } from '~/components/shared/DetailPage';
-import { EntityAvatar } from '~/components/shared/EntityAvatar';
 import { EntityRow } from '~/components/shared/EntityRow';
 import { ListGroup } from '~/components/shared/ListGroup';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
@@ -17,9 +17,9 @@ import { OfflineBlock } from '~/components/shared/OfflineBlock';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
 import { Action } from '~/config/actions';
 import { useCan } from '~/hooks/useCan';
-import { useDeleteEntity } from '~/hooks/useDeleteEntity';
-import { fmtTJS, formatDate } from '~/lib/format';
+import { fmtNum, fmtTJS, formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
+import { useCategoriesModals } from '~/routes/(crm)/categories/store';
 
 const PREVIEW_LIMIT = 5;
 
@@ -29,14 +29,7 @@ export default function CategoryDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { can } = useCan();
-  const { requestDelete, deleteDialog } = useDeleteEntity({
-    entity: 'categories',
-    api: categoriesApi,
-    id,
-    t,
-    redirectTo: '/categories',
-    alsoInvalidate: ['products'],
-  });
+  const removeModal = useCategoriesModals((s) => s.remove);
 
   const {
     data: response,
@@ -81,6 +74,10 @@ export default function CategoryDetailPage() {
   const listState = { fromPath: location.pathname, fromName: category.name };
   const filterState = { fromCategoryId: category.id, fromCategoryName: category.name };
   const productsCount = category._count.products;
+  const archivedCount = category.archivedCount ?? 0;
+  const stockValue = category.stockValue;
+  const outCount = category.outOfStockCount ?? 0;
+  const lowCount = category.lowStockCount ?? 0;
 
   return (
     <>
@@ -92,13 +89,28 @@ export default function CategoryDetailPage() {
         ]}
         hero={
           <DetailHero
-            avatar={<EntityAvatar name={category.name} image={category.image} icon={Tag} shape="square" size="lg" />}
+            avatar={<CategoryTile image={category.image} color={category.color} className="size-14 rounded-2xl" />}
             title={category.name}
             manage={{
               editTo: can(Action.CATEGORIES_MANAGE) ? `/categories/${category.id}/edit` : undefined,
-              onDelete: can(Action.CATEGORIES_MANAGE) ? requestDelete : undefined,
+              onDelete: can(Action.CATEGORIES_MANAGE)
+                ? () =>
+                    removeModal.open({
+                      id: category.id,
+                      name: category.name,
+                      productsCount: productsCount + archivedCount,
+                      redirectTo: '/categories',
+                    })
+                : undefined,
             }}
-            stats={[{ label: t('fields.productsCount'), value: productsCount }]}
+            stats={[
+              { label: t('fields.productsCount'), value: productsCount, to: '/products', state: filterState },
+              ...(stockValue !== undefined ? [{ label: t('fields.stockValue'), value: fmtNum(stockValue) }] : []),
+              ...(outCount > 0
+                ? [{ label: t('detail.outOfStock'), value: outCount, tone: 'danger' as const }]
+                : []),
+              ...(lowCount > 0 ? [{ label: t('detail.lowStock'), value: lowCount, tone: 'warning' as const }] : []),
+            ]}
           />
         }
         aside={
@@ -117,6 +129,11 @@ export default function CategoryDetailPage() {
         <DetailFacts
           facts={[
             { label: t('fields.description'), value: category.description, long: true, show: !!category.description },
+            {
+              label: t('detail.archived'),
+              value: archivedCount,
+              show: archivedCount > 0,
+            },
             { label: t('fields.createdAt'), value: formatDate(category.createdAt, true) },
             { label: t('fields.updatedAt'), value: formatDate(category.updatedAt, true) },
           ]}
@@ -146,7 +163,7 @@ export default function CategoryDetailPage() {
           </ListGroup>
         )}
       </DetailPage>
-      <ConfirmDialog {...deleteDialog} />
+      <DeleteCategoryDialog />
     </>
   );
 }

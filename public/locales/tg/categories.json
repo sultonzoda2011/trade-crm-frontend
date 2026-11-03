@@ -8,14 +8,80 @@
   "updateSuccess": "Категория бо муваффақият навсозӣ шуд",
   "updateError": "Хатогӣ ҳангоми навсозии категория",
   "fields": {
-    "productsCount": "Молҳо"
+    "productsCount": "Молҳо",
+    "color": "Ранг",
+    "stockValue": "Маблағи захира"
   },
   "filters": {
-    "search": "Ҷустуҷӯи категорияҳо"
+    "search": "Ҷустуҷӯи категорияҳо",
+    "sortCustom": "Тартиби ман"
   },
   "actions": {
     "areYouSure": "Шумо мутмаин ҳастед, ки ин категорияро нест кардан мехоҳед?",
     "deleteSuccess": "Категория нест карда шуд",
     "deleteError": "Хатогӣ ҳангоми нест кардани категория"
+  },
+  "hasProducts": "Мол дорад",
+  "colors": {
+    "none": "Бе ранг",
+    "blue": "Кабуд",
+    "green": "Сабз",
+    "orange": "Норинҷӣ",
+    "red": "Сурх",
+    "purple": "Бунафш",
+    "pink": "Гулобӣ",
+    "teal": "Фирӯзагӣ",
+    "indigo": "Индиго",
+    "yellow": "Зард",
+    "gray": "Хокистарӣ"
+  },
+  "summary": {
+    "categories": "Категорияҳо",
+    "products": "Молҳо",
+    "stockValue": "Маблағи захира"
+  },
+  "uncategorized": {
+    "title": "Бе категория",
+    "subtitle_one": "{{count}} мол · {{value}}",
+    "subtitle_other": "{{count}} мол · {{value}}"
+  },
+  "row": {
+    "empty": "Ҳоло мол нест",
+    "products_one": "{{count}} мол",
+    "products_other": "{{count}} мол",
+    "outOfStock": "Нест: {{count}}",
+    "lowStock": "Кам: {{count}}"
+  },
+  "reorder": {
+    "button": "Тартиб",
+    "title": "Тартиби категорияҳо",
+    "hint": "Асосиҳо дар боло. Ҳамин тартиб ҳангоми интихоби мол дар фурӯш низ истифода мешавад.",
+    "up": "«{{name}}»-ро боло бардоред",
+    "down": "«{{name}}»-ро поён фароред",
+    "done": "Тайёр",
+    "saved": "Тартиб нигоҳ дошта шуд"
+  },
+  "delete": {
+    "title": "«{{name}}» нест карда шавад?",
+    "hasProducts_one": "Дар категория {{count}} мол ҳаст (бо бойгонӣ). Бо он чӣ кор кунем?",
+    "hasProducts_other": "Дар категория {{count}} мол ҳаст (бо бойгонӣ). Бо онҳо чӣ кор кунем?",
+    "moveTo": "Гузаронидан ба…",
+    "pickCategory": "Категорияро интихоб кунед",
+    "noOtherCategories": "Категорияи дигар нест",
+    "moveAndDelete": "Гузаронида нест кардан",
+    "detachAndDelete": "Бе категория гузошта нест кардан",
+    "detachHint": "Молҳо нест намешаванд — онҳо бе категория дар рӯйхат мемонанд.",
+    "successMoved_one": "Категория нест шуд, {{count}} мол гузаронида шуд",
+    "successMoved_other": "Категория нест шуд, {{count}} мол гузаронида шуд",
+    "successDetached_one": "Категория нест шуд, {{count}} мол бе категория монд",
+    "successDetached_other": "Категория нест шуд, {{count}} мол бе категория монд"
+  },
+  "detail": {
+    "outOfStock": "Дар анбор нест",
+    "lowStock": "Кам",
+    "archived": "Дар бойгонӣ"
+  },
+  "chips": {
+    "all": "Ҳама"
   }
 }

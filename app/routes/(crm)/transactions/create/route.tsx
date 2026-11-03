@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Plus } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -6,6 +7,7 @@ import { useFieldArray } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router';
 import { toast } from 'sonner';
+import { categoriesApi } from '~/api/categories';
 import { debtorsApi } from '~/api/debtors';
 import { productsApi } from '~/api/products';
 import { CreateDebtorModal } from '~/components/modals/CreateDebtorModal';
@@ -101,11 +103,39 @@ export default function CreateTransactionPage() {
     seed: prefill?.debtorId ? [{ id: prefill.debtorId, name: prefill.debtorName ?? '' } as Debtor] : undefined,
   });
 
+  // Чипсы категорий в выборе товара: порядок задаёт владелец. Тот же запрос, что у фильтров
+  // (его офлайн-синхронизация уже хранит), поэтому без сети чипсы остаются.
+  const { data: categoriesResponse } = useQuery({
+    queryKey: queryKeys.options('categories', { scope: 'filters', limit: 100 }),
+    queryFn: () => categoriesApi.getAll(1, 100, {}, []),
+    staleTime: 60_000,
+  });
+  const pickerCategories = useMemo(
+    () => (categoriesResponse?.data?.data ?? []).map((c) => ({ id: c.id, name: c.name, color: c.color })),
+    [categoriesResponse]
+  );
+  const [pickerCategoryId, setPickerCategoryId] = useState<string | null>(null);
+
+  // Выбранная категория сужает список на сервере (не только в уже загруженных 100 товарах);
+  // без сети — по сохранённым на устройстве. Накопленные `byId` остаются общими для всех строк.
   const products = useAsyncSelectOptions({
-    queryKey: queryKeys.options('products', { scope: 'form', limit: 100 }),
-    fetcher: async (search) => (await productsApi.getAll(1, 100, { search: search || undefined }))?.data?.data ?? [],
+    queryKey: queryKeys.options('products', {
+      scope: 'form',
+      limit: 100,
+      ...(pickerCategoryId ? { categoryId: pickerCategoryId } : {}),
+    }),
+    fetcher: async (search) =>
+      (
+        await productsApi.getAll(
+          1,
+          100,
+          { search: search || undefined },
+          pickerCategoryId ? [{ key: 'categoryId', value: pickerCategoryId }] : []
+        )
+      )?.data?.data ?? [],
     getValue: (p) => p.id,
     getLabel: (p) => p.name,
+    accept: pickerCategoryId ? (p) => p.categoryId === pickerCategoryId : undefined,
   });
 
   // Read stock/price from the accumulated set (products.byId), not just the latest search —
@@ -425,6 +455,9 @@ export default function CreateTransactionPage() {
         items={pickerItems}
         loading={products.loading}
         onSearch={products.onSearch}
+        categories={pickerCategories}
+        categoryId={pickerCategoryId}
+        onCategoryChange={setPickerCategoryId}
         onSelect={(productId) => {
           if (pickerIndex !== null) {
             setValue(`items.${pickerIndex}.productId`, productId, { shouldValidate: true, shouldDirty: true });

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { categoriesApi } from '~/api/categories';
+import { FormColorSwatches } from '~/components/categories/FormColorSwatches';
 import { EntityFormPage } from '~/components/shared/EntityFormPage';
 import { ByIdSkeleton } from '~/components/shared/ByIdSkeleton';
 import { NotFoundBlock } from '~/components/shared/NotFoundBlock';
@@ -35,9 +36,12 @@ export default function EditCategoryPage() {
     toForm: (loaded) => ({
       name: loaded.name,
       description: loaded.description ?? '',
+      color: loaded.color ?? '',
       image: loaded.image,
     }),
-    toPayload: (data) => ({ name: data.name, description: data.description, image: data.image }),
+    toPayload: (data) => ({ name: data.name, description: data.description, color: data.color, image: data.image }),
+    // Пустое поле здесь — «очистить», а не «не менять».
+    keepEmpty: ['description', 'color'],
     reset,
     redirectTo: (categoryId) => `/categories/${categoryId}`,
   });
@@ -85,6 +89,7 @@ export default function EditCategoryPage() {
         label={t('fields.description')}
         placeholder={t('fields.description')}
       />
+      <FormColorSwatches control={control} name="color" label={t('fields.color')} />
     </EntityFormPage>
   );
 }

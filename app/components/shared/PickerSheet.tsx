@@ -22,6 +22,8 @@ interface PickerSheetProps<T> {
   emptyText?: string;
   /** Пометка под списком, например «Показаны сохранённые данные». */
   note?: ReactNode;
+  /** Ряд чипсов под поиском (например, категории товара). */
+  filters?: ReactNode;
 }
 
 /**
@@ -44,6 +46,7 @@ export function PickerSheet<T>({
   searchable = true,
   emptyText,
   note,
+  filters,
 }: PickerSheetProps<T>) {
   const { t } = useTranslation('common');
   const [query, setQuery] = useState('');
@@ -77,6 +80,7 @@ export function PickerSheet<T>({
               className="h-10"
             />
           )}
+          {filters}
         </SheetHeader>
 
         <div className="min-h-0 flex-1 touch-pan-y space-y-3 overflow-y-auto overscroll-contain px-4 pb-6 [-webkit-overflow-scrolling:touch]">

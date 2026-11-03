@@ -8,14 +8,80 @@
   "updateSuccess": "Category updated successfully",
   "updateError": "Error updating category",
   "fields": {
-    "productsCount": "Products"
+    "productsCount": "Products",
+    "color": "Color",
+    "stockValue": "Stock value"
   },
   "filters": {
-    "search": "Search categories"
+    "search": "Search categories",
+    "sortCustom": "My order"
   },
   "actions": {
     "areYouSure": "Are you sure you want to delete this category?",
     "deleteSuccess": "Category deleted",
     "deleteError": "Error deleting category"
+  },
+  "hasProducts": "Has products",
+  "colors": {
+    "none": "No color",
+    "blue": "Blue",
+    "green": "Green",
+    "orange": "Orange",
+    "red": "Red",
+    "purple": "Purple",
+    "pink": "Pink",
+    "teal": "Teal",
+    "indigo": "Indigo",
+    "yellow": "Yellow",
+    "gray": "Gray"
+  },
+  "summary": {
+    "categories": "Categories",
+    "products": "Products",
+    "stockValue": "Stock value"
+  },
+  "uncategorized": {
+    "title": "No category",
+    "subtitle_one": "{{count}} product · {{value}}",
+    "subtitle_other": "{{count}} products · {{value}}"
+  },
+  "row": {
+    "empty": "No products yet",
+    "products_one": "{{count}} product",
+    "products_other": "{{count}} products",
+    "outOfStock": "Out: {{count}}",
+    "lowStock": "Low: {{count}}"
+  },
+  "reorder": {
+    "button": "Order",
+    "title": "Category order",
+    "hint": "The main ones go first. The same order is used when picking a product in a sale.",
+    "up": "Move “{{name}}” up",
+    "down": "Move “{{name}}” down",
+    "done": "Done",
+    "saved": "Order saved"
+  },
+  "delete": {
+    "title": "Delete “{{name}}”?",
+    "hasProducts_one": "This category has {{count}} product (archived included). What should happen to it?",
+    "hasProducts_other": "This category has {{count}} products (archived included). What should happen to them?",
+    "moveTo": "Move to…",
+    "pickCategory": "Pick a category",
+    "noOtherCategories": "There are no other categories",
+    "moveAndDelete": "Move and delete",
+    "detachAndDelete": "Leave uncategorized and delete",
+    "detachHint": "Products are not deleted — they stay in the list without a category.",
+    "successMoved_one": "Category deleted, {{count}} product moved",
+    "successMoved_other": "Category deleted, {{count}} products moved",
+    "successDetached_one": "Category deleted, {{count}} product left uncategorized",
+    "successDetached_other": "Category deleted, {{count}} products left uncategorized"
+  },
+  "detail": {
+    "outOfStock": "Out of stock",
+    "lowStock": "Low",
+    "archived": "Archived"
+  },
+  "chips": {
+    "all": "All"
   }
 }

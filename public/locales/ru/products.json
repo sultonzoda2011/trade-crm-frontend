@@ -29,7 +29,8 @@
     "initialStock": "Начальный остаток",
     "stockLocked": "Остаток меняется на странице товара: «Пополнить», «Списать», «Пересчитать» — так в истории видно, куда он делся.",
     "stockLockedTitle": "Остаток",
-    "stockNow": "{{count}} {{unit}}"
+    "stockNow": "{{count}} {{unit}}",
+    "newCategory": "Новая категория"
   },
   "actions": {
     "areYouSure": "Вы уверены, что хотите удалить этот товар?",
@@ -46,7 +47,8 @@
     "period": "Период расчёта",
     "archived": "Архив",
     "show": "Показать",
-    "activeOnly": "Активные"
+    "activeOnly": "Активные",
+    "uncategorized": "Без категории"
   },
   "unit": {
     "PCS": "шт",

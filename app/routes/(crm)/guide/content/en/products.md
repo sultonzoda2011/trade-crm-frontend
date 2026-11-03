@@ -101,10 +101,29 @@ Click **"Create product"** (`/products/create`) and fill in the form:
 
 ## Product categories
 
-The **"Categories"** section (`/categories`) manages all product groups:
+The **"Categories"** section (`/categories`) holds all product groups of the market — a quick way to sort goods into departments and find the right one at the counter.
 
-- Clicking **"Create category"** opens `/categories/create` with fields for **"Image"**, **"Name"** `*`, and **"Description"**.
-- Tapping any category opens its detail page (`/categories/:id`) listing all products in that category along with **"Edit"** and **"Delete"** buttons (also available via left swipe on mobile).
+- Above the list there is a **summary**: how many categories and products you have and the value of the stock (at retail prices). Below it, a **"No category"** row appears if some products have none; tap it to open them and sort them out.
+- Each row shows the category color, its name, **"N products · stock value"** and, when something needs attention, a red **"Out: N"** (sold out) or yellow **"Low: N"**. Archived products are not counted. Only the administrator and the owner see the stock value.
+- **"Create category"** opens `/categories/create`: **"Image"**, **"Name"** `*`, **"Description"** and **"Color"** — one of ten colors or "No color". The name must be unique in the market (case does not matter).
+- Tapping a row opens the category page: stock value, how many products are out or running low, how many are archived, and the product list. **"Edit"** and **"Delete"** are on the page and also on a left swipe of the row.
+
+### Your own category order
+
+The ↑↓ button next to "Create category" opens **"Order"** mode: use the arrows to move the main categories up. **"Done"** saves, **"Cancel"** restores the previous order. The same order is used in the category list and in the **category chips when picking a product in a sale** — tap a category and only its products remain.
+
+### Deleting a category that has products
+
+A category with products can be deleted: the app asks what to do with the products (archived ones count too):
+
+- **"Move to…"** — pick another category and all products go there;
+- **"Leave uncategorized and delete"** — the products stay in the list, just without a category.
+
+The products themselves are never deleted along with a category.
+
+### New category right from the product form
+
+In the product form open the **"Category"** picker and tap **"+ New category"**: enter a name, pick a color — and it is selected for the product at once. This needs an internet connection; offline, choose from existing categories.
 
 ## Access by role
 

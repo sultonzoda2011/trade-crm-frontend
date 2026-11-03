@@ -274,6 +274,9 @@
     "MARKET_OWNER_TAKEN": "This owner already runs another market. Pick a different owner.",
     "MARKET_OWNER_INVALID": "The selected user was not found or is not an owner.",
     "MARKET_OWNER_REQUIRED": "Select the market owner.",
-    "MARKET_OWNER_ADMIN_ONLY": "Only an administrator can change the market owner."
+    "MARKET_OWNER_ADMIN_ONLY": "Only an administrator can change the market owner.",
+    "CATEGORY_NAME_TAKEN": "A category with this name already exists. Choose a different name.",
+    "CATEGORY_HAS_PRODUCTS": "This category has products — choose where to move them or leave them uncategorized.",
+    "CATEGORY_MOVE_TARGET_INVALID": "Products can't be moved to this category. Choose another one."
   }
 }

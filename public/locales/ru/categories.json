@@ -8,14 +8,90 @@
   "updateSuccess": "Категория успешно обновлена",
   "updateError": "Ошибка при обновлении категории",
   "fields": {
-    "productsCount": "Товаров"
+    "productsCount": "Товаров",
+    "color": "Цвет",
+    "stockValue": "Остаток на сумму"
   },
   "filters": {
-    "search": "Поиск по категориям"
+    "search": "Поиск по категориям",
+    "sortCustom": "Мой порядок"
   },
   "actions": {
     "areYouSure": "Вы уверены, что хотите удалить эту категорию?",
     "deleteSuccess": "Категория удалена",
     "deleteError": "Ошибка при удалении категории"
+  },
+  "hasProducts": "Есть товары",
+  "colors": {
+    "none": "Без цвета",
+    "blue": "Синий",
+    "green": "Зелёный",
+    "orange": "Оранжевый",
+    "red": "Красный",
+    "purple": "Фиолетовый",
+    "pink": "Розовый",
+    "teal": "Бирюзовый",
+    "indigo": "Индиго",
+    "yellow": "Жёлтый",
+    "gray": "Серый"
+  },
+  "summary": {
+    "categories": "Категорий",
+    "products": "Товаров",
+    "stockValue": "Остаток, сумма"
+  },
+  "uncategorized": {
+    "title": "Без категории",
+    "subtitle_one": "{{count}} товар · {{value}}",
+    "subtitle_few": "{{count}} товара · {{value}}",
+    "subtitle_many": "{{count}} товаров · {{value}}",
+    "subtitle_other": "{{count}} товара · {{value}}"
+  },
+  "row": {
+    "empty": "Пока нет товаров",
+    "products_one": "{{count}} товар",
+    "products_few": "{{count}} товара",
+    "products_many": "{{count}} товаров",
+    "products_other": "{{count}} товара",
+    "outOfStock": "Нет: {{count}}",
+    "lowStock": "Мало: {{count}}"
+  },
+  "reorder": {
+    "button": "Порядок",
+    "title": "Порядок категорий",
+    "hint": "Главные — сверху. Так они идут и в выборе товара при продаже.",
+    "up": "Поднять «{{name}}» выше",
+    "down": "Опустить «{{name}}» ниже",
+    "done": "Готово",
+    "saved": "Порядок сохранён"
+  },
+  "delete": {
+    "title": "Удалить «{{name}}»?",
+    "hasProducts_one": "В категории {{count}} товар (с архивными). Что с ним сделать?",
+    "hasProducts_few": "В категории {{count}} товара (с архивными). Что с ними сделать?",
+    "hasProducts_many": "В категории {{count}} товаров (с архивными). Что с ними сделать?",
+    "hasProducts_other": "В категории {{count}} товара (с архивными). Что с ними сделать?",
+    "moveTo": "Перенести в…",
+    "pickCategory": "Выберите категорию",
+    "noOtherCategories": "Других категорий нет",
+    "moveAndDelete": "Перенести и удалить",
+    "detachAndDelete": "Оставить без категории и удалить",
+    "detachHint": "Товары не удаляются — они останутся в списке без категории.",
+    "successMoved_one": "Категория удалена, {{count}} товар перенесён",
+    "successMoved_few": "Категория удалена, {{count}} товара перенесено",
+    "successMoved_many": "Категория удалена, {{count}} товаров перенесено",
+    "successMoved_other": "Категория удалена, {{count}} товара перенесено",
+    "successDetached_one": "Категория удалена, {{count}} товар остался без категории",
+    "successDetached_few": "Категория удалена, {{count}} товара остались без категории",
+    "successDetached_many": "Категория удалена, {{count}} товаров осталось без категории",
+    "successDetached_other": "Категория удалена, {{count}} товара осталось без категории"
+  },
+  "detail": {
+    "outOfStock": "Нет в наличии",
+    "lowStock": "Мало",
+    "archived": "В архиве"
+  },
+  "chips": {
+    "all": "Все"
   }
 }

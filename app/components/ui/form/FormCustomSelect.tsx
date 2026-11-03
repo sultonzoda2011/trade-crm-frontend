@@ -18,6 +18,8 @@ interface FormCustomSelectProps<T extends FieldValues> {
   onSearch?: (query: string) => void;
   /** Show a loading state while an async search request is in flight. */
   loading?: boolean;
+  /** Строка «+ Новая …» в шторке выбора (см. PickerField). */
+  createRow?: { label: string; onClick: () => void };
 }
 
 /**

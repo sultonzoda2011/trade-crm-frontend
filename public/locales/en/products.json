@@ -29,7 +29,8 @@
     "initialStock": "Opening stock",
     "stockLocked": "Stock is changed on the product page: Restock, Write off, Recount — that way the history shows where it went.",
     "stockLockedTitle": "Stock",
-    "stockNow": "{{count}} {{unit}}"
+    "stockNow": "{{count}} {{unit}}",
+    "newCategory": "New category"
   },
   "actions": {
     "areYouSure": "Are you sure you want to delete this product?",
@@ -46,7 +47,8 @@
     "period": "Metrics period",
     "archived": "Archive",
     "show": "Show",
-    "activeOnly": "Active"
+    "activeOnly": "Active",
+    "uncategorized": "No category"
   },
   "unit": {
     "PCS": "pcs",
