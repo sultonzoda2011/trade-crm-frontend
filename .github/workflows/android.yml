@@ -5,6 +5,9 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,8 +52,23 @@ jobs:
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk TradeCRM.apk
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: trade-crm-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: TradeCRM.apk
+
+      - name: Publish APK to latest GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest TradeCRM.apk --clobber
+          else
+            gh release create latest TradeCRM.apk \
+              --title "TradeCRM APK" \
+              --notes "Latest automatically built TradeCRM Android APK."
+          fi
