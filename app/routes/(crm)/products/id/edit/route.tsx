@@ -71,13 +71,7 @@ export default function EditProductPage() {
     <EntityFormPage
       formId="edit-product-page-form"
       title={t('actions.edit')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard'), link: '/' },
-        { label: t('title'), link: '/products' },
-        { label: product.name, link: `/products/${id}` },
-        { label: t('actions.edit') },
-      ]}
-      cancelTo={`/products/${id}`}
+      trail={{ kind: 'edit', section: 'products', id, name: product.name }}
       submitLabel={t('actions.save')}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

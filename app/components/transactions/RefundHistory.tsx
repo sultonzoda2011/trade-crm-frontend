@@ -24,7 +24,7 @@ interface RefundHistoryProps {
 export function RefundHistory({ refundOf, refunds }: RefundHistoryProps) {
   const { t } = useTranslation('transactions');
   const location = useLocation();
-  const linkState = { fromPath: location.pathname, fromName: t('title') };
+  const linkState = { fromPath: location.pathname + location.search };
 
   if (!refundOf && refunds.length === 0) return null;
 

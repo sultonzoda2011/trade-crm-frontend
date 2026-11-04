@@ -184,7 +184,9 @@ export default function CreateTransactionPage() {
       type: initialIsDebt ? 'DEBT' : 'SALE',
       paymentType: initialIsDebt ? 'CREDIT' : initialLastMethod === 'CARD' ? 'CARD' : 'CASH',
       // Срок возврата по умолчанию у должника (если задан) — сразу в форме, а не «сегодня».
-      dueDate: dayjs().add(prefill?.defaultDueDays ?? 0, 'day').format('YYYY-MM-DD'),
+      dueDate: dayjs()
+        .add(prefill?.defaultDueDays ?? 0, 'day')
+        .format('YYYY-MM-DD'),
       items: [{ productId: '', quantity: 1, discount: 0, markup: 0 }],
     },
   });
@@ -330,15 +332,16 @@ export default function CreateTransactionPage() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-44 md:max-w-none md:pb-8">
       <BreadCrumbs
-        items={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-          {
-            // Пришли со страницы должника — «назад» ведёт к нему, а не в общий список.
-            label: prefill?.fromPath && prefill.debtorName ? prefill.debtorName : t('title'),
-            link: prefill?.fromPath ?? '/transactions',
-          },
-          { label: t('create') },
-        ]}
+        trail={{
+          kind: 'create',
+          section: 'transactions',
+          title: t('create'),
+          // Пришли со страницы должника — «назад» ведёт к нему, а не в общий список.
+          from:
+            prefill?.fromPath && prefill.debtorName
+              ? { label: prefill.debtorName, link: prefill.fromPath, fromHistory: true }
+              : undefined,
+        }}
       />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -406,9 +409,7 @@ export default function CreateTransactionPage() {
                   product={product}
                   itemTotal={getItemTotal(item, product)}
                   productError={rowErrors?.productId?.message}
-                  isExpanded={
-                    expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0)
-                  }
+                  isExpanded={expandedAdjustments[field.id] ?? (Number(item?.discount) > 0 || Number(item?.markup) > 0)}
                   control={control}
                   t={t}
                   onOpenPicker={() => setPickerIndex(index)}

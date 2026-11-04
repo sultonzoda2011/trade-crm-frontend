@@ -86,7 +86,7 @@ export default function SellersReportPage() {
 
   const viewer = { id: user?.id, canViewUsers: can(Action.USERS_VIEW), canViewSellers: can(Action.SELLERS_VIEW) };
   // Back from a card returns to this tab with the same period and seller still picked.
-  const linkState = { fromPath: `${location.pathname}${location.search}`, fromName: t('title') };
+  const linkState = { fromPath: `${location.pathname}${location.search}` };
 
   return (
     <div className="space-y-6">

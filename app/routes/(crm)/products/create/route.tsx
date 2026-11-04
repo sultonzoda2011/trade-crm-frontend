@@ -47,12 +47,7 @@ export default function CreateProductPage() {
     <EntityFormPage
       formId="create-product-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard'), link: '/' },
-        { label: t('title'), link: '/products' },
-        { label: t('create') },
-      ]}
-      cancelTo="/products"
+      trail={{ kind: 'create', section: 'products', title: t('create') }}
       submitLabel={t('actions.create')}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

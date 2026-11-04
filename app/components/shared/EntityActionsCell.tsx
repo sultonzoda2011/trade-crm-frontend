@@ -40,7 +40,7 @@ export function EntityActionsCell({
 }: EntityActionsCellProps) {
   const location = useLocation();
   const { can } = useCan();
-  const navState = { fromPath: location.pathname, fromName: t('title') };
+  const navState = { fromPath: location.pathname + location.search };
 
   return (
     <RowActionsCell>
@@ -48,23 +48,13 @@ export function EntityActionsCell({
       <IconActionButton
         icon={<Eye className="size-4" />}
         label={t('actions.view', { defaultValue: t('actions.view', { ns: 'common' }) })}
-        render={
-          <Link
-            to={viewTo ?? `${basePath}/${id}`}
-            state={omitViewState ? undefined : navState}
-          />
-        }
+        render={<Link to={viewTo ?? `${basePath}/${id}`} state={omitViewState ? undefined : navState} />}
       />
       {editAction && can(editAction) && (
         <IconActionButton
           icon={<Pencil className="size-4" />}
           label={t('actions.edit', { defaultValue: t('actions.edit', { ns: 'common' }) })}
-          render={
-            <Link
-              to={`${basePath}/${id}/edit`}
-              state={passEditState ? navState : undefined}
-            />
-          }
+          render={<Link to={`${basePath}/${id}/edit`} state={passEditState ? navState : undefined} />}
         />
       )}
       {deleteAction && can(deleteAction) && (

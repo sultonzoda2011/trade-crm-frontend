@@ -52,7 +52,7 @@ export function DebtorSummary({ fromPath }: { fromPath: string }) {
             <ListRow
               key={item.id}
               to={`/debtors/${item.id}`}
-              state={{ fromPath, fromName: t('title') }}
+              state={{ fromPath }}
               title={<span className="font-medium">{item.name}</span>}
               subtitle={`${t('profile.overdueAmount')} · ${t('profile.daysUnit', { count: item.maxDaysOverdue })}`}
               value={<span className="text-destructive font-mono font-semibold">{fmtNum(item.overdueAmount)}</span>}

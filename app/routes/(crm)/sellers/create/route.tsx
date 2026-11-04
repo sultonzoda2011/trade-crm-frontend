@@ -62,12 +62,7 @@ export default function CreateSellerPage() {
     <EntityFormPage
       formId="create-seller-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/sellers' },
-        { label: t('create') },
-      ]}
-      cancelTo="/sellers"
+      trail={{ kind: 'create', section: 'sellers', title: t('create') }}
       submitLabel={t('actions.create', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

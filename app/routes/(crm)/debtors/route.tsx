@@ -58,7 +58,7 @@ export default function DebtorsPage() {
       filterRules={DEBTOR_FILTER_RULES}
       quickFilters={
         <div className="space-y-4">
-          <DebtorSummary fromPath={location.pathname} />
+          <DebtorSummary fromPath={location.pathname + location.search} />
           <DebtorQuickFilters filters={list.filters} onChange={list.setFilters} />
         </div>
       }
@@ -71,7 +71,7 @@ export default function DebtorsPage() {
         // Страницы у должника из очереди ещё нет — открывать нечего.
         row.original.pending
           ? undefined
-          : { to: `/debtors/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
+          : { to: `/debtors/${row.original.id}`, state: { fromPath: location.pathname + location.search } }
       }
       // Должник из очереди ещё не создан на сервере: правка и удаление ему не
       // подходят, у такой строки свои кнопки «повторить / убрать» (см. renderCard).
@@ -96,7 +96,7 @@ export default function DebtorsPage() {
           onEdit: can(Action.DEBTORS_EDIT)
             ? () =>
                 navigate(`/debtors/${debtor.id}/edit`, {
-                  state: { fromPath: location.pathname, fromName: t('title') },
+                  state: { fromPath: location.pathname + location.search },
                 })
             : undefined,
           onDelete: can(Action.DEBTORS_DELETE) ? () => deleteModal.open(debtor.id) : undefined,

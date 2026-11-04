@@ -51,12 +51,7 @@ export default function CreateMarketPage() {
     <EntityFormPage
       formId="create-market-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/markets' },
-        { label: t('create') },
-      ]}
-      cancelTo="/markets"
+      trail={{ kind: 'create', section: 'markets', title: t('create') }}
       submitLabel={t('actions.create', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

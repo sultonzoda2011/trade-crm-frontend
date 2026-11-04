@@ -68,12 +68,7 @@ export default function ChangePasswordPage() {
     <EntityFormPage
       formId="change-password-page-form"
       title={t('sections.password')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-        { label: t('title'), link: '/profile' },
-        { label: t('sections.password') },
-      ]}
-      cancelTo="/profile"
+      trail={{ kind: 'profile-sub', title: t('sections.password') }}
       submitLabel={t('actions.savePassword')}
       isPending={isPending}
       onFormSubmit={handleSubmit((data) => mutate(data))}>

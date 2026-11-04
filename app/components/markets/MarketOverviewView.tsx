@@ -96,7 +96,7 @@ export function MarketOverviewView({ overview }: MarketOverviewViewProps) {
   };
 
   // «Откуда пришёл» для хлебной крошки на карточке сущности и предвыбранный фильтр по рынку в списках.
-  const listState = { fromPath: location.pathname, fromName: market.name };
+  const listState = { fromPath: location.pathname + location.search };
   const filterState = { fromMarketId: market.id, fromMarketName: market.name };
 
   const viewer = getClientUser();
@@ -106,19 +106,11 @@ export function MarketOverviewView({ overview }: MarketOverviewViewProps) {
   // Ссылку даём только туда, куда роль реально может зайти: иначе строка вела бы на «Нет доступа».
   const to = (action: Action, path: string) => (can(action) ? path : undefined);
 
-  const crumbs = can(Action.MARKETS_VIEW)
-    ? [
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-        { label: t('navigation.markets', { ns: 'common' }), link: location.state?.fromPath ?? '/markets' },
-        { label: market.name },
-      ]
-    : [{ label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' }, { label: market.name }];
-
   const notSet = <span className="text-muted-foreground/70">{t('notSet')}</span>;
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-6 md:max-w-xl">
-      <BreadCrumbs items={crumbs} />
+      <BreadCrumbs trail={{ kind: 'view', section: 'markets', name: market.name }} />
 
       {/* Рынок: фото, название, адрес и два быстрых действия. */}
       <section className="bg-card relative overflow-hidden rounded-2xl p-5 text-center">

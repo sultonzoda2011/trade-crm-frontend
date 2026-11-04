@@ -990,8 +990,8 @@ Zod
 `EntityFormPage` унифицирует для всех create/edit страниц:
 - skeleton при загрузке (`isLoading`)
 - `EmptyState` если запись не найдена (`notFound`)
-- `BreadCrumbs` и заголовок
-- карточку формы, `FormWrapper` и кнопки `Submit` / `Cancel`
+- `BreadCrumbs` по `trail` (см. раздел 26) и заголовок
+- карточку формы, `FormWrapper` и кнопки `Submit` / `Cancel`; «Отмена» ведёт туда же, куда «назад» в крошках
 
 Create и Edit страницы одной сущности не должны дублировать JSX разметку полей — поля выносятся в `*FormFields.tsx`.
 
@@ -1212,6 +1212,28 @@ Panel
 ```
 
 Для `users`, `sellers`, `debtors` данные загружаются одним запросом через `GET /<entity>/:id/full` (`nestedDetailRequest`); для `markets` — через `GET /markets/:id/overview`.
+
+---
+
+## Хлебные крошки и «назад» (`trail`)
+
+Страница не собирает крошки руками. Она передаёт свой «след» (`trail`) в `DetailPage` или `EntityFormPage` (либо `<BreadCrumbs trail={…} />`), а цепочку собирает `useTrail` из `app/hooks/useCrumbs.ts`:
+
+```ts
+trail={{ kind: 'view', section: 'products', name: product.name }}                 // /products/:id
+trail={{ kind: 'edit', section: 'products', id, name: product.name }}             // /products/:id/edit
+trail={{ kind: 'create', section: 'products', title: t('create') }}               // /products/create
+trail={{ kind: 'profile' }}                                                       // /profile
+trail={{ kind: 'profile-sub', title: t('editTitle') }}                            // /profile/edit
+```
+
+Правила сборки (менять только в `useCrumbs.ts`):
+- Корень зависит от роли: продавец — «Транзакции» (`/transactions`), остальные — «Сводка» (`/dashboard`).
+- Пункт ведёт только туда, куда роль может зайти (`canAccess`); недоступные пункты не показываются, дубли одного пути схлопываются.
+- Родитель-список: если пришли по ссылке со списка, `fromPath` (вместе с `location.search`) становится ссылкой и помечается `fromHistory`. Иначе — список раздела.
+- Подписи родителей переводятся при показе (по пути, а не из state). В `location.state` не класть переведённые названия.
+- Телефон: кнопка «‹ Родитель». `fromHistory` → `navigate(-1)`; иначе → `navigate(родитель, { replace: true })`. На корневой странице кнопки нет.
+- Ссылки в `location.state` ставить как `fromPath: location.pathname + location.search`. Новый раздел с карточкой — добавить в `CrumbSection`, `LIST_PATH` и `TITLE_BY_PATH`.
 
 ---
 

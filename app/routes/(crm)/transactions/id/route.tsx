@@ -131,19 +131,12 @@ export default function TransactionDetailPage() {
   };
   const owed = transaction.remainingAmount > 0;
 
-  const fromState = { fromPath: location.pathname, fromName: t('title') };
+  const fromState = { fromPath: location.pathname + location.search };
 
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          {
-            link: location.state?.fromPath || '/transactions',
-            label: location.state?.fromName || t('title'),
-          },
-          { label: getTransactionTitle(transaction, t) },
-        ]}
+        trail={{ kind: 'view', section: 'transactions', name: getTransactionTitle(transaction, t) }}
         hero={
           <DetailHero
             avatar={<TransactionProducts items={transaction.items} size="lg" max={3} />}

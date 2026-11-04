@@ -102,14 +102,7 @@ export default function EditMarketPage() {
     <EntityFormPage
       formId="edit-market-page-form"
       title={t('actions.edit', { ns: 'common' })}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-        // Список рынков открыт только админу; владельцу «Рынки» вели бы на «Нет доступа».
-        ...(can(Action.MARKETS_VIEW) ? [{ label: t('title'), link: '/markets' }] : []),
-        { label: market.name, link: `/markets/${id}` },
-        { label: t('actions.edit', { ns: 'common' }) },
-      ]}
-      cancelTo={`/markets/${id}`}
+      trail={{ kind: 'edit', section: 'markets', id, name: market.name }}
       submitLabel={t('actions.save', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

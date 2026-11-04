@@ -164,7 +164,7 @@ export default function TransactionsPage() {
         // Страницы у продажи из очереди ещё нет — открывать нечего.
         row.original.pending
           ? undefined
-          : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname, fromName: t('title') } }
+          : { to: `/transactions/${row.original.id}`, state: { fromPath: location.pathname + location.search } }
       }
       // Страницы правки у транзакции нет (её не редактируют, только оплачивают
       // и удаляют), поэтому «Изменить» здесь не показываем. Продажа из очереди

@@ -90,7 +90,7 @@ export default function SellerDetailPage() {
     );
   }
 
-  const fromState = { fromPath: location.pathname, fromName: seller.name };
+  const fromState = { fromPath: location.pathname + location.search };
   const isSelf = getClientUser()?.id === seller.id;
   const hasHistory = !!seller.hasHistory;
   // Выплатить можно и отключённому: деньги ему должны, пока их не отдали.
@@ -103,14 +103,7 @@ export default function SellerDetailPage() {
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          {
-            link: location.state?.fromPath,
-            label: location.state?.fromName || t('navigation.sellers', { ns: 'common' }),
-          },
-          { label: seller.name },
-        ]}
+        trail={{ kind: 'view', section: 'sellers', name: seller.name }}
         hero={
           <DetailHero
             avatar={<EntityAvatar name={seller.name} image={seller.image} size="lg" />}
