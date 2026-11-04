@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { ROW_TONE, type RowTone } from '~/components/dashboard/rowTone';
 import { Panel } from '~/components/layout/Panel';
-import { Button } from '~/components/ui/button';
 import { debtsLink, type DashboardScope } from '~/lib/dashboard-links';
 import { fmtTJS } from '~/lib/format';
 import { cn } from '~/lib/utils';
@@ -45,7 +44,7 @@ function DebtLine({ icon: Icon, tone, label, hint, amount, to }: DebtLineProps) 
         </span>
         <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">{hint}</span>
       </span>
-      {to && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />}
+      {to && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />}
     </>
   );
 
@@ -62,14 +61,6 @@ function DebtLine({ icon: Icon, tone, label, hint, amount, to }: DebtLineProps) 
 
 /**
  * Who owes the shop money, as of right now — not "debts issued in the period".
- *
- * Three groups that add up to the total: overdue, due within the next few days,
- * and the rest. A debt with no due date can never be overdue (the backend has
- * nothing to compare), so "the rest" is worded as "not due yet or no date set"
- * instead of implying those debts are safe.
- *
- * The lines open the same transaction lists the figures were counted from
- * (`debtStatus=OVERDUE` / `DUE_SOON`), so "5 overdue" here is five rows there.
  */
 export function DebtsCard({ debts, scope, dueSoonDays }: DebtsCardProps) {
   const { t } = useTranslation('dashboard');
@@ -86,9 +77,19 @@ export function DebtsCard({ debts, scope, dueSoonDays }: DebtsCardProps) {
   const restAmount = Math.max(money(debts.totalOutstanding - debts.overdueAmount - debts.dueSoonAmount), 0);
 
   return (
-    <Panel title={t('debtsCard.title')} bodyClassName="overflow-hidden p-0">
+    <Panel
+      title={t('debtsCard.title')}
+      bodyClassName="overflow-hidden p-0"
+      actions={
+        <Link
+          to="/debtors"
+          className="text-primary relative inline-flex items-center gap-0.5 text-sm font-medium transition-opacity before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
+          {t('debtsCard.allDebtors')}
+          <ChevronRight className="-mr-1 size-4" strokeWidth={1.5} />
+        </Link>
+      }>
       <div className="px-4 pt-4 pb-3">
-        <p className="font-mono text-3xl leading-tight font-bold tabular-nums break-words md:text-4xl">
+        <p className="font-mono text-3xl leading-tight font-semibold tracking-tight tabular-nums break-words md:text-4xl">
           {fmtTJS(debts.totalOutstanding)}
         </p>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -130,14 +131,14 @@ export function DebtsCard({ debts, scope, dueSoonDays }: DebtsCardProps) {
         )}
       </div>
 
-      <div className="border-border grid gap-2 border-t p-3 sm:grid-cols-2">
-        <Button variant="secondary" size="lg" className="w-full" render={<Link to="/debtors?risk=HIGH" />}>
-          {t('debtsCard.whoToCall')}
-        </Button>
-        <Button variant="outline" size="lg" className="w-full" render={<Link to="/debtors" />}>
-          {t('debtsCard.allDebtors')}
-        </Button>
-      </div>
+      {debts.overdueCount > 0 && (
+        <Link
+          to="/debtors?risk=HIGH"
+          className="text-primary active:bg-muted/70 border-border flex min-h-12 items-center justify-between gap-2 border-t px-4 py-3 text-sm font-medium transition-colors">
+          <span>{t('debtsCard.whoToCall')}</span>
+          <ChevronRight className="-mr-1 size-4 shrink-0" strokeWidth={1.5} />
+        </Link>
+      )}
     </Panel>
   );
 }

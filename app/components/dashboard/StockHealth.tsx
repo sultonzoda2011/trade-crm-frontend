@@ -31,23 +31,13 @@ const ROWS: HealthRow[] = [
 
 interface StockHealthProps {
   inventory: OverviewInventory;
-  /** How many days of stock make a product "slow-moving"; the backend reports it in its recommendation. */
+  /** The backend's threshold for "slow-moving", when it has reported one. */
   slowMovingDays?: number;
 }
 
 /**
  * The whole shop in one card: how much goods there are, and how many products
  * are in which state.
- *
- * Two honest limits are written on the card instead of hidden:
- *  - the product has a selling price and no purchase price, so "goods in stock" is
- *    valued at the selling price — what the shelf brings if it all sells, not what
- *    was paid for it;
- *  - only slow-moving stock is valued by the backend. Products with no sales at all
- *    are counted but have no amount, so the card does not claim a total "frozen" sum.
- *
- * States with nothing in them are not drawn: six zero rows would hide the one
- * that matters. Every row opens the product list filtered by the same state.
  */
 export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
   const { t } = useTranslation(['dashboard', 'products']);
@@ -72,7 +62,7 @@ export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
     <Panel title={t('stockHealth.title')} bodyClassName="overflow-hidden p-0">
       <div className="px-4 pt-4 pb-3">
         <p className="text-muted-foreground text-sm font-medium">{t('stockHealth.total')}</p>
-        <p className="mt-1 font-mono text-3xl leading-tight font-bold tabular-nums break-words md:text-4xl">
+        <p className="mt-1 font-mono text-3xl leading-tight font-semibold tracking-tight tabular-nums break-words md:text-4xl">
           {fmtTJS(inventory.stockValue)}
         </p>
         <p className="text-muted-foreground mt-1 text-sm leading-snug">{t('stockHealth.totalHint')}</p>
@@ -90,7 +80,10 @@ export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
             let hint: string;
             if (row.key === 'SLOW_MOVING') {
               hint = slowMovingDays
-                ? t('stockHealth.hint.SLOW_MOVING', { days: slowMovingDays, amount: fmtTJS(inventory.slowMovingValue) })
+                ? t('stockHealth.hint.SLOW_MOVING', {
+                    days: slowMovingDays,
+                    amount: fmtTJS(inventory.slowMovingValue),
+                  })
                 : t('stockHealth.hint.SLOW_MOVING_NO_DAYS', { amount: fmtTJS(inventory.slowMovingValue) });
             } else if (row.key === 'NO_SALES') {
               hint = t('stockHealth.hint.NO_SALES', { days: STOCK_ANALYSIS_DAYS });
@@ -107,7 +100,7 @@ export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
                   <Icon className="size-5" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="flex items-baseline justify-between gap-2">
+                  <span className="flex items-baseline justify-between gap-3">
                     <span className="min-w-0 text-base leading-snug font-semibold">
                       {t(`health.${row.key}`, { ns: 'products' })}
                     </span>
@@ -117,15 +110,15 @@ export function StockHealth({ inventory, slowMovingDays }: StockHealthProps) {
                   </span>
                   <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">{hint}</span>
                 </span>
-                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
+                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
               </Link>
             );
           })}
         </div>
       )}
 
-      {rows.length > 0 && (
-        <p className="text-muted-foreground border-border border-t px-4 py-3 text-sm leading-snug">
+      {rows.length > 0 && inventory.healthy > 0 && (
+        <p className="text-muted-foreground border-border border-t px-4 py-3 text-sm">
           {t('stockHealth.healthy', { healthy: inventory.healthy, total: inventory.totalProducts })}
         </p>
       )}

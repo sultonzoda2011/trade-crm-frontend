@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 
 interface AnimatedNumberProps {
   value: number;
-  /** How a (possibly fractional, mid-flight) number is printed — `fmtTJS` for money. */
+  /** How a number is printed — `fmtTJS` for money. */
   format?: (value: number) => string;
   className?: string;
 }
@@ -11,16 +11,12 @@ interface AnimatedNumberProps {
 const defaultFormat = (value: number) => String(Math.round(value));
 
 /**
- * A figure that counts to its value instead of snapping to it.
- *
- * First paint counts up from zero; every later change (a new period, a new
- * seller) eases from what is currently on screen to the new figure, so the eye
- * sees which way the number moved. The text node is written directly on each
- * frame — no React render per tick. With "reduce motion" on, it just shows the value.
+ * Displays a figure immediately on mount and smoothly interpolates when the
+ * value changes (e.g. switching period or seller filter).
  */
 export function AnimatedNumber({ value, format = defaultFormat, className }: AnimatedNumberProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const shown = useRef(0);
+  const shown = useRef(value);
   const formatRef = useRef(format);
   formatRef.current = format;
   const reduced = useReducedMotion();
@@ -29,18 +25,22 @@ export function AnimatedNumber({ value, format = defaultFormat, className }: Ani
     const node = ref.current;
     if (!node) return;
 
-    if (reduced) {
+    const from = shown.current;
+    if (reduced || from === value) {
       shown.current = value;
       node.textContent = formatRef.current(value);
       return;
     }
 
-    const controls = animate(shown.current, value, {
-      duration: 0.7,
-      ease: [0.16, 1, 0.3, 1],
+    const bothIntegers = Number.isInteger(from) && Number.isInteger(value);
+
+    const controls = animate(from, value, {
+      duration: 0.28,
+      ease: [0.22, 1, 0.36, 1],
       onUpdate: (latest) => {
-        shown.current = latest;
-        node.textContent = formatRef.current(latest);
+        const current = bothIntegers ? Math.round(latest) : latest;
+        shown.current = current;
+        node.textContent = formatRef.current(current);
       },
       onComplete: () => {
         shown.current = value;
@@ -50,7 +50,6 @@ export function AnimatedNumber({ value, format = defaultFormat, className }: Ani
     return () => controls.stop();
   }, [value, reduced]);
 
-  // The server/first render shows the final figure so nothing is blank if JS is slow; the effect then counts from 0.
   return (
     <span ref={ref} className={className}>
       {format(value)}

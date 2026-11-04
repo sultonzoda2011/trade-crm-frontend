@@ -29,11 +29,6 @@ interface StockRowProps {
 
 /**
  * One product that should be bought, with the reasoning next to the advice.
- *
- * The explanation is built only from what was measured: how much sold in the
- * window, the pace that implies, and the minimum the owner set by hand. Nothing
- * is added from outside the response — "an order covers N days" is derived from
- * the quantity and the pace the backend returned, not from a rule copied here.
  */
 export function StockRow({ product, detailed = false }: StockRowProps) {
   const { t } = useTranslation(['dashboard', 'products']);
@@ -89,12 +84,14 @@ export function StockRow({ product, detailed = false }: StockRowProps) {
           <span className="text-muted-foreground text-sm">{t('stock.left', { quantity: product.quantity, unit })}</span>
         </span>
 
-        <span className="text-muted-foreground mt-1 block text-sm leading-snug">{reasons.join(' ')}</span>
-        {details.map((line) => (
-          <span key={line} className="text-muted-foreground mt-0.5 block text-sm leading-snug">
-            {line}
-          </span>
-        ))}
+        {detailed && (
+          <>
+            <span className="text-muted-foreground mt-1 block text-sm leading-snug">{reasons.join(' · ')}</span>
+            {details.length > 0 && (
+              <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">{details.join(' · ')}</span>
+            )}
+          </>
+        )}
       </span>
 
       <span className="shrink-0 text-right">
@@ -104,7 +101,7 @@ export function StockRow({ product, detailed = false }: StockRowProps) {
         </span>
       </span>
 
-      <ChevronRight className="text-muted-foreground/60 mt-1 -mr-1 size-4 shrink-0" />
+      <ChevronRight className="text-muted-foreground/60 mt-1 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
     </Link>
   );
 }

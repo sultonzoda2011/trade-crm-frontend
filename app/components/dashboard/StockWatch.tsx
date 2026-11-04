@@ -1,4 +1,4 @@
-import { ChevronRight, WifiOff } from 'lucide-react';
+import { ChevronRight, TrendingDown, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
@@ -26,11 +26,6 @@ interface StockWatchProps {
 
 /**
  * "What is running out" — the products the owner should think about buying.
- *
- * Everything here comes from the backend's reorder rules over the last
- * `STOCK_ANALYSIS_DAYS` days. The card names that window, says how it reached
- * each conclusion, and offers no "add to purchase" button because the app has no
- * purchase list — the row opens the product, where the stock can be adjusted.
  */
 export function StockWatch({ data, isLoading, isError, isOffline, onRetry, sellerScoped }: StockWatchProps) {
   const { t } = useTranslation('dashboard');
@@ -47,7 +42,7 @@ export function StockWatch({ data, isLoading, isError, isOffline, onRetry, selle
     }
     return (
       <Panel title={t('stock.title')} bodyClassName="flex flex-col items-center gap-3 py-6 text-center">
-        {isOffline && <WifiOff className="text-muted-foreground/50 size-8" />}
+        {isOffline && <WifiOff strokeWidth={1.5} className="text-muted-foreground/50 size-6" />}
         <p className="text-muted-foreground text-sm">{isOffline ? t('stock.offline') : t('stock.loadError')}</p>
         {!isOffline && isError && (
           <Button variant="outline" onClick={onRetry}>
@@ -73,11 +68,12 @@ export function StockWatch({ data, isLoading, isError, isOffline, onRetry, selle
           <PanelViewAll to="/products?needsReorder=true" label={t('viewAll')} count={inventory.needsReorder} />
         ) : undefined
       }>
-      <div className="px-4 pt-3 pb-2">
-        <p className="text-muted-foreground text-sm leading-snug">{t('stock.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
-        {sellerScoped && <p className="text-muted-foreground mt-1 text-sm leading-snug">{t('stock.allShop')}</p>}
-        {noSalesInWindow && <p className="text-warning mt-1 text-sm leading-snug">{t('stock.noSalesData', { days: STOCK_ANALYSIS_DAYS })}</p>}
-      </div>
+      {(sellerScoped || noSalesInWindow) && (
+        <div className="px-4 pt-3 pb-2">
+          {sellerScoped && <p className="text-muted-foreground text-sm leading-snug">{t('stock.allShop')}</p>}
+          {noSalesInWindow && <p className="text-warning mt-1 text-sm leading-snug">{t('stock.noSalesData', { days: STOCK_ANALYSIS_DAYS })}</p>}
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <DashboardSuccessState
@@ -86,19 +82,18 @@ export function StockWatch({ data, isLoading, isError, isOffline, onRetry, selle
           className="px-4 py-4"
         />
       ) : (
-        <div className="divide-border border-border divide-y border-t">
+        <div className="divide-border divide-y">
           {rows.map((product) => (
             <StockRow key={product.id} product={product} />
           ))}
         </div>
       )}
 
-      {rows.length > 0 && <p className="text-muted-foreground border-border border-t px-4 py-3 text-sm leading-snug">{t('stock.orderNote')}</p>}
-
       {inventory.slowMoving > 0 && (
         <Link
           to="/products?health=SLOW_MOVING"
           className="active:bg-muted/70 border-border flex items-center gap-3 border-t px-4 py-3 transition-colors">
+          <TrendingDown className="text-muted-foreground size-4 shrink-0" />
           <span className="text-muted-foreground min-w-0 flex-1 text-sm leading-snug">
             {slowDays
               ? t('stock.slowMoving', {
@@ -111,7 +106,7 @@ export function StockWatch({ data, isLoading, isError, isOffline, onRetry, selle
                   amount: fmtTJS(inventory.slowMovingValue),
                 })}
           </span>
-          <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
+          <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
         </Link>
       )}
     </Panel>

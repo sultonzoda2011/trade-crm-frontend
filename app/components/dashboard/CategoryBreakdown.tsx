@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -21,15 +21,6 @@ interface CategoryBreakdownProps {
 
 /**
  * Where the money came from, by groups of goods.
- *
- * Every category the backend sends is reachable: the first few are shown and the
- * rest open with "Show all" — cutting the list silently would leave shares that
- * add up to less than 100% with no explanation. Products without a category are
- * one row of their own, not dropped, for the same reason.
- *
- * The comparison with the previous period appears only for windows long enough
- * to be compared (the Overview's rule); growth from zero has no percentage, so
- * that case says "no sales in the previous period" instead of inventing one.
  */
 export function CategoryBreakdown({ categories, period, comparable, totalRevenue }: CategoryBreakdownProps) {
   const { t } = useTranslation('dashboard');
@@ -56,28 +47,33 @@ export function CategoryBreakdown({ categories, period, comparable, totalRevenue
             const { previous, current } = row.comparison;
 
             const body = (
-              <>
-                <span className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 text-base leading-snug font-semibold break-words">{name}</span>
-                  <span className="shrink-0 font-mono text-base font-semibold tabular-nums">{fmtTJS(row.netRevenue)}</span>
+              <span className="flex items-start gap-3">
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline justify-between gap-3">
+                    <span className="min-w-0 text-base leading-snug font-medium break-words">{name}</span>
+                    <span className="shrink-0 font-mono text-base font-medium tabular-nums">{fmtTJS(row.netRevenue)}</span>
+                  </span>
+                  <span className="bg-muted mt-2 block h-1 w-full overflow-hidden rounded-full">
+                    <span className="bg-primary block h-full rounded-full" style={{ width }} />
+                  </span>
+                  <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm leading-snug">
+                    {share !== null && (
+                      <span className="text-muted-foreground tabular-nums">
+                        {share < 1 ? t('categoryCard.shareLow') : t('categoryCard.share', { percent: Math.round(share) })}
+                      </span>
+                    )}
+                    {comparable &&
+                      (previous > 0 ? (
+                        <ComparisonIndicator comparison={row.comparison} className="text-sm" />
+                      ) : (
+                        current > 0 && <span className="text-muted-foreground">{t('categoryCard.noPrevious')}</span>
+                      ))}
+                  </span>
                 </span>
-                <span className="bg-muted mt-2 block h-1.5 w-full overflow-hidden rounded-full">
-                  <span className="bg-primary block h-full rounded-full" style={{ width }} />
-                </span>
-                <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm leading-snug">
-                  {share !== null && (
-                    <span className="text-muted-foreground">
-                      {share < 1 ? t('categoryCard.shareLow') : t('categoryCard.share', { percent: Math.round(share) })}
-                    </span>
-                  )}
-                  {comparable &&
-                    (previous > 0 ? (
-                      <ComparisonIndicator comparison={row.comparison} className="text-sm" />
-                    ) : (
-                      current > 0 && <span className="text-muted-foreground">{t('categoryCard.noPrevious')}</span>
-                    ))}
-                </span>
-              </>
+                {row.categoryId && (
+                  <ChevronRight className="text-muted-foreground/60 mt-1 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
+                )}
+              </span>
             );
 
             return row.categoryId ? (
@@ -103,7 +99,7 @@ export function CategoryBreakdown({ categories, period, comparable, totalRevenue
           aria-expanded={expanded}
           className="text-primary border-border flex min-h-12 w-full items-center justify-center gap-1 border-t px-4 text-base font-medium active:opacity-60">
           {expanded ? t('categoryCard.showLess') : t('categoryCard.showAll', { count: categories.length })}
-          {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          {expanded ? <ChevronUp className="size-4" strokeWidth={1.5} /> : <ChevronDown className="size-4" strokeWidth={1.5} />}
         </button>
       )}
     </Panel>

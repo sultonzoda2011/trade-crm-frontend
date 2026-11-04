@@ -1,5 +1,5 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
-import { useMemo } from 'react';
+import { Area, AreaChart, CartesianGrid, Line, XAxis, YAxis } from 'recharts';
+import { useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Panel } from '~/components/layout/Panel';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '~/components/ui/chart';
@@ -26,16 +26,17 @@ function isMonthGranularity(data: RevenueTrendData[]): boolean {
 
 export function RevenueTrendChart({ data, className }: RevenueTrendChartProps) {
   const { t, i18n } = useTranslation(['dashboard']);
+  const gradientId = useId().replace(/:/g, '');
 
   const chartConfig = useMemo(
     () => ({
       revenue: {
         label: t('charts.revenue'),
-        theme: { light: 'var(--chart-2)', dark: 'var(--chart-2)' },
+        theme: { light: 'var(--primary)', dark: 'var(--primary)' },
       },
       transactionCount: {
         label: t('charts.transactions'),
-        theme: { light: 'var(--chart-1)', dark: 'var(--chart-1)' },
+        theme: { light: 'var(--muted-foreground)', dark: 'var(--muted-foreground)' },
       },
     }),
     [t]
@@ -76,23 +77,35 @@ export function RevenueTrendChart({ data, className }: RevenueTrendChartProps) {
 
   return (
     <Panel title={title} className={className}>
-      <ChartContainer config={chartConfig} initialDimension={{ width: 500, height: 250 }}>
-        <LineChart data={formattedData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border, #e5e7eb)" />
+      <ChartContainer config={chartConfig} className="aspect-auto h-64 w-full" initialDimension={{ width: 500, height: 256 }}>
+        <AreaChart data={formattedData} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
+          <defs>
+            <linearGradient id={`revenue-fill-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-revenue, #007aff)" stopOpacity={0.14} />
+              <stop offset="100%" stopColor="var(--color-revenue, #007aff)" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid vertical={false} stroke="var(--color-border, rgba(60, 60, 67, 0.16))" />
           <XAxis
             dataKey="dateLabel"
-            stroke="var(--color-muted-foreground, #6b7280)"
-            style={{ fontSize: '12px' }}
+            axisLine={false}
+            tickLine={false}
+            tickMargin={8}
+            stroke="var(--color-muted-foreground, #6c6c70)"
+            style={{ fontSize: '12px', fontVariantNumeric: 'tabular-nums' }}
             minTickGap={24}
           />
           <YAxis
-            stroke="var(--color-muted-foreground, #6b7280)"
-            style={{ fontSize: '12px' }}
-            width={40}
+            axisLine={false}
+            tickLine={false}
+            tickMargin={8}
+            stroke="var(--color-muted-foreground, #6c6c70)"
+            style={{ fontSize: '12px', fontVariantNumeric: 'tabular-nums' }}
+            width={44}
             tickFormatter={compactMoney}
           />
           <ChartTooltip
-            cursor={{ stroke: 'var(--color-border, #e5e7eb)' }}
+            cursor={{ stroke: 'var(--color-border, rgba(60, 60, 67, 0.16))' }}
             content={
               <ChartTooltipContent
                 formatter={(value, name, item) => {
@@ -100,9 +113,9 @@ export function RevenueTrendChart({ data, className }: RevenueTrendChartProps) {
                   const num = typeof value === 'number' ? value : Number(value);
                   return (
                     <div className="flex w-full items-center justify-between gap-4">
-                      <span className="text-muted-foreground flex items-center gap-1.5">
+                      <span className="text-muted-foreground flex items-center gap-2">
                         <span
-                          className="size-2 shrink-0 rounded-xs"
+                          className="size-2 shrink-0 rounded-full"
                           style={{ backgroundColor: item.color ?? item.payload?.fill }}
                         />
                         {chartConfig[key as keyof typeof chartConfig]?.label ?? name}
@@ -116,25 +129,28 @@ export function RevenueTrendChart({ data, className }: RevenueTrendChartProps) {
               />
             }
           />
-          <Line
+          <Area
             type="monotone"
             dataKey="revenue"
-            stroke="var(--color-revenue, #22c55e)"
+            stroke="var(--color-revenue, #007aff)"
             strokeWidth={2}
-            dot={{ fill: 'var(--color-revenue, #22c55e)', r: data.length > 15 ? 0 : 3 }}
-            activeDot={{ r: 6 }}
-            isAnimationActive
+            fill={`url(#revenue-fill-${gradientId})`}
+            dot={{ fill: 'var(--color-revenue, #007aff)', r: data.length > 15 ? 0 : 3, strokeWidth: 0 }}
+            activeDot={{ r: 5, strokeWidth: 0 }}
+            isAnimationActive={false}
           />
           {/* Invisible series so the tooltip shows the transaction count alongside revenue */}
           <Line
             type="monotone"
             dataKey="transactionCount"
+            stroke="var(--color-transactionCount, #6c6c70)"
             strokeWidth={0}
             dot={false}
             activeDot={false}
             legendType="none"
+            isAnimationActive={false}
           />
-        </LineChart>
+        </AreaChart>
       </ChartContainer>
     </Panel>
   );

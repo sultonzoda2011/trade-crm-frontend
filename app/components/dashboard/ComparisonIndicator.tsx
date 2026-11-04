@@ -39,7 +39,7 @@ export function ComparisonIndicator({ comparison, invert, vsLabel, className }: 
   if (changePercent === 0) {
     return (
       <span className={cn('text-muted-foreground inline-flex items-center gap-1 text-xs', className)}>
-        <Minus className="size-3" />
+        <Minus className="size-3.5" strokeWidth={1.5} />
         {t('comparison.unchanged')}
       </span>
     );
@@ -52,14 +52,14 @@ export function ComparisonIndicator({ comparison, invert, vsLabel, className }: 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 text-xs font-medium',
+        'inline-flex items-center gap-1 font-mono text-xs font-medium tabular-nums',
         isGood ? 'text-success' : 'text-destructive',
         className
       )}>
-      <Icon className="size-3" />
+      <Icon className="size-3.5" strokeWidth={1.5} />
       {isUp ? '+' : ''}
       {changePercent}%
-      <span className="text-muted-foreground font-normal">{vsLabel ?? t('comparison.vsPrevious')}</span>
+      <span className="text-muted-foreground font-sans font-normal">{vsLabel ?? t('comparison.vsPrevious')}</span>
     </span>
   );
 }

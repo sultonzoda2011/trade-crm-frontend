@@ -54,7 +54,7 @@ export function UserNav() {
       <Link
         to="/profile"
         aria-label={tc('header.profile')}
-        className="glass-control flex size-11 items-center justify-center rounded-full transition-transform outline-none active:scale-95">
+        className="glass-control flex size-11 items-center justify-center rounded-full transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] outline-none active:scale-[0.97] active:opacity-70">
         <Avatar className="size-9">
           {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}
           <AvatarFallback className="bg-primary/10 text-primary text-2xs font-bold">{initials}</AvatarFallback>
@@ -68,7 +68,7 @@ export function UserNav() {
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
-            <button className="glass-control group flex h-11 items-center gap-2 rounded-full p-1 transition-transform outline-none active:scale-95 sm:pr-2.5 md:h-10" />
+            <button className="glass-control group flex h-11 items-center gap-2 rounded-full p-1 transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] outline-none active:scale-[0.97] active:opacity-70 sm:pr-2.5 md:h-10" />
           }>
           <Avatar className="size-9">
             {userInfo?.image ? <AvatarImage src={userInfo.image} alt={userInfo.name} className="object-cover" /> : null}

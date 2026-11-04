@@ -10,16 +10,17 @@ interface RevealProps {
 }
 
 const STAGGER_STEP = 0.045;
-const STAGGER_CAP = 11;
+const STAGGER_CAP = 5;
+const EASE_OUT: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 /** Fade-and-rise entrance for a card or row. Respects "reduce motion" through the app-wide `MotionConfig`. */
 export function Reveal({ children, index = 0, className }: RevealProps) {
   return (
     <motion.div
       className={cn('h-full', className)}
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut', delay: Math.min(index, STAGGER_CAP) * STAGGER_STEP }}>
+      transition={{ duration: 0.28, ease: EASE_OUT, delay: Math.min(index, STAGGER_CAP) * STAGGER_STEP }}>
       {children}
     </motion.div>
   );

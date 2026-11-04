@@ -50,13 +50,6 @@ function PartRow({ icon: Icon, tone, label, value }: PartRowProps) {
 
 /**
  * The total of the sellers below: how much they sold together and what it is made of.
- *
- * It is the Overview's "Sold" figure counted from the per-seller rows — cash and
- * card sales net of returns, plus goods given on credit — so with no seller picked
- * the two tabs show the same number. The comparison follows the Overview's rule: a
- * window of a day or two is not compared with the previous one (a partial "today"
- * set against a whole yesterday always looks like a collapse), the previous figure
- * is shown instead.
  */
 export function SellersSummary({ totals, period, comparable }: SellersSummaryProps) {
   const { t } = useTranslation('dashboard');
@@ -80,15 +73,13 @@ export function SellersSummary({ totals, period, comparable }: SellersSummaryPro
   }
 
   return (
-    <Panel className="overflow-hidden" bodyClassName="p-0">
+    <Panel title={t(`summary.sold.${period}`)} className="overflow-hidden" bodyClassName="p-0">
       <div className="px-4 pt-4 pb-3">
-        <p className="text-muted-foreground text-sm font-medium">{t(`summary.sold.${period}`)}</p>
-
-        <p className="mt-1 font-mono text-3xl leading-tight font-bold break-words tabular-nums md:text-4xl">
+        <p className="font-mono text-3xl leading-tight font-semibold tracking-tight break-words tabular-nums md:text-4xl">
           <AnimatedNumber value={totals.sold} format={fmtTJS} />
         </p>
 
-        <p className="mt-1.5 min-h-5 text-sm">{trend}</p>
+        <p className="mt-1 min-h-5 text-sm">{trend}</p>
       </div>
 
       <div className="divide-border border-border divide-y border-t">

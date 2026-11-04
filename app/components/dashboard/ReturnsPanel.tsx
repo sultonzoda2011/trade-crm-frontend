@@ -18,32 +18,22 @@ const percent = (rate: number) => `${Math.round(rate * 1000) / 10}%`;
 /**
  * What customers bring back, over the same window the rest of the Inventory tab
  * uses, for the whole shop.
- *
- * The comparison with the previous window is shown only when there was something
- * to compare with: "nothing to compare" under every figure is noise, and a
- * percentage from zero is not a percentage. Returns are bad news, so the
- * indicator is inverted (more returns is red).
- *
- * The amount is the backend's figure and is priced at list price, so with
- * discounts it can differ a little from what was actually refunded.
  */
 export function ReturnsPanel({ returns }: ReturnsPanelProps) {
   const { t } = useTranslation('dashboard');
 
   if (returns.units === 0) {
     return (
-      <Panel title={t('returnsCard.title')} bodyClassName="space-y-1">
-        <p className="text-muted-foreground text-sm leading-snug">{t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
-        <DashboardSuccessState title={t('returnsCard.none')} className="pt-2" />
+      <Panel title={t('returnsCard.title')} bodyClassName="p-4">
+        <DashboardSuccessState title={t('returnsCard.none')} hint={t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })} />
       </Panel>
     );
   }
 
   return (
     <Panel title={t('returnsCard.title')} bodyClassName="overflow-hidden p-0">
-      <div className="px-4 pt-3 pb-3">
-        <p className="text-muted-foreground text-sm leading-snug">{t('returnsCard.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
-        <p className="mt-2 font-mono text-3xl leading-tight font-bold tabular-nums break-words md:text-4xl">
+      <div className="px-4 pt-4 pb-3">
+        <p className="font-mono text-3xl leading-tight font-semibold tracking-tight tabular-nums break-words md:text-4xl">
           {fmtTJS(returns.amount)}
         </p>
         <p className="text-muted-foreground mt-1 text-sm leading-snug">
@@ -79,7 +69,7 @@ export function ReturnsPanel({ returns }: ReturnsPanelProps) {
                 <span className="text-destructive shrink-0 font-mono text-base font-semibold tabular-nums">
                   {percent(product.returnRate)}
                 </span>
-                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
+                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
               </Link>
             ))}
           </div>
