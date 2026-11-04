@@ -14,7 +14,7 @@
   "loadError": "Маълумот бор карда нашуд",
   "charts": {
     "revenue": "Фурӯхта шуд",
-    "transactions": "Фурӯшҳо"
+    "transactions": "Чекҳо"
   },
   "comparison": {
     "vsPrevious": "нисбат ба давраи гузашта",
@@ -179,7 +179,7 @@
   },
   "details": {
     "title": "Тафсилот",
-    "operations": "Фурӯшҳо",
+    "operations": "Чекҳо",
     "operationsHint": "Фурӯш {{sales}}, ба қарз {{debts}}",
     "averageCheck": "Чеки миёна",
     "discounts": "Тахфифҳо",

@@ -17,14 +17,14 @@
   "payError": "Error processing payment",
   "notFound": "Sale not found",
   "type": {
-    "DEBT": "Debt",
+    "DEBT": "On credit",
     "SALE": "Sale",
     "REFUND": "Refund"
   },
   "paymentType": {
     "CASH": "Cash",
     "CARD": "Card",
-    "CREDIT": "Credit"
+    "CREDIT": "On credit"
   },
   "status": {
     "ACTIVE": "Active",

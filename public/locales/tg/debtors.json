@@ -60,7 +60,7 @@
   },
   "actions": {
     "pay": "Пардохти қарз",
-    "payLoadError": "Фурӯшҳо бор карда нашуд",
+    "payLoadError": "Фурӯш бор карда нашуд",
     "giveDebt": "Қарз додан",
     "acceptPayment": "Қабули пардохт",
     "pickDebtTitle": "Кадом қарзро пардохт мекунед?",

@@ -191,7 +191,7 @@
   },
   "details": {
     "title": "Подробности",
-    "operations": "Операций",
+    "operations": "Чеков",
     "operationsHint": "Продаж {{sales}}, в долг {{debts}}",
     "averageCheck": "Средний чек",
     "discounts": "Скидки",

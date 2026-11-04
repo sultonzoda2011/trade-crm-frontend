@@ -14,7 +14,7 @@
   "loadError": "Failed to load data",
   "charts": {
     "revenue": "Sold",
-    "transactions": "Sales"
+    "transactions": "Receipts"
   },
   "comparison": {
     "vsPrevious": "vs previous period",
@@ -179,7 +179,7 @@
   },
   "details": {
     "title": "Details",
-    "operations": "Operations",
+    "operations": "Receipts",
     "operationsHint": "{{sales}} sales, {{debts}} on credit",
     "averageCheck": "Average sale",
     "discounts": "Discounts",

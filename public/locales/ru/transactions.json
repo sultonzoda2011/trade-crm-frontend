@@ -24,7 +24,7 @@
   "paymentType": {
     "CASH": "Наличные",
     "CARD": "Карта",
-    "CREDIT": "Кредит"
+    "CREDIT": "В долг"
   },
   "status": {
     "ACTIVE": "Активна",

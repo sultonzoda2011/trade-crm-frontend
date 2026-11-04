@@ -17,14 +17,14 @@
   "payError": "Хатогӣ ҳангоми қабули маблағ",
   "notFound": "Фурӯш ёфт нашуд",
   "type": {
-    "DEBT": "Қарз",
+    "DEBT": "Ба қарз",
     "SALE": "Фурӯш",
     "REFUND": "Бозгардонӣ"
   },
   "paymentType": {
     "CASH": "Нақд",
     "CARD": "Корт",
-    "CREDIT": "Кредит"
+    "CREDIT": "Ба қарз"
   },
   "status": {
     "ACTIVE": "Фаъол",
