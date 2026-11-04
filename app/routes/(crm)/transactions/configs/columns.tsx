@@ -1,6 +1,6 @@
 import { type ColumnDef, createColumnHelper } from '@tanstack/react-table';
 import type { TFunction } from 'i18next';
-import { CreditCard } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 import { Link } from 'react-router';
 import { EntityActionsCell } from '~/components/shared/EntityActionsCell';
 import { PendingBadge, PendingEffectsNote } from '~/components/shared/PendingBadge';
@@ -35,7 +35,7 @@ function TransactionActionsCell({ row, t }: { row: TransactionRow; t: TFunction 
       leadingActions={
         can(Action.TRANSACTIONS_EDIT) ? (
           <IconActionButton
-            icon={<CreditCard className="size-3.5" />}
+            icon={<Banknote className="size-3.5" />}
             label={t('pay')}
             outline
             disabled={row.remainingAmount <= 0}

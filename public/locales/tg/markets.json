@@ -11,7 +11,7 @@
     "ownerId": "Соҳиб",
     "products": "Молҳо",
     "debtors": "Қарздорҳо",
-    "transactions": "Муомилотҳо",
+    "transactions": "Фурӯшҳо",
     "employees": "Кормандон",
     "phone": "Телефон",
     "workHours": "Вақти кор",
@@ -23,7 +23,7 @@
   "hasUsers": "Корбар дорад",
   "viewProducts": "Молҳои бозор",
   "viewDebtors": "Қарздорони бозор",
-  "viewTransactions": "Муомилотҳои бозор",
+  "viewTransactions": "Фурӯшҳои бозор",
   "soldCount": "Фурӯхта шуд {{count}}",
   "actions": {
     "areYouSure": "Шумо мутмаин ҳастед, ки мехоҳед ин бозорро нест кунед?",

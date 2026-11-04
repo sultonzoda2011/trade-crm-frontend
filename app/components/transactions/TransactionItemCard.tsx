@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { AlertTriangle, ChevronRight, Package, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { AlertTriangle, ChevronRight, Package, Percent, Trash2 } from 'lucide-react';
 import type { Control } from 'react-hook-form';
 import { QuantityStepper } from '~/components/transactions/QuantityStepper';
 import { FormInput } from '~/components/ui/form/FormInput';
@@ -121,7 +121,7 @@ export function TransactionItemCard({
           type="button"
           onClick={onExpandAdjustments}
           className="text-primary active:bg-muted/70 flex min-h-11 w-full items-center gap-2 px-4 text-sm font-medium">
-          <SlidersHorizontal className="size-4" />
+          <Percent className="size-4" />
           {t('fields.discount')} / {t('fields.markup')}
         </button>
       )}

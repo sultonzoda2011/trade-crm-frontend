@@ -38,7 +38,7 @@
   "summary": {
     "categories": "Категорий",
     "products": "Товаров",
-    "stockValue": "Остаток, сумма"
+    "stockValue": "Товар на сумму"
   },
   "uncategorized": {
     "title": "Без категории",

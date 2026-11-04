@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { CreditCard, Share2, StickyNote, Store, Undo2 } from 'lucide-react';
+import { Banknote, Share2, StickyNote, Store, Undo2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router';
@@ -172,7 +172,7 @@ export default function TransactionDetailPage() {
               <>
                 {canPay && (
                   <Button size="lg" onClick={() => payModal.open(transaction)}>
-                    <CreditCard data-icon="inline-start" />
+                    <Banknote data-icon="inline-start" />
                     {t('pay')}
                   </Button>
                 )}

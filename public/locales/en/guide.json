@@ -20,10 +20,10 @@
     },
     "dashboard": {
       "title": "Dashboard and reports",
-      "summary": "The home screen for owners and administrators: Overview, Inventory, Products, and Sellers."
+      "summary": "The home screen for owners and administrators: Overview, Stock, Products, and Sellers."
     },
     "transactions": {
-      "title": "Sales and transactions",
+      "title": "Sales and debts",
       "summary": "Recording cash/card sales and debts, quick due dates, payments, and partial or full refunds."
     },
     "debtors": {
@@ -32,7 +32,7 @@
     },
     "products": {
       "title": "Products and categories",
-      "summary": "The catalog, quick stock addition (\"Restock\"), stock health badges, units, and categories."
+      "summary": "The catalog, quick stock addition (“Add stock”), stock health badges, units, and categories."
     },
     "markets": {
       "title": "Markets",

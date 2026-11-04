@@ -3,12 +3,12 @@
   "create": "Create debtor",
   "notFound": "Debtor not found",
   "fields": {
-    "transactions": "Transactions",
+    "transactions": "Sales",
     "note": "Note",
     "notePlaceholder": "Row 5, stall 12; call after lunch",
-    "creditLimit": "Debt limit",
+    "creditLimit": "Max debt",
     "creditLimitPlaceholder": "No limit",
-    "defaultDueDays": "Default repayment term, days",
+    "defaultDueDays": "Days to pay back by default",
     "defaultDueDaysPlaceholder": "e.g. 14",
     "moreOptions": "More options"
   },
@@ -20,7 +20,7 @@
   "totalDebtAmount": "Total debt amount",
   "totalDebt": "Current debt",
   "risk": {
-    "title": "Repayment risk",
+    "title": "Risk they won’t pay back",
     "whyTitle": "Why this risk",
     "HIGH": "High risk",
     "MEDIUM": "Medium risk",
@@ -38,7 +38,7 @@
     "repayment.partial": "Repays less than half of what is lent",
     "activity.noPayments": "Has never made a payment",
     "activity.stale": "No payments for a long time",
-    "score": "Risk score: {{count}} of 13",
+    "score": "Risk points: {{count}} of 13",
     "maxScore": "max"
   },
   "profile": {
@@ -46,8 +46,8 @@
     "overdueAmount": "Overdue",
     "overdueCount": "Overdue debts",
     "totalIssued": "Total lent",
-    "totalCollected": "Total collected",
-    "repaymentRate": "Repayment rate",
+    "totalCollected": "Paid back so far",
+    "repaymentRate": "Share paid back, %",
     "maxDaysOverdue": "Longest overdue",
     "daysSinceLastPayment": "Days since last payment",
     "lastPaymentAt": "Last payment",
@@ -55,12 +55,12 @@
     "never": "never",
     "daysUnit": "{{count}} days",
     "lastPurchaseAt": "Last purchase",
-    "creditLimit": "Debt limit",
-    "overLimit": "Above the limit of {{limit}}"
+    "creditLimit": "Max debt",
+    "overLimit": "Over the max of {{limit}}"
   },
   "actions": {
     "pay": "Repay debt",
-    "payLoadError": "Failed to load the transaction",
+    "payLoadError": "Failed to load the sale",
     "giveDebt": "Give on credit",
     "acceptPayment": "Accept payment",
     "pickDebtTitle": "Which debt to pay?",
@@ -92,8 +92,8 @@
     "empty": "No operations yet",
     "debt": "Debt given",
     "payment": "Payment",
-    "balance": "Balance {{amount}}",
-    "due": "due {{date}}",
+    "balance": "Left {{amount}}",
+    "due": "pay back by {{date}}",
     "showMore": "Show more"
   },
   "contact": {
@@ -115,7 +115,7 @@
     "submit": "Accept",
     "exceeds": "Amount is greater than the debt",
     "success": "Payment accepted: {{amount}}",
-    "left": "Debt left: {{amount}}",
+    "left": "Still owes: {{amount}}",
     "allPaid": "Debt closed"
   }
 }

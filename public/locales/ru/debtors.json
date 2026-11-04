@@ -7,12 +7,12 @@
   "totalDebtAmount": "Общая сумма долга",
   "totalDebt": "Текущий долг",
   "fields": {
-    "transactions": "Транзакции",
+    "transactions": "Продажи",
     "note": "Заметка",
     "notePlaceholder": "Ряд 5, лавка 12; звонить после обеда",
-    "creditLimit": "Лимит долга",
-    "creditLimitPlaceholder": "Без лимита",
-    "defaultDueDays": "Срок возврата по умолчанию, дней",
+    "creditLimit": "Максимум в долг",
+    "creditLimitPlaceholder": "Без ограничений",
+    "defaultDueDays": "Сколько дней давать на возврат",
     "defaultDueDaysPlaceholder": "Например, 14",
     "moreOptions": "Дополнительно"
   },
@@ -20,7 +20,7 @@
     "debtors": "Должники"
   },
   "risk": {
-    "title": "Риск невозврата",
+    "title": "Риск, что не вернёт",
     "whyTitle": "Почему такой риск",
     "HIGH": "Высокий риск",
     "MEDIUM": "Средний риск",
@@ -38,16 +38,16 @@
     "repayment.partial": "Возвращает меньше половины взятых сумм",
     "activity.noPayments": "Ни разу не платил",
     "activity.stale": "Давно не было платежей",
-    "score": "Риск-счёт: {{count}} из 13",
+    "score": "Баллов риска: {{count}} из 13",
     "maxScore": "максимум"
   },
   "profile": {
     "activeDebtCount": "Активных долгов",
     "overdueAmount": "Просрочено",
     "overdueCount": "Просроченных долгов",
-    "totalIssued": "Выдано всего",
-    "totalCollected": "Собрано платежами",
-    "repaymentRate": "Доля возврата",
+    "totalIssued": "Дали в долг всего",
+    "totalCollected": "Уже вернул",
+    "repaymentRate": "Сколько вернул, %",
     "maxDaysOverdue": "Максимальная просрочка",
     "daysSinceLastPayment": "Дней без платежа",
     "lastPaymentAt": "Последний платёж",
@@ -55,12 +55,12 @@
     "never": "не было",
     "daysUnit": "{{count}} дн.",
     "lastPurchaseAt": "Последняя покупка",
-    "creditLimit": "Лимит долга",
-    "overLimit": "Выше лимита {{limit}}"
+    "creditLimit": "Максимум в долг",
+    "overLimit": "Больше максимума {{limit}}"
   },
   "actions": {
     "pay": "Погасить долг",
-    "payLoadError": "Не удалось загрузить транзакцию",
+    "payLoadError": "Не удалось загрузить продажу",
     "giveDebt": "Дать долг",
     "acceptPayment": "Принять оплату",
     "pickDebtTitle": "Какой долг погашаем?",
@@ -90,10 +90,10 @@
   "ledger": {
     "title": "История долга",
     "empty": "Операций пока нет",
-    "debt": "Выдан долг",
+    "debt": "Дали в долг",
     "payment": "Оплата",
-    "balance": "Остаток {{amount}}",
-    "due": "срок {{date}}",
+    "balance": "Осталось {{amount}}",
+    "due": "вернуть до {{date}}",
     "showMore": "Показать ещё"
   },
   "contact": {
@@ -115,7 +115,7 @@
     "submit": "Принять",
     "exceeds": "Сумма больше долга",
     "success": "Оплата принята: {{amount}}",
-    "left": "Остаток долга: {{amount}}",
+    "left": "Ещё должен: {{amount}}",
     "allPaid": "Долг закрыт"
   }
 }

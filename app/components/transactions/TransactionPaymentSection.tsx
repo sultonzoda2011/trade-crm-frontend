@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
-import { Banknote, CreditCard, HandCoins, UserPlus } from 'lucide-react';
+import { Coins, CreditCard, HandCoins, UserPlus } from 'lucide-react';
 import type { Control } from 'react-hook-form';
 import { InitialAvatar } from '~/components/shared/InitialAvatar';
 import { ListGroup, ListRow } from '~/components/shared/ListGroup';
@@ -48,7 +48,7 @@ export function TransactionPaymentSection({
           value={paymentMethod}
           onChange={onPaymentMethodChange}
           options={[
-            { value: 'CASH', label: t('paymentType.CASH'), icon: Banknote },
+            { value: 'CASH', label: t('paymentType.CASH'), icon: Coins },
             { value: 'CARD', label: t('paymentType.CARD'), icon: CreditCard },
             { value: 'DEBT', label: t('type.DEBT'), icon: HandCoins },
           ]}

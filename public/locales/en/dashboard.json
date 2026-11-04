@@ -2,7 +2,7 @@
   "title": "Dashboard",
   "tabs": {
     "overview": "Overview",
-    "inventory": "Inventory",
+    "inventory": "Stock",
     "products": "Products",
     "sellers": "Sellers"
   },
@@ -14,7 +14,7 @@
   "loadError": "Failed to load data",
   "charts": {
     "revenue": "Sold",
-    "transactions": "Transactions"
+    "transactions": "Receipts"
   },
   "comparison": {
     "vsPrevious": "vs previous period",
@@ -60,7 +60,7 @@
       "hintSeller": "This seller's cash and card sales. Debt payments are tracked for the whole shop, so they aren't included"
     },
     "credit": {
-      "title": "Given on credit",
+      "title": "Sold on credit",
       "hint_one": "{{count}} sale on credit",
       "hint_other": "{{count}} sales on credit",
       "none": "No sales on credit"
@@ -179,7 +179,7 @@
   },
   "details": {
     "title": "Details",
-    "operations": "Operations",
+    "operations": "Receipts",
     "operationsHint": "{{sales}} sales, {{debts}} on credit",
     "averageCheck": "Average sale",
     "discounts": "Discounts",
@@ -213,8 +213,8 @@
   },
   "categoryCard": {
     "title": "Sales by category",
-    "hint": "Revenue by product group ({{vs}})",
-    "noCompare": "Revenue by product group for the selected period",
+    "hint": "Sales by product group ({{vs}})",
+    "noCompare": "Sales by product group for the selected period",
     "noPrevious": "No sales in the previous period",
     "share": "{{percent}}% of sales",
     "shareLow": "under 1% of sales",
@@ -224,12 +224,12 @@
   "productsTab": {
     "topRevenue": {
       "title": "Earned the most money",
-      "hint": "Revenue for the period net of returns"
+      "hint": "Sales for the period, without returns"
     },
     "topUnits": {
       "title": "Bought most often",
       "hint": "Units sold in the period net of returns",
-      "note": "Among the 20 products with the highest revenue for the period"
+      "note": "Among the 20 products that brought in the most money in the period"
     },
     "brought": "earned {{amount}}",
     "share": "{{percent}}% of all sales",
@@ -249,7 +249,7 @@
       "noSales_other": "{{count}} products had no sales this period",
       "reorderList_one": "{{count}} product needs reordering",
       "reorderList_other": "{{count}} products need reordering",
-      "recordProduct": "{{name}} is the top seller: {{count}} transactions this period, a record among products"
+      "recordProduct": "{{name}} is the top seller: {{count}} sales this period"
     },
     "sales": {
       "none": "No sales this period",

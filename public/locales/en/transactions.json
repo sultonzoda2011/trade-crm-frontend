@@ -1,30 +1,30 @@
 {
-  "title": "Transactions",
+  "title": "Sales",
   "listSubtitle": "Sales, debts and refunds",
-  "create": "Create Transaction",
-  "createSuccess": "Transaction created successfully",
-  "createQueuedOffline": "No connection — transaction saved and will be sent automatically once you're back online",
+  "create": "Create Sale",
+  "createSuccess": "Sale created successfully",
+  "createQueuedOffline": "No connection — sale saved and will be sent automatically once you're back online",
   "payQueuedOffline": "No connection — payment saved and will be sent automatically once you're back online",
   "refundQueuedOffline": "No connection — refund saved and will be sent automatically once you're back online",
-  "createError": "Error creating transaction",
+  "createError": "Error creating sale",
   "createSubtitle": "Record a sale or register a debt",
   "details": "Details",
   "paymentSummary": "Payment summary",
-  "creditedHint": "The amount is credited immediately — the transaction is marked as paid.",
-  "debtHint": "The full amount is recorded as a debt: 0 credited, everything stays as remaining.",
+  "creditedHint": "The money is received right away — the sale is marked as paid.",
+  "debtHint": "The full amount is recorded as a debt: nothing is paid now, everything stays owed.",
   "pay": "Make Payment",
   "paySuccess": "Payment processed successfully",
   "payError": "Error processing payment",
-  "notFound": "Transaction not found",
+  "notFound": "Sale not found",
   "type": {
-    "DEBT": "Debt",
+    "DEBT": "On credit",
     "SALE": "Sale",
     "REFUND": "Refund"
   },
   "paymentType": {
     "CASH": "Cash",
     "CARD": "Card",
-    "CREDIT": "Credit"
+    "CREDIT": "On credit"
   },
   "status": {
     "ACTIVE": "Active",
@@ -39,7 +39,7 @@
     "type": "Type",
     "paymentType": "Payment Method",
     "totalAmount": "Total Amount",
-    "remainingAmount": "Remaining",
+    "remainingAmount": "Still to pay",
     "createdBy": "Created By",
     "items": "Items",
     "payments": "Payment History",
@@ -49,12 +49,12 @@
     "note": "Note",
     "addItem": "Add Product",
     "markup": "Markup",
-    "credited": "Credited",
+    "credited": "Received now",
     "dueDate": "Due date",
     "pickProduct": "Choose product",
     "pickDebtor": "Choose debtor",
     "newDebtor": "New debtor",
-    "advance": "Advance",
+    "advance": "Paid now",
     "notePlaceholder": "E.g. will pick up tomorrow",
     "refundReason": "Refund reason"
   },
@@ -73,7 +73,7 @@
   "refund": "Refund",
   "refundSuccess": "Refund created successfully",
   "refundError": "Failed to create refund",
-  "refundConfirmTitle": "Refund transaction",
+  "refundConfirmTitle": "Refund sale",
   "refundConfirmDescription": "This action cannot be undone. Continue?",
   "refundModal": {
     "title": "Return items",
@@ -94,18 +94,18 @@
     "refundTotal": "Refund total",
     "submit": "Create refund",
     "nothingSelected": "Select at least one line",
-    "nothingRefundable": "Nothing left to return on this transaction",
+    "nothingRefundable": "Nothing left to return on this sale",
     "exceedsRefundable": "More than refundable: max {{max}}",
     "notPositive": "Quantity must be greater than zero"
   },
   "detail": {
-    "summary": "Transaction summary",
+    "summary": "Sale summary",
     "timeline": "Timeline",
     "refundHistory": "Refund history",
     "originalSale": "Original sale",
     "refundOfHint": "This is a refund of the original sale",
     "noRefunds": "No refunds yet",
-    "openTransaction": "Open transaction",
+    "openTransaction": "Open sale",
     "timelineEvent": {
       "SALE": "Sale",
       "DEBT": "Debt issued",
@@ -119,7 +119,7 @@
     "totalAmount": "Sale amount",
     "discountAmount": "Discount",
     "paidAmount": "Paid",
-    "remainingAmount": "Remaining",
+    "remainingAmount": "Still to pay",
     "refundedAmount": "Refunded",
     "netAmount": "Net amount"
   },
@@ -132,18 +132,18 @@
   "inStock": "In stock",
   "payModal": {
     "half": "Half",
-    "full": "Full remaining"
+    "full": "Everything left"
   },
   "submitSale": "Complete sale",
   "submitDebt": "Record debt",
-  "createQueuedSlow": "Weak connection — transaction saved and sending in the background",
+  "createQueuedSlow": "Weak connection — sale saved and sending in the background",
   "payQueuedSlow": "Weak connection — payment saved and sending in the background",
   "refundQueuedSlow": "Weak connection — refund saved and sending in the background",
-  "debtorNotCreated": "The debtor was not created on the server — make sure they are in the list and create the transaction again",
+  "debtorNotCreated": "The debtor was not created on the server — make sure they are in the list and create the sale again",
   "actions": {
-    "areYouSure": "Are you sure you want to delete this transaction?",
-    "deleteSuccess": "Transaction deleted",
-    "deleteError": "Error deleting transaction"
+    "areYouSure": "Are you sure you want to delete this sale?",
+    "deleteSuccess": "Sale deleted",
+    "deleteError": "Error deleting sale"
   },
   "list": {
     "quick": {

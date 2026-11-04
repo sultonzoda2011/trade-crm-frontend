@@ -27,7 +27,7 @@
     "system": "Как в системе"
   },
   "notSet": "Не указан",
-  "sync": "Синхронизация",
+  "sync": "Офлайн-режим",
   "guide": "Справка",
   "passwordNever": "Не менялся",
   "passwordHintChanged": "Пароль менялся {{date}}.",

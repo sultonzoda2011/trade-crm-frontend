@@ -1,5 +1,5 @@
 {
-  "title": "Sync",
+  "title": "Offline mode",
   "status": {
     "online": "Online",
     "offline": "Offline",
@@ -8,7 +8,7 @@
     "failed": "{{count}} failed"
   },
   "header": {
-    "open": "Open sync",
+    "open": "Open offline mode",
     "syncAll": "Download all data for offline use"
   },
   "hero": {
@@ -27,7 +27,7 @@
     "failedCount": "Not downloaded: {{count}}"
   },
   "button": {
-    "syncAll": "Sync everything",
+    "syncAll": "Download all",
     "upToDate": "Everything up to date",
     "cancel": "Stop",
     "noNetwork": "No connection"
@@ -37,7 +37,7 @@
     "empty": "The queue is empty — everything has been sent.",
     "footer": "Operations go out one at a time, in the order they were created. Resending is safe: the server never performs the same operation twice.",
     "kind": {
-      "create": "New transaction",
+      "create": "New sale",
       "pay": "Payment",
       "refund": "Refund",
       "debtor": "New debtor"
@@ -63,7 +63,7 @@
     "sendNow": "Send now",
     "removeTitle": "Remove from the queue?",
     "removeDescription": "The operation will not be sent to the server.",
-    "removeMaybeSent": "The operation will not be sent. But the connection dropped and the server may have already accepted it — check the transactions list."
+    "removeMaybeSent": "The operation will not be sent. But the connection dropped and the server may have already accepted it — check the sales list."
   },
   "data": {
     "title": "Saved on this device",
@@ -73,7 +73,7 @@
     "notLoaded": "not loaded",
     "refresh": "Refresh: {{entity}}",
     "entities": {
-      "transactions": "Transactions",
+      "transactions": "Sales",
       "debtors": "Debtors",
       "products": "Products",
       "categories": "Categories",
@@ -85,7 +85,7 @@
   "storage": {
     "title": "Device storage",
     "size": "Used",
-    "rows": "Saved requests",
+    "rows": "Saved records",
     "clear": "Clear saved data",
     "clearTitle": "Clear saved data?",
     "clearDescription": "Downloaded data will be removed from this device — without internet the screens will be empty until you sync again. The queue of unsent operations is kept.",
@@ -94,14 +94,14 @@
   },
   "toast": {
     "complete": "Everything is downloaded — you can work offline",
-    "partial": "Not everything was downloaded — tap “Sync everything” again",
+    "partial": "Not everything was downloaded — tap “Download all” again",
     "throttled": "The server limited requests. What was downloaded is saved — try again in a minute",
-    "cancelled": "Sync stopped. What was downloaded is saved",
-    "offline": "No internet — sync is unavailable"
+    "cancelled": "Download stopped. What was downloaded is saved",
+    "offline": "No internet — downloading is unavailable"
   },
   "offlineHint": {
     "text": "This data hasn't been downloaded yet.",
-    "action": "Open sync"
+    "action": "Open offline mode"
   },
   "logout": {
     "title": "Sign out?",

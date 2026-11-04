@@ -34,7 +34,7 @@
     "noSales": "No sales in this period",
     "toPay": "to pay out",
     "overpaid": "overpaid",
-    "nothingToPay": "nothing owed",
+    "nothingToPay": "nothing to pay out",
     "earned": "earned {{amount}}",
     "sold": "Sold {{amount}}"
   },
@@ -81,7 +81,7 @@
     "sales": "Sales"
   },
   "feed": {
-    "title": "Balance feed",
+    "title": "Balance history",
     "earned": "Markup from a sale",
     "refunded": "Refund",
     "payout": "Payout",

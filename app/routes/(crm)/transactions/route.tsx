@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Row } from '@tanstack/react-table';
-import { CreditCard, Plus } from 'lucide-react';
+import { Banknote, Plus } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router';
@@ -180,7 +180,7 @@ export default function TransactionsPage() {
                   {
                     key: 'pay',
                     label: t('pay'),
-                    icon: CreditCard,
+                    icon: Banknote,
                     tone: 'success',
                     onSelect: () => payModal.open(tx),
                   },

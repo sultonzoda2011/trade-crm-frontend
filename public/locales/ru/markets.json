@@ -11,7 +11,7 @@
     "ownerId": "Владелец",
     "products": "Товары",
     "debtors": "Должники",
-    "transactions": "Транзакции",
+    "transactions": "Продажи",
     "employees": "Сотрудники",
     "phone": "Телефон",
     "workHours": "Часы работы",
@@ -23,7 +23,7 @@
   "hasUsers": "Есть пользователи",
   "viewProducts": "Товары рынка",
   "viewDebtors": "Должники рынка",
-  "viewTransactions": "Транзакции рынка",
+  "viewTransactions": "Продажи рынка",
   "soldCount": "Продано {{count}}",
   "actions": {
     "areYouSure": "Вы уверены, что хотите удалить этот рынок?",
@@ -44,7 +44,7 @@
     "rules": "Правила рынка"
   },
   "money": {
-    "totalDebt": "Общий долг",
+    "totalDebt": "Всего в долгах",
     "debtorsWithDebt": "Должников: {{count}}",
     "overdue": "Просрочено",
     "stockValue": "Стоимость склада",
