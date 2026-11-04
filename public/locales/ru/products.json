@@ -20,7 +20,7 @@
     "notePlaceholder": "Например: поставка от Рустама"
   },
   "fields": {
-    "transactionItems": "Транзакции",
+    "transactionItems": "Продажи",
     "unit": "Единица измерения",
     "category": "Категория",
     "lowStockThreshold": "Порог низкого остатка",
@@ -81,7 +81,7 @@
     "netUnitsSold": "Продано за вычетом возвратов",
     "revenue": "Выручка за период",
     "returnRate": "Доля возвратов",
-    "transactionCount": "Транзакций",
+    "transactionCount": "Продаж",
     "avgDailySales": "Продаж в день",
     "daysOfStock": "Запас в днях",
     "recommendedQuantity": "Рекомендуем заказать",

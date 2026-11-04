@@ -7,7 +7,7 @@
   "totalDebtAmount": "Общая сумма долга",
   "totalDebt": "Текущий долг",
   "fields": {
-    "transactions": "Транзакции",
+    "transactions": "Продажи",
     "note": "Заметка",
     "notePlaceholder": "Ряд 5, лавка 12; звонить после обеда",
     "creditLimit": "Лимит долга",
@@ -60,7 +60,7 @@
   },
   "actions": {
     "pay": "Погасить долг",
-    "payLoadError": "Не удалось загрузить транзакцию",
+    "payLoadError": "Не удалось загрузить продажу",
     "giveDebt": "Дать долг",
     "acceptPayment": "Принять оплату",
     "pickDebtTitle": "Какой долг погашаем?",

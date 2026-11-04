@@ -3,7 +3,7 @@
   "create": "Create debtor",
   "notFound": "Debtor not found",
   "fields": {
-    "transactions": "Transactions",
+    "transactions": "Sales",
     "note": "Note",
     "notePlaceholder": "Row 5, stall 12; call after lunch",
     "creditLimit": "Debt limit",
@@ -60,7 +60,7 @@
   },
   "actions": {
     "pay": "Repay debt",
-    "payLoadError": "Failed to load the transaction",
+    "payLoadError": "Failed to load the sale",
     "giveDebt": "Give on credit",
     "acceptPayment": "Accept payment",
     "pickDebtTitle": "Which debt to pay?",

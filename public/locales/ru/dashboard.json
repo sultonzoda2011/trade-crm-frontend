@@ -14,7 +14,7 @@
   "loadError": "Не удалось загрузить данные",
   "charts": {
     "revenue": "Продано",
-    "transactions": "Операции"
+    "transactions": "Чеки"
   },
   "comparison": {
     "vsPrevious": "к прошлому периоду",
@@ -271,7 +271,7 @@
       "reorderList_few": "Пора заказать {{count}} товара",
       "reorderList_many": "Пора заказать {{count}} товаров",
       "reorderList_other": "Пора заказать {{count}} товаров",
-      "recordProduct": "{{name}} — лидер продаж: {{count}} транзакций за период, рекорд среди товаров"
+      "recordProduct": "{{name}} — лидер продаж: {{count}} продаж за период, рекорд среди товаров"
     },
     "sales": {
       "none": "За период нет ни одной продажи",

@@ -11,7 +11,7 @@
     "ownerId": "Owner",
     "products": "Products",
     "debtors": "Debtors",
-    "transactions": "Transactions",
+    "transactions": "Sales",
     "employees": "Employees",
     "phone": "Phone",
     "workHours": "Working hours",
@@ -23,7 +23,7 @@
   "hasUsers": "Has users",
   "viewProducts": "Market Products",
   "viewDebtors": "Market Debtors",
-  "viewTransactions": "Market Transactions",
+  "viewTransactions": "Market Sales",
   "soldCount": "Sold {{count}}",
   "actions": {
     "areYouSure": "Are you sure you want to delete this market?",

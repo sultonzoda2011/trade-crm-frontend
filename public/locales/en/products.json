@@ -20,7 +20,7 @@
     "notePlaceholder": "E.g. delivery from Rustam"
   },
   "fields": {
-    "transactionItems": "Transactions",
+    "transactionItems": "Sales",
     "unit": "Unit",
     "category": "Category",
     "lowStockThreshold": "Low stock threshold",
@@ -81,7 +81,7 @@
     "netUnitsSold": "Units sold net of returns",
     "revenue": "Revenue for the period",
     "returnRate": "Return rate",
-    "transactionCount": "Transactions",
+    "transactionCount": "Sales",
     "avgDailySales": "Units per day",
     "daysOfStock": "Days of stock",
     "recommendedQuantity": "Recommended order",

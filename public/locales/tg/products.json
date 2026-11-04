@@ -20,7 +20,7 @@
     "notePlaceholder": "Масалан: аз ҷониби Рустам"
   },
   "fields": {
-    "transactionItems": "Муомилотҳо",
+    "transactionItems": "Фурӯшҳо",
     "unit": "Воҳиди ченак",
     "category": "Категория",
     "lowStockThreshold": "Ҳадди пасти захира",
@@ -81,7 +81,7 @@
     "netUnitsSold": "Фурӯш бе бозгардонидан",
     "revenue": "Даромади давра",
     "returnRate": "Ҳиссаи бозгардонида",
-    "transactionCount": "Муомилотҳо",
+    "transactionCount": "Фурӯшҳо",
     "avgDailySales": "Фурӯш дар як рӯз",
     "daysOfStock": "Захира бо рӯз",
     "recommendedQuantity": "Тавсия барои фармоиш",

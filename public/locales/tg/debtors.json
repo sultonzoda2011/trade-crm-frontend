@@ -6,7 +6,7 @@
   "overdue": "Қарзи мӯҳлаташ гузашта дорад",
   "totalDebtAmount": "Маблағи умумии қарз",
   "fields": {
-    "transactions": "Муомилотҳо",
+    "transactions": "Фурӯшҳо",
     "note": "Ёддошт",
     "notePlaceholder": "Қатори 5, дӯкони 12; баъд аз хӯрок занг занед",
     "creditLimit": "Лимити қарз",
@@ -60,7 +60,7 @@
   },
   "actions": {
     "pay": "Пардохти қарз",
-    "payLoadError": "Муомилот бор карда нашуд",
+    "payLoadError": "Фурӯшҳо бор карда нашуд",
     "giveDebt": "Қарз додан",
     "acceptPayment": "Қабули пардохт",
     "pickDebtTitle": "Кадом қарзро пардохт мекунед?",

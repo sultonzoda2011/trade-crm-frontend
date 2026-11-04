@@ -14,7 +14,7 @@
   "loadError": "Failed to load data",
   "charts": {
     "revenue": "Sold",
-    "transactions": "Transactions"
+    "transactions": "Sales"
   },
   "comparison": {
     "vsPrevious": "vs previous period",
@@ -249,7 +249,7 @@
       "noSales_other": "{{count}} products had no sales this period",
       "reorderList_one": "{{count}} product needs reordering",
       "reorderList_other": "{{count}} products need reordering",
-      "recordProduct": "{{name}} is the top seller: {{count}} transactions this period, a record among products"
+      "recordProduct": "{{name}} is the top seller: {{count}} sales this period, a record among products"
     },
     "sales": {
       "none": "No sales this period",

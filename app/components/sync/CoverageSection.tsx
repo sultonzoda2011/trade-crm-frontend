@@ -4,7 +4,7 @@ import {
   HandCoins,
   Loader2,
   Package,
-  ReceiptText,
+  ShoppingCart,
   RefreshCw,
   Store,
   Tag,
@@ -22,7 +22,7 @@ import { cn } from '~/lib/utils';
 import { useSyncStore } from '~/store/useSyncStore';
 
 const ICONS: Record<Entity, LucideIcon> = {
-  transactions: ReceiptText,
+  transactions: ShoppingCart,
   debtors: HandCoins,
   products: Package,
   categories: Tag,
