@@ -28,12 +28,7 @@ export default function CreateDebtorPage() {
     <EntityFormPage
       formId="create-debtor-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/debtors' },
-        { label: t('create') },
-      ]}
-      cancelTo="/debtors"
+      trail={{ kind: 'create', section: 'debtors', title: t('create') }}
       submitLabel={t('actions.save')}
       isPending={isPending}
       onFormSubmit={handleSubmit(onSubmit)}>

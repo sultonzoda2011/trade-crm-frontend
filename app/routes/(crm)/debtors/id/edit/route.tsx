@@ -69,13 +69,7 @@ export default function EditDebtorPage() {
     <EntityFormPage
       formId="edit-debtor-page-form"
       title={t('actions.edit')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/debtors' },
-        { label: debtor.name, link: `/debtors/${id}` },
-        { label: t('actions.edit') },
-      ]}
-      cancelTo={`/debtors/${id}`}
+      trail={{ kind: 'edit', section: 'debtors', id, name: debtor.name }}
       submitLabel={t('actions.save')}
       isPending={isPending}
       onFormSubmit={handleSubmit((request) => mutate(request))}>

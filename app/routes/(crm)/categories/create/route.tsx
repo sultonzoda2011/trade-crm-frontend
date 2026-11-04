@@ -31,12 +31,7 @@ export default function CreateCategoryPage() {
     <EntityFormPage
       formId="create-category-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/categories' },
-        { label: t('create') },
-      ]}
-      cancelTo="/categories"
+      trail={{ kind: 'create', section: 'categories', title: t('create') }}
       submitLabel={t('actions.create', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

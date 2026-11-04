@@ -71,7 +71,7 @@ export default function CategoryDetailPage() {
     );
   }
 
-  const listState = { fromPath: location.pathname, fromName: category.name };
+  const listState = { fromPath: location.pathname + location.search };
   const filterState = { fromCategoryId: category.id, fromCategoryName: category.name };
   const productsCount = category._count.products;
   const archivedCount = category.archivedCount ?? 0;
@@ -82,11 +82,7 @@ export default function CategoryDetailPage() {
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-          { label: category.name },
-        ]}
+        trail={{ kind: 'view', section: 'categories', name: category.name }}
         hero={
           <DetailHero
             avatar={<CategoryTile image={category.image} color={category.color} className="size-14 rounded-2xl" />}
@@ -106,9 +102,7 @@ export default function CategoryDetailPage() {
             stats={[
               { label: t('fields.productsCount'), value: productsCount, to: '/products', state: filterState },
               ...(stockValue !== undefined ? [{ label: t('fields.stockValue'), value: fmtNum(stockValue) }] : []),
-              ...(outCount > 0
-                ? [{ label: t('detail.outOfStock'), value: outCount, tone: 'danger' as const }]
-                : []),
+              ...(outCount > 0 ? [{ label: t('detail.outOfStock'), value: outCount, tone: 'danger' as const }] : []),
               ...(lowCount > 0 ? [{ label: t('detail.lowStock'), value: lowCount, tone: 'warning' as const }] : []),
             ]}
           />

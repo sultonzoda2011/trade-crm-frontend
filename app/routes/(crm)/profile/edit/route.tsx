@@ -47,8 +47,7 @@ export default function EditProfilePage() {
   }, [profile, reset]);
 
   const email = watch('email');
-  const emailChanged =
-    !!profile && (email ?? '').trim().toLowerCase() !== profile.email.trim().toLowerCase();
+  const emailChanged = !!profile && (email ?? '').trim().toLowerCase() !== profile.email.trim().toLowerCase();
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (data: UpdateProfileSchema) => {
@@ -102,12 +101,7 @@ export default function EditProfilePage() {
     <EntityFormPage
       formId="edit-profile-page-form"
       title={t('editTitle')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' },
-        { label: t('title'), link: '/profile' },
-        { label: t('editTitle') },
-      ]}
-      cancelTo="/profile"
+      trail={{ kind: 'profile-sub', title: t('editTitle') }}
       submitLabel={t('actions.save', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit((data) => mutate(data))}

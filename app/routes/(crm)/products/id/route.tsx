@@ -96,7 +96,7 @@ export default function ProductDetailPage() {
   const hasHistory = product._count.transactionItems > 0;
   const canManageStock = can(Action.PRODUCTS_STOCK);
   const stockTarget = { id: product.id, name: product.name, quantity: product.quantity, unit: product.unit };
-  const marketState = { fromPath: location.pathname, fromName: t('title') };
+  const marketState = { fromPath: location.pathname + location.search };
   const unit = t(`unit.${product.unit}`);
 
   // health (7 состояний) — основной сигнал состояния товара, он уже покрывает
@@ -116,11 +116,7 @@ export default function ProductDetailPage() {
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          { link: location.state?.fromPath, label: location.state?.fromName || t('title') },
-          { label: product.name },
-        ]}
+        trail={{ kind: 'view', section: 'products', name: product.name }}
         hero={
           <DetailHero
             avatar={<EntityAvatar name={product.name} image={product.image} icon={Package} shape="square" size="lg" />}

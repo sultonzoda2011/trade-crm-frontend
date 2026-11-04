@@ -41,12 +41,7 @@ export default function CreateUserPage() {
     <EntityFormPage
       formId="create-user-page-form"
       title={t('create')}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/users' },
-        { label: t('create') },
-      ]}
-      cancelTo="/users"
+      trail={{ kind: 'create', section: 'users', title: t('create') }}
       submitLabel={t('actions.create', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

@@ -81,7 +81,7 @@ export default function UserDetailPage() {
     );
   }
 
-  const fromState = { fromPath: location.pathname, fromName: user.name };
+  const fromState = { fromPath: location.pathname + location.search };
   const roleConfig = ROLE_CONFIG[user.role];
   const roleLabel = roleConfig ? roleConfig.label(t) : user.role;
   // Владелец — по списку своих магазинов; у продавца магазин один, он лежит в `user.market`.
@@ -90,14 +90,7 @@ export default function UserDetailPage() {
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          {
-            link: location.state?.fromPath,
-            label: location.state?.fromName || t('navigation.users', { ns: 'common' }),
-          },
-          { label: user.name },
-        ]}
+        trail={{ kind: 'view', section: 'users', name: user.name }}
         hero={
           <DetailHero
             avatar={<EntityAvatar name={user.name} image={user.image} size="lg" />}

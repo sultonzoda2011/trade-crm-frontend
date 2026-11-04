@@ -62,13 +62,7 @@ export default function EditCategoryPage() {
     <EntityFormPage
       formId="edit-category-page-form"
       title={t('actions.edit', { ns: 'common' })}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/categories' },
-        { label: category.name, link: `/categories/${id}` },
-        { label: t('actions.edit', { ns: 'common' }) },
-      ]}
-      cancelTo={`/categories/${id}`}
+      trail={{ kind: 'edit', section: 'categories', id, name: category.name }}
       submitLabel={t('actions.save', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

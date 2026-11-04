@@ -56,7 +56,7 @@ export default function UsersPage() {
       filterConfig={filterConfig}
       getRowLink={(row) => ({
         to: `/users/${row.original.id}`,
-        state: { fromPath: location.pathname, fromName: t('title') },
+        state: { fromPath: location.pathname + location.search },
       })}
       getSwipeActions={(row) =>
         buildRowSwipeActions({
@@ -64,7 +64,7 @@ export default function UsersPage() {
           onEdit: can(Action.USERS_EDIT)
             ? () =>
                 navigate(`/users/${row.original.id}/edit`, {
-                  state: { fromPath: location.pathname, fromName: t('title') },
+                  state: { fromPath: location.pathname + location.search },
                 })
             : undefined,
           onDelete:

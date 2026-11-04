@@ -68,13 +68,7 @@ export default function EditSellerPage() {
     <EntityFormPage
       formId="edit-seller-page-form"
       title={t('actions.edit', { ns: 'common' })}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/sellers' },
-        { label: seller.name, link: `/sellers/${id}` },
-        { label: t('actions.edit', { ns: 'common' }) },
-      ]}
-      cancelTo={`/sellers/${id}`}
+      trail={{ kind: 'edit', section: 'sellers', id, name: seller.name }}
       submitLabel={t('actions.save', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

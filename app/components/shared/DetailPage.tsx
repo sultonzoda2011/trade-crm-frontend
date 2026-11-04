@@ -1,9 +1,11 @@
 import { Children, Fragment, isValidElement, type ReactNode } from 'react';
 import { Reveal } from '~/components/shared/Reveal';
 import BreadCrumbs from '~/components/ui/bread-crumb';
+import type { Trail } from '~/hooks/useCrumbs';
 
 interface DetailPageProps {
-  crumbs: { label: string; link?: string }[];
+  /** Где страница: хлебные крошки собираются из него. */
+  trail: Trail;
   /** Карточка-шапка (`DetailHero`) — всегда на всю ширину над колонками. */
   hero: ReactNode;
   /** Боковая колонка на широком экране; на телефоне идёт сразу под основной. */
@@ -28,13 +30,13 @@ function sections(node: ReactNode): ReactNode[] {
  * один ритм: на телефоне одна колонка с равными промежутками, на десктопе —
  * основная колонка и боковая. Секции появляются каскадом, как строки списка.
  */
-export function DetailPage({ crumbs, hero, aside, children }: DetailPageProps) {
+export function DetailPage({ trail, hero, aside, children }: DetailPageProps) {
   const main = sections(children);
   const side = sections(aside);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-4 pb-6">
-      <BreadCrumbs items={crumbs} />
+      <BreadCrumbs trail={trail} />
 
       <Reveal>{hero}</Reveal>
 

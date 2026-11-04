@@ -103,7 +103,7 @@ export default function ProductsPage() {
         syncUrl
         getRowLink={(row) => ({
           to: `/products/${row.original.id}`,
-          state: { fromPath: location.pathname, fromName: t('title') },
+          state: { fromPath: location.pathname + location.search },
         })}
         getSwipeActions={(row): SwipeAction[] => {
           const product = row.original;
@@ -132,7 +132,7 @@ export default function ProductsPage() {
               tone: 'primary',
               onSelect: () =>
                 navigate(`/products/${product.id}/edit`, {
-                  state: { fromPath: location.pathname, fromName: t('title') },
+                  state: { fromPath: location.pathname + location.search },
                 }),
             });
           }

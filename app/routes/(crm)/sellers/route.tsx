@@ -82,7 +82,7 @@ export default function SellersPage() {
             ? { to: '/profile' }
             : {
                 to: `/sellers/${row.original.id}`,
-                state: { fromPath: location.pathname, fromName: t('title') },
+                state: { fromPath: location.pathname + location.search },
               }
         }
         getSwipeActions={(row) => {
@@ -125,7 +125,7 @@ export default function SellersPage() {
             onEdit: can(Action.SELLERS_EDIT)
               ? () =>
                   navigate(`/sellers/${seller.id}/edit`, {
-                    state: { fromPath: location.pathname, fromName: t('title') },
+                    state: { fromPath: location.pathname + location.search },
                   })
               : undefined,
           });

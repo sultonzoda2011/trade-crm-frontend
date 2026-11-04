@@ -214,7 +214,10 @@ export default function DashboardOverviewPage() {
 
       <Reveal index={comparable ? 3 : 2} className="grid items-start gap-6 lg:grid-cols-12">
         <div className="lg:col-span-6">
-          <BestSellers products={overview.products.topByRevenue} detailsTo={`/dashboard/products?${searchParams.toString()}`} />
+          <BestSellers
+            products={overview.products.topByRevenue}
+            detailsTo={`/dashboard/products?${searchParams.toString()}`}
+          />
         </div>
         <div className="lg:col-span-6">
           {comparable ? (
@@ -257,7 +260,7 @@ export default function DashboardOverviewPage() {
                     tx={tx}
                     t={t}
                     to={`/transactions/${tx.id}`}
-                    state={{ fromPath: location.pathname, fromName: t('title') }}
+                    state={{ fromPath: location.pathname + location.search }}
                   />
                 ))}
               </div>

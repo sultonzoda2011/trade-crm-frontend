@@ -72,13 +72,7 @@ export default function EditUserPage() {
     <EntityFormPage
       formId="edit-user-page-form"
       title={t('actions.edit', { ns: 'common' })}
-      breadcrumbs={[
-        { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-        { label: t('title'), link: '/users' },
-        { label: user.name, link: `/users/${id}` },
-        { label: t('actions.edit', { ns: 'common' }) },
-      ]}
-      cancelTo={`/users/${id}`}
+      trail={{ kind: 'edit', section: 'users', id, name: user.name }}
       submitLabel={t('actions.save', { ns: 'common' })}
       isPending={isPending}
       onFormSubmit={handleSubmit(submit)}

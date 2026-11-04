@@ -1,15 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  BookOpen,
-  CloudDownload,
-  KeyRound,
-  LogOut,
-  Monitor,
-  Moon,
-  Pencil,
-  Store,
-  Sun,
-} from 'lucide-react';
+import { BookOpen, CloudDownload, KeyRound, LogOut, Monitor, Moon, Pencil, Store, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -69,11 +59,11 @@ export default function ProfilePage() {
   }
 
   const roleConfig = ROLE_CONFIG[profile.role];
-  const fromState = { fromPath: '/profile', fromName: t('title') };
+  const fromState = { fromPath: '/profile' };
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-6 md:max-w-xl">
-      <BreadCrumbs items={[{ label: t('navigation.dashboard', { ns: 'common' }), link: '/dashboard' }, { label: t('title') }]} />
+      <BreadCrumbs trail={{ kind: 'profile' }} />
 
       {/* Человек: фото, имя, роль. Тап по карточке — к редактированию. */}
       <section className="bg-card relative overflow-hidden rounded-2xl p-5 text-center">

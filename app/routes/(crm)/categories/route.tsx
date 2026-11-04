@@ -61,7 +61,7 @@ export default function CategoriesPage() {
         syncUrl
         getRowLink={(row) => ({
           to: `/categories/${row.original.id}`,
-          state: { fromPath: location.pathname, fromName: t('title') },
+          state: { fromPath: location.pathname + location.search },
         })}
         getSwipeActions={(row) =>
           buildRowSwipeActions({
@@ -69,7 +69,7 @@ export default function CategoriesPage() {
             onEdit: can(Action.CATEGORIES_MANAGE)
               ? () =>
                   navigate(`/categories/${row.original.id}/edit`, {
-                    state: { fromPath: location.pathname, fromName: t('title') },
+                    state: { fromPath: location.pathname + location.search },
                   })
               : undefined,
             onDelete: can(Action.CATEGORIES_MANAGE)

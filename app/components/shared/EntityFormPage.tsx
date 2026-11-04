@@ -1,17 +1,16 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
 import { Panel } from '~/components/layout/Panel';
-import BreadCrumbs from '~/components/ui/bread-crumb';
+import BreadCrumbs, { useBackTo } from '~/components/ui/bread-crumb';
+import { type Trail, useTrail } from '~/hooks/useCrumbs';
 import { Button } from '~/components/ui/button';
 
 interface EntityFormPageProps {
   /** `id` of the `<form>`, so the header and sticky-bar buttons can submit it. */
   formId: string;
   title: string;
-  breadcrumbs: { label: string; link?: string }[];
-  /** Where Cancel and the failed-submit escape hatch lead. */
-  cancelTo: string;
+  /** Где страница: хлебные крошки, а «назад» и «Отмена» ведут на родителя из них. */
+  trail: Trail;
   submitLabel: string;
   isPending: boolean;
   /** Beyond the in-flight guard — e.g. a form that is still untouched. */
@@ -61,8 +60,7 @@ function SubmitButton({
 export function EntityFormPage({
   formId,
   title,
-  breadcrumbs,
-  cancelTo,
+  trail,
   submitLabel,
   isPending,
   submitDisabled,
@@ -71,18 +69,24 @@ export function EntityFormPage({
   children,
 }: EntityFormPageProps) {
   const { t } = useTranslation('common');
-  const navigate = useNavigate();
+  // «Назад» и «Отмена» — один и тот же переход к родителю.
+  const crumbs = useTrail(trail);
+  const goBack = useBackTo(crumbs.length >= 2 ? crumbs[crumbs.length - 2] : null);
 
-  const form = <form id={formId} onSubmit={onFormSubmit} className="space-y-4">{children}</form>;
+  const form = (
+    <form id={formId} onSubmit={onFormSubmit} className="space-y-4">
+      {children}
+    </form>
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col space-y-5 pb-32 md:max-w-none md:pb-8">
-      <BreadCrumbs items={breadcrumbs} />
+      <BreadCrumbs trail={trail} />
 
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         <div className="hidden gap-3 md:flex">
-          <Button variant="outline" onClick={() => navigate(cancelTo)}>
+          <Button variant="outline" onClick={goBack}>
             {t('actions.cancel')}
           </Button>
           <SubmitButton

@@ -152,19 +152,12 @@ export default function DebtorDetailPage() {
     }
   };
 
-  const fromState = { fromPath: location.pathname, fromName: debtor.name };
+  const fromState = { fromPath: location.pathname + location.search };
 
   return (
     <>
       <DetailPage
-        crumbs={[
-          { label: t('navigation.dashboard', { ns: 'common' }), link: '/' },
-          {
-            link: location.state?.fromPath ?? '/debtors',
-            label: location.state?.fromName || t('navigation.debtors', { ns: 'common' }),
-          },
-          { label: debtor.name },
-        ]}
+        trail={{ kind: 'view', section: 'debtors', name: debtor.name }}
         hero={
           <DetailHero
             avatar={<EntityAvatar name={debtor.name} size="lg" />}
@@ -227,7 +220,7 @@ export default function DebtorDetailPage() {
                             debtorId: debtor.id,
                             debtorName: debtor.name,
                             defaultDueDays: debtor.defaultDueDays ?? undefined,
-                            fromPath: location.pathname,
+                            fromPath: location.pathname + location.search,
                           }}
                         />
                       }>

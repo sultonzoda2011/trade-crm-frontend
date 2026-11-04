@@ -57,7 +57,7 @@ export default function MarketsPage() {
       syncUrl
       getRowLink={(row) => ({
         to: `/markets/${row.original.id}`,
-        state: { fromPath: location.pathname, fromName: t('title') },
+        state: { fromPath: location.pathname + location.search },
       })}
       getSwipeActions={(row) =>
         buildRowSwipeActions({
@@ -65,7 +65,7 @@ export default function MarketsPage() {
           onEdit: can(Action.MARKETS_EDIT)
             ? () =>
                 navigate(`/markets/${row.original.id}/edit`, {
-                  state: { fromPath: location.pathname, fromName: t('title') },
+                  state: { fromPath: location.pathname + location.search },
                 })
             : undefined,
           onDelete: can(Action.MARKETS_DELETE) ? () => deleteModal.open(row.original.id) : undefined,
