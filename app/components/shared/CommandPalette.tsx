@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftRight, Loader2, Package } from 'lucide-react';
+import { Loader2, Package, ShoppingCart } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -88,7 +88,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           label: t('palette.createTransaction'),
           url: '/transactions/create',
           action: Action.TRANSACTIONS_CREATE,
-          icon: ArrowLeftRight,
+          icon: ShoppingCart,
         },
       ].filter((item) => can(item.action)),
     [t, role]

@@ -11,7 +11,7 @@
     "categories": "Categories",
     "sellersReport": "Sellers report",
     "guide": "Guide",
-    "sync": "Sync",
+    "sync": "Offline mode",
     "groups": {
       "control": "Administration",
       "main": "Main",
@@ -214,11 +214,11 @@
     "year": "Year"
   },
   "sync": {
-    "synced": "Synced",
-    "syncing": "Syncing…",
-    "offlinePending": "Offline · {{count}} pending",
+    "synced": "All sent",
+    "syncing": "Sending…",
+    "offlinePending": "Offline · {{count}} queued",
     "offlineNoPending": "Offline",
-    "error": "Sync error · {{count}} pending"
+    "error": "Not sent · {{count}} queued"
   },
   "pageNotes": {
     "dashboard": "How the day went: what was sold, how much money came in, who owes you and what is running low. Switch the period at the top.",

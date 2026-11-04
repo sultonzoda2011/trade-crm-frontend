@@ -10,8 +10,8 @@
   "createSubtitle": "Record a sale or register a debt",
   "details": "Details",
   "paymentSummary": "Payment summary",
-  "creditedHint": "The amount is credited immediately — the sale is marked as paid.",
-  "debtHint": "The full amount is recorded as a debt: 0 credited, everything stays as remaining.",
+  "creditedHint": "The money is received right away — the sale is marked as paid.",
+  "debtHint": "The full amount is recorded as a debt: nothing is paid now, everything stays owed.",
   "pay": "Make Payment",
   "paySuccess": "Payment processed successfully",
   "payError": "Error processing payment",
@@ -39,7 +39,7 @@
     "type": "Type",
     "paymentType": "Payment Method",
     "totalAmount": "Total Amount",
-    "remainingAmount": "Remaining",
+    "remainingAmount": "Still to pay",
     "createdBy": "Created By",
     "items": "Items",
     "payments": "Payment History",
@@ -49,12 +49,12 @@
     "note": "Note",
     "addItem": "Add Product",
     "markup": "Markup",
-    "credited": "Credited",
+    "credited": "Received now",
     "dueDate": "Due date",
     "pickProduct": "Choose product",
     "pickDebtor": "Choose debtor",
     "newDebtor": "New debtor",
-    "advance": "Advance",
+    "advance": "Paid now",
     "notePlaceholder": "E.g. will pick up tomorrow",
     "refundReason": "Refund reason"
   },
@@ -119,7 +119,7 @@
     "totalAmount": "Sale amount",
     "discountAmount": "Discount",
     "paidAmount": "Paid",
-    "remainingAmount": "Remaining",
+    "remainingAmount": "Still to pay",
     "refundedAmount": "Refunded",
     "netAmount": "Net amount"
   },
@@ -132,7 +132,7 @@
   "inStock": "In stock",
   "payModal": {
     "half": "Half",
-    "full": "Full remaining"
+    "full": "Everything left"
   },
   "submitSale": "Complete sale",
   "submitDebt": "Record debt",

@@ -44,7 +44,7 @@
     "rules": "Правила рынка"
   },
   "money": {
-    "totalDebt": "Общий долг",
+    "totalDebt": "Всего в долгах",
     "debtorsWithDebt": "Должников: {{count}}",
     "overdue": "Просрочено",
     "stockValue": "Стоимость склада",

@@ -1,5 +1,5 @@
 {
-  "title": "Sync",
+  "title": "Offline mode",
   "status": {
     "online": "Online",
     "offline": "Offline",
@@ -8,7 +8,7 @@
     "failed": "{{count}} failed"
   },
   "header": {
-    "open": "Open sync",
+    "open": "Open offline mode",
     "syncAll": "Download all data for offline use"
   },
   "hero": {
@@ -27,7 +27,7 @@
     "failedCount": "Not downloaded: {{count}}"
   },
   "button": {
-    "syncAll": "Sync everything",
+    "syncAll": "Download all",
     "upToDate": "Everything up to date",
     "cancel": "Stop",
     "noNetwork": "No connection"
@@ -85,7 +85,7 @@
   "storage": {
     "title": "Device storage",
     "size": "Used",
-    "rows": "Saved requests",
+    "rows": "Saved records",
     "clear": "Clear saved data",
     "clearTitle": "Clear saved data?",
     "clearDescription": "Downloaded data will be removed from this device — without internet the screens will be empty until you sync again. The queue of unsent operations is kept.",
@@ -94,14 +94,14 @@
   },
   "toast": {
     "complete": "Everything is downloaded — you can work offline",
-    "partial": "Not everything was downloaded — tap “Sync everything” again",
+    "partial": "Not everything was downloaded — tap “Download all” again",
     "throttled": "The server limited requests. What was downloaded is saved — try again in a minute",
-    "cancelled": "Sync stopped. What was downloaded is saved",
-    "offline": "No internet — sync is unavailable"
+    "cancelled": "Download stopped. What was downloaded is saved",
+    "offline": "No internet — downloading is unavailable"
   },
   "offlineHint": {
     "text": "This data hasn't been downloaded yet.",
-    "action": "Open sync"
+    "action": "Open offline mode"
   },
   "logout": {
     "title": "Sign out?",

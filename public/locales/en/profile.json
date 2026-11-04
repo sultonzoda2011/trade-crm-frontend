@@ -27,7 +27,7 @@
     "system": "System"
   },
   "notSet": "Not set",
-  "sync": "Sync",
+  "sync": "Offline mode",
   "guide": "Guide",
   "passwordNever": "Never changed",
   "passwordHintChanged": "Password last changed on {{date}}.",
