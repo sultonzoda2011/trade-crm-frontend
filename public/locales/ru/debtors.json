@@ -12,7 +12,7 @@
     "notePlaceholder": "Ряд 5, лавка 12; звонить после обеда",
     "creditLimit": "Лимит долга",
     "creditLimitPlaceholder": "Без лимита",
-    "defaultDueDays": "Срок возврата по умолчанию, дней",
+    "defaultDueDays": "Срок возврата по умолчанию (дней)",
     "defaultDueDaysPlaceholder": "Например, 14",
     "moreOptions": "Дополнительно"
   },

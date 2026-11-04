@@ -10,7 +10,7 @@
   "fields": {
     "productsCount": "Товаров",
     "color": "Цвет",
-    "stockValue": "Остаток на сумму"
+    "stockValue": "Стоимость остатка"
   },
   "filters": {
     "search": "Поиск по категориям",
@@ -38,7 +38,7 @@
   "summary": {
     "categories": "Категорий",
     "products": "Товаров",
-    "stockValue": "Остаток, сумма"
+    "stockValue": "Стоимость товара на складе"
   },
   "uncategorized": {
     "title": "Без категории",

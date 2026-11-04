@@ -2,7 +2,7 @@
   "emailInvalid": "Введите корректный email",
   "required": "Обязательное поле",
   "stringMax": "Максимум {{count}} символов",
-  "stringMin": "Минимум символов: {{count}}",
+  "stringMin": "Минимум {{count}} символов",
   "emailRequired": "Введите email",
   "nameRequired": "Введите имя",
   "passwordMismatch": "Пароли не совпадают",
