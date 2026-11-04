@@ -19,8 +19,8 @@ import type { DashboardFilters } from './layout';
 
 function ProductsSkeleton() {
   return (
-    <div className="space-y-5 md:space-y-6">
-      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         <Skeleton className="h-96 rounded-2xl" />
         <Skeleton className="h-96 rounded-2xl" />
       </div>
@@ -76,10 +76,10 @@ export default function DashboardProductsPage() {
   const unitsNote = topByRevenue.length >= 5 ? t('productsTab.topUnits.note') : undefined;
 
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="space-y-6">
       {!isOnline && (
         <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
-          <WifiOff className="size-4 shrink-0" />
+          <WifiOff strokeWidth={1.5} className="size-4 shrink-0" />
           {t('offline.dataFrom', { time: formatDate(new Date(query.dataUpdatedAt), true) })}
         </p>
       )}
@@ -87,22 +87,18 @@ export default function DashboardProductsPage() {
       {!hasSales ? (
         <Reveal index={0}>
           <Panel bodyClassName="space-y-1">
-            <p className="text-base leading-snug font-semibold">{t(`summary.noSales.${period}`)}</p>
+            <p className="text-base leading-snug font-medium">{t(`summary.noSales.${period}`)}</p>
             <p className="text-muted-foreground text-sm leading-snug">{t('productsTab.emptyHint')}</p>
           </Panel>
         </Reveal>
       ) : (
         <>
-          <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-            <Reveal index={0}>
-              <ProductLeaders metric="revenue" products={topByRevenue} totalRevenue={totalRevenue} />
-            </Reveal>
-            <Reveal index={1}>
-              <ProductLeaders metric="units" products={topByUnits} totalRevenue={totalRevenue} note={unitsNote} />
-            </Reveal>
-          </div>
+          <Reveal index={0} className="grid items-start gap-6 lg:grid-cols-2">
+            <ProductLeaders metric="revenue" products={topByRevenue} totalRevenue={totalRevenue} />
+            <ProductLeaders metric="units" products={topByUnits} totalRevenue={totalRevenue} note={unitsNote} />
+          </Reveal>
 
-          <Reveal index={2}>
+          <Reveal index={1}>
             <CategoryBreakdown
               categories={overview.categories}
               period={period}

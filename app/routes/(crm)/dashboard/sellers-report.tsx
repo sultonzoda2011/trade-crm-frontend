@@ -24,8 +24,8 @@ import type { DashboardFilters } from './layout';
 
 function SellersSkeleton() {
   return (
-    <div className="space-y-5 md:space-y-6">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <Skeleton className="h-60 rounded-2xl" />
         <Skeleton className="h-80 rounded-2xl" />
       </div>
@@ -89,10 +89,10 @@ export default function SellersReportPage() {
   const linkState = { fromPath: `${location.pathname}${location.search}`, fromName: t('title') };
 
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="space-y-6">
       {!isOnline && (
         <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
-          <WifiOff className="size-4 shrink-0" />
+          <WifiOff strokeWidth={1.5} className="size-4 shrink-0" />
           {t('offline.dataFrom', { time: formatDate(new Date(query.dataUpdatedAt), true) })}
         </p>
       )}
@@ -100,25 +100,21 @@ export default function SellersReportPage() {
       {rows.length === 0 ? (
         <Reveal index={0}>
           <Panel bodyClassName="space-y-1">
-            <p className="text-base leading-snug font-semibold">{t(`summary.noSales.${period}`)}</p>
+            <p className="text-base leading-snug font-medium">{t(`summary.noSales.${period}`)}</p>
             <p className="text-muted-foreground text-sm leading-snug">{t('sellersTab.emptyHint')}</p>
           </Panel>
         </Reveal>
       ) : (
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-6">
-          <Reveal index={0}>
-            <SellersSummary totals={totals} period={period} comparable={comparable} />
-          </Reveal>
-          <Reveal index={1}>
-            <SellersRanking
-              rows={rows}
-              totalSold={totals.sold}
-              comparable={comparable}
-              getLink={(seller) => sellerRowLink(seller, viewer)}
-              linkState={linkState}
-            />
-          </Reveal>
-        </div>
+        <Reveal index={0} className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+          <SellersSummary totals={totals} period={period} comparable={comparable} />
+          <SellersRanking
+            rows={rows}
+            totalSold={totals.sold}
+            comparable={comparable}
+            getLink={(seller) => sellerRowLink(seller, viewer)}
+            linkState={linkState}
+          />
+        </Reveal>
       )}
     </div>
   );

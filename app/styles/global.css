@@ -960,66 +960,105 @@ span.flatpickr-weekday {
   }
 }
 
-/* ─── Glass control (iOS 26 style button/chip) ───────────────────────────────
-   Лёгкий вариант `.liquid-glass` для МАЛЕНЬКИХ элементов — кнопок и чипов:
-   такая же стеклянная заливка и блик, но тень короче, чтобы кнопка не «парила»
-   как нижняя панель. Используется как `variant="glass"` у Button и в местах,
-   где на экране нужен «стеклянный» контрол (справка в шапке, «Назад», «Изменить»
-   в шапке карточки). Блик лежит ПОД содержимым (isolation + z-index: -1). */
+/* ─── Glass control (iOS 27 Liquid Glass button/chip) ────────────────────────
+   Реализация по спецификации @ios27_design_system/tokens (WWDC 2026 pass):
+   - Ползунок прозрачности `--ios27-glass-transparency` (0 = fully tinted … 1 = ultra clear, по умолчанию 0.5)
+     масштабирует заливку и радиус размытия без хардкода opacity/blur;
+   - Приглушённое равномерное рассеивание (убран диагональный блик ::before из iOS 26);
+   - Затемнённый контур (`--ios27-glass-edge-*`, `--ios27-glass-rim-sm`) отделяет капсулу от фона;
+   - Чёткий световой ободок (`--ios27-glass-specular-*`) на кромке вместо глянцевой пелены;
+   - `prefers-reduced-transparency: reduce` перекрывает ползунок в 0 и выключает blur. */
+:root {
+  --ios27-glass-transparency: 0.5;
+  --ios27-glass-rim: rgba(0, 0, 0, 0.08);
+  --ios27-glass-rim-sm: rgba(0, 0, 0, 0.09);
+  --ios27-glass-rim-spread: 0.5px;
+  --ios27-glass-edge-width: 0.5px;
+  --ios27-glass-edge-color: rgba(0, 0, 0, 0.14);
+  --ios27-glass-specular-width: 1px;
+  --ios27-glass-specular-color: rgba(255, 255, 255, 0.85);
+  --ios27-glass-specular-bottom: rgba(255, 255, 255, 0.28);
+  --ios27-glass-inner: rgba(40, 40, 40, 0.06);
+  --ios27-glass-sm-rgb: 255, 255, 255;
+  --ios27-glass-sm-alpha: 0.5;
+  --ios27-glass-sm-overlay: rgba(245, 245, 245, 0.6);
+  --ios27-glass-sm-blur: 14px;
+  --ios27-glass-sm-shadow: 0 8px 15px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.dark {
+  --ios27-glass-rim: rgba(255, 255, 255, 0.12);
+  --ios27-glass-rim-sm: rgba(255, 255, 255, 0.14);
+  --ios27-glass-edge-color: rgba(0, 0, 0, 0.55);
+  --ios27-glass-specular-color: rgba(255, 255, 255, 0.32);
+  --ios27-glass-specular-bottom: rgba(255, 255, 255, 0.1);
+  --ios27-glass-inner: rgba(26, 26, 26, 0.28);
+  --ios27-glass-sm-rgb: 0, 0, 0;
+  --ios27-glass-sm-alpha: 0.5;
+  --ios27-glass-sm-overlay: rgba(255, 255, 255, 0.1);
+  --ios27-glass-sm-blur: 14px;
+  --ios27-glass-sm-shadow: 0 8px 15px rgba(0, 0, 0, 0.28), 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.ios27-glass-fully-tinted { --ios27-glass-transparency: 0; }
+.ios27-glass-tinted { --ios27-glass-transparency: 0.25; }
+.ios27-glass-default { --ios27-glass-transparency: 0.5; }
+.ios27-glass-clear { --ios27-glass-transparency: 0.75; }
+.ios27-glass-ultra-clear { --ios27-glass-transparency: 1; }
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .ios27-glass-fully-tinted,
+  .ios27-glass-tinted,
+  .ios27-glass-default,
+  .ios27-glass-clear,
+  .ios27-glass-ultra-clear {
+    --ios27-glass-transparency: 0;
+  }
+}
+
 @layer components {
-  .glass-control {
+  .glass-control,
+  .ios27-liquid-glass-sm {
+    --_alpha-scale: calc(1.6 - 1.1 * var(--ios27-glass-transparency, 0.5));
+    --_blur-scale: calc(0.5 + 0.8 * var(--ios27-glass-transparency, 0.5));
     position: relative;
     isolation: isolate;
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--card) 80%, transparent),
-      color-mix(in srgb, var(--card) 48%, transparent)
-    );
-    -webkit-backdrop-filter: blur(18px) saturate(190%);
-    backdrop-filter: blur(18px) saturate(190%);
+    background:
+      linear-gradient(0deg, var(--ios27-glass-sm-overlay), var(--ios27-glass-sm-overlay)),
+      rgba(var(--ios27-glass-sm-rgb), calc(var(--ios27-glass-sm-alpha) * var(--_alpha-scale)));
+    backdrop-filter: blur(calc(var(--ios27-glass-sm-blur) * var(--_blur-scale))) saturate(1.8);
+    -webkit-backdrop-filter: blur(calc(var(--ios27-glass-sm-blur) * var(--_blur-scale))) saturate(1.8);
     box-shadow:
-      0 0 0 0.5px rgb(0 0 0 / 0.09),
-      0 6px 16px -6px rgb(0 0 0 / 0.22),
-      0 1px 3px rgb(0 0 0 / 0.06),
-      inset 0 1px 0.5px rgb(255 255 255 / 0.85),
-      inset 0 -1px 0.5px rgb(255 255 255 / 0.25);
+      0 0 0 var(--ios27-glass-rim-spread, 0.5px) var(--ios27-glass-rim-sm),
+      inset 0 0 0 var(--ios27-glass-edge-width, 0.5px) var(--ios27-glass-edge-color),
+      inset 0 var(--ios27-glass-specular-width, 1px) 0 -0.5px var(--ios27-glass-specular-color),
+      inset 0 calc(-1 * var(--ios27-glass-specular-width, 1px)) 0 -0.5px var(--ios27-glass-specular-bottom),
+      inset 0 40px 10px -40px var(--ios27-glass-inner),
+      inset 0 -40px 10px -40px var(--ios27-glass-inner),
+      var(--ios27-glass-sm-shadow);
   }
 
-  .glass-control::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    pointer-events: none;
-    background: radial-gradient(120% 100% at 0% 0%, rgb(255 255 255 / 0.45), transparent 55%);
-  }
-
-  .dark .glass-control {
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--elevated) 70%, transparent),
-      color-mix(in srgb, var(--card) 40%, transparent)
-    );
+  .ios27-glass-prominent {
+    background: var(--primary);
+    color: var(--primary-foreground);
     box-shadow:
-      0 0 0 0.5px rgb(255 255 255 / 0.12),
-      0 6px 16px -6px rgb(0 0 0 / 0.6),
-      inset 0 1px 0.5px rgb(255 255 255 / 0.3),
-      inset 0 -1px 0.5px rgb(255 255 255 / 0.05);
-  }
-
-  .dark .glass-control::before {
-    background: radial-gradient(120% 100% at 0% 0%, rgb(255 255 255 / 0.14), transparent 55%);
+      0 0 0 0.5px rgba(0, 0, 0, 0.14),
+      inset 0 1px 0 -0.5px rgba(255, 255, 255, 0.45),
+      inset 0 -1px 0 -0.5px rgba(0, 0, 0, 0.18),
+      var(--ios27-glass-sm-shadow);
   }
 
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass-control {
+    .glass-control,
+    .ios27-liquid-glass-sm {
       background: color-mix(in srgb, var(--card) 96%, transparent);
     }
   }
 
   @media (prefers-reduced-transparency: reduce) {
-    .glass-control {
+    .glass-control,
+    .ios27-liquid-glass-sm {
       background: var(--card);
       -webkit-backdrop-filter: none;
       backdrop-filter: none;

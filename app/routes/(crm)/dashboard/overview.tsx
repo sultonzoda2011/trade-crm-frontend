@@ -79,14 +79,14 @@ function buildAttention(
 
 function OverviewSkeleton() {
   return (
-    <div className="space-y-5 md:space-y-6">
-      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
-        <Skeleton className="h-64 rounded-2xl" />
-        <Skeleton className="h-48 rounded-2xl" />
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-12">
+        <Skeleton className="h-64 rounded-2xl lg:col-span-7" />
+        <Skeleton className="h-48 rounded-2xl lg:col-span-5" />
       </div>
-      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
-        <Skeleton className="h-72 rounded-2xl" />
-        <Skeleton className="h-72 rounded-2xl" />
+      <div className="grid gap-6 lg:grid-cols-12">
+        <Skeleton className="h-72 rounded-2xl lg:col-span-5" />
+        <Skeleton className="h-72 rounded-2xl lg:col-span-7" />
       </div>
       <Skeleton className="h-56 rounded-2xl" />
     </div>
@@ -168,28 +168,28 @@ export default function DashboardOverviewPage() {
   const dueSoonDays = typeof dueSoonParam === 'number' ? dueSoonParam : undefined;
 
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="space-y-6">
       {!isOnline && (
         <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
-          <WifiOff className="size-4 shrink-0" />
+          <WifiOff strokeWidth={1.5} className="size-4 shrink-0" />
           {t('offline.dataFrom', { time: formatDate(new Date(overviewQuery.dataUpdatedAt), true) })}
         </p>
       )}
 
-      <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-        <Reveal index={0}>
+      <Reveal index={0} className="grid items-start gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
           <SalesSummary overview={overview} scope={scope} />
-        </Reveal>
-        <Reveal index={1}>
+        </div>
+        <div className="lg:col-span-5">
           <AttentionList insights={attention} scope={scope} />
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-        <Reveal index={2}>
+      <Reveal index={1} className="grid items-start gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
           <DebtsCard debts={overview.debts} scope={scope} dueSoonDays={dueSoonDays} />
-        </Reveal>
-        <Reveal index={3}>
+        </div>
+        <div className="lg:col-span-7">
           <StockWatch
             data={stock}
             isLoading={stockQuery.isLoading}
@@ -198,38 +198,38 @@ export default function DashboardOverviewPage() {
             onRetry={() => stockQuery.refetch()}
             sellerScoped={Boolean(sellerId)}
           />
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-        <Reveal index={4}>
-          <BestSellers products={overview.products.topByRevenue} detailsTo={`/dashboard/products?${searchParams.toString()}`} />
+      {comparable && (
+        <Reveal index={2} className="grid items-start gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <RevenueTrendChart data={overview.revenueTrend} />
+          </div>
+          <div className="lg:col-span-4">
+            <PaymentDistributionChart data={overview.paymentMix} />
+          </div>
         </Reveal>
-        <Reveal index={5}>
+      )}
+
+      <Reveal index={comparable ? 3 : 2} className="grid items-start gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-6">
+          <BestSellers products={overview.products.topByRevenue} detailsTo={`/dashboard/products?${searchParams.toString()}`} />
+        </div>
+        <div className="lg:col-span-6">
           {comparable ? (
             <SalesChanges categories={overview.categories} period={period} />
           ) : (
             <PaymentDistributionChart data={overview.paymentMix} />
           )}
-        </Reveal>
-      </div>
-
-      {comparable && (
-        <div className="grid items-start gap-5 lg:grid-cols-3 lg:gap-6">
-          <Reveal index={6} className="lg:col-span-2">
-            <RevenueTrendChart data={overview.revenueTrend} />
-          </Reveal>
-          <Reveal index={7}>
-            <PaymentDistributionChart data={overview.paymentMix} />
-          </Reveal>
         </div>
-      )}
+      </Reveal>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-        <Reveal index={8}>
+      <Reveal index={comparable ? 4 : 3} className="grid items-start gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
           <PeriodDetails overview={overview} scope={scope} />
-        </Reveal>
-        <Reveal index={9}>
+        </div>
+        <div className="lg:col-span-7">
           <Panel
             title={t('recent.title')}
             actions={
@@ -263,14 +263,14 @@ export default function DashboardOverviewPage() {
               </div>
             )}
           </Panel>
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
 
       {!user?.marketId && (
         /* ADMIN без своего рынка видит сводку по всем рынкам, поэтому
            ссылка на управление рынками имеет смысл только здесь. */
         <Button variant="ghost" size="sm" className="gap-1" render={<Link to="/markets" />}>
-          {t('allMarkets')} <ArrowRight className="size-3.5" />
+          {t('allMarkets')} <ArrowRight strokeWidth={1.5} className="size-3.5" />
         </Button>
       )}
     </div>
