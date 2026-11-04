@@ -13,11 +13,11 @@ import { formatDate } from '~/lib/format';
 
 function InventorySkeleton() {
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="space-y-6">
       <Skeleton className="h-96 rounded-2xl" />
-      <div className="grid gap-5 lg:grid-cols-2 lg:gap-6">
-        <Skeleton className="h-72 rounded-2xl" />
-        <Skeleton className="h-56 rounded-2xl" />
+      <div className="grid gap-6 lg:grid-cols-12">
+        <Skeleton className="h-72 rounded-2xl lg:col-span-7" />
+        <Skeleton className="h-56 rounded-2xl lg:col-span-5" />
       </div>
     </div>
   );
@@ -53,10 +53,10 @@ export default function DashboardInventoryPage() {
   const slowMovingDays = typeof slowMovingParam === 'number' ? slowMovingParam : undefined;
 
   return (
-    <div className="space-y-5 md:space-y-6">
+    <div className="space-y-6">
       {!isOnline && (
         <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
-          <WifiOff className="size-4 shrink-0" />
+          <WifiOff strokeWidth={1.5} className="size-4 shrink-0" />
           {t('offline.dataFrom', { time: formatDate(new Date(query.dataUpdatedAt), true) })}
         </p>
       )}
@@ -65,14 +65,14 @@ export default function DashboardInventoryPage() {
         <StockOrderList data={data} />
       </Reveal>
 
-      <div className="grid items-start gap-5 lg:grid-cols-2 lg:gap-6">
-        <Reveal index={1}>
+      <Reveal index={1} className="grid items-start gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
           <StockHealth inventory={data.inventory} slowMovingDays={slowMovingDays} />
-        </Reveal>
-        <Reveal index={2}>
+        </div>
+        <div className="lg:col-span-5">
           <ReturnsPanel returns={data.returns} />
-        </Reveal>
-      </div>
+        </div>
+      </Reveal>
     </div>
   );
 }

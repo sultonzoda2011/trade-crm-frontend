@@ -1,6 +1,6 @@
-import { CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
+import { DashboardSuccessState } from '~/components/dashboard/DashboardSuccessState';
 import { StockRow } from '~/components/dashboard/StockRow';
 import { Panel } from '~/components/layout/Panel';
 import { PanelViewAll } from '~/components/shared/PanelViewAll';
@@ -13,15 +13,6 @@ interface StockOrderListProps {
 
 /**
  * "What to order" — the full version of the Overview's short stock card.
- *
- * The backend already filtered (only products with something to order) and sorted
- * (most urgent first) the list, but caps it at ten. When more products need an
- * order than are shown, the card says so and links to the product list filtered
- * the same way, instead of implying that ten is everything.
- *
- * Every row explains itself: how much is left, how long that lasts at the pace
- * measured over the window, how fast the product sells, and how long an order
- * would last. The advice is an estimate, and the card says that too.
  */
 export function StockOrderList({ data }: StockOrderListProps) {
   const { t } = useTranslation('dashboard');
@@ -37,35 +28,31 @@ export function StockOrderList({ data }: StockOrderListProps) {
       actions={
         total > 0 ? <PanelViewAll to="/products?needsReorder=true" label={t('viewAll')} count={total} /> : undefined
       }>
-      <div className="px-4 pt-3 pb-2">
-        <p className="text-muted-foreground text-sm leading-snug">{t('stock.basis', { days: STOCK_ANALYSIS_DAYS })}</p>
-        {noSalesInWindow && (
-          <p className="text-warning mt-1 text-sm leading-snug">{t('stock.noSalesData', { days: STOCK_ANALYSIS_DAYS })}</p>
-        )}
-      </div>
+      {noSalesInWindow && (
+        <div className="px-4 pt-3 pb-2">
+          <p className="text-warning text-sm leading-snug">{t('stock.noSalesData', { days: STOCK_ANALYSIS_DAYS })}</p>
+        </div>
+      )}
 
       {rows.length === 0 ? (
-        <div className="border-border flex items-center gap-3 border-t px-4 py-4">
-          <span className="bg-success/10 text-success flex size-10 shrink-0 items-center justify-center rounded-full">
-            <CheckCircle2 className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-base leading-snug font-semibold">{t('stock.allGood')}</p>
-            <p className="text-muted-foreground text-sm leading-snug">{t('stock.allGoodHint')}</p>
-          </div>
-        </div>
+        <DashboardSuccessState
+          title={t('stock.allGood')}
+          hint={t('stock.allGoodHint')}
+          className="px-4 py-4"
+        />
       ) : (
         <>
-          <div className="divide-border border-border divide-y border-t">
+          <div className="divide-border divide-y">
             {rows.map((product) => (
               <StockRow key={product.id} product={product} detailed />
             ))}
           </div>
 
-          <div className="border-border text-muted-foreground space-y-1 border-t px-4 py-3 text-sm leading-snug">
-            {total > rows.length && <p>{t('reorderCard.shown', { shown: rows.length, total })}</p>}
-            <p>{t('stock.orderNote')}</p>
-          </div>
+          {total > rows.length && (
+            <div className="border-border text-muted-foreground border-t px-4 py-3 text-sm leading-snug">
+              <p>{t('reorderCard.shown', { shown: rows.length, total })}</p>
+            </div>
+          )}
         </>
       )}
     </Panel>

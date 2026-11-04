@@ -19,9 +19,10 @@ export function PanelViewAll({ to, state, label, count }: PanelViewAllProps) {
     <Link
       to={to}
       state={state}
-      className="text-primary relative inline-flex items-center text-sm font-medium transition-opacity before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
-      {label} ({count})
-      <ChevronRight className="-mr-1 size-4" />
+      className="text-primary relative inline-flex items-center gap-1 text-sm font-medium transition-opacity before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
+      <span>{label}</span>
+      <span className="text-muted-foreground font-mono text-xs tabular-nums">({count})</span>
+      <ChevronRight className="-mr-1 size-4" strokeWidth={1.5} />
     </Link>
   );
 }

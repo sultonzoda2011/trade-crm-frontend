@@ -17,7 +17,7 @@ const buttonVariants = cva(
         outline: "bg-muted text-foreground aria-expanded:bg-muted/80",
         ghost: "text-foreground hover:bg-muted aria-expanded:bg-muted",
         destructive: "bg-destructive/12 text-destructive",
-        // Стекло (iOS 26): плавающие контролы поверх фона — справка, «Назад», «Изменить» в шапке карточки.
+        // Стекло (iOS 27 Liquid Glass): плавающие контролы поверх фона — справка, «Назад», «Изменить» в шапке карточки.
         glass: "glass-control text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
@@ -34,8 +34,14 @@ const buttonVariants = cva(
         "icon-lg": "size-12",
       },
     },
-    // Стеклянные контролы — капсулы/круги, как в iOS 26; размер не должен сбрасывать скругление.
-    compoundVariants: [{ variant: "glass", class: "rounded-full" }],
+    // Стеклянные контролы — капсулы/круги, как в iOS 27; размер не должен сбрасывать скругление.
+    compoundVariants: [
+      {
+        variant: "glass",
+        class:
+          "rounded-full ease-[cubic-bezier(0.34,1.56,0.64,1)] active:not-aria-[haspopup]:scale-[0.97] active:not-aria-[haspopup]:opacity-70",
+      },
+    ],
     defaultVariants: {
       variant: "default",
       size: "default",

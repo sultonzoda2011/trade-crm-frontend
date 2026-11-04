@@ -9,7 +9,8 @@ interface DashboardSuccessStateProps {
 }
 
 /**
- * Единый блок «Всё в порядке» для карточек дашборда (AttentionList, DebtsCard, StockWatch, StockHealth, ReturnsPanel).
+ * The shared "all clear" block inside dashboard panels (no alerts, no debts,
+ * nothing running out, no returns, etc.).
  */
 export function DashboardSuccessState({
   title,

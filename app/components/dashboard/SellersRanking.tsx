@@ -59,13 +59,13 @@ function SellerRow({ row, max, totalSold, showShare, comparable, to, state }: Se
   if (row.debtsAmount > 0) parts.push(`${t('sellersTab.credit')} ${fmtTJS(row.debtsAmount)}`);
 
   let trend: ReactNode = null;
-  if (comparison) {
+  if (comparison && sold > 0) {
     trend =
       comparison.previous > 0 ? (
         <ComparisonIndicator comparison={comparison} className="text-sm" />
-      ) : sold > 0 ? (
+      ) : (
         <span className="text-muted-foreground">{t('sellersTab.noPrevious')}</span>
-      ) : null;
+      );
   }
 
   const body = (
@@ -94,7 +94,7 @@ function SellerRow({ row, max, totalSold, showShare, comparable, to, state }: Se
           </span>
         </span>
 
-        <span className="text-muted-foreground mt-0.5 flex flex-wrap gap-x-3 text-sm leading-snug">
+        <span className="text-muted-foreground mt-0.5 flex flex-wrap gap-x-3 text-sm leading-snug tabular-nums">
           {parts.length > 0
             ? parts.map((part) => (
                 <span key={part} className="whitespace-nowrap">
@@ -111,9 +111,9 @@ function SellerRow({ row, max, totalSold, showShare, comparable, to, state }: Se
         )}
 
         {((showShare && share !== null && sold > 0) || trend) && (
-          <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm leading-snug">
+          <span className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm leading-snug">
             {showShare && share !== null && sold > 0 && (
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground tabular-nums">
                 {share < 1 ? t('sellersTab.shareLow') : t('sellersTab.share', { percent: Math.round(share) })}
               </span>
             )}
@@ -122,13 +122,13 @@ function SellerRow({ row, max, totalSold, showShare, comparable, to, state }: Se
         )}
 
         {row.refundsAmount > 0 && (
-          <span className="text-destructive mt-1 block text-sm leading-snug">
+          <span className="text-destructive mt-1 block text-sm leading-snug tabular-nums">
             {t('sellersTab.returns', { amount: fmtTJS(row.refundsAmount) })}
           </span>
         )}
       </span>
 
-      {to && <ChevronRight className="text-muted-foreground/60 mt-3 -mr-1 size-4 shrink-0" />}
+      {to && <ChevronRight className="text-muted-foreground/60 mt-2 -mr-1 size-4 shrink-0" strokeWidth={1.5} />}
     </>
   );
 
@@ -145,14 +145,6 @@ function SellerRow({ row, max, totalSold, showShare, comparable, to, state }: Se
 
 /**
  * Who sold how much, best first.
- *
- * Every seller the backend sends is reachable: the first few are shown and the rest
- * open with "Show all" — cutting the list silently would leave shares that do not add
- * up and a total that does not match the rows. The figures are the Overview's
- * ("Sold" = cash and card sales net of returns + goods on credit), split per person.
- * A return is taken off the seller who made the sale, not whoever processed the
- * return — the hint under the title says so, otherwise a seller with returns they
- * never made would look like a mistake.
  */
 export function SellersRanking({ rows, totalSold, comparable, getLink, linkState }: SellersRankingProps) {
   const { t } = useTranslation('dashboard');
@@ -188,7 +180,7 @@ export function SellersRanking({ rows, totalSold, comparable, getLink, linkState
           aria-expanded={expanded}
           className="text-primary border-border flex min-h-12 w-full items-center justify-center gap-1 border-t px-4 text-base font-medium active:opacity-60">
           {expanded ? t('sellersTab.showLess') : t('sellersTab.showAll', { count: rows.length })}
-          {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          {expanded ? <ChevronUp className="size-4" strokeWidth={1.5} /> : <ChevronDown className="size-4" strokeWidth={1.5} />}
         </button>
       )}
     </Panel>

@@ -14,7 +14,7 @@ const BreadCrumbs = ({ items }: BreadCrumbProps) => {
   const navigate = useNavigate();
   const backItem = items.length >= 2 ? items[items.length - 2] : null;
   const backClass =
-    'glass-control text-primary -ml-1 inline-flex max-w-[75vw] min-h-11 items-center gap-0.5 rounded-full py-1 pr-4 pl-2 text-base font-medium transition-transform active:scale-95 sm:hidden';
+    'glass-control text-primary -ml-1 inline-flex max-w-[75vw] min-h-11 items-center gap-0.5 rounded-full py-1 pr-4 pl-2 text-base font-medium transition-[transform,opacity] duration-150 ease-[cubic-bezier(0.34,1.56,0.64,1)] select-none active:scale-[0.97] active:opacity-70 sm:hidden';
 
   return (
     <nav aria-label="Breadcrumb">

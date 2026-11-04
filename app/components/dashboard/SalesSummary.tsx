@@ -50,7 +50,7 @@ function SummaryRow({ icon: Icon, tone, label, hint, value, to }: SummaryRowProp
         <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">{hint}</span>
       </span>
 
-      <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
+      <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
     </Link>
   );
 }
@@ -58,18 +58,6 @@ function SummaryRow({ icon: Icon, tone, label, hint, value, to }: SummaryRowProp
 /**
  * The first answer of the evening: how much was sold, how much of it is money in
  * hand, and how much was handed out on credit.
- *
- * Three different things, kept apart on purpose:
- *  - sold      — value of goods that left the shelves, cash and credit together,
- *                net of returns (`netRevenue`);
- *  - received  — cash/card sales plus payments on older debts collected in the
- *                period. Only this is money the owner can actually count;
- *  - credit    — goods given on credit; it becomes money later, if at all.
- * sold = received-for-goods + credit, so the numbers add up on screen.
- *
- * With a seller picked, the backend still counts collected payments for the whole
- * shop, so adding them to one seller's sales would overstate the seller. In that
- * case only the seller's own cash/card sales are shown as received.
  */
 export function SalesSummary({ overview, scope }: SalesSummaryProps) {
   const { t } = useTranslation('dashboard');
@@ -112,15 +100,13 @@ export function SalesSummary({ overview, scope }: SalesSummaryProps) {
   }
 
   return (
-    <Panel className="overflow-hidden" bodyClassName="p-0">
+    <Panel title={t(`summary.sold.${period}`)} className="overflow-hidden" bodyClassName="p-0">
       <div className="px-4 pt-4 pb-3">
-        <p className="text-muted-foreground text-sm font-medium">{t(`summary.sold.${period}`)}</p>
-
-        <p className="mt-1 font-mono text-3xl leading-tight font-bold tabular-nums break-words md:text-4xl">
+        <p className="font-mono text-3xl leading-tight font-semibold tracking-tight tabular-nums break-words md:text-4xl">
           <AnimatedNumber value={sales.netRevenue} format={fmtTJS} />
         </p>
 
-        <p className="mt-1.5 min-h-5 text-sm">{trend}</p>
+        <p className="mt-1 min-h-5 text-sm">{trend}</p>
       </div>
 
       <div className="divide-border border-border divide-y border-t">

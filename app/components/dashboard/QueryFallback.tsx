@@ -24,7 +24,7 @@ export function QueryFallback({ isError, isOffline, onRetry }: QueryFallbackProp
   if (isError) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-        <AlertTriangle className="text-destructive size-8" />
+        <AlertTriangle strokeWidth={1.5} className="text-destructive size-6" />
         <p className="font-medium">{t('loadError', { ns: 'dashboard' })}</p>
         <Button variant="outline" onClick={onRetry}>
           {t('actions.retry', { ns: 'common' })}
@@ -36,7 +36,7 @@ export function QueryFallback({ isError, isOffline, onRetry }: QueryFallbackProp
   if (isOffline) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center">
-        <WifiOff className="text-muted-foreground/50 size-8" />
+        <WifiOff strokeWidth={1.5} className="text-muted-foreground/50 size-6" />
         <p className="text-muted-foreground max-w-xs text-sm">{t('offline.noCachedData', { ns: 'common' })}</p>
         <Link to="/sync" className="text-primary flex min-h-11 items-center text-sm font-medium">
           {t('offlineHint.action', { ns: 'sync' })}

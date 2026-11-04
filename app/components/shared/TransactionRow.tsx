@@ -2,7 +2,7 @@ import type { TFunction } from 'i18next';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import { getTransactionTitle } from '~/components/transactions/TransactionProducts';
-import { fmtNum, formatDateShort } from '~/lib/format';
+import { fmtTJS, formatDateShort } from '~/lib/format';
 import { cn } from '~/lib/utils';
 import type { TransactionListItem } from '~/types/transactions';
 
@@ -27,7 +27,7 @@ export function TransactionRow({ tx, t, to, state, subtitle, showDebtor = true, 
   const products = first ? `${first.productName} × ${first.quantity}${tx.items.length > 1 ? ` +${tx.items.length - 1}` : ''}` : '';
   const isDebt = tx.remainingAmount > 0;
   const statusText = isDebt
-    ? `${t('remaining', { ns: 'transactions' })} ${fmtNum(tx.remainingAmount)}`
+    ? `${t('remaining', { ns: 'transactions' })} ${fmtTJS(tx.remainingAmount)}`
     : t(`status.${tx.status}`, { ns: 'transactions' });
   const statusTone =
     tx.status === 'REFUNDED' ? 'text-destructive' : isDebt || tx.status === 'PARTIALLY_REFUNDED' ? 'text-warning' : 'text-success';
@@ -37,7 +37,7 @@ export function TransactionRow({ tx, t, to, state, subtitle, showDebtor = true, 
       to={to}
       state={state}
       className={cn(
-        'active:bg-muted/70 flex min-h-14 items-center gap-3 py-2.5 transition-colors',
+        'active:bg-muted/70 flex min-h-14 items-center gap-3 py-3 transition-colors',
         flush ? '-mx-2 rounded-xl px-2' : 'px-4'
       )}>
       <div className="min-w-0 flex-1">
@@ -47,8 +47,8 @@ export function TransactionRow({ tx, t, to, state, subtitle, showDebtor = true, 
         </p>
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-mono text-base leading-snug font-semibold">{fmtNum(tx.totalAmount)}</p>
-        <p className={cn('text-xs leading-snug font-medium', statusTone)}>{statusText}</p>
+        <p className="font-mono text-base leading-snug font-semibold tabular-nums">{fmtTJS(tx.totalAmount)}</p>
+        <p className={cn('text-xs leading-snug font-medium tabular-nums', statusTone)}>{statusText}</p>
       </div>
     </Link>
   );

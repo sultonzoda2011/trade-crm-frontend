@@ -23,22 +23,23 @@ export function Panel({ children, className, bodyClassName, title, actions, ...r
   // Без заголовка — просто белая карточка.
   if (!title && !actions) {
     return (
-      <div className={cn('bg-card text-card-foreground rounded-2xl', className)} {...rest}>
+      <div className={cn('bg-card text-card-foreground border-border/60 rounded-2xl border', className)} {...rest}>
         <div className={cn('p-4', bodyClassName)}>{children}</div>
       </div>
     );
   }
 
-  // С заголовком — как секция в iOS «Настройках»: мелкая серая подпись НАД
-  // карточкой, а не рамка с линией внутри. Классы раскладки (`lg:col-span-2`,
-  // `h-full`) остаются на внешнем блоке, карточка растягивается на всю высоту.
+  // С заголовком — спокойная подпись в обычном регистре над карточкой.
+  // Классы раскладки (`lg:col-span-2`, `h-full`) остаются на внешнем блоке, карточка растягивается на всю высоту.
   return (
     <div className={cn('flex flex-col', className)} {...rest}>
-      <div className="mb-1.5 flex items-end justify-between gap-3 px-1">
-        {title && <h3 className="text-muted-foreground min-w-0 break-words text-xs font-medium tracking-wide uppercase">{title}</h3>}
+      <div className="mb-2 flex items-baseline justify-between gap-3 px-1">
+        {title && <h3 className="text-muted-foreground min-w-0 break-words text-sm font-medium">{title}</h3>}
         {actions && <div className="flex shrink-0 flex-wrap items-center gap-2 text-sm">{actions}</div>}
       </div>
-      <div className={cn('bg-card text-card-foreground flex-1 rounded-2xl p-4', bodyClassName)}>{children}</div>
+      <div className={cn('bg-card text-card-foreground border-border/60 flex-1 rounded-2xl border p-4', bodyClassName)}>
+        {children}
+      </div>
     </div>
   );
 }

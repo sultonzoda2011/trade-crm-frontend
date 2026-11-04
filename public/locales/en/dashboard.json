@@ -90,12 +90,12 @@
   },
   "stock": {
     "title": "Running low",
-    "basis": "Based on sales over the last {{days}} days.",
-    "allShop": "Stock is shared by the whole shop — the seller filter doesn't apply.",
-    "noSalesData": "No sales in the last {{days}} days, so we can't tell how many days the stock will last.",
+    "basis": "Based on sales over the last {{days}} days",
+    "allShop": "Stock is shared by the whole shop — the seller filter doesn't apply",
+    "noSalesData": "No sales in the last {{days}} days, so we can't tell how many days the stock will last",
     "allGood": "Nothing is running out",
-    "allGoodHint": "Based on your sales and minimum levels, nothing needs ordering right now.",
-    "orderNote": "“Order” is an estimate based on how the product has been selling lately. The decision is yours.",
+    "allGoodHint": "Based on your sales and minimum levels, nothing needs ordering right now",
+    "orderNote": "“Order” is an estimate based on recent sales",
     "slowMoving_one": "Barely selling: {{count}} product worth {{amount}} — more than {{days}} days of stock",
     "slowMoving_other": "Barely selling: {{count}} products worth {{amount}} — more than {{days}} days of stock",
     "slowMovingNoDays_one": "Barely selling: {{count}} product worth {{amount}}",
@@ -111,29 +111,29 @@
       "WARNING": "Running low"
     },
     "reason": {
-      "soldOut": "Out of stock. Sold {{sold}} {{unit}} in {{days}} days.",
-      "noSales": "No sales in {{days}} days, so we can't tell how long it will last.",
-      "lessThanDay": "At the current pace it won't last a day.",
-      "daysLeft_one": "At the current pace it lasts about {{count}} day.",
-      "daysLeft_other": "At the current pace it lasts about {{count}} days.",
-      "belowMinimum": "Below your minimum ({{min}} {{unit}})."
+      "soldOut": "Out of stock. Sold {{sold}} {{unit}} in {{days}} days",
+      "noSales": "No sales in {{days}} days, so we can't tell how long it will last",
+      "lessThanDay": "At the current pace it won't last a day",
+      "daysLeft_one": "At the current pace it lasts about {{count}} day",
+      "daysLeft_other": "At the current pace it lasts about {{count}} days",
+      "belowMinimum": "Below your minimum ({{min}} {{unit}})"
     },
     "pace": {
-      "perDay": "Sells about {{rate}} {{unit}} a day.",
-      "perWeek": "Sells about {{rate}} {{unit}} a week."
+      "perDay": "Sells about {{rate}} {{unit}} a day",
+      "perWeek": "Sells about {{rate}} {{unit}} a week"
     },
-    "afterOrder": "If you order, it will last about {{days}} days."
+    "afterOrder": "If you order, it will last about {{days}} days"
   },
   "reorderCard": {
     "title": "What to order",
-    "shown": "Showing the most urgent: {{shown}} of {{total}}. The rest are in the product list."
+    "shown": "Showing the most urgent: {{shown}} of {{total}} — the rest are in the product list"
   },
   "stockHealth": {
     "title": "Stock health",
     "total": "Goods in stock",
-    "totalHint": "At selling price, not purchase price: the system has no purchase price.",
+    "totalHint": "At selling price, excluding purchase cost",
     "empty": "No products yet",
-    "emptyHint": "Add products and stock levels and ordering hints will appear here.",
+    "emptyHint": "Add products and stock levels and ordering hints will appear here",
     "emptyAction": "Open products",
     "allHealthy": "All products are in good shape",
     "healthy": "{{healthy}} of {{total}} are fine",
@@ -157,7 +157,7 @@
     "back": "{{units}} units returned"
   },
   "inventoryTab": {
-    "scope": "Stock as of now, for the whole shop. Counted over sales of the last {{days}} days, so period and seller are not selectable here."
+    "scope": "Stock as of now, for the whole shop — counted over sales of the last {{days}} days"
   },
   "leaders": {
     "title": "Best sellers",
@@ -169,12 +169,12 @@
   "changes": {
     "title": "Selling better or worse",
     "basis": {
-      "week": "Categories whose sales changed noticeably vs the same days last week.",
-      "month": "Categories whose sales changed noticeably vs the same point last month.",
-      "year": "Categories whose sales changed noticeably vs the same point last year."
+      "week": "Categories with noticeable sales changes vs the same days last week",
+      "month": "Categories with noticeable sales changes vs the same point last month",
+      "year": "Categories with noticeable sales changes vs the same point last year"
     },
-    "steady": "No big changes — categories are selling about as before.",
-    "noBaseline": "There were no category sales before, so there is nothing to compare with yet.",
+    "steady": "No big changes — categories are selling about as before",
+    "noBaseline": "There were no category sales before, so there is nothing to compare with yet",
     "wasNow": "was {{previous}} → now {{current}}"
   },
   "details": {
@@ -198,7 +198,7 @@
   "trend": {
     "byDay": "Sales by day",
     "byMonth": "Sales by month",
-    "notEnough": "Not enough data for a chart yet — it needs at least two days."
+    "notEnough": "Not enough data for a chart yet — it needs at least two days"
   },
   "recent": {
     "title": "Latest operations",
@@ -213,8 +213,8 @@
   },
   "categoryCard": {
     "title": "Sales by category",
-    "hint": "How much money each group of goods brought. Compared {{vs}}.",
-    "noCompare": "How much money each group of goods brought. Over such a short span we do not compare with the previous period.",
+    "hint": "Revenue by product group ({{vs}})",
+    "noCompare": "Revenue by product group for the selected period",
     "noPrevious": "No sales in the previous period",
     "share": "{{percent}}% of sales",
     "shareLow": "under 1% of sales",
@@ -224,17 +224,17 @@
   "productsTab": {
     "topRevenue": {
       "title": "Earned the most money",
-      "hint": "Revenue for the period net of returns. It is not profit: the app has no purchase price."
+      "hint": "Revenue for the period net of returns"
     },
     "topUnits": {
       "title": "Bought most often",
-      "hint": "Units sold in the period net of returns: pieces, kg or boxes, depending on how the product is counted.",
-      "note": "This list is picked from the 20 products with the highest revenue. A cheap product that sells by the thousand may not make it here."
+      "hint": "Units sold in the period net of returns",
+      "note": "Among the 20 products with the highest revenue for the period"
     },
     "brought": "earned {{amount}}",
     "share": "{{percent}}% of all sales",
     "shareLow": "under 1% of all sales",
-    "emptyHint": "Rankings appear once there are sales in the period. You can pick a longer period."
+    "emptyHint": "Rankings appear once there are sales in the period"
   },
   "insights": {
     "inventory": {
@@ -269,7 +269,7 @@
   },
   "sellersTab": {
     "title": "Who sold how much",
-    "hint": "Cash and card sales net of returns, plus goods given on credit. A return is taken off the seller who made the sale.",
+    "hint": "Cash and card sales net of returns, plus goods given on credit",
     "cash": "Cash and card",
     "credit": "On credit",
     "share": "{{percent}}% of all sales",
@@ -280,7 +280,7 @@
     "deleted": "Deleted employee",
     "showAll": "Show all ({{count}})",
     "showLess": "Show less",
-    "emptyHint": "Sellers appear once there are sales in the period. You can pick a longer period."
+    "emptyHint": "Sellers appear once there are sales in the period"
   },
   "period": {
     "from": "From",

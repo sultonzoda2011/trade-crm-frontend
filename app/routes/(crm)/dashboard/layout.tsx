@@ -104,13 +104,13 @@ export default function DashboardLayout() {
 
       {isInventory ? (
         <p className="text-muted-foreground flex items-start gap-2 px-1 text-sm leading-snug">
-          <Info className="mt-0.5 size-4 shrink-0" />
+          <Info strokeWidth={1.5} className="mt-0.5 size-4 shrink-0" />
           {t('inventoryTab.scope', { days: STOCK_ANALYSIS_DAYS })}
         </p>
       ) : (
         // Период — кнопками в один ряд (быстрее выпадающего списка), продавец — одним полем.
         <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center">
-          <div role="tablist" className="bg-muted flex gap-0.5 rounded-[10px] p-0.5 md:w-auto">
+          <div role="tablist" className="bg-muted flex gap-1 rounded-xl p-1 md:w-auto">
             {PERIOD_OPTIONS.map((option) => {
               const active = option.value === validPeriod;
               return (
@@ -121,14 +121,14 @@ export default function DashboardLayout() {
                   aria-selected={active}
                   onClick={() => updateParam('period', option.value)}
                   className={cn(
-                    'relative h-11 min-w-0 flex-1 rounded-lg px-3 text-sm font-semibold whitespace-nowrap transition-colors md:h-8 md:flex-none',
-                    active ? 'text-foreground' : 'text-muted-foreground'
+                    'relative h-10 min-w-0 flex-1 rounded-lg px-3 text-sm font-medium whitespace-nowrap transition-colors md:h-8 md:flex-none',
+                    active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                   )}>
                   {active && (
                     <motion.span
                       layoutId="dashboard-period-pill"
-                      transition={{ type: 'spring', stiffness: 500, damping: 38 }}
-                      className="bg-card absolute inset-0 rounded-lg shadow-sm dark:bg-white/20"
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className="bg-card absolute inset-0 rounded-lg shadow-xs dark:bg-white/15"
                     />
                   )}
                   <span className="relative">{t(option.labelKey)}</span>
@@ -149,10 +149,10 @@ export default function DashboardLayout() {
             isClearable={false}
           />
 
-          <span className="text-muted-foreground flex items-center gap-1.5 text-xs whitespace-nowrap tabular-nums">
-            <CalendarDays className="size-3.5 shrink-0" />
+          <span className="text-muted-foreground flex items-center gap-2 font-mono text-xs whitespace-nowrap tabular-nums">
+            <CalendarDays strokeWidth={1.5} className="size-3.5 shrink-0" />
             {formatDate(range.from.toDate())}
-            {range.to && !range.to.isSame(range.from, 'day') ? ` - ${formatDate(range.to.toDate())}` : ''}
+            {range.to && !range.to.isSame(range.from, 'day') ? ` – ${formatDate(range.to.toDate())}` : ''}
           </span>
         </div>
       )}
@@ -170,7 +170,7 @@ export default function DashboardLayout() {
             end={tab.end}
             className={({ isActive }) =>
               cn(
-                'relative shrink-0 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2.5 md:text-sm',
+                'relative shrink-0 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2 md:text-sm',
                 isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
               )
             }>
@@ -180,7 +180,7 @@ export default function DashboardLayout() {
                 {isActive && (
                   <motion.span
                     layoutId="dashboard-tab-underline"
-                    transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                    transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
                     className="bg-primary absolute inset-x-0 bottom-0 h-0.5 rounded-full"
                   />
                 )}

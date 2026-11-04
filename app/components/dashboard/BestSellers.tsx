@@ -30,9 +30,9 @@ export function BestSellers({ products, detailsTo }: BestSellersProps) {
         rows.length > 0 ? (
           <Link
             to={detailsTo}
-            className="text-primary relative inline-flex items-center text-sm font-medium before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
+            className="text-primary relative inline-flex items-center gap-0.5 text-sm font-medium before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
             {t('leaders.more')}
-            <ChevronRight className="-mr-1 size-4" />
+            <ChevronRight className="-mr-1 size-4" strokeWidth={1.5} />
           </Link>
         ) : undefined
       }>
@@ -44,8 +44,8 @@ export function BestSellers({ products, detailsTo }: BestSellersProps) {
             <Link
               key={product.productId}
               to={`/products/${product.productId}`}
-              className="active:bg-muted/70 flex min-h-14 items-center gap-3 px-4 py-2.5 transition-colors">
-              <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold">
+              className="active:bg-muted/70 flex min-h-14 items-center gap-3 px-4 py-3 transition-colors">
+              <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold tabular-nums">
                 {index + 1}
               </span>
               <span className="min-w-0 flex-1">
@@ -53,11 +53,12 @@ export function BestSellers({ products, detailsTo }: BestSellersProps) {
                 <span className="text-muted-foreground block text-sm leading-snug">
                   {t('leaders.units', { count: product.netUnits })}
                   {product.refundedUnits > 0 && (
-                    <span className="text-destructive ml-1.5">{t('leaders.returned', { count: product.refundedUnits })}</span>
+                    <span className="text-destructive ml-2">{t('leaders.returned', { count: product.refundedUnits })}</span>
                   )}
                 </span>
               </span>
               <span className="shrink-0 font-mono text-base font-semibold tabular-nums">{fmtTJS(product.netRevenue)}</span>
+              <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
             </Link>
           ))}
         </div>

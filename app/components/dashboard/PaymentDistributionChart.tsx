@@ -20,11 +20,6 @@ const COLORS: Record<PaymentType, string> = {
 
 /**
  * How the sold amount was paid: cash, card or on credit.
- *
- * The backend counts these net of returns over the same rows as the headline
- * "sold" figure, so the three parts add up to it. A single bar with a legend
- * replaces the old pie: shares read faster as lengths, and every share also has
- * its name, amount and percent written out (colour is never the only signal).
  */
 export function PaymentDistributionChart({ data }: PaymentDistributionChartProps) {
   const { t } = useTranslation(['dashboard', 'transactions']);
@@ -47,28 +42,32 @@ export function PaymentDistributionChart({ data }: PaymentDistributionChartProps
     );
   }
 
-  const summary = rows.map((row) => `${labels[row.type]} ${row.percentage}%`).join(', ');
+  const summary = rows.map((row) => `${labels[row.type]} ${Math.round(row.percentage)}%`).join(', ');
 
   return (
-    <Panel title={t('payments.title')} bodyClassName="space-y-4">
-      <div className="bg-muted flex h-3 w-full gap-0.5 overflow-hidden rounded-full" role="img" aria-label={summary}>
-        {rows.map((row) => (
-          <div
-            key={row.type}
-            className="h-full first:rounded-l-full last:rounded-r-full"
-            style={{ flexGrow: row.amount, flexBasis: 0, backgroundColor: COLORS[row.type] }}
-          />
-        ))}
+    <Panel title={t('payments.title')} bodyClassName="p-0 overflow-hidden">
+      <div className="px-4 pt-4 pb-3">
+        <div className="bg-muted flex h-3 w-full gap-0.5 overflow-hidden rounded-full" role="img" aria-label={summary}>
+          {rows.map((row) => (
+            <div
+              key={row.type}
+              className="h-full first:rounded-l-full last:rounded-r-full"
+              style={{ flexGrow: row.amount, flexBasis: 0, backgroundColor: COLORS[row.type] }}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="divide-border divide-y">
+      <div className="divide-border border-border divide-y border-t">
         {rows.map((row) => (
-          <div key={row.type} className="flex min-h-12 items-center gap-3 py-2">
+          <div key={row.type} className="flex min-h-14 items-center gap-3 px-4 py-3">
             <span className="size-3 shrink-0 rounded-full" style={{ backgroundColor: COLORS[row.type] }} />
-            <span className="min-w-0 flex-1 text-base leading-snug">{labels[row.type]}</span>
+            <span className="min-w-0 flex-1 text-base leading-snug font-medium">{labels[row.type]}</span>
             <span className="shrink-0 text-right">
               <span className="block font-mono text-base font-semibold tabular-nums">{fmtTJS(row.amount)}</span>
-              <span className="text-muted-foreground block text-sm leading-tight">{row.percentage}%</span>
+              <span className="text-muted-foreground block font-mono text-xs leading-snug tabular-nums">
+                {Math.round(row.percentage)}%
+              </span>
             </span>
           </div>
         ))}

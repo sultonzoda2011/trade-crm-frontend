@@ -27,17 +27,17 @@ function DetailRow({ label, value, hint, muted, to }: DetailRowProps) {
   const content = (
     <>
       <span className="min-w-0 flex-1">
-        <span className="block text-base leading-snug">{label}</span>
-        {hint && <span className="text-muted-foreground block text-sm leading-snug">{hint}</span>}
+        <span className="block text-base leading-snug font-medium">{label}</span>
+        {hint && <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">{hint}</span>}
       </span>
-      <span className={cn('shrink-0 font-mono text-base font-semibold tabular-nums', muted && 'text-muted-foreground')}>
+      <span className={cn('shrink-0 font-mono text-base font-medium tabular-nums', muted && 'text-muted-foreground')}>
         {value}
       </span>
-      {to && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />}
+      {to && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />}
     </>
   );
 
-  const classes = 'flex min-h-14 items-center gap-3 px-4 py-2.5';
+  const classes = 'flex min-h-14 items-center gap-3 px-4 py-3';
 
   return to ? (
     <Link to={to} className={cn(classes, 'active:bg-muted/70 transition-colors')}>
@@ -50,8 +50,7 @@ function DetailRow({ label, value, hint, muted, to }: DetailRowProps) {
 
 /**
  * The supporting figures of the period as one plain list: how many operations,
- * the average receipt, discounts and returns. They explain the headline numbers
- * but are not worth a card each.
+ * the average receipt, discounts and returns.
  */
 export function PeriodDetails({ overview, scope }: PeriodDetailsProps) {
   const { t } = useTranslation('dashboard');
@@ -85,7 +84,6 @@ export function PeriodDetails({ overview, scope }: PeriodDetailsProps) {
           label={t('details.discounts')}
           value={fmtTJS(sales.discountAmount)}
           muted={sales.discountAmount === 0}
-          hint={sales.discountAmount > 0 ? t('details.discountsHint') : undefined}
         />
 
         <DetailRow

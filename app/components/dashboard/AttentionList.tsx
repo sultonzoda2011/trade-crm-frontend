@@ -53,7 +53,7 @@ function AttentionRow({ insight, scope }: { insight: BusinessInsight; scope: Das
       <span className="min-w-0 flex-1 text-base leading-snug">
         {t(insight.messageKey, formatInsightParams(insight.params))}
       </span>
-      {href && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />}
+      {href && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />}
     </>
   );
 

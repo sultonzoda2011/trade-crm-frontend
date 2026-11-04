@@ -18,14 +18,6 @@ interface ProductLeadersProps {
 
 /**
  * The top products of the period, net of returns, in one of two orders.
- *
- * The two orders answer different questions: a sack of flour tops the money list,
- * a pack of gum tops the units list. Each row says what the list does not sort by
- * as well, so the owner sees both sides of the same product.
- *
- * Revenue is revenue, not profit — the product has a selling price and no purchase
- * price — and the hint under the title says so. The share of all sales is shown only
- * when the period has sales to take a share of.
  */
 export function ProductLeaders({ metric, products, totalRevenue, note }: ProductLeadersProps) {
   const { t } = useTranslation('dashboard');
@@ -39,9 +31,9 @@ export function ProductLeaders({ metric, products, totalRevenue, note }: Product
         products.length > 0 ? (
           <Link
             to="/products"
-            className="text-primary relative inline-flex items-center text-sm font-medium before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
+            className="text-primary relative inline-flex items-center gap-0.5 text-sm font-medium before:absolute before:-inset-x-2 before:-inset-y-3 active:opacity-60">
             {t('leaders.more')}
-            <ChevronRight className="-mr-1 size-4" />
+            <ChevronRight className="-mr-1 size-4" strokeWidth={1.5} />
           </Link>
         ) : undefined
       }>
@@ -58,30 +50,31 @@ export function ProductLeaders({ metric, products, totalRevenue, note }: Product
               <Link
                 key={product.productId}
                 to={`/products/${product.productId}`}
-                className="active:bg-muted/70 flex min-h-16 items-center gap-3 px-4 py-3 transition-colors">
-                <span className="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold">
+                className="active:bg-muted/70 flex min-h-14 items-start gap-3 px-4 py-3 transition-colors">
+                <span className="bg-muted text-muted-foreground mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full font-mono text-sm font-semibold tabular-nums">
                   {index + 1}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-base leading-snug font-semibold break-words">{product.productName}</span>
-                  <span className="text-muted-foreground block text-sm leading-snug">
+                  <span className="text-muted-foreground mt-0.5 block text-sm leading-snug">
                     {metric === 'revenue'
                       ? t('leaders.units', { count: product.netUnits })
                       : t('productsTab.brought', { amount: fmtTJS(product.netRevenue) })}
                     {product.refundedUnits > 0 && (
-                      <span className="text-destructive ml-1.5">{t('leaders.returned', { count: product.refundedUnits })}</span>
+                      <span className="text-destructive ml-2">{t('leaders.returned', { count: product.refundedUnits })}</span>
+                    )}
+                    {metric === 'revenue' && share !== null && (
+                      <span>
+                        {' · '}
+                        {share < 1 ? t('productsTab.shareLow') : t('productsTab.share', { percent: Math.round(share) })}
+                      </span>
                     )}
                   </span>
-                  {metric === 'revenue' && share !== null && (
-                    <span className="text-muted-foreground block text-sm leading-snug">
-                      {share < 1 ? t('productsTab.shareLow') : t('productsTab.share', { percent: Math.round(share) })}
-                    </span>
-                  )}
                 </span>
                 <span className="shrink-0 font-mono text-base font-semibold tabular-nums">
                   {metric === 'revenue' ? fmtTJS(product.netRevenue) : fmtNum(product.netUnits)}
                 </span>
-                <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" />
+                <ChevronRight className="text-muted-foreground/60 mt-1 -mr-1 size-4 shrink-0" strokeWidth={1.5} />
               </Link>
             );
           })}

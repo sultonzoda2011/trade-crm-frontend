@@ -1,4 +1,4 @@
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { ChevronRight, TrendingDown, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
@@ -17,13 +17,6 @@ interface SalesChangesProps {
 
 /**
  * Which categories sell noticeably better or worse than in the previous period.
- *
- * Only categories are compared: the backend gives a previous-period figure per
- * category but not per product, so a product-level "sells worse than usual"
- * cannot be shown without inventing it. A category needs a non-zero previous
- * period (`changePercent !== null`) — growth from nothing has no percentage —
- * and a change of at least `SIGNIFICANT_CHANGE_PERCENT`, below which it is noise.
- * The biggest money movers come first.
  */
 export function SalesChanges({ categories, period }: SalesChangesProps) {
   const { t } = useTranslation('dashboard');
@@ -57,14 +50,14 @@ export function SalesChanges({ categories, period }: SalesChangesProps) {
               <>
                 <span
                   className={cn(
-                    'flex size-9 shrink-0 items-center justify-center rounded-full',
+                    'flex size-10 shrink-0 items-center justify-center rounded-full',
                     up ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'
                   )}>
                   <Icon className="size-5" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block text-base leading-snug font-semibold break-words">{name}</span>
-                  <span className="text-muted-foreground block text-sm leading-snug">
+                  <span className="text-muted-foreground block text-sm leading-snug tabular-nums">
                     {t('changes.wasNow', { previous: fmtTJS(previous), current: fmtTJS(current) })}
                   </span>
                 </span>
@@ -72,10 +65,11 @@ export function SalesChanges({ categories, period }: SalesChangesProps) {
                   {up ? '+' : ''}
                   {changePercent}%
                 </span>
+                {row.categoryId && <ChevronRight className="text-muted-foreground/60 -mr-1 size-4 shrink-0" strokeWidth={1.5} />}
               </>
             );
 
-            const classes = 'flex min-h-14 items-center gap-3 px-4 py-2.5';
+            const classes = 'flex min-h-16 items-center gap-3 px-4 py-3';
 
             return row.categoryId ? (
               <Link
