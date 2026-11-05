@@ -121,7 +121,7 @@ export function PullToRefresh({ onRefresh, children, disabled = false, className
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
-      className={cn('relative min-h-0 flex-1', className)}>
+      className="relative min-h-0 flex-1">
       {/* iOS-style Pull Indicator */}
       <div
         aria-hidden="true"
@@ -145,8 +145,14 @@ export function PullToRefresh({ onRefresh, children, disabled = false, className
         </div>
       </div>
 
+      {/*
+       * className (напр. "space-y-4" из ListPageLayout) вешаем именно сюда, а не на
+       * корневой div: иначе он управляет отступами между индикатором и этим враппером,
+       * а не между реальными children — весь вертикальный spacing между фильтрами,
+       * карточками и списком у страниц на ListPageLayout схлопывается.
+       */}
       <div
-        className="transition-transform duration-200 ease-out"
+        className={cn('transition-transform duration-200 ease-out', className)}
         style={{
           transform: pullY > 0 ? `translateY(${pullY * 0.4}px)` : undefined,
         }}>
