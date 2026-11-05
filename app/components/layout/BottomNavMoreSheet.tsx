@@ -24,7 +24,7 @@ export function BottomNavMoreSheet({
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="gap-0 bg-transparent shadow-none data-[side=bottom]:inset-x-3 data-[side=bottom]:bottom-[calc(0.75rem+env(safe-area-inset-bottom))] data-[side=bottom]:border-t-0 data-[side=bottom]:pb-0">
+        className="gap-0 bg-transparent shadow-none data-[side=bottom]:inset-x-3 data-[side=bottom]:bottom-[calc(0.75rem+var(--sab))] data-[side=bottom]:border-t-0 data-[side=bottom]:pb-0">
         <div className="liquid-glass relative flex max-h-[75dvh] flex-col overflow-hidden rounded-[2rem]">
           {/* Ручка лежит поверх общей зоны захвата шторки (её перекрывает стекло), поэтому сама — зона перетаскивания. */}
           <div data-sheet-drag aria-hidden className="mx-auto flex w-full shrink-0 touch-none justify-center pt-2.5 pb-1">

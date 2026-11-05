@@ -1,12 +1,14 @@
 import { HelpCircle, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { LanguageSwitcher } from '~/components/layout/LanguageSwitcher';
 import { ModeToggle } from '~/components/layout/ModeToggle';
 import { SyncStatus } from '~/components/layout/SyncStatus';
 import { UserNav } from '~/components/layout/UserNav';
-import { CommandPalette } from '~/components/shared/CommandPalette';
+const CommandPalette = lazy(() =>
+  import('~/components/shared/CommandPalette').then((m) => ({ default: m.CommandPalette }))
+);
 import { Button } from '~/components/ui/button';
 import { SidebarTrigger } from '~/components/ui/sidebar';
 import darkLogo from '/logo-text-in-left-dark.png';
@@ -30,7 +32,7 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-background/95 sticky top-0 z-30 flex min-h-14 w-full items-center gap-2 px-3 pt-[env(safe-area-inset-top)] md:border-b lg:min-h-16 lg:px-5">
+    <header className="bg-background/95 sticky top-0 z-30 flex min-h-14 w-full items-center gap-2 px-3 pt-[var(--sat)] md:border-b lg:min-h-16 lg:px-5">
       <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
         {/* На мобиле основная навигация — BottomNav, полноценный off-canvas
             Sidebar через триггер не нужен параллельно (см. layout.tsx). */}
@@ -92,7 +94,11 @@ export default function Header() {
         <UserNav />
       </div>
 
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        </Suspense>
+      )}
     </header>
   );
 }

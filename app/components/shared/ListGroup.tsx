@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
+import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
 interface ListGroupProps {
@@ -94,14 +95,14 @@ export function ListRow({
 
   if (to) {
     return (
-      <Link to={to} state={state} className={classes}>
+      <Link to={to} state={state} onClick={() => haptic('selection')} className={classes}>
         {content}
       </Link>
     );
   }
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={classes}>
+      <button type="button" onClick={() => { haptic('selection'); onClick(); }} className={classes}>
         {content}
       </button>
     );

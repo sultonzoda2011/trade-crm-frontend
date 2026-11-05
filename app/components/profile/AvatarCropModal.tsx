@@ -130,7 +130,7 @@ export function AvatarCropModal({ file, onCancel, onConfirm, onLoadError }: Avat
       aria-modal="true"
       aria-label={t('crop.title')}
       className="bg-background fixed inset-0 z-[70] flex flex-col"
-      style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      style={{ paddingTop: 'var(--sat)', paddingBottom: 'var(--sab)' }}>
       <header className="flex h-14 shrink-0 items-center justify-between px-4">
         <button type="button" onClick={onCancel} className="text-primary -mx-2 h-11 px-2 text-base active:opacity-60">
           {t('crop.cancel')}

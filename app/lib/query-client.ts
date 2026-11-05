@@ -2,6 +2,7 @@ import { MutationCache, QueryClient, keepPreviousData } from "@tanstack/react-qu
 import { OFFLINE_QUEUE_SCOPE, registerOfflineMutationDefaults } from "~/lib/offline-mutations";
 import { subscribeToNetworkStatus } from "~/lib/network-status";
 import { SENT_OVERLAY_MAX_MS } from "~/lib/offline-sent";
+import { haptic } from "~/lib/haptics";
 
 // 400 дней — персистентный кеш (см. query-persister.ts) должен переживать
 // даже очень долгий офлайн (по задаче — "запрос год назад, но показать
@@ -24,6 +25,9 @@ export function makeQueryClient() {
     onSuccess: (_data, _variables, _context, mutation) => {
       if (mutation.options.scope?.id !== OFFLINE_QUEUE_SCOPE.id) return;
       setTimeout(() => mutationCache.remove(mutation), SENT_OPERATION_LINGER_MS);
+    },
+    onError: () => {
+      haptic('error');
     },
   });
 

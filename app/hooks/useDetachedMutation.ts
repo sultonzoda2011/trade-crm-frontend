@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { getIsOnline } from '~/lib/network-status';
+import { haptic } from '~/lib/haptics';
 
 /**
  * Сколько ждём ответа сервера, прежде чем отпустить пользователя с экрана. На быстрой
@@ -56,6 +57,7 @@ function submitDetached<TVars, TData = unknown>({
   const releaseOnce = () => {
     if (released) return;
     released = true;
+    haptic('success');
     release();
   };
 
@@ -79,6 +81,7 @@ function submitDetached<TVars, TData = unknown>({
     },
     onError: () => {
       clearTimeout(timer);
+      haptic('error');
       if (!released) onFail?.();
     },
   });

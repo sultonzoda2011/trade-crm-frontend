@@ -131,6 +131,7 @@ export function SwipeableRow({ actions, children, className }: SwipeableRowProps
               TONE_CLASS[action.tone]
             )}
             onClick={() => {
+              if (action.tone === 'destructive') haptic('warning'); else haptic('light');
               snapTo(false);
               action.onSelect();
             }}>

@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from 'react-router';
 
 /** How long the mark takes to draw itself. The splash never leaves before this, so the animation is never cut in half. */
-const MIN_VISIBLE_MS = 1700;
-const EXIT_MS = 380;
+const isTestEnv =
+  typeof window !== 'undefined' &&
+  (Boolean(window.navigator?.webdriver) ||
+    Boolean((window as unknown as { __PLAYWRIGHT_TEST__?: boolean }).__PLAYWRIGHT_TEST__));
+
+const MIN_VISIBLE_MS = isTestEnv ? 0 : 1700;
+const EXIT_MS = isTestEnv ? 0 : 380;
 
 /**
  * Cold-start screen.

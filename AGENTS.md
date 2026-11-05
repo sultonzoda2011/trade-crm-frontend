@@ -1255,10 +1255,17 @@ Theme provider (`app/components/theme-provider.tsx`) использует `next-
 # 29. Mobile / Capacitor
 
 Mobile shell использует **Capacitor 8** (`capacitor.config.ts`, `appId: com.tradecrm.app`, `webDir: build/client`).
-UI учитывает Android WebView:
+UI учитывает Android WebView и требования Android 15/16:
+- **Edge-to-Edge & SystemBars:** Capacitor 8 SystemBars (`insetsHandling: 'css'`) пробрасывает `--safe-area-inset-*` в `:root`. В CSS используются токены `var(--sat)`, `var(--sab)`, `var(--sar)`, `var(--sal)` для безопасных отступов на любой версии Chromium WebView;
+- **System Bars styling:** `useCapacitorStatusBar` управляет цветом и стилем системных панелей (Status Bar + Navigation/Gesture Bar) через `SystemBars.setStyle`, фон статус-бара согласован с токенами `--background` (#f2f2f7 светлый, #000000 тёмный);
+- **Android Back Button:** приоритетная обработка в `useCapacitorBackButton` (стек кастомных обработчиков `registerBackHandler` -> Bottom Sheet -> Dialog/Modal -> меню/пикеры -> `history.back()` -> `App.minimizeApp()` на корневых экранах ролей);
+- **Haptic feedback:** централизованный `@capacitor/haptics` через `haptic(kind)` (`selection`, `light`, `medium`, `success`, `warning`, `error`), с безопасным фоллбэком на Vibration API и подавлением ошибок;
+- **Клавиатура и формы:** `@capacitor/keyboard` в `useKeyboardOpen` выставляет `--keyboard-height` и класс `keyboard-open`, центрирует активные поля ввода при появлении клавиатуры; мобильные инпуты имеют `inputMode`, `enterKeyHint` и переход фокуса по Enter;
+- **Pull-to-refresh:** `PullToRefresh` на всех списочных экранах (`ListPageLayout`) и дашборде, с тактильным откликом и уважением офлайн-статуса;
+- **Lifecycle:** жизненный цикл `@capacitor/app` (`appStateChange`) синхронизирован с `focusManager` TanStack Query;
 - не полагается на session cookies;
 - не использует sticky hover behavior;
-- поддерживает свайп-действия на мобильных карточках (`SwipeableCard` / `MobileCard`) и крупные touch targets.
+- поддерживает свайп-действия на мобильных карточках (`SwipeableCard` / `MobileCard`) и крупные touch targets (>= 44px).
 
 ---
 

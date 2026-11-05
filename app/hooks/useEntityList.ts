@@ -84,6 +84,7 @@ export function useEntityList<TRow, TDisplayRow = TRow>({
     isFetching,
     isError,
     fetchStatus,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.list(entity, { page, limit, search: debouncedSearch, filters }),
     queryFn: () => {
@@ -157,6 +158,7 @@ export function useEntityList<TRow, TDisplayRow = TRow>({
     setFilters,
     removeFilter,
     resetFilters,
+    refetch,
     deleteDialog,
   };
 }

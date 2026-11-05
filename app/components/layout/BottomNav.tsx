@@ -162,7 +162,7 @@ export function BottomNav() {
           'pointer-events-none fixed inset-x-0 bottom-0 z-30 px-3 transition-[transform,opacity] duration-300 ease-out md:hidden',
           hidden && 'translate-y-[160%] opacity-0'
         )}
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) * 0.5 + 12px)' }}>
+        style={{ paddingBottom: 'calc(var(--sab) * 0.5 + 12px)' }}>
         {/*
           Подложка под капсулой: фон страницы, плавно переходящий в прозрачный над панелью.
           Без неё список виден и сквозь стекло, и в полосе между капсулой и краем экрана
