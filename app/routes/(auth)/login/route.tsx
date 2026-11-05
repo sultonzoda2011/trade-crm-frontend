@@ -199,7 +199,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Auth form column ────────────────────────────────────────── */}
-      <div className="scrollbar-thin dark:bg-background relative flex min-h-dvh flex-col justify-between overflow-x-hidden overflow-y-auto bg-[#F4F7FC] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] lg:min-h-0">
+      <div className="scrollbar-thin dark:bg-background relative flex min-h-dvh flex-col justify-between overflow-x-hidden overflow-y-auto bg-[#F4F7FC] pt-[max(1.5rem,var(--sat))] pb-[max(1.25rem,var(--sab))] lg:min-h-0">
         <AuthBackgroundDecoration />
 
         <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-6 sm:px-6 lg:px-8">

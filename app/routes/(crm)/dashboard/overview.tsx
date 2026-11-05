@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { PullToRefresh } from '~/components/shared/PullToRefresh';
 import { ArrowRight, WifiOff } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useOutletContext, useSearchParams } from 'react-router';
 import { dashboardApi, type DashboardParams } from '~/api/dashboard';
@@ -11,7 +12,9 @@ import { DebtsCard } from '~/components/dashboard/DebtsCard';
 import { QueryFallback } from '~/components/dashboard/QueryFallback';
 import { PaymentDistributionChart } from '~/components/dashboard/PaymentDistributionChart';
 import { PeriodDetails } from '~/components/dashboard/PeriodDetails';
-import { RevenueTrendChart } from '~/components/dashboard/RevenueTrendChart';
+const RevenueTrendChart = lazy(() =>
+  import('~/components/dashboard/RevenueTrendChart').then((m) => ({ default: m.RevenueTrendChart }))
+);
 import { SalesChanges } from '~/components/dashboard/SalesChanges';
 import { SalesSummary } from '~/components/dashboard/SalesSummary';
 import { StockWatch } from '~/components/dashboard/StockWatch';
@@ -162,13 +165,15 @@ export default function DashboardOverviewPage() {
     return <OverviewSkeleton />;
   }
 
+  const handleRefresh = () => Promise.all([overviewQuery.refetch(), recentQuery.refetch(), stockQuery.refetch()]);
+
   // How many days "due soon" means is the backend's rule; it reports it in the
   // recommendation. No such recommendation means no debt is due soon.
   const dueSoonParam = overview.insights.find((insight) => insight.id === 'debts.dueSoon')?.params.days;
   const dueSoonDays = typeof dueSoonParam === 'number' ? dueSoonParam : undefined;
 
   return (
-    <div className="space-y-6">
+    <PullToRefresh onRefresh={handleRefresh} className="space-y-6">
       {!isOnline && (
         <p className="text-muted-foreground flex items-center gap-2 px-1 text-sm">
           <WifiOff strokeWidth={1.5} className="size-4 shrink-0" />
@@ -204,7 +209,7 @@ export default function DashboardOverviewPage() {
       {comparable && (
         <Reveal index={2} className="grid items-start gap-6 lg:grid-cols-12">
           <div className="lg:col-span-8">
-            <RevenueTrendChart data={overview.revenueTrend} />
+            <Suspense fallback={<Skeleton className="h-80 w-full rounded-2xl" />}><RevenueTrendChart data={overview.revenueTrend} /></Suspense>
           </div>
           <div className="lg:col-span-4">
             <PaymentDistributionChart data={overview.paymentMix} />
@@ -276,6 +281,6 @@ export default function DashboardOverviewPage() {
           {t('allMarkets')} <ArrowRight strokeWidth={1.5} className="size-3.5" />
         </Button>
       )}
-    </div>
+    </PullToRefresh>
   );
 }

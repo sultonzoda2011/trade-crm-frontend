@@ -493,7 +493,7 @@ export default function CreateTransactionPage() {
        */}
       <div
         className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+        style={{ paddingBottom: 'calc(0.75rem + var(--sab))' }}>
         <div className="mb-2.5 flex items-baseline justify-between">
           <span className="text-muted-foreground text-base">{t('fields.totalAmount')}</span>
           <span className="font-mono text-2xl font-bold">{fmtTJS(calculatedTotal)}</span>
