@@ -1,12 +1,10 @@
 import type { CapacitorConfig } from '@capacitor/cli';
+import { KeyboardResize } from '@capacitor/keyboard';
 
 /**
  * TradeCRM — мобильная обёртка.
  *
- * appId — поменять на реальный (обратный домен, напр. com.tradecrm.app)
- * перед `npx cap add android` / `npx cap add ios`, менять его после
- * первого релиза в стор нельзя.
- *
+ * appId: 'com.tradecrm.app'
  * webDir: 'build/client' — react-router.config.ts стоит ssr: false,
  * поэтому `npm run build` кладёт статический SPA-бандл именно туда.
  */
@@ -18,13 +16,18 @@ const config: CapacitorConfig = {
     androidScheme: 'https',
   },
   plugins: {
+    SystemBars: {
+      // Capacitor 8: пробрасывает переменные --safe-area-inset-* в :root
+      // и корректно учитывает IME и navigation bar на Android 15/16
+      insetsHandling: 'css',
+      style: 'DEFAULT',
+    },
     StatusBar: {
-      // overlaysWebView: false — статус-бар не наезжает на контент,
-      // цвет/стиль синхронизируем в рантайме с темой (см. app/lib/capacitor-status-bar.ts)
+      // Для Android <15: синхронизация цвета статус-бара
       overlaysWebView: false,
     },
     Keyboard: {
-      resize: 'body',
+      resize: KeyboardResize.Body,
       resizeOnFullScreen: true,
     },
   },
