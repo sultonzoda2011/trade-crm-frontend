@@ -1,19 +1,15 @@
-/**
- * Tactile feedback for gestures and key actions.
- *
- * In the Android shell this goes through the native Capacitor Haptics plugin
- * when it is installed (`npm i @capacitor/haptics && npx cap sync`), which is the
- * only route that feels like a real system tap. Without it, or in a browser, it
- * falls back to the Vibration API where the WebView allows it, and otherwise
- * does nothing — callers never need to check support.
- */
-type HapticKind = 'selection' | 'light' | 'medium' | 'success' | 'warning';
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Capacitor } from '@capacitor/core';
 
-interface HapticsPlugin {
-  impact?: (options: { style: 'LIGHT' | 'MEDIUM' | 'HEAVY' }) => Promise<void>;
-  selectionChanged?: () => Promise<void>;
-  notification?: (options: { type: 'SUCCESS' | 'WARNING' | 'ERROR' }) => Promise<void>;
-}
+/**
+ * Тактильная обратная связь для ключевых действий и жестов.
+ *
+ * В Android-оболочке работает через нативный плагин @capacitor/haptics,
+ * обеспечивая физический системный отклик. В браузере при поддержке
+ * откатывается к Vibration API. Ошибки безопасно глушатся,
+ * вызывающий код никогда не должен оборачивать вызов в try/catch.
+ */
+export type HapticKind = 'selection' | 'light' | 'medium' | 'success' | 'warning' | 'error';
 
 const FALLBACK_VIBRATION_MS: Record<HapticKind, number | number[]> = {
   selection: 6,
@@ -21,30 +17,42 @@ const FALLBACK_VIBRATION_MS: Record<HapticKind, number | number[]> = {
   medium: 18,
   success: [10, 40, 10],
   warning: [18, 50, 18],
+  error: [25, 60, 25, 60, 35],
 };
-
-function nativePlugin(): HapticsPlugin | undefined {
-  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean; Plugins?: Record<string, unknown> } })
-    .Capacitor;
-  if (!cap?.isNativePlatform?.()) return undefined;
-  return cap.Plugins?.Haptics as HapticsPlugin | undefined;
-}
 
 export function haptic(kind: HapticKind = 'light'): void {
   if (typeof window === 'undefined') return;
 
   try {
-    const native = nativePlugin();
-    if (native) {
-      if (kind === 'selection') void native.selectionChanged?.();
-      else if (kind === 'success') void native.notification?.({ type: 'SUCCESS' });
-      else if (kind === 'warning') void native.notification?.({ type: 'WARNING' });
-      else void native.impact?.({ style: kind === 'medium' ? 'MEDIUM' : 'LIGHT' });
+    if (Capacitor.isNativePlatform()) {
+      switch (kind) {
+        case 'selection':
+          void Haptics.selectionChanged().catch(() => {});
+          break;
+        case 'success':
+          void Haptics.notification({ type: NotificationType.Success }).catch(() => {});
+          break;
+        case 'warning':
+          void Haptics.notification({ type: NotificationType.Warning }).catch(() => {});
+          break;
+        case 'error':
+          void Haptics.notification({ type: NotificationType.Error }).catch(() => {});
+          break;
+        case 'medium':
+          void Haptics.impact({ style: ImpactStyle.Medium }).catch(() => {});
+          break;
+        case 'light':
+        default:
+          void Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+          break;
+      }
       return;
     }
 
-    navigator.vibrate?.(FALLBACK_VIBRATION_MS[kind]);
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(FALLBACK_VIBRATION_MS[kind]);
+    }
   } catch {
-    // Feedback is a nicety; never let it break the gesture that triggered it.
+    // Тактильный отклик — улучшение UX; никогда не прерывает вызывающее действие.
   }
 }
