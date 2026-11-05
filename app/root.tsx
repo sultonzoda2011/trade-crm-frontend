@@ -25,6 +25,7 @@ import { Splash } from '~/components/layout/Splash';
 import ErrorPage from '~/components/shared/ErrorPage';
 import { ThemeProvider } from '~/components/theme-provider';
 import { TooltipProvider } from '~/components/ui/tooltip';
+import { useCapacitorAppLifecycle } from '~/hooks/useCapacitorAppLifecycle';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
@@ -164,6 +165,7 @@ function ToasterProvider() {
 
 function CapacitorBridge() {
   const { resolvedTheme } = useTheme();
+  useCapacitorAppLifecycle();
   useCapacitorBackButton();
   useCapacitorStatusBar(resolvedTheme);
   useCapacitorNetworkStatus();
