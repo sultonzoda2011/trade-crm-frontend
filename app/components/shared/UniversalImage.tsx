@@ -48,6 +48,8 @@ export function UniversalImage({
     <div className={cn('relative overflow-hidden', containerClassName)}>
       {src && status !== 'error' && (
         <img
+          loading="lazy"
+          decoding="async"
           {...imgProps}
           src={thumbSrc}
           alt={alt}

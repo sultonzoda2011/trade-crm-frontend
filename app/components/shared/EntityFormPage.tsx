@@ -54,7 +54,7 @@ function SubmitButton({
  *
  * Each of the thirteen form pages carried its own copy of the same three
  * blocks — the ~13-line mobile action bar in particular was byte-identical
- * everywhere, including the `env(safe-area-inset-bottom)` padding that must not
+ * everywhere, including the `var(--sab)` padding that must not
  * be forgotten on a new page.
  */
 export function EntityFormPage({
@@ -114,7 +114,7 @@ export function EntityFormPage({
        */}
       <div
         className="bg-card border-border fixed inset-x-0 bottom-0 z-40 border-t px-4 pt-3 md:hidden"
-        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
+        style={{ paddingBottom: 'calc(0.75rem + var(--sab))' }}>
         <SubmitButton
           formId={formId}
           isPending={isPending}

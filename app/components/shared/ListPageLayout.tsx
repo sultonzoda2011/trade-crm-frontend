@@ -6,6 +6,7 @@ import { ConfirmDialog } from '~/components/shared/ConfirmDialog';
 import { DataTable, type MobileRowGroup } from '~/components/shared/DataTable';
 import { FilterSheet } from '~/components/shared/FilterSheet';
 import { ListPageToolbar } from '~/components/shared/ListPageToolbar';
+import { PullToRefresh } from '~/components/shared/PullToRefresh';
 import type { SwipeAction } from '~/components/shared/SwipeableRow';
 import type { EntityListResult } from '~/hooks/useEntityList';
 import { useFilterParams } from '~/hooks/useFilterParams';
@@ -100,7 +101,7 @@ export function ListPageLayout<TData, TServerData = TData>({
   children,
 }: ListPageLayoutProps<TData, TServerData>) {
   return (
-    <div className="flex-1 space-y-4">
+    <PullToRefresh onRefresh={() => list.refetch?.()} className="flex-1 space-y-4">
       <ListPageToolbar
         title={title}
         searchPlaceholder={searchPlaceholder}
@@ -146,6 +147,6 @@ export function ListPageLayout<TData, TServerData = TData>({
       <ConfirmDialog {...list.deleteDialog} />
 
       {syncUrl ? <UrlQuerySync list={list} filterConfig={filterConfig} /> : null}
-    </div>
+    </PullToRefresh>
   );
 }

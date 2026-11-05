@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -11,6 +12,7 @@ import { Button } from '~/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 import { useIsMobile } from '~/hooks/use-mobile';
 import { AlertTriangle, CheckCircle2, Info, Trash2 } from 'lucide-react';
+import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
 export type ConfirmType = 'danger' | 'warning' | 'success' | 'info';
@@ -66,11 +68,30 @@ export function ConfirmDialog({
   const config = typeConfigs[type];
   const Icon = config.icon;
 
+  useEffect(() => {
+    if (open) {
+      if (type === 'danger' || type === 'warning') {
+        haptic('warning');
+      } else {
+        haptic('light');
+      }
+    }
+  }, [open, type]);
+
   const resolvedTitle = title || t('actions.confirm');
   const resolvedDescription = description || t('actions.areYouSure');
   // The title says "Confirmation"; the button needs a verb — and for a destructive dialog the verb is the action itself.
   const confirmLabel = confirmText || (type === 'danger' ? t('actions.delete') : t('actions.confirmAction'));
   const cancelLabel = cancelText || t('actions.cancel');
+
+  const handleConfirm = () => {
+    if (type === 'danger') {
+      haptic('medium');
+    } else {
+      haptic('light');
+    }
+    onConfirm();
+  };
 
   const icon = (
     <div className={cn('flex size-12 items-center justify-center rounded-full', config.color)}>
@@ -96,7 +117,7 @@ export function ConfirmDialog({
               size="lg"
               variant={config.buttonVariant}
               className="w-full"
-              onClick={onConfirm}
+              onClick={handleConfirm}
               loading={isLoading}>
               {confirmLabel}
             </Button>
@@ -142,7 +163,7 @@ export function ConfirmDialog({
             type="button"
             variant={config.buttonVariant}
             className="sm:flex-1"
-            onClick={onConfirm}
+            onClick={handleConfirm}
             loading={isLoading}>
             {confirmLabel}
           </Button>
