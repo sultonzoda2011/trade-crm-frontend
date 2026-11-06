@@ -7,6 +7,9 @@ import { AppSidebar } from '~/components/layout/Sidebar';
 import { SuccessDialog } from '~/components/shared/SuccessDialog';
 import { ScrollArea } from '~/components/ui/scroll-area';
 import { SidebarProvider } from '~/components/ui/sidebar';
+import { useIsMobile } from '~/hooks/use-mobile';
+import { useHideNativeSplash } from '~/hooks/useHideNativeSplash';
+import { useRouteDirection } from '~/hooks/useRouteDirection';
 import { canAccess } from '~/config/permissions';
 import { getClientUser } from '~/lib/auth-utils';
 import { ensureCacheOwner } from '~/lib/offline-session';
@@ -37,6 +40,15 @@ export default function CrmLayout() {
   // Вкладки дашборда — один экран: общий заголовок и фильтры не должны мигать
   // при переключении, поэтому для них ключ один и тот же.
   const routeKey = pathname.startsWith('/dashboard') ? '/dashboard' : pathname;
+  const direction = useRouteDirection(routeKey);
+  const isMobile = useIsMobile();
+  // Экран готов — системный сплэш Android можно убирать.
+  useHideNativeSplash();
+
+  // На телефоне вглубь экран приезжает справа, назад — возвращается слева (как push/pop в нативной навигации);
+  // между разделами (вкладки) и на десктопе — прежнее мягкое проявление.
+  const slide = isMobile && direction !== 'none';
+  const enterX = !slide ? 0 : direction === 'forward' ? 28 : -20;
 
   return (
     <SidebarProvider className="bg-background md:bg-sidebar h-dvh">
@@ -47,13 +59,18 @@ export default function CrmLayout() {
           {/* pb на мобиле — место под плавающий BottomNav: сам бар (64) + отступ от края (12) +
               вылет центральной «+» (10) + зона плавного перехода подложки (32) + запас.
               Прокрутка до конца оставляет последнюю строку целиком над панелью. */}
-          <div className="p-3 pb-[calc(7.5rem+var(--sab))] md:p-6">
-            {/* Мягкое появление при смене экрана — переход ощущается как в приложении, а не как перезагрузка страницы. */}
+          {/* overflow-x-clip: экран при въезде на мгновение шире области — без этого мелькнула бы горизонтальная прокрутка. */}
+          <div className="overflow-x-clip p-3 pb-[calc(7.5rem+var(--sab))] md:p-6">
+            {/* Смена экрана — направленный переход (пружина) или мягкое проявление, см. useRouteDirection. */}
             <motion.div
               key={routeKey}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}>
+              initial={{ opacity: 0, x: enterX, y: slide ? 0 : 8 }}
+              animate={{ opacity: 1, x: 0, y: 0 }}
+              transition={
+                slide
+                  ? { default: { type: 'spring', stiffness: 380, damping: 36, mass: 0.9 }, opacity: { duration: 0.2, ease: 'easeOut' } }
+                  : { duration: 0.22, ease: 'easeOut' }
+              }>
               <Outlet />
               <PageNote />
             </motion.div>

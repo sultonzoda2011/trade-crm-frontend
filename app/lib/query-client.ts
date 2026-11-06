@@ -23,7 +23,13 @@ export function makeQueryClient() {
   // успешно отправленные убираем сами — иначе они копились бы в памяти до перезапуска.
   const mutationCache = new MutationCache({
     onSuccess: (_data, _variables, _context, mutation) => {
-      if (mutation.options.scope?.id !== OFFLINE_QUEUE_SCOPE.id) return;
+      if (mutation.options.scope?.id !== OFFLINE_QUEUE_SCOPE.id) {
+        // Обычная (онлайн) операция удалась — один и тот же тактильный «готово» для всех форм и модалок.
+        // Офлайн-очередь сюда не относится: её отправка идёт в фоне и подтверждается своим откликом
+        // (useDetachedMutation), иначе телефон «жужжал» бы сам по себе при выходе в сеть.
+        haptic('success');
+        return;
+      }
       setTimeout(() => mutationCache.remove(mutation), SENT_OPERATION_LINGER_MS);
     },
     onError: () => {

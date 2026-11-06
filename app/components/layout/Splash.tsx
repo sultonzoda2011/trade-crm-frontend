@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { useNavigation } from 'react-router';
 
 /** How long the mark takes to draw itself. The splash never leaves before this, so the animation is never cut in half. */
@@ -20,6 +21,11 @@ const EXIT_MS = isTestEnv ? 0 : 380;
  *
  * It leaves when both are true: the router is idle and the entrance animation
  * has finished.
+ *
+ * In the Android app this screen is not used: the system splash (icon on the app
+ * background, see scripts/patch-android.mjs) already covers startup and is hidden
+ * by `hideNativeSplash` once the first real screen is painted. Showing this one
+ * as well would hold every cold start for another 1.7 s and play a second splash.
  */
 export function Splash() {
   const ref = useRef<HTMLDivElement>(null);
@@ -29,6 +35,12 @@ export function Splash() {
   const navigation = useNavigation();
 
   const routerIdle = navigation.state === 'idle';
+  // The element is part of the prerendered HTML, so the decision is made after mount (no hydration mismatch).
+  const [native, setNative] = useState(false);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) setNative(true);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => setDrawn(true), MIN_VISIBLE_MS);
@@ -42,7 +54,7 @@ export function Splash() {
     return () => clearTimeout(timer);
   }, [routerIdle, drawn]);
 
-  if (gone) return null;
+  if (gone || native) return null;
 
   return (
     <div ref={ref} id="app-splash" data-exiting={exiting ? '' : undefined}>

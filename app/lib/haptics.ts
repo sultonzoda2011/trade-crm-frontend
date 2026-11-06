@@ -20,8 +20,25 @@ const FALLBACK_VIBRATION_MS: Record<HapticKind, number | number[]> = {
   error: [25, 60, 25, 60, 35],
 };
 
+/**
+ * Одно действие может вызвать отклик с двух сторон сразу — например, мутация (общий «успех» в query-client)
+ * и экран успеха (showSuccess). Два одинаковых «успеха» подряд ощущаются как дрожь, а не подтверждение,
+ * поэтому одинаковое уведомление в пределах этого окна считаем одним.
+ */
+const DEDUPE_WINDOW_MS = 250;
+let lastKind: HapticKind | null = null;
+let lastAt = 0;
+
 export function haptic(kind: HapticKind = 'light'): void {
   if (typeof window === 'undefined') return;
+
+  // Только «уведомления»: быстрые тики выбора (стрелки порядка, прокрутка пикера) должны отзываться на каждый тап.
+  if (kind === 'success' || kind === 'warning' || kind === 'error') {
+    const now = Date.now();
+    if (kind === lastKind && now - lastAt < DEDUPE_WINDOW_MS) return;
+    lastKind = kind;
+    lastAt = now;
+  }
 
   try {
     if (Capacitor.isNativePlatform()) {

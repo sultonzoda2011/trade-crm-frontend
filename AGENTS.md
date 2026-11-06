@@ -1263,9 +1263,41 @@ UI учитывает Android WebView и требования Android 15/16:
 - **Клавиатура и формы:** `@capacitor/keyboard` в `useKeyboardOpen` выставляет `--keyboard-height` и класс `keyboard-open`, центрирует активные поля ввода при появлении клавиатуры; мобильные инпуты имеют `inputMode`, `enterKeyHint` и переход фокуса по Enter;
 - **Pull-to-refresh:** `PullToRefresh` на всех списочных экранах (`ListPageLayout`) и дашборде, с тактильным откликом и уважением офлайн-статуса;
 - **Lifecycle:** жизненный цикл `@capacitor/app` (`appStateChange`) синхронизирован с `focusManager` TanStack Query;
+- **Запуск и сплэш:** `@capacitor/splash-screen` держит системный сплэш Android 12+ (иконка на цвете `--background`), пока не смонтирован первый реальный экран: его прячет `useHideNativeSplash` (`(crm)/layout`, `(auth)/layout`, `ErrorBoundary`) через `hideNativeSplash()` (`lib/native-splash.ts`). Таймер `launchShowDuration: 4000` в `capacitor.config.ts` — только страховка. Веб-`Splash` на нативе не показывается (иначе второй сплэш и +1.7 с к холодному старту), в браузере работает как раньше;
+- **Нативный проект Android:** папка `android/` не в git, CI создаёт её через `cap add android`. Всё, чего нет в `capacitor.config.ts` (темы с цветом окна и сплэша, `values-night`, `MainActivity` без overscroll и с фоном WebView по теме, versionCode, подпись), накатывает `scripts/patch-android.mjs` (`npm run android:patch`) — идемпотентно, падает, если шаблон Capacitor изменился. Не править `android/` руками;
+- **Переходы между экранами:** `(crm)/layout.tsx` + `useRouteDirection`: вглубь (список → карточка → правка) экран въезжает справа, назад — слева (пружина), между разделами и на десктопе — проявление. Направление = `POP` или сравнение глубины пути. Вкладки дашборда — один экран (общий `routeKey`);
+- **Ощущение приложения (CSS, `@layer base`):** `overscroll-behavior: none`, `touch-action: manipulation` на интерактивных элементах, на сенсорных экранах нет выделения/контекстного меню на кнопках, ссылках, картинках (поля ввода и обычный текст выделяются). Утилиты Tailwind (`touch-none`, `touch-pan-y`) в слое выше и перекрывают;
+- **Лёгкий режим эффектов:** `lib/device-tier.ts` ставит `html[data-perf="lite"]` на телефонах с `navigator.deviceMemory <= 4` — тогда `.liquid-glass`, `.glass-control`, `backdrop-blur-*` без `backdrop-filter` (полупрозрачная подложка остаётся). Порог выбран без замеров на устройствах; принудительно: `localStorage.perf = 'lite' | 'full'`;
+- **Haptics:** общий «успех» онлайн-мутации — в `MutationCache.onSuccess` (`lib/query-client.ts`), офлайн-очередь сюда не входит (у неё свой отклик в `useDetachedMutation`); одинаковые уведомления (`success/warning/error`) в пределах 250 мс схлопываются в `haptic()`. Есть отклик у вкладок (`ui/tabs`, вкладки дашборда), `SegmentedControl`, выбора в `PickerSheet`;
 - не полагается на session cookies;
 - не использует sticky hover behavior;
 - поддерживает свайп-действия на мобильных карточках (`SwipeableCard` / `MobileCard`) и крупные touch targets (>= 44px).
+
+## Android-сборка и подпись
+
+CI (`.github/workflows/android.yml`): `build` → `cap add android` → `@capacitor/assets` → `cap sync` → `patch-android.mjs` → Gradle.
+
+- **Без ключа подписи** собирается debug-APK. Debug-ключ на CI создаётся заново при каждом запуске, поэтому такой APK нельзя поставить поверх предыдущего — только удалив старый (вместе с локальной офлайн-очередью!).
+- **С ключом** (секреты репозитория `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`) собирается подписанный release-APK, который обновляется поверх предыдущего. `versionCode` = номер запуска workflow.
+- Создать ключ один раз и хранить в надёжном месте (потеряете — обновить приложение у пользователей поверх станет невозможно):
+
+```bash
+keytool -genkeypair -v -keystore tradecrm-release.jks -alias tradecrm -keyalg RSA -keysize 2048 -validity 10000
+base64 -w0 tradecrm-release.jks   # значение для ANDROID_KEYSTORE_BASE64
+```
+
+- Первый установленный release-APK подписан другим ключом, чем прежние debug-сборки: один раз придётся удалить старое приложение и поставить новое. Дальше обновления идут поверх.
+- R8/минификация выключены (шаблон Capacitor) — для этого нужны правила для плагинов, отдельная задача.
+
+## Что осознанно НЕ добавлено (на 2026-11-06)
+
+- `@capacitor/action-sheet`, `@capacitor/dialog` — нативные Material-окна вместо уже сделанных iOS-шторок и `ConfirmDialog`; ощущение хуже, а не лучше.
+- `vaul`, `@use-gesture/react` — последние релизы 2024; свайп шторок и карточек уже сделан на `motion` (`useSwipeToDismiss`, `SwipeableRow`).
+- `@capacitor-community/privacy-screen` — включает `FLAG_SECURE`: заодно запрещает скриншоты, а продавцы шлют скриншоты чеков.
+- `@capawesome/capacitor-app-update` — работает через Google Play, приложение раздаётся APK из GitHub Releases.
+- `@capacitor/preferences` — токен в `localStorage` WebView не теряется сам; смысл появится вместе с биометрией.
+- View Transitions API — `viewTransition` нужно ставить на каждый `Link`/`navigate`, а системная кнопка «назад» (POP) его не получает; направленный переход на `motion` покрывает оба случая.
+- Отложено, нужно решение: вход по отпечатку (`@capgo/capacitor-native-biometric` 8.x, совместим с Capacitor 8) и сканер штрихкодов (`@capacitor-mlkit/barcode-scanning` 8.x) — второму нужно поле штрихкода у товара на бэкенде.
 
 ---
 

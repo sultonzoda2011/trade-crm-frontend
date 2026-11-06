@@ -6,9 +6,13 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import Backend from "i18next-http-backend";
 import { getInitialNamespaces } from "remix-i18next/client";
+import { applyDeviceTier } from "~/lib/device-tier";
 import { i18nConfig } from "~/lib/i18n";
 
 async function hydrate() {
+  // До первого кадра: класс устройства влияет на стили (лёгкий режим эффектов на слабых телефонах).
+  applyDeviceTier();
+
   await i18next
     .use(initReactI18next)
     .use(LanguageDetector)

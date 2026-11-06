@@ -28,6 +28,7 @@ import { TooltipProvider } from '~/components/ui/tooltip';
 import { useCapacitorAppLifecycle } from '~/hooks/useCapacitorAppLifecycle';
 import { useCapacitorBackButton } from '~/hooks/useCapacitorBackButton';
 import { useCapacitorStatusBar } from '~/hooks/useCapacitorStatusBar';
+import { useHideNativeSplash } from '~/hooks/useHideNativeSplash';
 import { fallbackLng, i18nConfig, supportedLngs } from '~/lib/i18n';
 import { setNavigate } from '~/lib/navigation';
 import { useCapacitorNetworkStatus } from '~/lib/network-status';
@@ -181,6 +182,8 @@ const DevTools = lazy(() => import('@tanstack/react-query-devtools').then((m) =>
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   const { t } = useTranslation();
+  // Экран ошибки тоже «готовый экран»: системный сплэш не должен закрывать его до таймера.
+  useHideNativeSplash();
   let code = '500';
   let title = t('errors.unknown');
   let description = t('errors.unknown');

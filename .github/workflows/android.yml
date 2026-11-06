@@ -11,6 +11,11 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Подпись релиза. Секреты (Settings → Secrets → Actions):
+      #   ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD
+      # Без них собирается debug-APK как раньше. Подробности — раздел «Android-сборка» в AGENTS.md.
+      HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
 
     steps:
       - name: Checkout
@@ -48,12 +53,42 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Build APK
+      # Темы, цвета окна, MainActivity, versionCode и подпись — всё, чего нет в capacitor.config.ts.
+      # versionCode растёт с каждой сборкой: Android не даёт «обновить» на сборку со старой версией.
+      - name: Patch native Android project
+        run: node scripts/patch-android.mjs
+        env:
+          ANDROID_VERSION_CODE: ${{ github.run_number }}
+          ANDROID_VERSION_NAME: 1.0.${{ github.run_number }}
+
+      - name: Decode release keystore
+        if: env.HAS_KEYSTORE == 'true'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+
+      - name: Build signed release APK
+        if: env.HAS_KEYSTORE == 'true'
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      # Без ключа подписи: debug-APK. Debug-ключ на CI создаётся заново при каждой сборке,
+      # поэтому такой APK нельзя поставить поверх предыдущего — только с удалением старого.
+      - name: Build debug APK (no signing key configured)
+        if: env.HAS_KEYSTORE != 'true'
         working-directory: android
         run: ./gradlew assembleDebug
 
       - name: Rename APK
-        run: cp android/app/build/outputs/apk/debug/app-debug.apk TradeCRM.apk
+        run: |
+          if [ "$HAS_KEYSTORE" = "true" ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk TradeCRM.apk
+          else
+            cp android/app/build/outputs/apk/debug/app-debug.apk TradeCRM.apk
+          fi
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4

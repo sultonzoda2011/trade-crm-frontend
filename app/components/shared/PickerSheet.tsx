@@ -2,6 +2,7 @@ import { Search } from 'lucide-react';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CustomInput } from '~/components/shared/CustomInput';
+import { haptic } from '~/lib/haptics';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '~/components/ui/sheet';
 
 interface PickerSheetProps<T> {
@@ -95,7 +96,10 @@ export function PickerSheet<T>({
                 <button
                   key={getKey(item)}
                   type="button"
-                  onClick={() => onSelect(item)}
+                  onClick={() => {
+                    haptic('selection');
+                    onSelect(item);
+                  }}
                   className="active:bg-muted/70 flex min-h-14 w-full items-center gap-3 px-4 py-2.5 text-left transition-colors">
                   {renderItem(item)}
                 </button>

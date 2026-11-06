@@ -2,10 +2,20 @@
 
 import { Tabs as TabsPrimitive } from '@base-ui/react/tabs';
 
+import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
-function Tabs({ ...props }: TabsPrimitive.Root.Props) {
-  return <TabsPrimitive.Root data-slot="tabs" {...props} />;
+function Tabs({ onValueChange, ...props }: TabsPrimitive.Root.Props) {
+  return (
+    <TabsPrimitive.Root
+      data-slot="tabs"
+      onValueChange={(...args) => {
+        haptic('selection');
+        onValueChange?.(...args);
+      }}
+      {...props}
+    />
+  );
 }
 
 function TabsList({ className, ...props }: TabsPrimitive.List.Props) {
