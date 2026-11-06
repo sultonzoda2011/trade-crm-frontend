@@ -122,7 +122,8 @@ export default function ProfilePage() {
           title={t('fields.theme')}
           trailing={
             <SegmentedControl<ThemeValue>
-              className="w-44 shrink-0"
+              size="sm"
+              className="w-32 shrink-0"
               value={(theme as ThemeValue | undefined) ?? 'system'}
               onChange={setTheme}
               options={[
@@ -137,7 +138,8 @@ export default function ProfilePage() {
           title={t('fields.language')}
           trailing={
             <SegmentedControl
-              className="w-44 shrink-0"
+              size="sm"
+              className="w-36 shrink-0"
               value={currentLanguage.value}
               onChange={setLanguage}
               options={LANGUAGE_ITEMS.map((item) => ({ value: item.value, label: item.shortLabel }))}

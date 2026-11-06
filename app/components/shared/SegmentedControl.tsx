@@ -15,6 +15,13 @@ interface SegmentedControlProps<T extends string> {
   value: T;
   onChange: (value: T) => void;
   className?: string;
+  /**
+   * `default` (44px, h-11) — отдельный выбор на весь тап-таргет (способ оплаты и т.п.).
+   * `sm` (32px, h-8) — инлайн-контрол внутри строки настроек (ListRow), как трейлинг-элемент
+   * рядом с текстом, а не самостоятельная область — на весь h-11 там выглядит разбухшим
+   * относительно настоящего iOS (там такой переключатель в Settings компактный).
+   */
+  size?: 'default' | 'sm';
 }
 
 /**
@@ -22,11 +29,18 @@ interface SegmentedControlProps<T extends string> {
  * для полей, которые на практике почти всегда переключаются одним тапом
  * (способ оплаты и т.п.), а не выбираются из длинного списка.
  */
-export function SegmentedControl<T extends string>({ options, value, onChange, className }: SegmentedControlProps<T>) {
+export function SegmentedControl<T extends string>({
+  options,
+  value,
+  onChange,
+  className,
+  size = 'default',
+}: SegmentedControlProps<T>) {
+  const sm = size === 'sm';
   return (
     <div
       role="radiogroup"
-      className={cn('bg-muted grid gap-0.5 rounded-[10px] p-0.5', className)}
+      className={cn('bg-muted grid gap-0.5', sm ? 'rounded-lg p-0.5' : 'rounded-[10px] p-0.5', className)}
       style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>
       {options.map((opt) => {
         const selected = opt.value === value;
@@ -43,10 +57,11 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
               onChange(opt.value);
             }}
             className={cn(
-              'flex h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors md:h-9',
+              'flex items-center justify-center rounded-md font-semibold transition-colors',
+              sm ? 'h-8 gap-1 text-xs' : 'h-11 gap-1.5 rounded-lg text-sm md:h-9',
               selected ? 'bg-card text-foreground shadow-sm dark:bg-white/20' : 'text-muted-foreground hover:text-foreground'
             )}>
-            {Icon && <Icon className="size-4" />}
+            {Icon && <Icon className={sm ? 'size-3.5' : 'size-4'} />}
             {opt.label}
           </button>
         );

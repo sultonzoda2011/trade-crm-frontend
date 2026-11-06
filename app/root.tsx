@@ -90,6 +90,20 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        {/*
+          SVG-фильтр настоящей рефракции для .liquid-glass/.glass-control (iOS 26/27 Liquid Glass).
+          Статичный (feTurbulence + feDisplacementMap), без слежения за курсором — работает
+          на тач-экранах, в отличие от библиотек, завязанных на позицию мыши. Высота/ширина 0 —
+          элемент не занимает место, backdrop-filter: url(#glass-distortion) ссылается на него
+          по id. Выключается вместе с остальным backdrop-filter в html[data-perf="lite"].
+        */}
+        <svg aria-hidden="true" focusable="false" style={{ position: 'absolute', width: 0, height: 0, overflow: 'hidden' }}>
+          <filter id="glass-distortion" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox">
+            <feTurbulence type="fractalNoise" baseFrequency="0.009 0.009" numOctaves="2" seed="92" result="noise" />
+            <feGaussianBlur in="noise" stdDeviation="2" result="blurredNoise" />
+            <feDisplacementMap in="SourceGraphic" in2="blurredNoise" scale="34" xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
         <Splash />
         <PersistQueryClientProvider
           client={queryClient}
