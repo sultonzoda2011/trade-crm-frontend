@@ -307,6 +307,75 @@ html {
   input:where([type='button'], [type='reset'], [type='submit']) {
     appearance: none;
   }
+
+  /*
+   * Ощущение приложения, а не страницы.
+   * - overscroll-behavior: на краю прокрутки не «тянется» вся страница и не срабатывает
+   *   браузерное обновление свайпом вниз — у приложения своё (PullToRefresh).
+   * - touch-action: manipulation: тап срабатывает сразу, без ожидания двойного тапа и без зума двойным тапом.
+   *   Утилиты Tailwind (touch-none, touch-pan-y у шторок и свайпов) стоят в слое выше и это перекрывают.
+   */
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+
+  a,
+  button,
+  summary,
+  label,
+  select,
+  input,
+  textarea,
+  [role='button'],
+  [role='tab'],
+  [role='radio'],
+  [role='switch'],
+  [role='menuitem'],
+  [role='option'] {
+    touch-action: manipulation;
+  }
+
+  /* Прокрутка внутри экрана не передаётся странице: ни «свечения», ни прокрутки фона под шторкой. */
+  [data-slot='scroll-area-viewport'] {
+    overscroll-behavior-y: contain;
+  }
+
+  /*
+   * На сенсорных экранах долгое нажатие на кнопке, ссылке или картинке не должно выделять
+   * текст и открывать системное меню «сохранить изображение / копировать» — так не бывает в нативных
+   * приложениях. Поля ввода и обычный текст (суммы, телефоны, названия) остаются выделяемыми.
+   */
+  @media (pointer: coarse) {
+    a,
+    button,
+    summary,
+    label,
+    nav,
+    header,
+    img,
+    [role='button'],
+    [role='tab'],
+    [role='radio'],
+    [role='switch'],
+    [role='menuitem'],
+    [role='option'] {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    img {
+      -webkit-user-drag: none;
+    }
+
+    input,
+    textarea,
+    [contenteditable='true'] {
+      -webkit-user-select: text;
+      user-select: text;
+    }
+  }
 }
 
 /* ─── Collapsible animations (Base UI uses --collapsible-panel-height) ───── */
@@ -1080,6 +1149,25 @@ span.flatpickr-weekday {
       backdrop-filter: none;
     }
   }
+}
+
+/* ─── Лёгкий режим эффектов для слабых телефонов ────────────────────────────
+   backdrop-filter заставляет GPU размывать всё, что под элементом, на каждом кадре прокрутки —
+   нижняя панель, шапка и хлебные крошки плывут поверх прокручиваемого списка. На телефонах
+   с малым объёмом памяти (см. app/lib/device-tier.ts, html[data-perf='lite']) размытие
+   выключаем, оставляя полупрозрачную подложку: выглядит почти так же, считается в разы дешевле.
+   Правила вне @layer — они сильнее и слоя components, и утилит Tailwind (backdrop-blur-*). */
+html[data-perf='lite'] .liquid-glass,
+html[data-perf='lite'] .glass-control,
+html[data-perf='lite'] .ios27-liquid-glass-sm {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+}
+
+html[data-perf='lite'] [class*='backdrop-blur'] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 /* Цвет категории: `categoryColorStyle()` кладёт --cat-light/--cat-dark, тема выбирает нужный. */

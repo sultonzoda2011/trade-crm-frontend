@@ -11,6 +11,7 @@ import { DASHBOARD_DEFAULT_PERIOD, OVERVIEW_DEFAULT_PERIOD, STOCK_ANALYSIS_DAYS 
 import { PERIOD_OPTIONS, type Period } from '~/config/period';
 import { useAsyncSelectOptions } from '~/hooks/useAsyncSelectOptions';
 import { getPeriodRange } from '~/lib/date';
+import { haptic } from '~/lib/haptics';
 import { formatDate } from '~/lib/format';
 import { queryKeys } from '~/lib/query-keys';
 import { cn } from '~/lib/utils';
@@ -168,6 +169,7 @@ export default function DashboardLayout() {
               search: searchParams.toString(),
             }}
             end={tab.end}
+            onClick={() => haptic('selection')}
             className={({ isActive }) =>
               cn(
                 'relative shrink-0 px-3 py-3 text-base font-medium whitespace-nowrap transition-colors md:py-2 md:text-sm',

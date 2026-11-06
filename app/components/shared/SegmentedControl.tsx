@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { haptic } from '~/lib/haptics';
 import { cn } from '~/lib/utils';
 
 export interface SegmentedControlOption<T extends string> {
@@ -37,7 +38,10 @@ export function SegmentedControl<T extends string>({ options, value, onChange, c
             role="radio"
             aria-checked={selected}
             aria-label={opt.ariaLabel}
-            onClick={() => onChange(opt.value)}
+            onClick={() => {
+              if (!selected) haptic('selection');
+              onChange(opt.value);
+            }}
             className={cn(
               'flex h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-semibold transition-colors md:h-9',
               selected ? 'bg-card text-foreground shadow-sm dark:bg-white/20' : 'text-muted-foreground hover:text-foreground'
